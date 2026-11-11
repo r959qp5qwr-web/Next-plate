@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=JetBrains+Mono:wght@500..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&family=JetBrains+Mono:wght@500..700&family=Shrikhand&family=Space+Mono:wght@400;700&display=swap">
 <style>
 /* Layout: five live instruments. On a phone they are tabs (Today, Lab, Rescue, Rhythm, Ask). On a wide screen they sit together as a studio: plate engine and plate lab on the first row, rescue, day rhythm and ask on the second. */
 :root{
@@ -452,6 +452,74 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;bac
   .app[data-layout="studio"] .toast{top:74px}
 }
 @media (min-width:1280px){.app[data-layout="studio"] .labgrid{grid-template-columns:minmax(0,1.08fr) minmax(0,1fr)}}
+
+/* ===== v5: mixtape. Light paper, retro lettering, sunset stripes, sticker cards, one deep-space panel ===== */
+:root{--bg:#FBF5EA;--surface:#FFFFFF;--surface2:#F7EEDD;--ink:#1B1235;--ink2:#4A4266;--ink3:#7B7493;--line:#E7DBC6;
+  --brand:#E0338C;--brand-ink:#FFFFFF;--brand-soft:#FFE1EF;--brand-text:#B41E6C;
+  --hero1:#FFF1CF;--hero2:#FFDDEA;--hero-ink:#1B1235;--hero-ink2:rgba(27,18,53,.68);--hero-line:rgba(27,18,53,.16);--hero-chip:#FFFFFF;--track:#EFE5D3;--track-dark:rgba(27,18,53,.1);
+  --haldi:#FFB02E;--veg:#14B8A6;--pro:#FF6B35;--grain:#FFC94D;--side:#B9A7F0;--chilli:#D8342B;--ok:#0F9A8A;--warn-bg:#FFF0C2;--warn-ink:#5B3E00;--toast:#1B1235;--toast-ink:#FFFFFF;
+  --ink-panel:#1B1235;--panel2:#33175F;--glow:#FFB02E;--amber:#FF6FB0;--p-ink:#F6F0FF;--p-ink2:rgba(246,240,255,.7);--p-line:rgba(246,240,255,.16);
+  --band-g:#0B8F80;--band-m:#C56A00;--band-s:#D8342B;--panelbg:#FFFBF3;--shadow:4px 4px 0 #1B1235;
+  --mono:"Space Mono","JetBrains Mono",ui-monospace,Menlo,monospace;--retro:"Shrikhand","Bricolage Grotesque",Georgia,serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#FBF5EA;--surface:#FFFFFF;--surface2:#F7EEDD;--ink:#1B1235;--ink2:#4A4266;--ink3:#7B7493;--line:#E7DBC6;
+  --brand:#E0338C;--brand-ink:#FFFFFF;--brand-soft:#FFE1EF;--brand-text:#B41E6C;
+  --hero1:#FFF1CF;--hero2:#FFDDEA;--hero-ink:#1B1235;--hero-ink2:rgba(27,18,53,.68);--hero-line:rgba(27,18,53,.16);--hero-chip:#FFFFFF;--track:#EFE5D3;--track-dark:rgba(27,18,53,.1);
+  --haldi:#FFB02E;--veg:#14B8A6;--pro:#FF6B35;--grain:#FFC94D;--side:#B9A7F0;--chilli:#D8342B;--ok:#0F9A8A;--warn-bg:#FFF0C2;--warn-ink:#5B3E00;--toast:#1B1235;--toast-ink:#FFFFFF;
+  --ink-panel:#1B1235;--panel2:#33175F;--glow:#FFB02E;--amber:#FF6FB0;--p-ink:#F6F0FF;--p-ink2:rgba(246,240,255,.7);--p-line:rgba(246,240,255,.16);
+  --band-g:#0B8F80;--band-m:#C56A00;--band-s:#D8342B;--panelbg:#FFFBF3;--shadow:4px 4px 0 #1B1235;
+  --mono:"Space Mono","JetBrains Mono",ui-monospace,Menlo,monospace;--retro:"Shrikhand","Bricolage Grotesque",Georgia,serif;color-scheme:light}}
+:root[data-theme="dark"]{--bg:#FBF5EA;--surface:#FFFFFF;--surface2:#F7EEDD;--ink:#1B1235;--ink2:#4A4266;--ink3:#7B7493;--line:#E7DBC6;
+  --brand:#E0338C;--brand-ink:#FFFFFF;--brand-soft:#FFE1EF;--brand-text:#B41E6C;
+  --hero1:#FFF1CF;--hero2:#FFDDEA;--hero-ink:#1B1235;--hero-ink2:rgba(27,18,53,.68);--hero-line:rgba(27,18,53,.16);--hero-chip:#FFFFFF;--track:#EFE5D3;--track-dark:rgba(27,18,53,.1);
+  --haldi:#FFB02E;--veg:#14B8A6;--pro:#FF6B35;--grain:#FFC94D;--side:#B9A7F0;--chilli:#D8342B;--ok:#0F9A8A;--warn-bg:#FFF0C2;--warn-ink:#5B3E00;--toast:#1B1235;--toast-ink:#FFFFFF;
+  --ink-panel:#1B1235;--panel2:#33175F;--glow:#FFB02E;--amber:#FF6FB0;--p-ink:#F6F0FF;--p-ink2:rgba(246,240,255,.7);--p-line:rgba(246,240,255,.16);
+  --band-g:#0B8F80;--band-m:#C56A00;--band-s:#D8342B;--panelbg:#FFFBF3;--shadow:4px 4px 0 #1B1235;
+  --mono:"Space Mono","JetBrains Mono",ui-monospace,Menlo,monospace;--retro:"Shrikhand","Bricolage Grotesque",Georgia,serif;color-scheme:light}
+.top{position:relative}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:linear-gradient(90deg,#FFB02E 0 25%,#FF6B35 25% 50%,#E0338C 50% 75%,#6C3BD9 75%)}
+.brand{font:400 21px/24px var(--retro);letter-spacing:.01em}
+.mark{background:var(--ink);border-radius:50%}
+.panel-h h2,.hero h2,.setup-hero h1,.dish,.empty-card h2,.sheet-h h2{font-family:var(--retro);font-weight:400;letter-spacing:.005em}
+.hero h2{font-size:25px;line-height:29px}.panel-h h2{font-size:24px;line-height:28px}.dish{font-size:21px;line-height:25px}
+.eyebrow,.cap,.live{font-family:var(--mono)}
+.plate,.card,.tile2,.empty-card,.ans,.inst,.setup-hero,.slide,.goal{border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)}
+.meals,.presets,.alt,.move,.prompt,.pillsel,.choice,.tile,.mini,.sit,.myfood,.lswitch,.dslot,.swaprow,.other,.swap,.composer input,.kg input,.wbtn,.ctr button,.goal-btn{border:2px solid var(--ink);box-shadow:none}
+.btn{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:#fff;transition:transform 90ms,box-shadow 90ms}
+.btn.primary{background:var(--brand);color:#fff}.btn.done{background:var(--veg);color:var(--ink)}
+.btn:active,.tbtn:active,.send:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+.send{border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);background:var(--brand)}.send.cam{background:#fff}
+.meal[aria-checked="true"]{background:var(--haldi);color:var(--ink)}.meal .now{background:var(--brand)}
+.preset[aria-checked="true"]{background:var(--ink);color:#fff}
+.choice[aria-pressed="true"],.choice[aria-checked="true"],.tile[aria-checked="true"]{background:var(--ink);color:#fff}
+.sit[aria-checked="true"],.pillsel[aria-expanded="true"],.lswitch button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.move[aria-pressed="true"]{box-shadow:4px 4px 0 var(--brand);background:#FFF7FB}
+.hero{background:linear-gradient(150deg,var(--hero1),var(--hero2));overflow:hidden}
+.hero::after{right:-58px;top:-58px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,#6C3BD9 0 24px,#E0338C 24px 38px,#FF6B35 38px 52px,#FFB02E 52px 66px,rgba(255,176,46,0) 66px);opacity:.95}
+.hero-top{padding-right:64px}.hchip.time{margin-left:0}
+.hchip{border:1.5px solid var(--ink);background:#fff}.hchip.fit svg.i{color:var(--brand)}
+.read4,.tune{border-top:2px solid var(--ink)}.read4>div+div{border-left:2px solid var(--ink)}
+.tbtn{background:#fff;color:var(--ink);border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink)}
+.tbtn[aria-pressed="true"]{background:var(--pro);color:#fff}
+.modlog li::before{background:var(--brand)}
+.qty{background:var(--surface2);border:1.5px solid var(--ink)}
+.tag{background:var(--haldi);color:var(--ink);border:1.5px solid var(--ink)}
+.why-ic,.ask-ic,.ans-h .dot,.goal-ic{background:var(--ink);color:var(--haldi);border:0}
+.tip{background:#FFF0C2;color:var(--ink);border:2px solid var(--ink)}
+.note{border:2px solid var(--ink)}
+.inst{background:radial-gradient(1.4px 1.4px at 12% 22%,#fff 60%,transparent 61%),radial-gradient(1px 1px at 78% 14%,#fff 60%,transparent 61%),radial-gradient(1.2px 1.2px at 56% 34%,#FFD88A 60%,transparent 61%),radial-gradient(1px 1px at 34% 58%,#fff 60%,transparent 61%),radial-gradient(1.3px 1.3px at 90% 62%,#FF9CCB 60%,transparent 61%),radial-gradient(1px 1px at 8% 82%,#fff 60%,transparent 61%),linear-gradient(160deg,var(--ink-panel),var(--panel2))}
+.inst .band-g{color:#6FF0DC}.inst .band-m{color:#FFC94D}.inst .band-s{color:#FF8FA3}
+.cb-g{fill:#14B8A6;opacity:.2}.cb-m{fill:#FFB02E;opacity:.12}
+.c-act{filter:drop-shadow(0 0 6px rgba(255,176,46,.6))}
+.hab{background:rgba(246,240,255,.07)}.hab[aria-pressed="true"]{background:var(--haldi);color:var(--ink);box-shadow:none}
+.cmp-bars .b1{background:var(--haldi)}.cmp-bars .b1.warn{background:#FF8FA3}
+.bar i,.mdots i.on,.pbar .col i{background:var(--brand)}.pbar .col i.full{background:var(--veg)}
+.tabs{background:var(--ink);border-top:0}
+.tab{color:rgba(255,255,255,.62)}.tab[aria-current="page"]{color:var(--ink)}.tab[aria-current="page"]::before{background:var(--haldi);top:1px;width:54px;height:48px;border-radius:14px}
+.bub{background:var(--brand);color:#fff;border:2px solid var(--ink)}
+.switch{border:1.5px solid var(--ink)}
+.tl-row.done .tl-dot{background:var(--veg);box-shadow:inset 0 0 0 2px var(--ink)}.tl-dot{box-shadow:inset 0 0 0 2px var(--ink)}.tl::before{background:var(--ink)}
+.toast{border:2px solid #fff}
+@media (min-width:1080px){.app[data-layout="studio"] .panel{border:2px solid var(--ink);box-shadow:6px 6px 0 var(--ink)}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1452,7 +1520,7 @@ function heroCard(m,v){
   var rd=el("div","read4");
   function cell(cap,node,unit,cls){var d=el("div");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",nu.p),"g"),cell("Energy",tw("h-k",nu.k),"kcal"),cell("Fibre",tw("h-f",nu.f),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
-  var tn=el("div","tune");tn.appendChild(el("p","cap","Tune this plate"));
+  var tn=el("div","tune");tn.appendChild(el("p","cap","Remix this plate"));
   [["pro","More protein","dumbbell"],["gentle","Gentler on sugar","lab"],["quick","Under 15 min","bolt"]].forEach(function(x){
     var b=btn("tbtn",x[1],x[2],"tune-"+x[0]);setPressed(b,TUNE[x[0]]);
     b.addEventListener("click",function(){TUNE[x[0]]=!TUNE[x[0]];if(x[0]==="quick"){page=0;sel=0;FRESH=true;}render();
