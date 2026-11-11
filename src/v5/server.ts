@@ -9,6 +9,7 @@
      MODEL            default gemini-3.8-flash; FALLBACK_MODEL default gemini-3.6-flash (tried once on 503/429)
      THINKING         optional: minimal, low, medium or high
      PHOTOS           "off" switches menu photos off (default on)
+     EVAL_CODE        optional second code for the quality check (eval/): skips the per-phone and daily counters and returns the raw reply
      PAGE_REF         git commit the page is loaded from (GitHub raw); PAGE_FILE loads a local file instead (testing)
    Counters live in memory, so a restart resets them.
    Sent to Google: meal, time, mode, mood, cuisine, appetite, cooking/ordering, oil, plate ratio, meals eaten today, typed words,
@@ -43,6 +44,7 @@ const PER_PHONE = Number(env("ASKS_PER_PHONE", "15"));
 const CODE = env("ACCESS_CODE", "");
 const KEY = env("GEMINI_API_KEY", "");
 const PHOTOS = env("PHOTOS", "on") !== "off";
+const EVAL = env("EVAL_CODE", "");
 const BASE = env("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com");
 
 const ledger = { day: "", asks: 0, byIp: new Map<string, number>() };
@@ -77,7 +79,8 @@ async function gemini(prompt: string, schema: any, image: string | null, signal:
 async function handle(kind: "meals" | "rescue", req: Request, ip: string) {
   let body: any;
   try { body = await req.json(); } catch { return json(400, { code: "bad_request" }); }
-  if (CODE && body?.key !== CODE) return json(401, { code: "bad_key" });
+  const isEval = !!EVAL && body?.key === EVAL;
+  if (CODE && body?.key !== CODE && !isEval) return json(401, { code: "bad_key" });
   const p = readProfile(body?.profile), c = readCtx(body?.ctx, kind);
   if (!p || !c) return json(400, { code: "bad_request" });
   /* kidney condition and pregnancy never reach the model (D7) */
@@ -89,11 +92,13 @@ async function handle(kind: "meals" | "rescue", req: Request, ip: string) {
     if (body.image.length > 1_600_000 || !/^[A-Za-z0-9+/=]+$/.test(body.image)) return json(400, { code: "bad_image" });
     image = body.image; c.photo = true;
   }
-  roll();
-  if (ledger.asks >= DAILY) return json(429, { code: "limit_day" });
-  const mine = ledger.byIp.get(ip) ?? 0;
-  if (mine >= PER_PHONE) return json(429, { code: "limit_ip" });
-  ledger.asks++; ledger.byIp.set(ip, mine + 1);
+  if (!isEval) {
+    roll();
+    if (ledger.asks >= DAILY) return json(429, { code: "limit_day" });
+    const mine = ledger.byIp.get(ip) ?? 0;
+    if (mine >= PER_PHONE) return json(429, { code: "limit_ip" });
+    ledger.asks++; ledger.byIp.set(ip, mine + 1);
+  }
   c.target = mealTargets(dayTargets(p), c.meal, c.appetite || 5);
   const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 90_000);
   req.signal.addEventListener("abort", () => ctrl.abort());
@@ -103,7 +108,7 @@ async function handle(kind: "meals" | "rescue", req: Request, ip: string) {
   if (!r.ok) return json(r.status, { code: r.code });
   const out = kind === "meals" ? checkReply(r.data, p) : checkRescue(r.data, p);
   console.log(kind, out.status, out.meals ? out.meals.length : "", JSON.stringify(out.dropped || {}), Date.now() - t0, "ms");
-  return json(200, out);
+  return json(200, isEval ? { ...out, raw: r.data, ms: Date.now() - t0 } : out);
 }
 
 Bun.serve({
