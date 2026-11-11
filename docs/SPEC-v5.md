@@ -21,6 +21,7 @@ Line numbers below refer to those files. This spec replaces handoff sections 1, 
 | D4 | Asking is not a separate tab. You type into the main screen, and the answer is a meal. | owner, 2026-11-11 |
 | D5 | The "coach's food rules" framing is removed. The meals come from the AI and the client's inputs. | owner, 2026-11-11 |
 | D6 | Kept from v4: Raw Linen design, Railway function, paid Gemini (gemini-3.8-flash, fallback 3.6-flash), access code, daily caps | handoff §6 |
+| D6a | **The look is ours, not Gemini's.** The Gemini files supply function only: features, screens, data shape. Do not copy their colours, emerald/stone palette, Tailwind cards, icons, badges or layout. Every screen is drawn in Raw Linen as confirmed at commit 03f819c ("raw linen taken all the way"): stone paper #F2ECE1, sumi-ink EB Garamond, Caveat script, terracotta, pressed olive. | owner, 2026-11-11 |
 | D7 | Safety rails kept: kidney condition and pregnancy get a referral line and no model call; with diabetes the grain stays; diet and leave-outs are absolute | handoff §4.7 |
 
 ## 2. Architecture
