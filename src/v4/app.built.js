@@ -761,7 +761,7 @@ function heroCard(m,v){
   var rd=el("div","read4");
   function cell(cap,node,unit,cls){var d=el("div");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",nu.p),"g"),cell("Energy",tw("h-k",nu.k),"kcal"),cell("Fibre",tw("h-f",nu.f),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
-  var tn=el("div","tune");tn.appendChild(el("p","cap","Remix this plate"));
+  var tn=el("div","tune");tn.appendChild(el("p","cap","Tune this plate"));
   [["pro","More protein","dumbbell"],["gentle","Gentler on sugar","lab"],["quick","Under 15 min","bolt"]].forEach(function(x){
     var b=btn("tbtn",x[1],x[2],"tune-"+x[0]);setPressed(b,TUNE[x[0]]);
     b.addEventListener("click",function(){TUNE[x[0]]=!TUNE[x[0]];if(x[0]==="quick"){page=0;sel=0;FRESH=true;}render();
