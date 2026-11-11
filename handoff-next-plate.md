@@ -14,7 +14,7 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 6. Your first reply: at most 5 lines covering the goal, the current state, and the next step (section 11). Mention any files from section 13 that were not attached. Ask the questions in section 12 if there are any. End with "Ready to continue with <next step>?" Then wait for the user's go.
 
 ## 1. Mission
-- **Goal:** Next Plate, a pocket-dietitian web app for the user's wellness coaching clients: it gives the next plate for each meal in household measures, built on the coach's food rules.
+- **Goal:** SUPERSEDED 2026-11-11 by docs/SPEC-v5.md. Next Plate is an AI-first pocket dietitian built on the owner's two Gemini files (NutriPulse Pocket Dietitian + Summit Edition): Gemini generates every meal, in grams and kcal. The old line ("household measures, built on the coach's food rules") was a drift the owner rejected.
 - **Done looks like:** live on the user's own domain nextplate.in, design the user approves, safe answers, coach-reviewed meals.
 - **Context:** clients are middle-aged, mostly Indian, WhatsApp-first; measures like phulka, katori, bowl.
 
