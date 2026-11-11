@@ -1,0 +1,354 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Next Plate Thali</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+/* Layout: one object on paper. A stainless thali seen from slightly above; its rim is the meal dial, the food on it is the answer. Type does the hierarchy. 8px grid, 20px page padding, type scale 34 / 28 / 15 / 12 / 11. */
+:root{
+  --paper:#F3EBDD; --ink:#1A1612; --brass:#8C5A2B; --metal:#C5CBD1; --lip:#8E979F; --caution:#F3E6C8;
+  --ink75:rgba(26,22,18,.75); --ink62:rgba(26,22,18,.62); --ink30:rgba(26,22,18,.3); --ink12:rgba(26,22,18,.12);
+  --sabzi:#3E6B45; --dal:#C4842A; --phulka:#D7B483;
+  --detent:cubic-bezier(.2,.85,.2,1); --settle:cubic-bezier(.16,1,.3,1);
+  --display:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --text:"Instrument Sans","Avenir Next","Helvetica Neue",Helvetica,sans-serif;
+  --p:#F3EBDD;
+  color-scheme:light;
+}
+:root[data-meal="breakfast"]{--p:#F0E5D2}
+:root[data-meal="snack"]{--p:#EDE2D2}
+:root[data-meal="dinner"]{--p:#EDE6DA}
+@supports (background:color-mix(in srgb,red 50%,blue)){
+  :root[data-meal="breakfast"]{--p:color-mix(in srgb,#F3EBDD 94%,#C4842A)}
+  :root[data-meal="snack"]{--p:color-mix(in srgb,#F3EBDD 94%,#8C5A2B)}
+  :root[data-meal="dinner"]{--p:color-mix(in srgb,#F3EBDD 94%,#8E979F)}
+}
+*{box-sizing:border-box}
+body{background:var(--p);color:var(--ink);font:440 15px/22px var(--text);transition:background-color 240ms var(--settle);-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;width:100%;height:100%;opacity:.05;pointer-events:none;z-index:0}
+.frame{position:relative;z-index:1;width:min(390px,100%);min-height:844px;margin:0 auto;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 24px}
+@media (min-width:430px){body{padding-block:24px}.frame{height:844px;overflow-y:auto;border:1px solid var(--ink12);border-radius:8px;scrollbar-width:none}.frame::-webkit-scrollbar{display:none}}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:0}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.bar{height:40px;display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;letter-spacing:.02em}
+.mark{width:14px;height:14px;border-radius:50%;background:var(--brass);flex:none}
+.bar .my{margin-left:auto;height:40px;font-size:15px;letter-spacing:0;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+
+h1{margin:8px 0 0;height:38px;text-align:center;font:560 34px/38px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;max-width:16ch;margin-inline:auto}
+.dial{position:relative;width:100%;margin-top:0}
+.dial svg{display:block;width:100%;height:auto;overflow:visible}
+#hit{cursor:grab;touch-action:none}
+.tick{stroke:var(--lip);stroke-width:1}
+.tick.det{stroke:var(--ink);stroke-width:1.5}
+.tick.act{stroke:var(--brass);stroke-width:2.5}
+.lab{position:absolute;left:0;top:0;height:36px;min-width:44px;padding:0 6px;display:flex;align-items:center;justify-content:center;
+  font-size:11px;line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--ink62);white-space:nowrap}
+#food{transform-box:view-box;transform-origin:175px 134px;transition:transform 240ms var(--settle)}
+#food .mass{transform-box:fill-box;transform-origin:center;transition:transform 240ms var(--settle)}
+#food .m-dal{transform-origin:100% 50%}
+.goal-lose #food .m-grain{transform:scale(.9)} .goal-lose #food .m-sabzi{transform:scale(1.03)}
+.goal-strength #food .m-dal{transform:scale(1.08)}
+.hunger-little #food{transform:scale(.92)} .hunger-starving #food{transform:scale(1.04)}
+#settle.go{animation:settle 240ms var(--settle)}
+@keyframes settle{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
+.cut{fill:none;stroke:#2C4F33;stroke-width:2;stroke-linecap:round}
+
+.sentence{margin:0;text-align:center;font-size:15px;line-height:36px;text-wrap:balance}
+.sentence span{white-space:nowrap}
+.sentence .ln{display:block}
+.sentence button{line-height:36px;white-space:nowrap;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.sentence button[aria-expanded="true"],.bar .my[aria-expanded="true"]{text-decoration-color:var(--ink)}
+.sentence i{font-style:normal;color:var(--ink62);padding:0 0 0 8px;margin-right:8px}
+.row{display:flex;gap:24px;align-items:center;height:48px;overflow-x:auto;margin:0 -20px;padding:0 20px;border-top:1px solid var(--ink12);border-bottom:1px solid var(--ink12);scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.row button{flex:none;height:48px;white-space:nowrap;color:var(--ink62)}
+.row button[aria-checked="true"]{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px}
+.row .still{flex:none;color:var(--ink62);white-space:nowrap}
+
+h2{margin:16px 0 0;font:560 28px/32px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;max-width:18ch;overflow-wrap:normal;word-break:keep-all;hyphens:none}
+.measures{margin:8px 0 0;padding:0;list-style:none}
+.measures li{display:flex;gap:8px;align-items:flex-start}
+.sw{width:8px;height:8px;flex:none;margin-top:7px;border-radius:2px}
+.sw.side{background:none;border:1.5px solid var(--sabzi)}
+.sw.pale{border:1px solid var(--ink30)}
+.reason{margin:8px 0 0;color:var(--ink75)}
+.caution{margin:16px 0 0;background:var(--caution);padding:16px;border-radius:8px}
+.swap{display:block;margin-top:8px;height:44px;text-align:left;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.copy{display:block;width:100%;height:48px;margin-top:8px;background:var(--brass);color:var(--paper);border-radius:8px;font-weight:560;font-size:15px;line-height:48px;text-align:center;transition:transform 120ms var(--settle)}
+.copy:active{transform:scale(.985)}
+.others{margin-top:16px}
+.others span{display:block;font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink62)}
+.others button{display:block;height:44px;text-align:left;color:var(--ink75);text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.only{margin:16px 0 0;font:560 28px/32px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;max-width:18ch}
+.fine{margin:24px 0 0;font-size:12px;line-height:16px;color:var(--ink62)}
+.corner{display:flex;justify-content:flex-end;gap:16px;margin-top:8px}
+.corner button{height:44px;font-size:12px;line-height:16px;color:var(--ink62)}
+.said{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.construction{display:none}
+.show-construction .construction{display:block}
+.gridlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.key{fill:none;stroke:var(--ink);stroke-width:.6;opacity:.55}
+.key.d{stroke-dasharray:3 3}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg class="grain" aria-hidden="true"><filter id="grainf" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .1  0 0 0 0 .086  0 0 0 0 .07  0 0 0 1.4 -.25"/></filter><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
+
+<div class="frame" id="frame">
+  <svg class="gridlay construction" aria-hidden="true"><defs><pattern id="g8" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="#1A1612" stroke-width=".5" opacity=".22"/></pattern></defs><rect width="100%" height="100%" fill="url(#g8)"/></svg>
+
+  <header class="bar"><span class="mark"></span><span>Next Plate</span><button type="button" class="my" id="my" aria-expanded="false" aria-controls="myrow"></button></header>
+  <div class="row" id="myrow" role="radiogroup" aria-label="My food" hidden></div>
+
+  <h1 id="meal">Lunch</h1>
+  <div class="dial" id="dial">
+    <svg id="plate" viewBox="0 0 350 288" role="slider" tabindex="0" aria-label="Meal dial. Drag the rim, or tap a meal name." aria-valuemin="1" aria-valuemax="4">
+      <defs><filter id="contact" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#1A1612" flood-opacity=".16"/></filter></defs>
+      <ellipse cx="175" cy="130" rx="124" ry="114" fill="#C5CBD1" filter="url(#contact)"/>
+      <ellipse cx="175" cy="130" rx="114" ry="104" fill="#8E979F"/>
+      <ellipse cx="175" cy="134" rx="110" ry="99" fill="#C5CBD1"/>
+      <g id="ticks"></g>
+      <g id="settle"><g id="food"></g></g>
+      <g class="construction">
+        <rect x="51" y="16" width="248" height="228" class="key d"/><ellipse cx="175" cy="130" rx="124" ry="114" class="key"/><ellipse cx="175" cy="130" rx="114" ry="104" class="key"/><ellipse cx="175" cy="134" rx="110" ry="99" class="key d"/><ellipse cx="175" cy="134" rx="100" ry="89" class="key d"/>
+        <path d="M175 0V288M0 130H350M165 134h20M175 124v20" class="key d"/><circle cx="175" cy="130" r="140" class="key d"/>
+      </g>
+      <ellipse id="hit" cx="175" cy="130" rx="119" ry="109" fill="none" stroke="#000" stroke-opacity="0" stroke-width="44" pointer-events="stroke"/>
+    </svg>
+  </div>
+
+  <p class="sentence" id="sentence"></p>
+  <div class="row" id="row" role="radiogroup" hidden></div>
+
+  <section id="answer" aria-live="polite">
+    <h2 id="name"></h2>
+    <ul class="measures" id="measures"></ul>
+    <p class="reason" id="reason"></p>
+    <p class="caution" id="caution"></p>
+    <button type="button" class="swap" id="swap"></button>
+    <button type="button" class="copy" id="copy">Copy for WhatsApp</button>
+    <div class="others" id="others"></div>
+  </section>
+  <p class="only" id="only" hidden></p>
+  <p class="fine" id="fine">Drawings show rough shares of the plate, not measured nutrition. Demonstration meals, not yet approved by your coach. General food guidance, not medical advice.</p>
+  <div class="corner"><button type="button" id="safebtn" class="construction" aria-pressed="false">safety state</button><button type="button" id="gridbtn" aria-pressed="false">grid</button></div>
+  <span class="said" id="said" role="status"></span>
+</div>
+
+<script>
+(function(){
+"use strict";
+function $(id){return document.getElementById(id);}
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+var NS="http://www.w3.org/2000/svg",root=document.documentElement,reduced=false;
+try{reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+
+/* settings: one sentence */
+var OPT={
+  sit:[["cooking","Cooking","Cooking"],["rush","In a rush","in a rush"],["tiffin","Packing tiffin","packing tiffin"],["out","Eating out","eating out"]],
+  hunger:[["little","A little","a little hunger"],["normal","Normal hunger","normal hunger"],["starving","Starving","starving"]],
+  goal:[["lose","Lose weight","lose weight"],["steady","Hold steady","hold steady"],["strength","Build strength","build strength"]],
+  low:[["none","Nothing low","nothing low"],["iron","Minding iron","minding iron"],["b12","Minding B12","minding B12"],["cal","Minding calcium and D","minding calcium and D"],["pro","Minding protein","minding protein"],["fib","Minding fibre","minding fibre"]],
+  diet:[["veg","Veg","Vegetarian"],["egg","Egg","Veg and egg"],["nonveg","Non-veg","Non-veg"],["jain","Jain","Jain"],["vegan","Vegan","Vegan"]]
+};
+var ROWLABEL={sit:"Today",hunger:"Hunger",goal:"Goal",low:"Running low on",diet:"My food"};
+var S={sit:"cooking",hunger:"normal",goal:"steady",low:"iron",diet:"veg",plate:0,swapped:false,safety:false};
+function opt(k,v){var o=OPT[k];for(var i=0;i<o.length;i++)if(o[i][0]===v)return o[i];return o[0];}
+
+/* food: filled cubic-bezier masses on the plate floor (centre 175,134; 110 x 99) */
+function disc(cx,cy,rx,ry){var k=.5523,ox=+(rx*k).toFixed(1),oy=+(ry*k).toFixed(1);
+  return "M"+(cx-rx)+" "+cy+"C"+(cx-rx)+" "+(cy-oy)+","+(cx-ox)+" "+(cy-ry)+","+cx+" "+(cy-ry)+"C"+(cx+ox)+" "+(cy-ry)+","+(cx+rx)+" "+(cy-oy)+","+(cx+rx)+" "+cy+"C"+(cx+rx)+" "+(cy+oy)+","+(cx+ox)+" "+(cy+ry)+","+cx+" "+(cy+ry)+"C"+(cx-ox)+" "+(cy+ry)+","+(cx-rx)+" "+(cy+oy)+","+(cx-rx)+" "+cy+"Z";}
+var SABZI="M92 104C88 76,120 50,172 48C222 46,262 70,262 100C262 116,240 122,212 116C190 112,168 122,142 124C116 126,95 122,92 104Z";
+var DAL="M90 172C90 150,116 138,140 140C164 142,178 158,176 178C174 198,152 212,128 210C106 208,90 194,90 172Z";
+var RICE="M196 170C194 150,212 138,232 140C252 142,264 156,262 174C260 192,244 204,226 202C208 200,198 188,196 170Z";
+function p(d,fill,cls,extra){return '<path class="mass '+(cls||"")+'" d="'+d+'" fill="'+fill+'"'+(extra||"")+'/>';}
+function phulkas(){return '<g class="mass m-grain">'+'<path d="'+disc(229,176,34,29)+'" fill="#D7B483"/>'+'<path d="'+disc(223,164,34,29)+'" fill="#D7B483" stroke="#B8935F" stroke-width="1.25"/></g>';}
+var CUTS='<path class="cut" d="M138 80l15-7M198 82l13 7"/>';
+var LEMON='<path d="M176 219C178 207,198 205,201 217C193 222,184 223,176 219Z" fill="#CFCB85" stroke="#7F8F45" stroke-width="1.2"/>';
+var DRAW={
+  thali:function(sw){return '<g class="mass m-sabzi">'+p(SABZI,"#3E6B45","")+CUTS+'</g>'+p(DAL,"#C4842A","m-dal")+(sw?p(RICE,"#EDE6D6","m-grain"):phulkas());},
+  dinner:function(){return '<g class="mass m-sabzi">'+p(SABZI,"#5E8A58","")+CUTS+'</g>'+p(DAL,"#C4842A","m-dal")+phulkas();},
+  rajma:function(){return '<g class="mass m-sabzi">'+p(SABZI,"#5E8A58","")+CUTS+'</g>'+p("M88 170C88 146,116 134,144 136C170 138,184 156,182 178C180 200,156 214,130 212C104 210,88 194,88 170Z","#7A3E2B","m-dal")+p(RICE,"#EDE6D6","m-grain");},
+  palak:function(){return '<g class="mass m-sabzi">'+p(SABZI,"#3E6B45","")+'<path d="M128 78l16-5 5 14-16 5zM176 70l16 3-3 15-16-3zM214 86l15-6 6 13-15 6z" fill="#EDE6D6"/></g>'+phulkas();},
+  chilla:function(){return '<g class="mass m-dal"><path d="'+disc(138,104,46,38)+'" fill="#D2A55B"/><path d="'+disc(152,120,46,38)+'" fill="#D2A55B" stroke="#B0843F" stroke-width="1.25"/></g>'+p(disc(240,146,28,26),"#EDE6D6","m-grain")+'<g class="mass m-sabzi">'+p("M108 192C108 178,126 170,142 172C158 174,168 184,166 198C164 210,148 216,132 214C118 212,108 204,108 192Z","#3E6B45","")+'<path class="cut" d="M124 190l11-4M142 200l10 4"/></g>';},
+  chana:function(){return p("M112 142C110 128,124 118,138 120C146 114,160 120,162 130C172 134,170 150,160 154C154 164,136 166,128 160C116 160,112 152,112 142Z","#B98A4A","m-dal")+'<g class="mass m-sabzi">'+p(disc(214,150,24,22),"#C97B3A","")+'<path d="M214 133l3-6" fill="none" stroke="#2C4F33" stroke-width="2" stroke-linecap="round"/></g>';}
+};
+
+/* demonstration plates. Not coach-approved. */
+var PL={
+  lunch:[
+    {n:"Dal, sabzi and phulka",draw:"thali",grain:true,vegan:true,jain:true,
+     items:[["#D7B483","2 phulka without ghee"],["#C4842A","1 katori masoor or moong dal"],["#3E6B45","1.5 katori seasonal sabzi"],["side","1 bowl salad with lemon"]],
+     reason:"The everyday thali, with sabzi taking the most room on the plate.",
+     swap:{go:"Swap the phulka for rice",back:"Swap the rice back for phulka",i:0,item:["pale#EDE6D6","1 katori rice"]}},
+    {n:"Rajma, rice and kachumber",draw:"rajma",grain:true,vegan:true,jain:false},
+    {n:"Palak paneer with phulka",draw:"palak",grain:true,vegan:false,jain:false}
+  ],
+  snack:[{n:"Roasted chana and a fruit",draw:"chana",grain:false,vegan:true,jain:true,
+     items:[["#B98A4A","1 fistful roasted chana"],["#C97B3A","1 guava, apple or orange"]],
+     reason:"Protein and fibre in the pocket, so dinner does not turn into a second lunch."}],
+  dinner:[{n:"Lauki sabzi, dal and phulka",draw:"dinner",grain:true,vegan:true,jain:true,
+     items:[["#5E8A58","1.5 katori lauki or tori sabzi"],["#C4842A","1 katori moong dal"],["#D7B483","1 or 2 phulka"]],
+     reason:"A light dinner that digests well before sleep."}],
+  breakfast:[{n:"Moong dal chilla with curd",draw:"chilla",grain:false,vegan:false,jain:true,
+     items:[["#D2A55B","2 thin moong dal chilla"],["pale#EDE6D6","1 katori curd"],["#3E6B45","1 small bowl cucumber and tomato"]],
+     reason:"Dal batter gives protein first thing, so the morning stays steady."}]
+};
+/* fixed wording, awaiting the coach's review */
+var PORTION="Keep the grain as written. Second helpings come from sabzi, salad or dal.";
+var IRON="You picked iron: squeeze lemon on the plate, and keep tea and coffee an hour away from this meal.";
+var B12D="Food alone does not fix a low B12 or vitamin D. That is for your doctor.";
+var SAFETY="This one goes back to your coach and your doctor. No plate today.";
+
+/* the rim */
+var MEALS=[["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"],["breakfast","Breakfast"]];
+var A=0,active=0,ticks=[],labs=[],raf=0;
+function mod(n,m){return ((n%m)+m)%m;}
+(function(){
+  var g=$("ticks");
+  for(var n=0;n<60;n++){var l=document.createElementNS(NS,"line");l.setAttribute("class","tick"+(n%15===0?" det":""));g.appendChild(l);ticks.push(l);}
+  MEALS.forEach(function(m,i){
+    var b=el("button","lab",m[1]);b.type="button";b.id="lab-"+m[0];
+    b.addEventListener("click",function(){turnTo(i);});
+    $("dial").appendChild(b);labs.push(b);
+  });
+})();
+function drawRim(){
+  for(var n=0;n<60;n++){
+    var t=(n*6+A-90)*Math.PI/180,c=Math.cos(t),s=Math.sin(t),det=n%15===0,k0=det?.12:.32,k1=det?.88:.68,l=ticks[n];
+    l.setAttribute("x1",(175+(114+10*k0)*c).toFixed(2));l.setAttribute("y1",(130+(104+10*k0)*s).toFixed(2));
+    l.setAttribute("x2",(175+(114+10*k1)*c).toFixed(2));l.setAttribute("y2",(130+(104+10*k1)*s).toFixed(2));
+    if(det)l.setAttribute("class","tick det"+(n===active*15?" act":""));
+  }
+  var w=$("dial").clientWidth||350,sc=w/350;
+  labs.forEach(function(b,i){
+    var th=mod(i*90+A+180,360)-180,t=(th-90)*Math.PI/180,x=(175+140*Math.cos(t))*sc,y=(130+140*Math.sin(t))*sc;
+    var r=Math.abs(th)<=90?th:(th>0?180-th:-180-th),o=Math.min(1,Math.abs(th)/40);
+    b.style.transform="translate("+x.toFixed(1)+"px,"+y.toFixed(1)+"px) translate(-50%,-50%) rotate("+r.toFixed(1)+"deg)";
+    b.style.opacity=o.toFixed(2);b.style.pointerEvents=o<.5?"none":"auto";b.tabIndex=o<.5?-1:0;
+  });
+}
+function bez(x1,y1,x2,y2){return function(x){var t=x,i,cx=3*x1,bx=3*(x2-x1)-cx,ax=1-cx-bx,cy=3*y1,by=3*(y2-y1)-cy,ay=1-cy-by;
+  for(i=0;i<8;i++){var fx=((ax*t+bx)*t+cx)*t-x,dx=(3*ax*t+2*bx)*t+cx;if(Math.abs(dx)<1e-6)break;t-=fx/dx;}return ((ay*t+by)*t+cy)*t;};}
+var ease=bez(.2,.85,.2,1);
+function setActive(i){
+  if(i===active)return;active=i;S.plate=0;S.swapped=false;
+  root.setAttribute("data-meal",MEALS[i][0]);$("meal").textContent=MEALS[i][1];
+  try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}
+  render(true);
+}
+function animateTo(target){
+  cancelAnimationFrame(raf);
+  if(reduced){A=target;setActive(mod(Math.round(-A/90),4));drawRim();return;}
+  var from=A,t0=performance.now();
+  (function step(now){var u=Math.min(1,(now-t0)/220);A=from+(target-from)*ease(u);setActive(mod(Math.round(-A/90),4));drawRim();if(u<1)raf=requestAnimationFrame(step);else{A=target;drawRim();}})(t0);
+}
+function turnTo(i){var cur=mod(Math.round(-A/90),4),d=mod(i-cur+2,4)-2;animateTo(Math.round(A/90)*90-d*90);}
+(function(){
+  var hit=$("hit"),svgEl=$("plate"),last=0;
+  function ang(e){var r=svgEl.getBoundingClientRect(),sc=r.width/350,x=(e.clientX-r.left)/sc,y=(e.clientY-r.top)/sc;return Math.atan2((y-130)/109,(x-175)/119)*180/Math.PI;}
+  hit.addEventListener("pointerdown",function(e){
+    if(S.safety)return;
+    try{hit.setPointerCapture(e.pointerId);}catch(x){}
+    cancelAnimationFrame(raf);last=ang(e);
+    function move(ev){var a=ang(ev),d=mod(a-last+180,360)-180;last=a;A+=d;setActive(mod(Math.round(-A/90),4));drawRim();}
+    function up(){hit.removeEventListener("pointermove",move);hit.removeEventListener("pointerup",up);hit.removeEventListener("pointercancel",up);animateTo(Math.round(A/90)*90);}
+    hit.addEventListener("pointermove",move);hit.addEventListener("pointerup",up);hit.addEventListener("pointercancel",up);
+  });
+  svgEl.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"){e.preventDefault();turnTo(mod(active+1,4));}
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();turnTo(mod(active-1,4));}
+  });
+  window.addEventListener("resize",drawRim);
+})();
+
+/* rows that open in place */
+var openKey=null;
+function closeRow(){
+  if(!openKey)return;var k=openKey;openKey=null;
+  $("row").hidden=true;$("myrow").hidden=true;$("my").setAttribute("aria-expanded","false");
+  var bs=$("sentence").querySelectorAll("button");for(var i=0;i<bs.length;i++)bs[i].setAttribute("aria-expanded","false");
+  return k;
+}
+function openRow(k,trigger){
+  var was=closeRow();if(was===k)return;
+  openKey=k;var host=k==="diet"?$("myrow"):$("row");host.textContent="";host.setAttribute("aria-label",ROWLABEL[k]);
+  OPT[k].forEach(function(o){
+    var b=el("button",null,o[1]);b.type="button";b.setAttribute("role","radio");b.setAttribute("aria-checked",S[k]===o[0]?"true":"false");b.setAttribute("data-v",o[0]);
+    b.addEventListener("click",function(){S[k]=o[0];S.plate=0;S.swapped=false;closeRow();render(true);var f=k==="diet"?$("my"):$("ph-"+k);if(f)f.focus();});
+    host.appendChild(b);
+  });
+  if(k==="diet")host.appendChild(el("span","still","North Indian home food"));
+  host.hidden=false;trigger.setAttribute("aria-expanded","true");
+  var cur=host.querySelector('[aria-checked="true"]');if(cur&&cur.scrollIntoView)try{cur.scrollIntoView({block:"nearest",inline:"center"});}catch(e){}
+}
+$("my").addEventListener("click",function(){openRow("diet",$("my"));});
+
+/* the answer */
+function plates(){return PL[MEALS[active][0]].filter(function(x){return !(S.diet==="vegan"&&!x.vegan)&&!(S.diet==="jain"&&!x.jain);});}
+function itemsOf(pl){if(!pl.items)return null;return pl.items.map(function(it,i){return pl.swap&&S.swapped&&pl.swap.i===i?pl.swap.item:it;});}
+function cautionText(pl){
+  var t=[];if(S.low==="none")return "";
+  if(pl.grain)t.push(PORTION);
+  if(S.low==="iron")t.push(IRON);
+  if(S.low==="b12"||S.low==="cal")t.push(B12D);
+  return t.join(" ");
+}
+function copyText(pl){
+  var it=itemsOf(pl),c=cautionText(pl);
+  return MEALS[active][1]+": "+pl.n+"\n"+it.map(function(i){return "- "+i[1];}).join("\n")+"\n"+pl.reason+(c?"\n"+c:"");
+}
+function render(settle){
+  root.className=root.className.replace(/\b(goal|hunger)-\w+/g,"").trim()+" goal-"+S.goal+" hunger-"+S.hunger;
+  $("plate").setAttribute("aria-valuenow",active+1);$("plate").setAttribute("aria-valuetext",MEALS[active][1]);
+  $("my").textContent=opt("diet",S.diet)[2]+" · North";$("my").setAttribute("aria-label","My food: "+opt("diet",S.diet)[2]+", North. Change.");
+  var sen=$("sentence"),line;sen.textContent="";
+  ["sit","hunger","goal","low"].forEach(function(k,i){
+    if(i%2===0){line=el("span","ln");sen.appendChild(line);}
+    var grp=el("span");
+    var b=el("button",null,opt(k,S[k])[2]);b.type="button";b.id="ph-"+k;b.setAttribute("aria-expanded",openKey===k?"true":"false");b.setAttribute("aria-controls","row");
+    b.addEventListener("click",function(){openRow(k,b);});grp.appendChild(b);
+    if(i%2===0)grp.appendChild(el("i",null,"·")).setAttribute("aria-hidden","true");
+    line.appendChild(grp);
+  });
+  var list=plates(),pl=list[Math.min(S.plate,list.length-1)],food=$("food");
+  var blocked=S.safety||!pl;
+  $("answer").hidden=blocked;$("sentence").hidden=S.safety;$("fine").hidden=S.safety;$("only").hidden=!blocked;
+  labs.forEach(function(b){b.style.visibility=S.safety?"hidden":"visible";});
+  if(blocked){
+    food.innerHTML="";closeRow();
+    $("only").textContent=S.safety?SAFETY:"No demonstration plate fits "+opt("diet",S.diet)[2].toLowerCase()+" for "+MEALS[active][1].toLowerCase()+". Your boundary stays as it is.";
+    return;
+  }
+  food.innerHTML=DRAW[pl.draw](S.swapped)+(S.low==="iron"?LEMON:"");
+  if(settle&&!reduced){var g=$("settle");g.classList.remove("go");void g.getBoundingClientRect();g.classList.add("go");}
+  $("name").textContent=pl.n;
+  var ul=$("measures"),it=itemsOf(pl);ul.textContent="";
+  if(it){it.forEach(function(i){var li=el("li"),sw=el("span","sw");
+      if(i[0]==="side")sw.className="sw side";else if(i[0].indexOf("pale")===0){sw.className="sw pale";sw.style.background=i[0].slice(4);}else sw.style.background=i[0];
+      li.appendChild(sw);li.appendChild(el("span",null,i[1]));ul.appendChild(li);});}
+  $("reason").textContent=pl.reason||"Measures for this plate are not written in this demonstration.";
+  var c=it?cautionText(pl):"";$("caution").textContent=c;$("caution").hidden=!c;
+  var sw=pl.swap;$("swap").hidden=!sw;if(sw)$("swap").textContent=S.swapped?sw.back:sw.go;
+  $("copy").hidden=!it;$("copy").textContent="Copy for WhatsApp";
+  var o=$("others");o.textContent="";
+  if(list.length>1){o.appendChild(el("span",null,"Other plates"));
+    list.forEach(function(x,i){if(x===pl)return;var b=el("button",null,x.n);b.type="button";b.addEventListener("click",function(){S.plate=i;S.swapped=false;render(true);});o.appendChild(b);});}
+  o.hidden=list.length<2;
+}
+$("swap").addEventListener("click",function(){S.swapped=!S.swapped;render(true);$("swap").focus();});
+$("copy").addEventListener("click",function(){
+  var list=plates(),pl=list[Math.min(S.plate,list.length-1)],t=copyText(pl),b=$("copy");
+  function ok(){b.textContent="Copied";$("said").textContent="Copied. Paste it in WhatsApp.";setTimeout(function(){b.textContent="Copy for WhatsApp";},2000);}
+  function fail(){try{var r=document.createRange();r.selectNodeContents($("measures"));var s=getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}b.textContent="Copy is blocked here. The list is selected.";}
+  try{navigator.clipboard.writeText(t).then(ok,fail);}catch(e){fail();}
+});
+$("gridbtn").addEventListener("click",function(){var on=$("frame").classList.toggle("show-construction");this.setAttribute("aria-pressed",on?"true":"false");});
+$("safebtn").addEventListener("click",function(){S.safety=!S.safety;this.setAttribute("aria-pressed",S.safety?"true":"false");render(true);});
+
+root.setAttribute("data-meal","lunch");
+render(false);drawRim();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawRim);
+window.__thali={state:function(){return {S:S,A:A,active:MEALS[active][0]};}};
+})();
+</script>

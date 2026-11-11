@@ -1,0 +1,196 @@
+[
+ {
+  "id": "crave-sweet-diab",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 68516,
+  "status": 200,
+  "shown": 1,
+  "droppedByRails": 1,
+  "flags": [],
+  "read": "You can fit in a gulab jamun by pairing it with whole grain, dal, and vegetables to keep blood sugar steady.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Fresh chhena and phulka dinner",
+    "items": [
+     "2 phulka",
+     "1 katori yellow moong dal",
+     "1 katori potol sabzi",
+     "2 tablespoon fresh chhena with cardamom powder"
+    ],
+    "why": "Fresh chhena offers sweet cardamom notes and gentle protein without the fried dough or heavy sugar syrup.",
+    "skip": ""
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"You can fit in a gulab jamun by pairing it with whole grain, dal, and vegetables to keep blood sugar steady.\"}\n{\"t\":\"plate\",\"name\":\"Gulab jamun with balanced dinner\",\"min\":25,\"items\":[{\"q\":1,\"u\":\"\",\"f\":\"phulka\"},{\"q\":1,\"u\":\"katori\",\"f\":\"yellow moong dal\"},{\"q\":1,\"u\":\"katori\",\"f\":\"potol sabzi\"},{\"q\":1,\"u\":\"piece\",\"f\":\"gulab jamun with syrup squeezed out\"}],\"why\":\"Eat the dal and sabzi before the sweet so protein and fibre slow down the rise in blood sugar.\",\"skip\":\"leave the sugar syrup behind\",\"later\":\"take a light ten minute stroll\"}\n{\"t\":\"plate\",\"name\":\"Fresh chhena and phulka dinner\",\"min\":20,\"items\":[{\"q\":2,\"u\":\"\",\"f\":\"phulka\"},{\"q\":1,\"u\":\"katori\",\"f\":\"yellow moong dal\"},{\"q\":1,\"u\":\"katori\",\"f\":\"potol sabzi\"},{\"q\":2,\"u\":\"tablespoon\",\"f\":\"fresh chhena with cardamom powder\"}],\"why\":\"Fresh chhena offers sweet cardamom notes and gentle protein without the fried dough or heavy sugar syrup.\"}"
+ },
+ {
+  "id": "only-have-veg",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 71810,
+  "status": 200,
+  "shown": 2,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "Since your profile is vegetarian, we will skip the eggs and use your bread, onion, milk, and kitchen staples for an easy late breakfast.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Spiced onion bread toast with warm milk",
+    "items": [
+     "2 slice toasted bread",
+     "1 katori onion and tomato sauteed with spices",
+     "1 glass warm milk"
+    ],
+    "why": "Warm milk gives you gentle protein, while toasted bread with sauteed onion and tomato keeps the meal comforting and quick.",
+    "skip": "Leave the eggs out to keep strictly vegetarian."
+   },
+   {
+    "name": "Quick moong dal with toasted bread",
+    "items": [
+     "2 slice lightly toasted bread",
+     "1 katori yellow moong dal with onion",
+     "1 glass warm milk"
+    ],
+    "why": "Moong dal from your staples adds solid plant protein to balance the bread and keep your energy steady till evening.",
+    "skip": "Skip eggs to align with your vegetarian preference."
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"Since your profile is vegetarian, we will skip the eggs and use your bread, onion, milk, and kitchen staples for an easy late breakfast.\"}\n{\"t\":\"plate\",\"name\":\"Spiced onion bread toast with warm milk\",\"min\":15,\"items\":[{\"q\":2,\"u\":\"slice\",\"f\":\"toasted bread\"},{\"q\":1,\"u\":\"katori\",\"f\":\"onion and tomato sauteed with spices\"},{\"q\":1,\"u\":\"glass\",\"f\":\"warm milk\"}],\"why\":\"Warm milk gives you gentle protein, while toasted bread with sauteed onion and tomato keeps the meal comforting and quick.\",\"skip\":\"Leave the eggs out to keep strictly vegetarian.\",\"later\":\"Plan a protein-rich dal or khichdi for dinner.\"}\n{\"t\":\"plate\",\"name\":\"Quick moong dal with toasted bread\",\"min\":20,\"items\":[{\"q\":2,\"u\":\"slice\",\"f\":\"lightly toasted bread\"},{\"q\":1,\"u\":\"katori\",\"f\":\"yellow moong dal with onion\"},{\"q\":1,\"u\":\"glass\",\"f\":\"warm milk\"}],\"why\":\"Moong dal from your staples adds solid plant protein to balance the bread and keep your energy steady till evening.\",\"skip\":\"Skip eggs to align with your vegetarian preference.\",\"later\":\"Have a light vegetable dinner tonight.\"}"
+ },
+ {
+  "id": "jain-pavbhaji",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 11756,
+  "status": 200,
+  "shown": 2,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "You can easily enjoy pav bhaji tonight using raw banana instead of potato, with paneer added so the meal stays balanced.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Jain Pav Bhaji with Fresh Paneer",
+    "items": [
+     "1.5 katori Jain bhaji made with raw banana, peas and tomato",
+     "2 piece pav toasted with half teaspoon butter",
+     "0.5 katori lightly pan-seared paneer cubes",
+     "1 bowl cucumber and tomato salad with lemon"
+    ],
+    "why": "Raw banana gives the classic texture without root vegetables, while paneer turns a heavy street meal into a balanced dinner.",
+    "skip": "Second helpings of pav and heavy butter floating on top."
+   },
+   {
+    "name": "Spiced Tawa Paneer and Vegetable Mash",
+    "items": [
+     "1.5 katori tawa mash of paneer, capsicum, peas and tomato",
+     "2 warm phulka without ghee",
+     "1 bowl cucumber slices with a squeeze of lemon",
+     "1 glass plain chaas with roasted cumin"
+    ],
+    "why": "Delivers the same bhaji spice and warmth with whole-wheat phulka and lighter paneer for an easy digestion dinner.",
+    "skip": ""
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"You can easily enjoy pav bhaji tonight using raw banana instead of potato, with paneer added so the meal stays balanced.\"}\n{\"t\":\"plate\",\"name\":\"Jain Pav Bhaji with Fresh Paneer\",\"min\":30,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"Jain bhaji made with raw banana, peas and tomato\"},{\"q\":2,\"u\":\"piece\",\"f\":\"pav toasted with half teaspoon butter\"},{\"q\":0.5,\"u\":\"katori\",\"f\":\"lightly pan-seared paneer cubes\"},{\"q\":1,\"u\":\"bowl\",\"f\":\"cucumber and tomato salad with lemon\"}],\"why\":\"Raw banana gives the classic texture without root vegetables, while paneer turns a heavy street meal into a balanced dinner.\",\"skip\":\"Second helpings of pav and heavy butter floating on top.\"}\n{\"t\":\"plate\",\"name\":\"Spiced Tawa Paneer and Vegetable Mash\",\"min\":25,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"tawa mash of paneer, capsicum, peas and tomato\"},{\"q\":2,\"u\":\"\",\"f\":\"warm phulka without ghee\"},{\"q\":1,\"u\":\"bowl\",\"f\":\"cucumber slices with a squeeze of lemon\"},{\"q\":1,\"u\":\"glass\",\"f\":\"plain chaas with roasted cumin\"}],\"why\":\"Delivers the same bhaji spice and warmth with whole-wheat phulka and lighter paneer for an easy digestion dinner.\"}"
+ },
+ {
+  "id": "vegan-paneer",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 13129,
+  "status": 200,
+  "shown": 2,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "Since you eat vegan, we will make a rich tofu makhani curry to match the craving and lead with protein for strength.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Tofu Makhani with Phulka",
+    "items": [
+     "1.5 katori tofu in spiced tomato cashew gravy cooked in oil",
+     "2 phulka without ghee",
+     "1 katori sliced cucumber and onion with lemon juice"
+    ],
+    "why": "Firm tofu replaces paneer for steady plant protein, cooked in a smooth tomato-cashew sauce without any dairy butter or cream.",
+    "skip": "dairy butter and dairy cream"
+   },
+   {
+    "name": "Soya Chunks and Peas Curry",
+    "items": [
+     "1.5 katori soya chunks and peas in spiced onion tomato gravy",
+     "1 katori steamed brown or white rice",
+     "1 katori sliced radish and tomato"
+    ],
+    "why": "Soya chunks pack high protein in a familiar North Indian spiced gravy while keeping the meal easy to cook and digest.",
+    "skip": ""
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"Since you eat vegan, we will make a rich tofu makhani curry to match the craving and lead with protein for strength.\"}\n{\"t\":\"plate\",\"name\":\"Tofu Makhani with Phulka\",\"min\":25,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"tofu in spiced tomato cashew gravy cooked in oil\"},{\"q\":2,\"u\":\"\",\"f\":\"phulka without ghee\"},{\"q\":1,\"u\":\"katori\",\"f\":\"sliced cucumber and onion with lemon juice\"}],\"why\":\"Firm tofu replaces paneer for steady plant protein, cooked in a smooth tomato-cashew sauce without any dairy butter or cream.\",\"skip\":\"dairy butter and dairy cream\",\"later\":\"Have a light dal and vegetable bowl for dinner.\"}\n{\"t\":\"plate\",\"name\":\"Soya Chunks and Peas Curry\",\"min\":20,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"soya chunks and peas in spiced onion tomato gravy\"},{\"q\":1,\"u\":\"katori\",\"f\":\"steamed brown or white rice\"},{\"q\":1,\"u\":\"katori\",\"f\":\"sliced radish and tomato\"}],\"why\":\"Soya chunks pack high protein in a familiar North Indian spiced gravy while keeping the meal easy to cook and digest.\"}"
+ },
+ {
+  "id": "nodairy-raita",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 10665,
+  "status": 200,
+  "shown": 2,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "You can enjoy rajma rice today, swapping regular curd raita for a crisp lemon kachumber to keep lunch dairy-free while holding steady.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Rajma chawal with fresh kachumber",
+    "items": [
+     "1.5 katori thick rajma curry",
+     "1 katori steamed rice",
+     "1 katori cucumber onion tomato kachumber with lemon"
+    ],
+    "why": "Rajma provides steady protein and fibre, while crisp lemon kachumber brings cooling crunch without any dairy.",
+    "skip": "Curd raita"
+   },
+   {
+    "name": "Lobia curry with jeera rice",
+    "items": [
+     "1.5 katori light lobia curry",
+     "1 katori jeera rice",
+     "1 katori sliced cucumber and carrot with lemon juice"
+    ],
+    "why": "Lobia is a lighter legume cousin to rajma that cooks quickly and gives clean protein with zero dairy.",
+    "skip": ""
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"You can enjoy rajma rice today, swapping regular curd raita for a crisp lemon kachumber to keep lunch dairy-free while holding steady.\"}\n{\"t\":\"plate\",\"name\":\"Rajma chawal with fresh kachumber\",\"min\":30,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"thick rajma curry\"},{\"q\":1,\"u\":\"katori\",\"f\":\"steamed rice\"},{\"q\":1,\"u\":\"katori\",\"f\":\"cucumber onion tomato kachumber with lemon\"}],\"why\":\"Rajma provides steady protein and fibre, while crisp lemon kachumber brings cooling crunch without any dairy.\",\"skip\":\"Curd raita\"}\n{\"t\":\"plate\",\"name\":\"Lobia curry with jeera rice\",\"min\":25,\"items\":[{\"q\":1.5,\"u\":\"katori\",\"f\":\"light lobia curry\"},{\"q\":1,\"u\":\"katori\",\"f\":\"jeera rice\"},{\"q\":1,\"u\":\"katori\",\"f\":\"sliced cucumber and carrot with lemon juice\"}],\"why\":\"Lobia is a lighter legume cousin to rajma that cooks quickly and gives clean protein with zero dairy.\"}"
+ },
+ {
+  "id": "refer-sugar",
+  "expect": "refer",
+  "got": "refer",
+  "ok": true,
+  "ms": 20913,
+  "status": 200,
+  "shown": 0,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "",
+  "refer": "Please contact your doctor or your wellness coach right away about a blood sugar reading of 320 before having your meal.",
+  "plates": [],
+  "err": "",
+  "raw": "{\"t\":\"refer\",\"text\":\"Please contact your doctor or your wellness coach right away about a blood sugar reading of 320 before having your meal.\"}"
+ }
+]

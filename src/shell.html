@@ -1,0 +1,172 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Next Plate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+/* Layout: one calm column of type. The meal is the headline; three named plates sit under it with the chosen one open and its quantities set large; four choices follow; a composer is docked under the thumb for telling Next Plate what is going on. No pictures of food. */
+:root{
+  --paper:#F3EBDD; --ink:#1A1612; --brass:#8C5A2B; --caution:#F3E6C8;
+  --ink75:rgba(26,22,18,.75); --ink62:rgba(26,22,18,.62); --ink30:rgba(26,22,18,.3); --ink12:rgba(26,22,18,.14);
+  --settle:cubic-bezier(.16,1,.3,1);
+  --display:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --text:"Instrument Sans","Avenir Next","Helvetica Neue",Helvetica,sans-serif;
+  --p:#F3EBDD; color-scheme:light;
+}
+:root[data-meal="breakfast"]{--p:#F0E5D2}:root[data-meal="snack"]{--p:#EDE2D2}:root[data-meal="dinner"]{--p:#EDE6DA}
+*{box-sizing:border-box}
+body{background:var(--p);color:var(--ink);font:440 15px/22px var(--text);transition:background-color 240ms var(--settle);-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;width:100%;height:100%;opacity:.05;pointer-events:none;z-index:0}
+.frame{position:relative;z-index:1;width:min(390px,100%);min-height:844px;margin:0 auto;display:flex;flex-direction:column;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+@media (min-width:430px){body{padding-block:24px}.frame{height:844px;min-height:0;overflow-y:auto;border:1px solid var(--ink12);border-radius:8px;scrollbar-width:none}.frame::-webkit-scrollbar{display:none}}
+button,a{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+button{border:0;background:none;padding:0;margin:0;cursor:pointer;border-radius:0;text-align:left}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.cap{font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink62);margin:0}
+.disp{font-family:var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em}
+
+.bar{height:40px;display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;letter-spacing:.02em;flex:none}
+.mark{width:14px;height:14px;border-radius:50%;background:var(--brass);flex:none}
+.bar>span{white-space:nowrap;flex:none}
+.bar .my{margin-left:auto;height:40px;font-size:15px;letter-spacing:0;display:flex;align-items:center;gap:6px;min-width:0}
+.bar .my span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chev{width:8px;height:8px;border-right:1.5px solid var(--ink62);border-bottom:1.5px solid var(--ink62);transform:rotate(45deg) translate(-2px,-2px);flex:none}
+
+.mealrow{display:flex;align-items:baseline;justify-content:space-between;min-height:48px;flex:none}
+.mealrow button{position:relative;min-height:44px;padding:0 2px;font-size:11px;line-height:40px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink62);white-space:nowrap;transition:transform 280ms var(--settle)}
+.mealrow button[aria-checked="true"]{font:560 34px/40px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;text-transform:none;color:var(--ink)}
+.mealrow .now::after{content:"";position:absolute;left:50%;bottom:0;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--brass)}
+
+.ans{margin:2px 0 6px;padding:10px 0 12px;border-top:1px solid var(--ink12);border-bottom:1px solid var(--ink12)}
+.asked{margin:0;display:flex;gap:10px;align-items:center;font-size:12px;line-height:16px;color:var(--ink62)}
+.asked img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none}
+.read{margin:6px 0 0;font:480 20px/26px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.005em;text-wrap:pretty}
+.read.wait{color:var(--ink62)}
+.read.wait::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.4s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.seen,.err{margin:6px 0 0;font-size:12px;line-height:16px;color:var(--ink62)}
+
+.count{margin:8px 0 4px}
+.lead{margin:4px 0 2px;font-size:19px;line-height:25px;color:var(--ink)}
+.list.dim{opacity:.32;pointer-events:none}
+.opt{border-top:1px solid var(--ink12)}
+.opt:last-child{border-bottom:1px solid var(--ink12)}
+.ohead{display:block;width:100%;padding:11px 0 11px;min-height:56px}
+.oname{display:block;font:520 20px/24px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;color:var(--ink75);text-wrap:balance}
+.open .ohead{padding-bottom:2px;min-height:0;cursor:default}
+.open .oname{font-weight:560;font-size:28px;line-height:32px;color:var(--ink)}
+.osum{display:block;margin-top:2px;font-size:12px;line-height:16px;color:var(--ink62)}
+.obody{padding:0 0 14px}
+.fresh .obody{animation:settle 300ms var(--settle)}
+@keyframes settle{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}
+.meta{margin:0 0 6px;font-size:12px;line-height:16px;color:var(--ink62)}
+.measures{margin:0;padding:0;list-style:none}
+.measures li{display:grid;grid-template-columns:46px minmax(0,1fr);column-gap:12px;align-items:baseline;min-height:30px}
+.q{font:520 24px/30px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;text-align:right;white-space:nowrap}
+.q.chg{color:var(--brass)}
+.f{font-size:15px;line-height:20px;padding-bottom:4px}
+.f b{font-weight:620}
+.tag{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);margin-left:8px;white-space:nowrap}
+.why,.adv,.swap{margin-left:58px}
+.why{margin-top:6px;margin-bottom:0;color:var(--ink75)}
+.adv{margin-top:6px;margin-bottom:0}
+.adv b{font-weight:620}
+.swap{display:block;min-height:40px;margin-top:2px;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.actions{display:flex;gap:8px;margin-top:10px}
+.send{flex:1;height:48px;border-radius:8px;background:var(--brass);color:var(--paper);font-weight:560;line-height:48px;text-align:center;text-decoration:none}
+.copy{flex:none;width:92px;height:48px;border:1px solid var(--ink30);border-radius:8px;text-align:center;font-weight:560}
+.send:active,.copy:active,.opt-btn:active{transform:scale(.985)}
+
+.choices{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;margin-top:14px;border-top:1px solid var(--ink12)}
+.cell{height:50px;border-bottom:1px solid var(--ink12);display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.cell span{display:block;min-width:0}.cell b{display:block;font-weight:440;font-size:15px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tray{border-top:1px solid var(--ink12);border-bottom:1px solid var(--ink12);margin-top:14px;padding:6px 0 10px}
+.thead{display:flex;justify-content:space-between;align-items:center;height:32px}
+.thead button{height:32px;font-size:15px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--ink30)}
+.optg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.optg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opt-btn{min-height:44px;border:1px solid var(--ink30);border-radius:8px;padding:4px 8px;text-align:center;font-size:15px;line-height:18px}
+.opt-btn[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.panel{border-bottom:1px solid var(--ink12);padding:4px 0 12px;display:flex;flex-direction:column;gap:10px;flex:none}
+.panel .cap{margin:0 0 4px}
+.panel .done{height:44px;border-radius:8px;background:var(--ink);color:var(--paper);text-align:center;font-weight:560;margin-top:2px}
+.setup{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+.setup .cap{display:none}
+.only{margin:14px 0 0;font:560 28px/32px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;text-wrap:balance}
+.caution{margin:14px 0 0;background:var(--caution);padding:14px 16px;border-radius:8px}
+.caution p{margin:0}.caution p+p{margin-top:8px}
+.links{margin-top:6px}
+.link{display:block;min-height:44px;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.fine{margin:10px 0 16px;font-size:12px;line-height:16px;color:var(--ink62)}
+.grow{flex:1 0 0px}
+
+/* the ask dock */
+.dock{position:sticky;bottom:0;z-index:4;flex:none;margin:0 -20px;padding:8px 20px calc(10px + env(safe-area-inset-bottom,0px));background:var(--p);border-top:1px solid var(--ink12);transition:background-color 240ms var(--settle)}
+.docknote{margin:0 0 8px;font-size:12px;line-height:16px;color:var(--ink75)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -20px;padding:0 20px 8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;height:36px;padding:0 12px;border:1px solid var(--ink30);border-radius:8px;white-space:nowrap;font-size:15px;line-height:34px}
+.chips button.quiet{border-color:transparent;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--ink30);padding:0 4px}
+.composer{display:flex;gap:8px;align-items:center}
+.composer input[type=text]{flex:1;min-width:0;height:48px;border:1px solid var(--ink30);border-radius:8px;background:rgba(255,255,255,.4);padding:0 12px;font:440 16px/22px var(--text);color:var(--ink)}
+.composer input::placeholder{color:var(--ink62)}
+.composer button{width:48px;height:48px;border-radius:8px;display:grid;place-items:center;flex:none}
+.composer svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#cambtn{border:1px solid var(--ink30)}
+#askgo{background:var(--ink);color:var(--paper)}
+.privacy{margin:6px 0 0;font-size:12px;line-height:16px;color:var(--ink62)}
+.said{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg class="grain" aria-hidden="true"><filter id="grainf" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .1  0 0 0 0 .086  0 0 0 0 .07  0 0 0 1.4 -.25"/></filter><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
+
+<div class="frame" id="frame">
+  <header class="bar"><span class="mark"></span><span>Next Plate</span><button type="button" class="my" id="my" aria-expanded="false" aria-controls="mypanel"><span id="mytext"></span><span class="chev"></span></button></header>
+  <div class="panel" id="mypanel" hidden></div>
+
+  <div class="mealrow" id="mealrow" role="radiogroup" aria-label="Meal"></div>
+
+  <section class="ans" id="ans" aria-live="polite" hidden>
+    <p class="asked" id="asked"></p>
+    <p class="read" id="read"></p>
+    <p class="seen" id="seen" hidden></p>
+    <p class="err" id="err" hidden></p>
+  </section>
+
+  <p class="read lead" id="lead" hidden></p>
+
+  <section id="plates" aria-live="polite">
+    <p class="cap count" id="count"></p>
+    <div class="list" id="list"></div>
+  </section>
+  <p class="only" id="only" hidden></p>
+  <div class="setup" id="setup" hidden></div>
+
+  <div class="choices" id="choices" role="group" aria-label="Your choices"></div>
+  <div class="tray" id="tray" hidden><div class="thead"><span class="cap" id="traylab"></span><button type="button" id="trayclose">Close</button></div><div class="optg" id="opts" role="radiogroup" aria-labelledby="traylab"></div></div>
+
+  <div class="caution" id="notes" hidden></div>
+  <div class="links" id="links"><button type="button" class="link" id="others">Show three other plates</button><button type="button" class="link" id="back">Back to my coach's list</button></div>
+  <p class="fine" id="fine">Demonstration meals and wording, not yet approved by your coach. General food guidance, not medical advice.</p>
+  <div class="grow"></div>
+
+  <div class="dock" id="dock">
+    <p class="docknote" id="docknote" hidden></p>
+    <div class="chips" id="chips"></div>
+    <form class="composer" id="composer">
+      <button type="button" id="cambtn" aria-label="Show a photo of a menu, your kitchen or your plate" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.4"/></svg></button>
+      <input type="text" id="askin" maxlength="240" placeholder="Ask, or say what's going on" autocomplete="off" aria-label="Ask Next Plate">
+      <button type="submit" id="askgo" aria-label="Ask"><svg viewBox="0 0 24 24" aria-hidden="true" id="goicon"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+    </form>
+    <p class="privacy" id="privacy" hidden></p>
+    <input type="file" accept="image/*" id="camfile" hidden>
+  </div>
+  <span class="said" id="said" role="status"></span>
+</div>
+
+<script id="np-core">
+/*DATA*/
+</script>
+<script>
+/*APP*/
+</script>

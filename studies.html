@@ -1,0 +1,154 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Next Plate Studies</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Red+Hat+Display:wght@700;800;900&display=swap">
+<style>
+/* Layout: a design-review wall. Three 360x640 phone frames side by side with the same lunch, each followed by what it buys and what it costs. */
+:root{--paper:#f1f2f6;--card:#fff;--ink:#151a30;--sub:#4a5170;--line:#d8dbe7;--soft:#e9ebf3;--panel:#151a30;--seg:#262d4f;--pline:#3a426b;--psub:#b6bcda;--sun:#ffb400;
+  --v:#3d9a4a;--d:#d39a14;--g:#c4915a;--m:#fbf6e6;--p:#dc5a3a;--wall:#dfe2ec;
+  --display:"Red Hat Display","Avenir Next","Segoe UI",system-ui,sans-serif;--body:"Atkinson Hyperlegible Next","Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--wall);color:var(--ink);font:400 16px/1.45 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{margin:0;font:900 clamp(28px,5vw,40px)/1.05 var(--display);letter-spacing:-.03em}
+.lede{margin:0;max-width:68ch}
+.wall{display:flex;gap:28px;overflow-x:auto;padding:6px 4px 18px;align-items:flex-start}
+.study{flex:0 0 360px;display:flex;flex-direction:column;gap:12px}
+.study h2{margin:0;font:800 21px/1.1 var(--display);letter-spacing:-.02em}
+.study h2 small{display:block;font:700 13px var(--body);color:var(--sub);letter-spacing:0;margin-bottom:3px}
+.pick{display:inline-block;background:var(--sun);border-radius:9px;padding:1px 8px;font:700 13px var(--body);margin-left:6px;vertical-align:3px}
+.phone{width:360px;height:640px;background:var(--paper);border-radius:26px;overflow:hidden;position:relative;box-shadow:0 22px 44px -22px rgba(20,26,48,.55);font-size:15px}
+.study dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 10px;font-size:15px}
+.study dt{font-weight:700}.study dd{margin:0}
+.b{font-weight:700}
+.items{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.items li{display:flex;gap:9px;align-items:center}.items i{width:14px;height:14px;border-radius:4px;flex:none}
+.copy{background:var(--sun);border-radius:22px;padding:9px 14px;font-weight:700;font-size:14.5px;white-space:nowrap}
+.nm{font:800 21px/1.1 var(--display);letter-spacing:-.02em}
+/* A */
+.a-top{padding:12px 16px 0;display:flex;flex-direction:column;gap:8px}
+.a-bar{display:flex;justify-content:space-between;align-items:center;font:900 16px var(--display)}
+.chipmy{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:5px 12px;font:400 13px var(--body)}
+.a-h{font:900 22px/1.1 var(--display);letter-spacing:-.025em}
+.a-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:-8px}
+.a-tabs div{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px 10px;border-radius:16px 16px 0 0;font:700 13.5px/1.15 var(--body);text-align:center;color:var(--sub)}
+.a-tabs div.on{background:#fff;color:var(--ink)}
+.a-panel{background:#fff;border-radius:0 16px 16px 16px;padding:13px 15px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dock{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:22px 22px 0 0;padding:10px 16px 12px;color:#f1f2fa;display:flex;flex-direction:column;gap:8px}
+.sky{border-radius:15px;overflow:hidden;background:var(--seg)}
+.sky svg{display:block;width:100%;background:linear-gradient(180deg,#3d97f5,#bfe2ff)}
+.four{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;font:700 14.5px var(--body);color:var(--psub);text-align:center}
+.four span{padding:11px 0;border-radius:11px;line-height:1.1}.four .on{background:#fff;color:var(--ink)}
+.segrow{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;font:700 13px/1.15 var(--body);color:var(--psub)}
+.segrow .four{background:var(--seg);border-radius:13px;font-size:13.5px;padding:3px}.segrow .four span{padding:6px 0}
+.keys{display:grid;grid-template-columns:.8fr 1fr 1.2fr;gap:6px}
+.keys div{border:1.5px solid var(--pline);border-radius:13px;padding:5px 8px;font-size:12.5px;color:var(--psub);line-height:1.2}.keys b{display:block;color:#fff;font-size:14.5px}
+/* B */
+.b-top{background:var(--panel);color:#fff;padding:16px;display:flex;gap:14px;align-items:center;border-radius:0 0 24px 24px}
+.b-sent{font:700 19px/1.75 var(--display);letter-spacing:-.01em}
+.b-sent u{text-decoration:none;background:#fff;color:var(--ink);border-radius:9px;padding:2px 8px;white-space:nowrap}
+.b-sent u.sun{background:var(--sun)}
+.b-list{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.b-row{background:#fff;border-radius:16px;padding:10px 12px;display:flex;gap:11px;align-items:center}
+.b-row.open{flex-direction:column;align-items:stretch}
+.b-row .hd{display:flex;gap:11px;align-items:center}
+.b-row small{display:block;color:var(--sub);font-size:13.5px;line-height:1.25}
+/* C */
+.c-wrap{padding:12px 16px;display:flex;flex-direction:column;gap:8px;height:100%}
+.c-inst{position:relative;width:328px;height:328px;margin:0 auto;flex:none}
+.c-inst>svg{position:absolute;inset:0}
+.ck{position:absolute;background:var(--panel);color:#fff;border-radius:13px;padding:5px 9px;font-size:11.5px;line-height:1.2;color:var(--psub);width:92px}
+.ck b{display:block;color:#fff;font-size:13.5px}
+.c-nav{position:absolute;top:142px;width:40px;height:44px;border-radius:14px;background:#fff;display:grid;place-items:center;font:900 20px var(--display)}
+.pips{display:flex;justify-content:center;gap:8px}.pips span{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}.pips .on{background:var(--ink);color:#fff}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;font-size:14.5px}
+.two div{display:flex;gap:7px;align-items:center}.two i{width:13px;height:13px;border-radius:4px;flex:none}
+.verdict{background:#fff;border-radius:20px;padding:18px 20px;max-width:900px;display:flex;flex-direction:column;gap:8px}
+.verdict h2{margin:0;font:800 22px var(--display);letter-spacing:-.02em}.verdict p{margin:0}
+</style>
+<div class="wrap">
+  <h1>Next Plate: three studies</h1>
+  <p class="lede">Design review, not the client interface. Each frame is 360 × 640 and shows the same moment: lunch, cooking, normal hunger, hold steady, running low on nothing, vegetarian. The studies differ in where the inputs sit relative to the answer.</p>
+  <div class="wall">
+
+    <div class="study">
+      <h2><small>Study A</small>Console <span class="pick">chosen</span></h2>
+      <div class="phone">
+        <div class="a-top">
+          <div class="a-bar"><span>Next Plate</span><span class="chipmy"><b>My food</b> Vegetarian · North</span></div>
+          <div class="a-h">Three plates for lunch</div>
+          <div class="a-tabs"><div class="on"><span data-plate="0" data-s="66"></span>Dal, sabzi and phulka</div><div><span data-plate="1" data-s="54"></span>Rajma, rice and kachumber</div><div><span data-plate="2" data-s="54"></span>Palak paneer with phulka</div></div>
+          <div class="a-panel"><div class="row"><span class="nm">Dal, sabzi and phulka</span><span class="copy">Copy</span></div>
+            <ul class="items"><li><i style="background:var(--g)"></i><span><span class="b">2</span> phulka without ghee</span></li><li><i style="background:var(--d)"></i><span><span class="b">1 katori</span> masoor or moong dal</span></li><li><i style="background:var(--v)"></i><span><span class="b">1.5 katori</span> seasonal sabzi</span></li></ul></div>
+        </div>
+        <div class="dock">
+          <div class="sky"><svg viewBox="0 0 328 60"><path d="M4 52A390 390 0 0 1 324 52" fill="none" stroke="#fff" stroke-width="2.5" opacity=".75"/><circle cx="41" cy="38" r="4" fill="#fff"/><circle cx="205" cy="20" r="4" fill="#fff"/><circle cx="287" cy="38" r="4" fill="#fff"/><circle cx="123" cy="20" r="12" fill="#ffb400" stroke="#fff" stroke-width="2.5"/></svg>
+            <div class="four"><span>Breakfast</span><span class="on">Lunch</span><span>Snack</span><span>Dinner</span></div></div>
+          <div class="segrow"><span>Today<br>I'm</span><div class="four"><span class="on">Cooking</span><span>In a<br>rush</span><span>Packing<br>tiffin</span><span>Eating<br>out</span></div></div>
+          <div class="keys"><div>Hunger<b>Normal</b></div><div>Goal<b>Hold steady</b></div><div>Running low on<b>Nothing</b></div></div>
+        </div>
+      </div>
+      <dl><dt>Idea</dt><dd>Answer above, instrument docked under the thumb, like a camera.</dd><dt>Buys</dt><dd>Every input change is seen in the answer without scrolling. All three plates are visible at once. One tap for meal and for Today I'm.</dd><dt>Costs</dt><dd>The dock takes about 40% of the smallest phone. Hunger, goal and running low on take two taps each.</dd></dl>
+    </div>
+
+    <div class="study">
+      <h2><small>Study B</small>Sentence</h2>
+      <div class="phone">
+        <div class="b-top">
+          <svg width="78" height="78" viewBox="0 0 78 78" style="flex:none"><circle cx="39" cy="39" r="31" fill="none" stroke="#3a426b" stroke-width="10"/><path d="M17.1 17.1A31 31 0 0 1 60.9 17.1" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><circle cx="39" cy="8" r="7" fill="#ffb400" stroke="#151a30" stroke-width="2"/></svg>
+          <div class="b-sent">For <u class="sun">lunch</u> I'm <u>cooking</u>, <u>normal</u> hunger, working to <u>hold steady</u>, low on <u>nothing</u>.</div>
+        </div>
+        <div class="b-list">
+          <div class="b-row open"><div class="hd"><span data-plate="0" data-s="56"></span><span class="nm" style="font-size:19px;flex:1">Dal, sabzi and phulka</span><span class="copy">Copy</span></div>
+            <ul class="items"><li><i style="background:var(--g)"></i><span><span class="b">2</span> phulka without ghee</span></li><li><i style="background:var(--d)"></i><span><span class="b">1 katori</span> masoor or moong dal</span></li><li><i style="background:var(--v)"></i><span><span class="b">1.5 katori</span> seasonal sabzi</span></li><li><i style="background:var(--v)"></i><span><span class="b">1 bowl</span> salad with lemon</span></li></ul></div>
+          <div class="b-row"><span data-plate="1" data-s="52"></span><div><span class="b">Rajma, rice and kachumber</span><small>1 katori rajma, 1 katori rice, kachumber</small></div></div>
+          <div class="b-row"><span data-plate="2" data-s="52"></span><div><span class="b">Palak paneer with phulka</span><small>1 katori palak paneer, 2 phulka, salad</small></div></div>
+        </div>
+      </div>
+      <dl><dt>Idea</dt><dd>The five inputs are five words in one sentence. Tap a word to change it.</dd><dt>Buys</dt><dd>The most compact input and the clearest statement of what is set. The answer gets the most room, as a readable list.</dd><dt>Costs</dt><dd>Words in running text are weak buttons for tired eyes, the sentence reflows when a value changes, and the dial shrinks to an ornament. Controls sit at the top, out of thumb reach.</dd></dl>
+    </div>
+
+    <div class="study">
+      <h2><small>Study C</small>Plate in the dial</h2>
+      <div class="phone">
+        <div class="c-wrap">
+          <div class="c-inst">
+            <svg viewBox="0 0 328 328"><defs><path id="t1" d="M92 62A121 121 0 0 1 236 62"/><path id="t2" d="M266 92A121 121 0 0 1 266 236"/><path id="t3" d="M92 266A121 121 0 0 0 236 266"/><path id="t4" d="M62 236A121 121 0 0 1 62 92"/></defs>
+              <circle cx="164" cy="164" r="121" fill="none" stroke="#c9cedd" stroke-width="30"/><path d="M92 62A121 121 0 0 1 236 62" fill="none" stroke="#151a30" stroke-width="30" stroke-linecap="round"/>
+              <g font-family="Atkinson Hyperlegible Next,sans-serif" font-weight="700" font-size="13" letter-spacing="1.5" text-anchor="middle"><text fill="#fff" dy="4.5"><textPath href="#t1" startOffset="50%">LUNCH</textPath></text><text fill="#4a5170" dy="4.5"><textPath href="#t2" startOffset="50%">SNACK</textPath></text><text fill="#4a5170" dy="4.5"><textPath href="#t3" startOffset="50%">DINNER</textPath></text><text fill="#4a5170" dy="4.5"><textPath href="#t4" startOffset="50%">BREAKFAST</textPath></text></g>
+              <circle cx="164" cy="27" r="8" fill="#ffb400" stroke="#fff" stroke-width="2.5"/></svg>
+            <span data-plate="0" data-s="176" style="position:absolute;left:76px;top:76px"></span>
+            <span class="c-nav" style="left:62px">‹</span><span class="c-nav" style="right:62px">›</span>
+            <div class="ck" style="left:0;top:0">Today I'm<b>Cooking</b></div><div class="ck" style="right:0;top:0">Hunger<b>Normal</b></div><div class="ck" style="left:0;bottom:0">Goal<b>Hold steady</b></div><div class="ck" style="right:0;bottom:0">Low on<b>Nothing</b></div>
+          </div>
+          <div class="pips"><span class="on">1</span><span>2</span><span>3</span></div>
+          <div class="row" style="align-items:center"><span class="nm">Dal, sabzi and phulka</span><span class="copy">Copy</span></div>
+          <div class="two"><div><i style="background:var(--g)"></i><span><span class="b">2</span> phulka</span></div><div><i style="background:var(--d)"></i><span><span class="b">1 katori</span> dal</span></div><div><i style="background:var(--v)"></i><span><span class="b">1.5 katori</span> sabzi</span></div><div><i style="background:var(--v)"></i><span><span class="b">1 bowl</span> salad</span></div></div>
+        </div>
+      </div>
+      <dl><dt>Idea</dt><dd>The plate sits inside the dial. Input and answer are one object.</dd><dt>Buys</dt><dd>The most memorable and the most instrument-like. The plate drawing is large.</dd><dt>Costs</dt><dd>One plate at a time, so comparing three needs swiping. Curved and corner labels drop to 11-13 px, and the food list has to be abbreviated to fit.</dd></dl>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <h2>Recommendation: Study A, Console</h2>
+    <p><span class="b">The decisive tradeoff.</span> A gives up some screen height to the dock so that turning any control changes an answer you can already see, with the controls where the thumb rests. B reads best but hides its buttons in prose. C looks best in a screenshot but shows one plate at a time and needs small text.</p>
+    <p><span class="b">Carried into the build from the others.</span> From B, each key states its current value in words, so defaults are apparent. From C, the plate drawing is the primary identifier of each option, and swiping between plates is kept as a shortcut beside the tabs.</p>
+  </div>
+</div>
+<script>
+(function(){
+var P=[[["g",2],["d",2],["v",3],["v",1]],[["d",3],["g",2],["v",3]],[["vp",4],["g",2],["v",2]]],NS="http://www.w3.org/2000/svg",n=0;
+function e(t,a){var x=document.createElementNS(NS,t);for(var k in a)x.setAttribute(k,a[k]);return x;}
+document.querySelectorAll("[data-plate]").forEach(function(h){
+  var it=P[+h.dataset.plate],sz=+h.dataset.s,s=e("svg",{viewBox:"0 0 100 100",width:sz,height:sz}),d=e("defs",{}),id="st"+(n++);
+  var g=e("linearGradient",{id:id,x1:0,y1:0,x2:1,y2:1});g.appendChild(e("stop",{offset:0,"stop-color":"#fbfcfe"}));g.appendChild(e("stop",{offset:1,"stop-color":"#b9c0cf"}));d.appendChild(g);
+  var p=e("pattern",{id:id+"m",width:7,height:7,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"});p.appendChild(e("rect",{width:7,height:7,fill:"var(--v)"}));p.appendChild(e("rect",{width:3.5,height:7,fill:"var(--p)"}));d.appendChild(p);s.appendChild(d);
+  s.appendChild(e("circle",{cx:50,cy:50,r:48,fill:"url(#"+id+")",stroke:"#9aa2b5"}));s.appendChild(e("circle",{cx:50,cy:50,r:41,fill:"#eceef4",stroke:"#c6ccd9","stroke-width":.8}));
+  var tot=0,a=-90;it.forEach(function(i){tot+=i[1];});
+  it.forEach(function(i){var sw=i[1]/tot*360,a1=a*Math.PI/180,a2=(a+sw)*Math.PI/180;
+    s.appendChild(e("path",{d:"M50 50L"+(50+35*Math.cos(a1))+" "+(50+35*Math.sin(a1))+"A35 35 0 "+(sw>180?1:0)+" 1 "+(50+35*Math.cos(a2))+" "+(50+35*Math.sin(a2))+"z",fill:i[0].length>1?"url(#"+id+"m)":"var(--"+i[0]+")",stroke:"#eceef4","stroke-width":2.4,"stroke-linejoin":"round"}));a+=sw;});
+  h.style.display="block";h.style.lineHeight="0";h.appendChild(s);
+});
+})();
+</script>

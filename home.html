@@ -1,0 +1,467 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Next Plate</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,100..900,0..100&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+/* Layout: the home screen. Top to bottom on one phone screen: the thali whose rim is the meal dial, four visible choices, three dishes to pick from, and the chosen plate with its measures and one copy action. */
+:root{
+  --paper:#F3EBDD; --ink:#1A1612; --brass:#8C5A2B; --metal:#C5CBD1; --lip:#8E979F; --caution:#F3E6C8;
+  --ink75:rgba(26,22,18,.75); --ink62:rgba(26,22,18,.62); --ink30:rgba(26,22,18,.3); --ink12:rgba(26,22,18,.14);
+  --detent:cubic-bezier(.2,.85,.2,1); --settle:cubic-bezier(.16,1,.3,1);
+  --display:"Fraunces","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --text:"Instrument Sans","Avenir Next","Helvetica Neue",Helvetica,sans-serif;
+  --p:#F3EBDD; color-scheme:light;
+}
+:root[data-meal="breakfast"]{--p:#F0E5D2}:root[data-meal="snack"]{--p:#EDE2D2}:root[data-meal="dinner"]{--p:#EDE6DA}
+*{box-sizing:border-box}
+body{background:var(--p);color:var(--ink);font:440 15px/22px var(--text);transition:background-color 240ms var(--settle);-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;width:100%;height:100%;opacity:.05;pointer-events:none;z-index:0}
+.frame{position:relative;z-index:1;width:min(390px,100%);min-height:844px;margin:0 auto;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:0 24px}
+@media (min-width:430px){body{padding-block:24px}.frame{height:844px;overflow-y:auto;border:1px solid var(--ink12);border-radius:8px;scrollbar-width:none}.frame::-webkit-scrollbar{display:none}}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;margin:0;cursor:pointer;-webkit-tap-highlight-color:transparent;border-radius:0;text-align:left}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.cap{font-size:11px;line-height:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink62)}
+
+.bar{height:40px;display:flex;align-items:center;gap:8px;font-size:14px;line-height:20px;letter-spacing:.02em}
+.mark{width:14px;height:14px;border-radius:50%;background:var(--brass);flex:none}
+.bar .my{margin-left:auto;height:40px;font-size:15px;letter-spacing:0;display:flex;align-items:center;gap:6px}
+.chev{width:8px;height:8px;border-right:1.5px solid var(--ink62);border-bottom:1.5px solid var(--ink62);transform:rotate(45deg) translate(-2px,-2px);flex:none}
+
+h1{margin:2px 0 0;height:38px;text-align:center;font:560 34px/38px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em}
+.dial{position:relative;width:300px;max-width:100%;margin:0 auto}
+.dial svg{display:block;width:100%;height:auto;overflow:visible}
+#hit{cursor:grab;touch-action:none}
+.tick{stroke:var(--lip);stroke-width:1}.tick.det{stroke:var(--ink);stroke-width:1.5}.tick.act{stroke:var(--brass);stroke-width:2.5}
+.lab{position:absolute;left:0;top:0;height:36px;min-width:44px;padding:0 6px;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+#food{transform-box:view-box;transform-origin:175px 134px;transition:transform 240ms var(--settle)}
+.hunger-1 #food{transform:scale(.92)}.hunger-3 #food{transform:scale(1.04)}
+.mass{transform-box:fill-box;transform-origin:center;transition:transform 240ms var(--settle)}
+.goal-lose .mass.k-g{transform:scale(.9)}.goal-lose .mass.k-v{transform:scale(1.03)}
+.goal-strength .mass.k-d,.goal-strength .mass.k-p{transform:scale(1.06)}
+#settle.go{animation:settle 240ms var(--settle)}
+@keyframes settle{from{opacity:.35;transform:translateY(3px)}to{opacity:1;transform:none}}
+.cut{fill:none;stroke:#2C4F33;stroke-width:2;stroke-linecap:round}
+
+/* choices: four visible readouts, each opens its options in place */
+.choices{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;border-top:1px solid var(--ink12);margin-top:2px}
+.cell{height:48px;border-bottom:1px solid var(--ink12);display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.cell span{display:block;min-width:0}.cell b{display:block;font-weight:440;font-size:15px;line-height:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tray{border-top:1px solid var(--ink12);border-bottom:1px solid var(--ink12);margin-top:2px;padding:6px 0 10px}
+.thead{display:flex;justify-content:space-between;align-items:center;height:32px}
+.thead button{height:32px;font-size:15px;text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--ink30)}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.opts.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opt{min-height:44px;border:1px solid var(--ink30);border-radius:8px;padding:4px 8px;text-align:center;font-size:15px;line-height:18px}
+.opt[aria-checked="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.panel{border-bottom:1px solid var(--ink12);padding:4px 0 12px;display:flex;flex-direction:column;gap:8px}
+.panel .done{height:44px;border-radius:8px;background:var(--ink);color:var(--paper);text-align:center;font-weight:560;margin-top:4px}
+.panel .done[disabled]{opacity:.4}
+
+/* the delivery: three dishes, one chosen */
+.count{margin:10px 0 0}
+.chooser{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:4px}
+.dish{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px 6px;border-top:2px solid transparent;color:var(--ink62);font-size:12px;line-height:16px;text-align:center;min-width:0}
+.dish svg{width:56px;height:52px;display:block;flex:none}
+.dish[aria-selected="true"]{color:var(--ink);border-top-color:var(--ink)}
+.dish span{overflow-wrap:break-word;max-width:100%}
+h2{margin:10px 0 0;font:560 28px/32px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;overflow-wrap:normal;word-break:keep-all;hyphens:none;text-wrap:balance}
+.meta{margin:2px 0 0;font-size:12px;line-height:16px;color:var(--ink62)}
+.measures{margin:6px 0 0;padding:0;list-style:none}
+.measures li{display:flex;gap:8px;align-items:flex-start}
+.sw{width:8px;height:8px;flex:none;margin-top:7px;border-radius:2px}
+.sw.side{background:none;border:1.5px solid var(--ink62)}.sw.pale{border:1px solid var(--ink30)}
+.tag{font-size:12px;color:var(--ink62);margin-left:6px}
+.copy{display:block;width:100%;height:48px;margin-top:12px;background:var(--brass);color:var(--paper);border-radius:8px;font-weight:560;font-size:15px;line-height:48px;text-align:center}
+.reason{margin:12px 0 0;color:var(--ink75)}
+.caution{margin:16px 0 0;background:var(--caution);padding:16px;border-radius:8px}
+.caution p{margin:0}.caution p+p{margin-top:8px}
+.link{display:block;height:44px;text-decoration:underline;text-decoration-color:var(--ink30);text-decoration-thickness:1px;text-underline-offset:4px}
+.links{margin-top:8px}
+.note{margin:0 0 8px;color:var(--ink75)}
+.only{margin:16px 0 0;font:560 28px/32px var(--display);font-variation-settings:"opsz" 144,"SOFT" 100;letter-spacing:-.01em;text-wrap:balance}
+.fine{margin:16px 0 0;font-size:12px;line-height:16px;color:var(--ink62)}
+.corner{display:flex;justify-content:flex-end;margin-top:8px}
+.corner button{height:44px;font-size:12px;line-height:16px;color:var(--ink62)}
+.said{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.construction{display:none}.show-construction .construction{display:block}
+.gridlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.key{fill:none;stroke:var(--ink);stroke-width:.6;opacity:.55}.key.d{stroke-dasharray:3 3}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg class="grain" aria-hidden="true"><filter id="grainf" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .1  0 0 0 0 .086  0 0 0 0 .07  0 0 0 1.4 -.25"/></filter><rect width="100%" height="100%" filter="url(#grainf)"/></svg>
+
+<div class="frame" id="frame">
+  <svg class="gridlay construction" aria-hidden="true"><defs><pattern id="g8" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M8 0H0V8" fill="none" stroke="#1A1612" stroke-width=".5" opacity=".22"/></pattern></defs><rect width="100%" height="100%" fill="url(#g8)"/></svg>
+
+  <header class="bar"><span class="mark"></span><span>Next Plate</span><button type="button" class="my" id="my" aria-expanded="false" aria-controls="mypanel"><span id="mytext"></span><span class="chev"></span></button></header>
+  <div class="panel" id="mypanel" hidden></div>
+
+  <h1 id="meal">Lunch</h1>
+  <div class="dial" id="dial">
+    <svg id="plate" viewBox="0 0 350 288" role="slider" tabindex="0" aria-label="Meal dial. Drag the rim, or tap a meal name." aria-valuemin="1" aria-valuemax="4">
+      <defs><filter id="contact" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#1A1612" flood-opacity=".16"/></filter></defs>
+      <ellipse cx="175" cy="130" rx="124" ry="114" fill="#C5CBD1" filter="url(#contact)"/>
+      <ellipse cx="175" cy="130" rx="114" ry="104" fill="#8E979F"/>
+      <ellipse cx="175" cy="134" rx="110" ry="99" fill="#C5CBD1"/>
+      <g id="ticks"></g>
+      <g id="settle"><g id="food"></g></g>
+      <g class="construction"><rect x="51" y="16" width="248" height="228" class="key d"/><ellipse cx="175" cy="130" rx="124" ry="114" class="key"/><ellipse cx="175" cy="134" rx="110" ry="99" class="key d"/><path d="M175 0V288M0 130H350" class="key d"/></g>
+      <ellipse id="hit" cx="175" cy="130" rx="119" ry="109" fill="none" stroke="#000" stroke-opacity="0" stroke-width="44" pointer-events="stroke"/>
+    </svg>
+  </div>
+
+  <div class="choices" id="choices" role="group" aria-label="Your choices"></div>
+  <div class="tray" id="tray" hidden><div class="thead"><span class="cap" id="traylab"></span><button type="button" id="trayclose">Close</button></div><div class="opts" id="opts" role="radiogroup" aria-labelledby="traylab"></div></div>
+
+  <section id="deliver" aria-live="polite">
+    <p class="cap count" id="count"></p>
+    <div class="chooser" id="chooser" role="tablist" aria-label="Pick a plate"></div>
+    <h2 id="name"></h2>
+    <p class="meta" id="meta"></p>
+    <ul class="measures" id="measures"></ul>
+    <button type="button" class="copy" id="copy">Copy for WhatsApp</button>
+    <p class="reason" id="reason"></p>
+    <div class="caution" id="caution"></div>
+    <div class="links">
+      <button type="button" class="link" id="swap"></button>
+      <button type="button" class="link" id="others">Show three other plates</button>
+      <button type="button" class="link" id="fresh">Ask for fresh ideas</button>
+      <p class="note" id="freshnote" hidden>Not connected in this prototype. In the live version this asks for three new plates inside the same rules, marked as not from your coach's list.</p>
+    </div>
+  </section>
+  <p class="only" id="only" hidden></p>
+  <p class="fine" id="fine">Drawings show rough shares of the plate, not measured nutrition. Demonstration meals, not yet approved by your coach. General food guidance, not medical advice.</p>
+  <div class="corner"><button type="button" id="gridbtn" aria-pressed="false">grid</button></div>
+  <span class="said" id="said" role="status"></span>
+</div>
+
+<script>
+(function(){
+"use strict";
+function $(id){return document.getElementById(id);}
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+var NS="http://www.w3.org/2000/svg",root=document.documentElement,reduced=false;
+try{reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
+
+var OPT={
+  sit:[["home","Cooking"],["rush","In a rush"],["tiffin","Packing tiffin"],["out","Eating out"]],
+  hunger:[["1","A little"],["2","Normal"],["3","Starving"]],
+  goal:[["lose","Lose weight"],["steady","Hold steady"],["strength","Build strength"]],
+  low:[["none","Nothing"],["iron","Iron"],["b12","B12"],["cal","Calcium and D"],["pro","Protein"],["fib","Fibre"]],
+  diet:[["veg","Vegetarian"],["egg","Veg and egg"],["nonveg","Non-veg"],["jain","Jain"],["vegan","Vegan"]],
+  health:[["none","Nothing to flag"],["diabetes","Diabetes"],["bp","High BP"],["kidney","Kidney condition"],["preg","Pregnant or nursing"]]
+};
+var LAB={sit:"Today I'm",hunger:"Hunger",goal:"Goal",low:"Running low on",diet:"I eat",health:"Health"};
+function lab(k,v){var o=OPT[k];for(var i=0;i<o.length;i++)if(o[i][0]===v)return o[i][1];return "";}
+
+/* DEMONSTRATION CATALOGUE. Drafted for this prototype; not coach-approved. */
+var RAW=[
+["Moong dal chilla with curd","b","veg",1,"n","home","pro fib",15,"p",["2|thin moong dal chilla|d|4","1 katori|curd|m|2","1 small bowl|cucumber and tomato|v|2"],"Dal batter gives protein first thing, so the morning stays steady.",["0|2|thin besan chilla|d|vegan|1"]],
+["Vegetable poha with sprouts","b","vegan",0,"w","home tiffin","iron fib",15,"p",["1.5 katori|poha with peas and peanuts|g|4","1 small katori|sprouted moong|d|2","Half|lemon, squeezed over|-|0"],"Poha and sprouts carry iron, and the lemon helps the body take it up.",["0|1.5 katori|vegetable upma|g|vegan|0"]],
+["Idli with vegetable sambar","b","vegan",0,"s","home rush out","pro fib",10,"p",["3|idli|g|4","1.5 katori|sambar, heavy on vegetables|dv|3","1 tablespoon|coconut chutney|-|0"],"Steamed, not fried, and the sambar brings dal and vegetables together.",["0|2|plain dosa, little oil|g|vegan|0"]],
+["Ragi dosa with sambar","b","vegan",0,"s","home","cal iron fib",20,"p",["2|ragi dosa|g|4","1 katori|sambar|dv|2","1 small bowl|sauteed greens|v|2"],"Ragi is one of the richest everyday sources of calcium.",["0|1 bowl|ragi porridge with milk|g|veg|0"]],
+["Egg bhurji with phulka","b","egg",0,"*","home rush","pro b12",10,"p",["2 eggs|as bhurji with tomato and capsicum|p|4","1|phulka or slice of whole wheat toast|g|2","1|guava or orange|f|2"],"Eggs give protein and B12 in ten minutes.",["0|2|boiled eggs|p|egg|0"]],
+["Paneer besan chilla","b","veg",1,"n","home","pro cal b12",20,"p",["2|besan chilla filled with crumbled paneer|dp|5","2 teaspoons|mint chutney|-|0","1 small bowl|cucumber|v|2"],"Paneer adds calcium and B12 to a plain chilla.",["0|2|besan chilla filled with tofu|dp|vegan|1"]],
+["Vegetable oats upma with curd","b","veg",0,"*","home rush","fib",10,"p",["1.5 katori|oats upma with carrot, beans and peas|gv|5","1 katori|curd|m|2"],"Oats and vegetables bring fibre that keeps you full till lunch.",["0|1.5 katori|vegetable dalia|gv|vegan|0"]],
+["Curd bowl with fruit and chana","b","veg",1,"*","rush tiffin","cal b12 pro",5,"s",["1 katori|curd|m|3","1|seasonal fruit, chopped|f|2","1 fistful|roasted chana|d|2","5 or 6|almonds or peanuts|n|1"],"No cooking. Curd covers calcium and B12, chana adds protein.",["0|1 glass|milk|m|veg|1"]],
+["Vegetable dalia with peanuts","b","vegan",0,"n","home tiffin","fib iron",20,"p",["1.5 katori|broken wheat cooked with vegetables|gv|5","1 fistful|roasted peanuts|n|1","Half|lemon, squeezed over|-|0"],"Broken wheat digests slowly and holds hunger for hours.",["0|1.5 katori|millet upma with vegetables|gv|vegan|0"]],
+["Plain dosa with sambar","b","vegan",0,"*","out","fib pro",0,"p",["1|plain dosa, ask for less oil|g|4","1 katori|sambar|dv|3","1 tablespoon|chutney|-|0"],"A plain dosa skips the potato filling and the butter.",["0|3|idli|g|vegan|0"]],
+["Poha and a glass of chaas","b","veg",0,"w","out","iron",0,"p",["1 plate|poha|g|4","1 glass|plain chaas|m|2","Half|lemon, squeezed over|-|0"],"Poha is the lightest thing on most breakfast counters, and chaas adds the protein it lacks.",["1|1 katori|curd|m|veg|0"]],
+["Dal, sabzi and phulka","l","vegan",1,"n","home tiffin","iron fib pro",30,"p",["2|phulka without ghee|g|2","1 katori|masoor or moong dal|d|2","1.5 katori|seasonal sabzi|v|3","1 bowl|salad with lemon|v|1"],"The everyday thali, with sabzi taking the most room on the plate.",["0|1 katori|rice|g|vegan|1"]],
+["Rajma, rice and kachumber","l","vegan",0,"n","home tiffin out","iron fib pro",40,"p",["1 katori|rajma|d|3","1 katori|rice|g|2","1 big bowl|kachumber with lemon|v|3"],"Rajma gives protein, iron and fibre in one bowl.",["0|1 katori|chole or lobia|d|vegan|0"]],
+["Sambar rice, poriyal and curd","l","veg",0,"s","home tiffin","cal fib",30,"p",["1 katori|rice mixed with 1.5 katori sambar|gd|4","1 katori|beans or cabbage poriyal|v|2","1 katori|curd|m|2"],"Rice stays measured while sambar, poriyal and curd fill the plate.",["0|1 katori|millet mixed with 1.5 katori sambar|gd|vegan|0"]],
+["Palak paneer with phulka","l d","veg",0,"n","home out","cal iron pro b12",30,"p",["1 katori|palak paneer|vp|4","2|phulka|g|2","1 bowl|salad with lemon|v|2"],"Paneer brings protein and calcium, palak brings greens.",["0|1 katori|palak with tofu|vp|vegan|0"]],
+["Chole with phulka and salad","l","vegan",0,"n","home out tiffin","iron fib pro",40,"p",["1 katori|chole, light on oil|d|3","2|phulka|g|2","1 big bowl|onion, cucumber and tomato salad with lemon|v|3"],"Chickpeas give protein and fibre that last through the afternoon.",["0|1 katori|black chana|d|vegan|0"]],
+["Home-style chicken curry","l","nonveg",0,"*","home","pro b12 iron",40,"p",["1 katori|chicken curry, 3 or 4 pieces, thin gravy|p|3","2|phulka|g|2","1 katori|sabzi or a big salad|v|3"],"Chicken is lean protein with B12 and iron the body takes up easily.",["0|1 katori|fish curry, 2 pieces|p|nonveg|0"]],
+["Fish curry with rice and greens","l","nonveg",0,"e","home","pro b12 cal",35,"p",["1 katori|fish curry, 2 pieces|p|3","1 katori|rice|g|2","1 katori|saag or sauteed greens|v|3"],"Fish gives protein and B12, and small fish add calcium and some vitamin D.",["0|2 eggs|as curry|p|egg|0"]],
+["Egg curry with phulka","l","egg",0,"*","home tiffin","pro b12",25,"p",["2 eggs|as curry in thin gravy|p|3","2|phulka|g|2","1 big bowl|salad with lemon|v|3"],"Two eggs cover the protein, the salad covers the volume.",["0|2 eggs|as bhurji|p|egg|0"]],
+["Curd rice with sprout salad","l","veg",0,"s","tiffin rush","cal b12",10,"p",["1.5 katori|curd rice|gm|4","1 katori|sprouted moong salad with cucumber|dv|3","Half|lemon, squeezed over the sprouts|-|0"],"Travels well, eats cold, and the sprouts add the protein curd rice lacks.",["0|1.5 katori|lemon rice with a katori of curd|gm|veg|0"]],
+["Bajra roti, dal and methi","l","vegan",1,"w","home","iron fib cal",35,"p",["2 small|bajra or jowar roti|g|2","1 katori|dal|d|2","1 katori|methi or other green sabzi|v|3","1 bowl|salad with lemon|v|1"],"Millet roti and greens bring iron and fibre a wheat roti does not.",["0|2|phulka|g|vegan|1"]],
+["Dal tadka, veg and roti","l d","vegan",0,"*","out","fib pro iron",0,"p",["1|tandoori roti, ask for no butter|g|2","1 katori|dal tadka|d|2","1 katori|mixed vegetable|v|3","1 plate|green salad with lemon|v|1"],"The simplest order on any menu: one roti, dal, a vegetable, a salad.",["0|Half portion|jeera rice|g|vegan|0"]],
+["Tandoori chicken, roti, salad","l d","nonveg",0,"*","out","pro b12",0,"p",["2 pieces|tandoori chicken or fish tikka|p|4","1|tandoori roti, no butter|g|2","1 plate|green salad with lemon|v|2"],"Tandoor cooking needs no gravy, so the protein comes without the oil.",["0|4 pieces|paneer tikka|p|veg|0"]],
+["Besan chilla with curd","l d","veg",1,"n","rush","pro",10,"p",["2|besan chilla|d|4","1 katori|curd|m|2","1 bowl|cucumber and tomato salad|v|2"],"Ten minutes from flour to plate, and besan is a dal, so the protein is covered.",["1|1 glass|chaas|m|veg|1"]],
+["Paneer bhurji roti roll","l","veg",0,"*","rush tiffin","pro cal b12",10,"p",["2|phulka, rolled|g|2","Half katori|paneer bhurji with capsicum|p|3","1|cucumber, sliced, with lemon|v|2"],"Rolls in ten minutes, eats with one hand, and paneer carries the protein.",["1|Half katori|tofu bhurji with capsicum|p|vegan|0"]],
+["Roasted chana and a fruit","s","vegan",1,"*","rush tiffin out","pro fib iron",1,"s",["1 fistful|roasted chana|d|2","1|guava, apple or orange|f|2"],"Protein and fibre in the pocket, so dinner does not turn into a second lunch.",["0|1 fistful|roasted peanuts|n|vegan|1"]],
+["Sprout chaat with lemon","s","vegan",0,"*","home rush","iron pro fib",10,"s",["1 katori|boiled sprouted moong|d|3","Half katori|chopped tomato, cucumber and coriander|v|2","Half|lemon, squeezed over|-|0"],"Sprouts and lemon together are a good everyday iron pairing.",["0|1 katori|boiled black chana|d|vegan|0"]],
+["Chaas and peanuts","s","veg",1,"*","home rush tiffin","cal b12",2,"s",["1 glass|thin chaas with roasted jeera|m|2","1 fistful|roasted peanuts|n|2"],"Chaas brings calcium and B12 with very little fat.",["0|1 glass|milk, no sugar|m|veg|1"]],
+["Boiled eggs with cucumber","s","egg",0,"*","home rush tiffin","pro b12",10,"s",["2|boiled eggs|p|3","1|cucumber, sliced, with lemon and pepper|v|2"],"Two eggs hold hunger for about three hours.",["0|1 katori|sprouted moong|d|vegan|0"]],
+["Roasted makhana with milk","s","veg",1,"*","home rush","cal b12",8,"s",["1.5 katori|makhana roasted in half a teaspoon of ghee|n|3","1 glass|milk, no sugar|m|2"],"Milk and makhana cover calcium in a light evening bite.",["1|1 glass|chaas|m|veg|1"]],
+["Hung curd dip and veg sticks","s","veg",1,"*","home rush","pro cal",5,"s",["Half katori|hung curd with mint and jeera|m|2","1 plate|cucumber and capsicum sticks|v|3","1 small|khakhra|g|1"],"Thick curd is mostly protein, and the vegetables add crunch without the fry.",["0|Half katori|hummus|d|vegan|0"]],
+["Roasted corn with lemon","s","vegan",1,"*","out","fib",0,"s",["1|roasted corn cob with lemon, light on salt|g|3"],"Roasted, not fried, and slow to eat.",["0|1 plate|bhel with extra sprouts, no sev|g|vegan|0"]],
+["Idli plate at the canteen","s","vegan",0,"*","out","pro",0,"s",["2|idli|g|3","1 katori|sambar|dv|2"],"Steamed, filling, and on almost every canteen counter.",["0|1|plain uttapam, less oil|g|vegan|0"]],
+["Fruit and a fistful of nuts","s","vegan",1,"*","rush tiffin out","fib",1,"s",["1|apple, pear or guava|f|2","1 fistful|almonds, walnuts or peanuts|n|2"],"Fruit for now, nuts so it lasts till dinner.",["1|1 fistful|roasted chana|d|vegan|1"]],
+["Moong dal khichdi","d","veg",1,"*","home","pro fib",30,"p",["1.5 katori|moong dal khichdi with lauki or beans|gd|5","1 katori|curd|m|2","1 small bowl|salad|v|1"],"Soft, light on the stomach, and dal and rice together make complete protein.",["0|1.5 katori|vegetable dalia khichdi|gd|vegan|1"]],
+["Dal soup with paneer bhurji","d","veg",0,"n","home","pro cal b12",25,"p",["1 big bowl|thin dal and vegetable soup|dv|3","Half katori|paneer bhurji|p|3","1|phulka|g|1"],"Protein leads at night and the grain stays small.",["1|Half katori|tofu bhurji|p|vegan|0"]],
+["Lauki sabzi, dal and phulka","d","vegan",1,"n","home tiffin","fib pro",25,"p",["1.5 katori|lauki or tori sabzi|v|4","1 katori|moong dal|d|2","1 or 2|phulka|g|2"],"A light dinner that digests well before sleep.",["0|1.5 katori|any gourd or green sabzi in season|v|vegan|1"]],
+["Grilled fish and vegetables","d","nonveg",0,"*","home","pro b12 cal",25,"p",["1 palm-size piece|fish, grilled or pan-seared in 1 teaspoon oil|p|3","1.5 katori|sauteed beans, carrot and capsicum|v|4","1|phulka|g|1"],"A protein-first dinner with little grain and little oil.",["0|1 palm-size piece|chicken breast, grilled|p|nonveg|0"]],
+["Masala omelette and vegetables","d","egg",0,"*","home rush","pro b12",10,"p",["2 eggs|as omelette with onion, tomato and coriander|p|3","1 katori|sauteed vegetables|v|3","1|phulka|g|1"],"Ten minutes on the stove and the protein is covered.",["0|2 eggs|as bhurji|p|egg|0"]],
+["Soya chunk sabzi with phulka","d l","vegan",0,"*","home tiffin","pro iron cal",25,"p",["1 katori|soya chunk and capsicum sabzi|pv|4","2|phulka|g|2","1 bowl|salad with lemon|v|2"],"Soya is the cheapest strong protein in a vegetarian kitchen.",["0|1 katori|tofu and capsicum sabzi|pv|vegan|0"]],
+["Millet upma with sambar","d","vegan",0,"s","home","cal iron fib",25,"p",["1.5 katori|foxtail millet upma with vegetables|gv|4","1 katori|sambar|dv|2","1 small bowl|sauteed greens|v|2"],"Millets bring more fibre and minerals than polished rice.",["0|2 small|ragi mudde|g|vegan|0"]],
+["Soup, paneer tikka, roti","d","veg",0,"*","out","pro cal",0,"p",["1 bowl|clear vegetable or tomato soup, no cream|v|2","4 pieces|paneer tikka|p|3","1|tandoori roti, no butter|g|1","1 plate|green salad|v|2"],"Starting with soup slows the meal, and tikka keeps the oil low.",["1|1 katori|dal tadka|d|vegan|0"]],
+["Sprout and paneer bowl","d l","veg",0,"*","rush tiffin","pro cal iron",10,"p",["1 katori|boiled sprouted moong|d|3","Half katori|paneer cubes|p|2","1 katori|cucumber, tomato and capsicum|v|3","Half|lemon, squeezed over|-|0"],"No stove beyond boiling the sprouts, and two proteins in one bowl.",["1|Half katori|tofu cubes|p|vegan|0"]]
+];
+
+var CAT=RAW.map(function(r,id){
+  return {id:id,n:r[0],slots:r[1].split(" "),d:r[2],j:!!r[3],r:r[4],sits:r[5].split(" "),low:r[6].split(" "),min:r[7],form:r[8],
+    items:r[9].map(function(s){var a=s.split("|");return {q:a[0],t:a[1],k:a[2],sh:+a[3]};}),why:r[10],
+    swaps:r[11].map(function(s){var a=s.split("|");return {i:+a[0],q:a[1],t:a[2],k:a[3],d:a[4],j:a[5]==="1"};})};
+});
+/* FIXED WORDING, awaiting the coach review. */
+var PORTION={
+  lose:{1:"A little hungry: drop one phulka or half the rice. Keep the dal and the sabzi.",2:"Keep the grain as written. Second helpings come from sabzi, salad or dal.",3:"Starving: add a katori of dal or curd and more sabzi before adding grain."},
+  steady:{1:"A little hungry: a smaller plate of the same things is fine.",2:"Eat it as written.",3:"Starving: add one phulka or half a katori of rice, and a katori of dal or curd."},
+  strength:{1:"A little hungry: shrink the grain, not the protein.",2:"Eat it as written, and don't skip the protein item.",3:"Starving: add protein first, dal, curd, egg or paneer, then one more phulka."}
+};
+var LOWNOTE={
+  iron:"You picked iron: squeeze lemon on the plate, and keep tea and coffee an hour away from this meal.",
+  b12:"You picked B12: food helps only through dairy, eggs, fish or meat. If a report shows low B12, that is for your doctor, not a menu.",
+  cal:"You picked calcium and D: these plates lean on calcium. Food carries very little vitamin D, so sunlight and your doctor's advice cover that part.",
+  pro:"You picked protein: a palm of protein at every meal works better than one big serving at dinner.",
+  fib:"You picked fibre: raise it slowly over two weeks and drink water with it."
+};
+var HEALTHNOTE={
+  diabetes:"With diabetes: keep the grain as written, don't skip it if you take medication, and no juice.",
+  bp:"With high BP: no pickle, papad or salt added at the table."
+};
+var HOLD={
+  kidney:["Next Plate can't suggest plates for a kidney condition","How much protein, salt and potassium is safe depends on your doctor's numbers. Ask your coach for a plan made from them."],
+  preg:["Next Plate can't suggest plates during pregnancy or nursing","What you need, and how much, changes now. Ask your coach for a plan made together with your doctor."]
+};
+var ALIAS={dairy:["milk","curd","paneer","chaas","ghee"],milk:["milk","curd","paneer","chaas","ghee"],nut:["nut","peanut","almond","walnut"],gluten:["phulka","roti","wheat","dalia","toast","khakhra","upma"],wheat:["phulka","roti","wheat","dalia","toast","khakhra","upma"],egg:["egg","omelette"]};
+var DIETOK={vegan:["vegan"],veg:["vegan","veg"],jain:["vegan","veg"],egg:["vegan","veg","egg"],nonveg:["vegan","veg","egg","nonveg"]};
+
+
+var SAFETY="This one goes back to your coach and your doctor. No plate today.";
+
+/* state */
+var now=new Date(),hr=now.getHours()+now.getMinutes()/60;
+var CLOCK=hr<4?"dinner":hr<11?"breakfast":hr<15.5?"lunch":hr<18.5?"snack":"dinner";
+var S={sit:"home",hunger:"2",goal:"steady",low:"none"};
+var M={diet:null,region:"n",health:null,done:false};
+try{var raw=JSON.parse(localStorage.getItem("np-home")||"null");if(raw){if(lab("diet",raw.diet))M.diet=raw.diet;if(lab("health",raw.health))M.health=raw.health;M.done=!!raw.done&&!!M.diet&&!!M.health;if(lab("goal",raw.goal))S.goal=raw.goal;if(lab("low",raw.low))S.low=raw.low;}}catch(e){}
+function save(){try{localStorage.setItem("np-home",JSON.stringify({diet:M.diet,health:M.health,done:M.done,goal:S.goal,low:S.low}));}catch(e){}}
+var page=0,sel=0,SW={};
+
+/* picking from the list: boundaries filter, choices rank */
+function fits(m){
+  if(m.slots.indexOf(MEALS[active][0].charAt(0))<0)return false;
+  if(DIETOK[M.diet].indexOf(m.d)<0)return false;
+  if(M.diet==="jain"&&!m.j)return false;
+  if(m.sits.indexOf(S.sit)<0)return false;
+  return true;
+}
+function swapFor(m){for(var i=0;i<m.swaps.length;i++){var s=m.swaps[i];if(DIETOK[M.diet].indexOf(s.d)<0)continue;if(M.diet==="jain"&&!s.j)continue;return s;}return null;}
+function shares(m){var o={v:0,d:0,g:0,m:0,p:0,f:0,n:0},t=0;m.items.forEach(function(i){if(!i.sh)return;t+=i.sh;i.k.split("").forEach(function(k){o[k]+=i.sh/i.k.length;});});for(var k in o)o[k]/=t||1;return o;}
+function pick(){
+  return CAT.filter(fits).map(function(m){
+    var sc=0,sh=shares(m);
+    if(S.low!=="none"&&m.low.indexOf(S.low)>=0)sc+=4;
+    sc+=m.r==="*"?1:m.r===M.region?2:0;
+    if(S.goal==="lose"){if(sh.g<=.3)sc+=2;if(sh.v>=.35)sc+=1;}
+    if(S.goal==="strength"&&sh.p+sh.d+sh.m>=.45)sc+=2;
+    return {m:m,sc:sc};
+  }).sort(function(a,b){return b.sc-a.sc||a.m.id-b.m.id;}).map(function(x){return x.m;});
+}
+function itemsOf(m){var s=SW[m.id]?swapFor(m):null;return m.items.map(function(it,i){return s&&s.i===i?{q:s.q,t:s.t,k:s.k,sh:it.sh,swapped:true}:it;});}
+function copyText(m){return MEALS[active][1]+": "+m.n+"\n"+itemsOf(m).map(function(i){return "- "+i.q+" "+i.t;}).join("\n")+"\nWhy: "+m.why+"\nPortion: "+PORTION[S.goal][S.hunger];}
+
+/* drawing: every plate is laid out from its items. Masses are cubic-bezier blobs; area follows share. */
+var KCOL={v:"#3E6B45",d:"#C4842A",g:"#D7B483",m:"#EDE6D6",p:"#C96F4A",f:"#C97B3A",n:"#8B5E34"};
+var KDARK={v:"#2C4F33",d:"#9A6418",g:"#B8935F",m:"#CFC6A8",p:"#9E4F30",f:"#9E5A22",n:"#5F3E1F"};
+var SLOTS={1:[[175,134,58,50]],2:[[118,134,48,44],[232,140,36,34]],3:[[176,86,86,38],[133,175,43,35],[229,171,34,31]],4:[[128,92,44,34],[218,96,40,32],[133,176,43,34],[229,172,34,30]]};
+var TPL=["M92 104C88 76,120 50,172 48C222 46,262 70,262 100C262 116,240 122,212 116C190 112,168 122,142 124C116 126,95 122,92 104Z","M90 172C90 150,116 138,140 140C164 142,178 158,176 178C174 198,152 212,128 210C106 208,90 194,90 172Z","M196 170C194 150,212 138,232 140C252 142,264 156,262 174C260 192,244 204,226 202C208 200,198 188,196 170Z"];
+function f1(n){return (+n).toFixed(1);}
+function blob(cx,cy,rx,ry,sd){var w=[1.05,.93,.98,1.06,.96,1.04],L=rx*w[sd%6],T=ry*w[(sd+1)%6],R=rx*w[(sd+2)%6],B=ry*w[(sd+3)%6],k=.5523;
+  return "M"+f1(cx-L)+" "+cy+"C"+f1(cx-L)+" "+f1(cy-T*k)+","+f1(cx-L*k)+" "+f1(cy-T)+","+cx+" "+f1(cy-T)+"C"+f1(cx+R*k)+" "+f1(cy-T)+","+f1(cx+R)+" "+f1(cy-T*k)+","+f1(cx+R)+" "+cy+"C"+f1(cx+R)+" "+f1(cy+B*k)+","+f1(cx+R*k)+" "+f1(cy+B)+","+cx+" "+f1(cy+B)+"C"+f1(cx-L*k)+" "+f1(cy+B)+","+f1(cx-L)+" "+f1(cy+B*k)+","+f1(cx-L)+" "+cy+"Z";}
+function isSide(i){return i.sh<=1&&/salad|kachumber/.test(i.t);}
+function foodSVG(m,lemon){
+  var its=itemsOf(m).filter(function(i){return i.sh>0;});
+  if(its.length>3)its=its.filter(function(i){return !isSide(i);});
+  its=its.slice().sort(function(a,b){return b.sh-a.sh;}).slice(0,4);
+  var n=its.length,out="";
+  if(!n)return "";
+  var slots=SLOTS[n],a0=slots[0][2]*slots[0][3],s0=its[0].sh;
+  its.forEach(function(it,i){
+    var s=slots[i],cx=s[0],cy=s[1],rx=s[2],ry=s[3],k=it.k.charAt(0),col=KCOL[k],inner="";
+    var sc=i?Math.max(.8,Math.min(1.08,Math.sqrt(it.sh/s0)/Math.sqrt(rx*ry/a0))):1;
+    var flat=/phulka|roti|chilla|dosa|idli|khakhra|toast|uttapam/.test(it.t),glass=/glass/.test(it.q);
+    if(glass){
+      inner='<path d="M'+(cx-15)+" "+(cy-26)+"L"+(cx+15)+" "+(cy-26)+"L"+(cx+11)+" "+(cy+26)+"L"+(cx-11)+" "+(cy+26)+'Z" fill="#DCE0E5" stroke="#8E979F" stroke-width="1.5" stroke-linejoin="round"/><path d="M'+f1(cx-12.4)+" "+(cy-14)+"L"+f1(cx+12.4)+" "+(cy-14)+"L"+f1(cx+9.3)+" "+(cy+23)+"L"+f1(cx-9.3)+" "+(cy+23)+'Z" fill="'+col+'" stroke="'+KDARK[k]+'" stroke-width=".8" stroke-linejoin="round"/>';
+    }else if(flat){
+      var cnt=/or 2/.test(it.q)?2:Math.max(1,Math.min(3,parseInt(it.q,10)||1)),r=Math.min(rx,36)*(cnt>1?.92:1),c2=/idli/.test(it.t)?"#EDE6D6":col,d2=/idli/.test(it.t)?"#CFC6A8":KDARK[k];
+      for(var j=0;j<cnt;j++){var ox=(cnt-1-j)*7-3.5*(cnt-1),oy=(cnt-1-j)*11-5.5*(cnt-1);
+        inner+='<path d="'+blob(cx+ox,cy+oy,r,r*.86,j)+'" fill="'+c2+'"'+(j?' stroke="'+d2+'" stroke-width="1.25"':(c2==="#EDE6D6"?' stroke="'+d2+'" stroke-width="1"':""))+"/>";}
+    }else{
+      inner='<path d="'+(n===3?TPL[i]:blob(cx,cy,rx,ry,i+m.id))+'" fill="'+col+'"'+(k==="m"?' stroke="#CFC6A8" stroke-width="1"':"")+"/>";
+      if(k==="v")inner+='<path class="cut" d="M'+(cx-20)+" "+(cy-4)+"l14-6M"+(cx+8)+" "+(cy-3)+'l12 6"/>';
+      if(it.k.length>1){var c3=KCOL[it.k.charAt(1)],px=rx*.38,py=ry*.34;
+        [[-px,-py*.4],[px*.2,-py],[px,py*.2],[-px*.3,py]].forEach(function(o,q){inner+='<path d="'+blob(f1(cx+o[0])*1,f1(cy+o[1])*1,4.2,3.6,q)+'" fill="'+c3+'" stroke="'+KDARK[it.k.charAt(1)]+'" stroke-width=".6"/>';});}
+    }
+    out+='<g transform="translate('+cx+" "+cy+") scale("+sc.toFixed(3)+") translate("+(-cx)+" "+(-cy)+')"><g class="mass k-'+k+'">'+inner+"</g></g>";
+  });
+  if(m.form==="s")out='<g transform="translate(175 134) scale(.74) translate(-175 -134)">'+out+"</g>";
+  if(lemon)out+='<path d="M176 219C178 207,198 205,201 217C193 222,184 223,176 219Z" fill="#CFCB85" stroke="#7F8F45" stroke-width="1.2"/>';
+  return out;
+}
+function mini(m){return '<svg viewBox="45 12 260 240" aria-hidden="true"><ellipse cx="175" cy="130" rx="124" ry="114" fill="#C5CBD1"/><ellipse cx="175" cy="130" rx="114" ry="104" fill="#8E979F"/><ellipse cx="175" cy="134" rx="110" ry="99" fill="#C5CBD1"/>'+foodSVG(m,false)+"</svg>";}
+
+/* the rim */
+var MEALS=[["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"],["breakfast","Breakfast"]];
+var active=0;for(var mi=0;mi<4;mi++)if(MEALS[mi][0]===CLOCK)active=mi;
+var A=-active*90,ticks=[],labs=[],raf=0;
+function mod(n,m){return ((n%m)+m)%m;}
+(function(){
+  var g=$("ticks");
+  for(var n=0;n<60;n++){var l=document.createElementNS(NS,"line");l.setAttribute("class","tick"+(n%15===0?" det":""));g.appendChild(l);ticks.push(l);}
+  MEALS.forEach(function(m,i){var b=el("button","lab cap",m[1]);b.type="button";b.id="lab-"+m[0];b.addEventListener("click",function(){turnTo(i);});$("dial").appendChild(b);labs.push(b);});
+})();
+function drawRim(){
+  for(var n=0;n<60;n++){
+    var t=(n*6+A-90)*Math.PI/180,c=Math.cos(t),s=Math.sin(t),det=n%15===0,k0=det?.12:.32,k1=det?.88:.68,l=ticks[n];
+    l.setAttribute("x1",(175+(114+10*k0)*c).toFixed(2));l.setAttribute("y1",(130+(104+10*k0)*s).toFixed(2));
+    l.setAttribute("x2",(175+(114+10*k1)*c).toFixed(2));l.setAttribute("y2",(130+(104+10*k1)*s).toFixed(2));
+    if(det)l.setAttribute("class","tick det"+(n===active*15?" act":""));
+  }
+  var w=$("dial").clientWidth||300,sc=w/350;
+  labs.forEach(function(b,i){
+    var th=mod(i*90+A+180,360)-180,t=(th-90)*Math.PI/180,x=(175+142*Math.cos(t))*sc,y=(130+142*Math.sin(t))*sc;
+    var r=Math.abs(th)<=90?th:(th>0?180-th:-180-th),o=Math.min(1,Math.abs(th)/40);
+    b.style.transform="translate("+x.toFixed(1)+"px,"+y.toFixed(1)+"px) translate(-50%,-50%) rotate("+r.toFixed(1)+"deg)";
+    b.style.opacity=o.toFixed(2);b.style.pointerEvents=o<.5?"none":"auto";b.tabIndex=o<.5?-1:0;
+  });
+}
+function bez(x1,y1,x2,y2){return function(x){var t=x,i,cx=3*x1,bx=3*(x2-x1)-cx,ax=1-cx-bx,cy=3*y1,by=3*(y2-y1)-cy,ay=1-cy-by;
+  for(i=0;i<8;i++){var fx=((ax*t+bx)*t+cx)*t-x,dx=(3*ax*t+2*bx)*t+cx;if(Math.abs(dx)<1e-6)break;t-=fx/dx;}return ((ay*t+by)*t+cy)*t;};}
+var ease=bez(.2,.85,.2,1);
+function setActive(i){
+  if(i===active)return;active=i;page=0;sel=0;
+  try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}
+  render(true);
+}
+function animateTo(target){
+  cancelAnimationFrame(raf);
+  if(reduced){A=target;setActive(mod(Math.round(-A/90),4));drawRim();return;}
+  var from=A,t0=performance.now();
+  (function step(now){var u=Math.min(1,(now-t0)/220);A=from+(target-from)*ease(u);setActive(mod(Math.round(-A/90),4));drawRim();if(u<1)raf=requestAnimationFrame(step);else{A=target;drawRim();}})(t0);
+}
+function turnTo(i){var cur=mod(Math.round(-A/90),4),d=mod(i-cur+2,4)-2;animateTo(Math.round(A/90)*90-d*90);}
+(function(){
+  var hit=$("hit"),svgEl=$("plate"),last=0;
+  function ang(e){var r=svgEl.getBoundingClientRect(),sc=r.width/350,x=(e.clientX-r.left)/sc,y=(e.clientY-r.top)/sc;return Math.atan2((y-130)/109,(x-175)/119)*180/Math.PI;}
+  hit.addEventListener("pointerdown",function(e){
+    if(blocked())return;
+    try{hit.setPointerCapture(e.pointerId);}catch(x){}
+    cancelAnimationFrame(raf);last=ang(e);
+    function move(ev){var a=ang(ev),d=mod(a-last+180,360)-180;last=a;A+=d;setActive(mod(Math.round(-A/90),4));drawRim();}
+    function up(){hit.removeEventListener("pointermove",move);hit.removeEventListener("pointerup",up);hit.removeEventListener("pointercancel",up);animateTo(Math.round(A/90)*90);}
+    hit.addEventListener("pointermove",move);hit.addEventListener("pointerup",up);hit.addEventListener("pointercancel",up);
+  });
+  svgEl.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"||e.key==="ArrowDown"){e.preventDefault();turnTo(mod(active+1,4));}
+    else if(e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();turnTo(mod(active-1,4));}
+  });
+  window.addEventListener("resize",drawRim);
+})();
+
+/* choices */
+var CELLS={},openKey=null;
+["sit","hunger","goal","low"].forEach(function(k){
+  var b=el("button","cell");b.type="button";b.id="cell-"+k;b.setAttribute("aria-haspopup","true");
+  var s=el("span");s.appendChild(el("span","cap",LAB[k]));s.appendChild(el("b"));b.appendChild(s);b.appendChild(el("span","chev"));
+  b.addEventListener("click",function(){openTray(k);});$("choices").appendChild(b);CELLS[k]=b;
+});
+function optButtons(host,k,get,set){
+  host.textContent="";
+  OPT[k].forEach(function(o){var b=el("button","opt",o[1]);b.type="button";b.setAttribute("role","radio");b.setAttribute("data-v",o[0]);b.setAttribute("aria-checked",get()===o[0]?"true":"false");
+    b.addEventListener("click",function(){set(o[0]);});host.appendChild(b);});
+}
+function openTray(k){
+  openKey=k;$("traylab").textContent=LAB[k];
+  optButtons($("opts"),k,function(){return S[k];},function(v){S[k]=v;page=0;sel=0;closeTray();save();render(true);});
+  $("opts").className="opts"+(OPT[k].length===4?" two":"");
+  $("choices").hidden=true;$("tray").hidden=false;
+  var cur=$("opts").querySelector('[aria-checked="true"]');if(cur)cur.focus();
+}
+function closeTray(){if(!openKey)return;var k=openKey;openKey=null;$("tray").hidden=true;$("choices").hidden=false;CELLS[k].focus();}
+$("trayclose").addEventListener("click",closeTray);
+
+/* My food: asked once, before any plate */
+function buildPanel(){
+  var p=$("mypanel");p.textContent="";
+  ["diet","health"].forEach(function(k){
+    var w=el("div");w.appendChild(el("p","cap",LAB[k])).style.margin="4px 0";var g=el("div","opts");g.id="p-"+k;g.setAttribute("role","radiogroup");g.setAttribute("aria-label",LAB[k]);
+    optButtons(g,k,function(){return M[k];},function(v){M[k]=v;page=0;sel=0;save();buildPanel();render(true);});
+    w.appendChild(g);p.appendChild(w);
+  });
+  p.appendChild(el("p","cap","Home food: North Indian"));
+  var d=el("button","done",M.done?"Done":"Show my plates");d.type="button";d.id="mydone";d.disabled=!(M.diet&&M.health);
+  d.addEventListener("click",function(){M.done=true;save();p.hidden=true;$("my").setAttribute("aria-expanded","false");render(true);drawRim();});
+  p.appendChild(d);
+}
+$("my").addEventListener("click",function(){var p=$("mypanel"),open=p.hidden;if(open)buildPanel();p.hidden=!open;this.setAttribute("aria-expanded",open?"true":"false");});
+
+function blocked(){return !M.done||M.health==="kidney"||M.health==="preg";}
+function render(settle){
+  root.setAttribute("data-meal",MEALS[active][0]);
+  root.className=root.className.replace(/\b(goal|hunger)-\w+/g,"").trim()+" goal-"+S.goal+" hunger-"+S.hunger;
+  $("meal").textContent=MEALS[active][1];
+  $("plate").setAttribute("aria-valuenow",active+1);$("plate").setAttribute("aria-valuetext",MEALS[active][1]);
+  $("mytext").textContent=M.done?lab("diet",M.diet)+" · North"+(M.health!=="none"?" · "+lab("health",M.health):""):"My food";
+  for(var k in CELLS)CELLS[k].querySelector("b").textContent=lab(k,S[k]);
+  var food=$("food"),hold=M.done&&(M.health==="kidney"||M.health==="preg"),setup=!M.done;
+  var all=(setup||hold)?[]:pick(),start=all.length>3?(page*3)%all.length:0,three=all.slice(start,start+3);
+  if(three.length<3&&all.length>3)three=three.concat(all.slice(0,3-three.length));
+  if(sel>=three.length)sel=0;
+  var m=three[sel],none=!m;
+  $("deliver").hidden=none;$("only").hidden=!none;$("fine").hidden=setup||hold;
+  $("choices").hidden=setup||hold||!!openKey;if(setup||hold){$("tray").hidden=true;openKey=null;}
+  labs.forEach(function(b){b.style.visibility=(setup||hold)?"hidden":"visible";});
+  if(setup){buildPanel();$("mypanel").hidden=false;$("my").setAttribute("aria-expanded","true");}
+  if(none){
+    food.innerHTML="";$("chooser").textContent="";
+    $("only").textContent=setup?"First, tell Next Plate what you eat. It is asked once.":hold?SAFETY:"No plate on the list fits "+(M.diet==="jain"?"Jain":lab("diet",M.diet).toLowerCase())+" for "+MEALS[active][1].toLowerCase()+" when you're "+lab("sit",S.sit).toLowerCase()+". Your boundaries stay as they are.";
+    return;
+  }
+  food.innerHTML=foodSVG(m,S.low==="iron");
+  if(settle&&!reduced){var g=$("settle");g.classList.remove("go");void g.getBoundingClientRect();g.classList.add("go");}
+  var word={breakfast:"breakfast",lunch:"lunch",snack:"a snack",dinner:"dinner"}[MEALS[active][0]];
+  $("count").textContent=(three.length===3?"Three plates for ":three.length===2?"Two plates fit for ":"One plate fits for ")+word+(three.length>1?" · pick one":"");
+  var ch=$("chooser");ch.textContent="";
+  three.forEach(function(x,i){
+    var b=el("button","dish");b.type="button";b.id="dish-"+i;b.setAttribute("role","tab");b.setAttribute("aria-selected",i===sel?"true":"false");
+    b.innerHTML=mini(x);b.appendChild(el("span",null,x.n));
+    b.addEventListener("click",function(){if(sel!==i){sel=i;render(true);$("dish-"+i).focus();}});ch.appendChild(b);
+  });
+  $("name").textContent=m.n;
+  $("meta").textContent=(m.min>0?"About "+m.min+" min":"Order it")+(S.low!=="none"?(m.low.indexOf(S.low)>=0?" · leans on ":" · not strong on ")+lab("low",S.low).toLowerCase():"");
+  var ul=$("measures");ul.textContent="";
+  itemsOf(m).forEach(function(i){var li=el("li"),sw=el("span","sw"),k=i.k.charAt(0);
+    if(i.k==="-"||(isSide(i)&&m.items.filter(function(x){return x.sh>0;}).length>3))sw.className="sw side";else{sw.style.background=/idli/.test(i.t)?"#EDE6D6":KCOL[k];if(k==="m"||/idli/.test(i.t))sw.className="sw pale";}
+    li.appendChild(sw);var sp=el("span",null,i.q+" "+i.t);if(i.swapped)sp.appendChild(el("span","tag","swapped"));li.appendChild(sp);ul.appendChild(li);});
+  $("copy").textContent="Copy for WhatsApp";
+  $("reason").textContent=m.why;
+  var c=$("caution");c.textContent="";c.appendChild(el("p",null,PORTION[S.goal][S.hunger]));
+  if(LOWNOTE[S.low])c.appendChild(el("p",null,LOWNOTE[S.low]));
+  if(HEALTHNOTE[M.health])c.appendChild(el("p",null,HEALTHNOTE[M.health]));
+  var sw=swapFor(m);$("swap").hidden=!sw;
+  if(sw)$("swap").textContent=SW[m.id]?"Swapped. Go back to "+m.items[sw.i].t:"Swap "+m.items[sw.i].t+" for "+sw.t;
+  $("others").hidden=all.length<=3;
+  $("copy")._m=m;$("swap")._m=m;
+}
+$("swap").addEventListener("click",function(){var m=this._m;SW[m.id]=!SW[m.id];render(true);this.focus();});
+$("others").addEventListener("click",function(){page++;sel=0;render(true);$("chooser").scrollIntoView({block:"center"});});
+$("fresh").addEventListener("click",function(){$("freshnote").hidden=!$("freshnote").hidden;});
+$("copy").addEventListener("click",function(){
+  var b=this,t=copyText(b._m);
+  function ok(){b.textContent="Copied";$("said").textContent="Copied. Paste it in WhatsApp.";setTimeout(function(){b.textContent="Copy for WhatsApp";},2000);}
+  function fail(){try{var r=document.createRange();r.selectNodeContents($("measures"));var s=getSelection();s.removeAllRanges();s.addRange(r);}catch(e){}b.textContent="Copy is blocked here. The list is selected.";}
+  try{navigator.clipboard.writeText(t).then(ok,fail);}catch(e){fail();}
+});
+$("gridbtn").addEventListener("click",function(){var on=$("frame").classList.toggle("show-construction");this.setAttribute("aria-pressed",on?"true":"false");});
+
+render(false);drawRim();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawRim);
+window.__np={state:function(){return {S:S,M:M,A:A,active:MEALS[active][0],sel:sel};},turn:function(k){for(var i=0;i<4;i++)if(MEALS[i][0]===k)turnTo(i);}};
+})();
+</script>

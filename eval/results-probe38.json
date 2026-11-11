@@ -1,0 +1,41 @@
+[
+ {
+  "id": "jain-pavbhaji",
+  "expect": "plates",
+  "got": "plates",
+  "ok": true,
+  "ms": 12876,
+  "status": 200,
+  "shown": 2,
+  "droppedByRails": 0,
+  "flags": [],
+  "read": "You can easily enjoy pav bhaji tonight by making a Jain version with raw banana, keeping the butter sensible and adding protein.",
+  "refer": "",
+  "plates": [
+   {
+    "name": "Jain pav bhaji with paneer",
+    "items": [
+     "2 piece pav toasted with light butter",
+     "1.5 katori Jain bhaji made with raw banana, peas and tomato",
+     "0.5 katori crumbled fresh paneer stirred in",
+     "1 glass plain chaas with roasted jeera"
+    ],
+    "why": "Raw banana replaces potato completely, while paneer brings balanced protein to keep your dinner filling and satisfying.",
+    "skip": "extra melting butter float on the bhaji"
+   },
+   {
+    "name": "Spiced Jain tava bhaji with phulka",
+    "items": [
+     "2 phulka with light ghee",
+     "1.5 katori Jain cauliflower and capsicum bhaji",
+     "1 katori fresh set curd",
+     "0.5 plate sliced cucumber with lemon"
+    ],
+    "why": "Gives you the same pav bhaji spices in a lighter dinner format that rests easy before bedtime.",
+    "skip": ""
+   }
+  ],
+  "err": "",
+  "raw": "{\"t\":\"read\",\"text\":\"You can easily enjoy pav bhaji tonight by making a Jain version with raw banana, keeping the butter sensible and adding protein.\"}\n{\"t\":\"plate\",\"name\":\"Jain pav bhaji with paneer\",\"min\":35,\"items\":[{\"q\":2,\"u\":\"piece\",\"f\":\"pav toasted with light butter\"},{\"q\":1.5,\"u\":\"katori\",\"f\":\"Jain bhaji made with raw banana, peas and tomato\"},{\"q\":0.5,\"u\":\"katori\",\"f\":\"crumbled fresh paneer stirred in\"},{\"q\":1,\"u\":\"glass\",\"f\":\"plain chaas with roasted jeera\"}],\"why\":\"Raw banana replaces potato completely, while paneer brings balanced protein to keep your dinner filling and satisfying.\",\"skip\":\"extra melting butter float on the bhaji\"}\n{\"t\":\"plate\",\"name\":\"Spiced Jain tava bhaji with phulka\",\"min\":25,\"items\":[{\"q\":2,\"u\":\"\",\"f\":\"phulka with light ghee\"},{\"q\":1.5,\"u\":\"katori\",\"f\":\"Jain cauliflower and capsicum bhaji\"},{\"q\":1,\"u\":\"katori\",\"f\":\"fresh set curd\"},{\"q\":0.5,\"u\":\"plate\",\"f\":\"sliced cucumber with lemon\"}],\"why\":\"Gives you the same pav bhaji spices in a lighter dinner format that rests easy before bedtime.\"}"
+ }
+]
