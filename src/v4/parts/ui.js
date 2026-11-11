@@ -33,10 +33,14 @@ function curve(key,r){
   s.appendChild(svgEl("line",{x1:"6",y1:"104",x2:"314",y2:"104","class":"c-base"}));
   [["Meal",6,"start"],["+1 h",108.7,"middle"],["+2 h",211.3,"middle"],["+3 h",314,"end"]].forEach(function(x){var t=svgEl("text",{x:String(x[1]),y:"120","text-anchor":x[2],"class":"c-ax"});t.textContent=x[0];s.appendChild(t);});
   var area=svgEl("path",{"class":"c-area",fill:"url(#cg-"+key+")"}),raw=svgEl("path",{"class":"c-raw"}),act=svgEl("path",{"class":"c-act"}),dot=svgEl("circle",{r:"4.5","class":"c-dot"});
-  s.appendChild(area);s.appendChild(raw);s.appendChild(act);s.appendChild(dot);
+  var lv=svgEl("g",{"class":"c-leaves"});
+  s.appendChild(area);s.appendChild(raw);s.appendChild(act);s.appendChild(lv);s.appendChild(dot);
   var to={a:r.idx,b:r.raw,tp:r.tp},from=PREVC[key]||to;PREVC[key]=to;
   function draw(a,b,tp){var pa=curvePts(a,tp),pb=curvePts(b,Math.max(30,tp-8));act.setAttribute("d",pathOf(pa));raw.setAttribute("d",pathOf(pb));
-    area.setAttribute("d",pathOf(pa)+" L314,104 L6,104 Z");dot.setAttribute("cx",String(6+tp/180*308));dot.setAttribute("cy",String(curveY(a,tp,tp)));}
+    area.setAttribute("d",pathOf(pa)+" L314,104 L6,104 Z");
+    while(lv.firstChild)lv.removeChild(lv.firstChild);
+    for(var q=4;q<pa.length-2;q+=5){var p0=pa[q],p1=pa[q+1],an=Math.atan2(p1[1]-p0[1],p1[0]-p0[0])*180/Math.PI,up=(q/5)%2?1:-1;
+      lv.appendChild(svgEl("path",{d:"M0,0 C2.5,-3.5 8,-4.5 11,-2 C8,1 3,1.5 0,0 Z",transform:"translate("+p0[0].toFixed(1)+","+p0[1].toFixed(1)+") rotate("+(an+up*38).toFixed(1)+")"}));}dot.setAttribute("cx",String(6+tp/180*308));dot.setAttribute("cy",String(curveY(a,tp,tp)));}
   if(RM||(from.a===to.a&&from.b===to.b&&from.tp===to.tp)){draw(to.a,to.b,to.tp);return s;}
   var t0=performance.now();draw(from.a,from.b,from.tp);
   requestAnimationFrame(function step(t){var k=Math.min(1,(t-t0)/460),e=1-Math.pow(1-k,3);draw(from.a+(to.a-from.a)*e,from.b+(to.b-from.b)*e,from.tp+(to.tp-from.tp)*e);if(k<1)requestAnimationFrame(step);});
@@ -150,10 +154,10 @@ function heroCard(m,v){
   if(S.low!=="none"&&m.low.indexOf(S.low)>=0)top.appendChild(chip("Leans on "+LOWNAME[S.low],"fit","check"));
   top.appendChild(chip(m.min>0?m.min+" min":(S.sit==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
-  main.appendChild(aring("hero",sh,nu.p+"g","protein",true,"Rough plate shares: "+Math.round(sh.veg*100)+" percent vegetables. About "+nu.p+" grams protein."));
+  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));
   txt.appendChild(el("h2",null,m.n));txt.appendChild(el("p","sub",summary(v.items)));main.appendChild(txt);
   var rd=el("div","read4");
-  function cell(cap,node,unit,cls){var d=el("div");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
+  function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",nu.p),"g"),cell("Energy",tw("h-k",nu.k),"kcal"),cell("Fibre",tw("h-f",nu.f),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
   var tn=el("div","tune");tn.appendChild(el("p","cap","Tune this plate"));
   [["pro","More protein","dumbbell"],["gentle","Gentler on sugar","lab"],["quick","Under 15 min","bolt"]].forEach(function(x){
@@ -215,7 +219,7 @@ function renderToday(){
   if(t.list.length>1){var h=el("div","sec-h");h.appendChild(el("h3",null,"Also good for "+mealName(S.meal).toLowerCase()));h.appendChild(el("p","cap",t.all.length+" fit"));v.appendChild(h);
     var wrap=el("div","alts");t.list.forEach(function(x,i){if(i===sel)return;var xv=view(x),nu=nutPlate(xv.items),b=el("button","alt");b.type="button";b.id="alt-"+i;
       var tx=el("span");tx.appendChild(el("b",null,x.n));tx.appendChild(el("small",null,summary(xv.items)+" · ≈ "+nu.p+" g protein"));
-      add(b,ring(shares(xv.items),null,null,false,"Rough plate shares"),tx,ic("chev"));
+      add(b,thali(xv.items,56,"Plate"),tx,ic("chev"));
       b.addEventListener("click",function(){sel=i;ADJ=false;FRESH=true;resetTune();render();if(LAYOUT==="phone")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(t.all.length>3){var mb=btn("linkbtn morebtn","Show three more plates","refresh","more");mb.addEventListener("click",function(){page++;sel=0;FRESH=true;resetTune();render();});v.appendChild(mb);}

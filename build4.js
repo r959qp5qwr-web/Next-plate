@@ -3,7 +3,7 @@ const fs = require('fs');
 const rd = f => fs.readFileSync(f, 'utf8');
 const P = n => rd('src/v4/parts/' + n + '.js');
 const app = '/* ===== Next Plate v4: Today, Lab, Rescue, Rhythm, Ask ===== */\n(function(){\n"use strict";\nvar NS="http://www.w3.org/2000/svg";\n' +
-  ['helpers', 'state', 'quantities', 'nutrition', 'shares', 'boundaries', 'choose', 'shared', 'setup', 'sheet', 'ask', 'voice', 'ui'].map(P).join('\n') + '\n})();\n';
+  ['helpers', 'state', 'quantities', 'nutrition', 'shares', 'boundaries', 'choose', 'shared', 'setup', 'sheet', 'ask', 'voice', 'thali', 'ui'].map(P).join('\n') + '\n})();\n';
 fs.writeFileSync('src/v4/app.built.js', app);
 const shell = rd('src/v4/shell.html'), data = rd('src/data.js'), prompt = rd('src/prompt.js');
 const fill = hosted => shell.replace('/*DATA*/', () => data + '\n' + prompt).replace('/*APP*/', () => (hosted ? 'window.NP_HOSTED=true;window.NP_NOPHOTO=true;\n' : '') + app);
