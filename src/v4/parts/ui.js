@@ -72,6 +72,7 @@ function renderChrome(){
   PANELS.forEach(function(v){var t=$("tab-"+v);if(VIEW===v)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current");});
   $("ls-studio").setAttribute("aria-pressed",LAYOUT==="studio"?"true":"false");$("ls-phone").setAttribute("aria-pressed",LAYOUT==="phone"?"true":"false");
   $("composer").hidden=blocked();syncVoice();
+  var d0=new Date(now.getFullYear(),0,0),doy=Math.floor((now-d0)/864e5);$("issue").textContent="Issue No. "+doy;$("mastdate").textContent=now.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
 }
 function show(v,noScroll){
   if(PANELS.indexOf(v)<0)v="plate";
@@ -154,7 +155,7 @@ function heroCard(m,v){
   if(S.low!=="none"&&m.low.indexOf(S.low)>=0)top.appendChild(chip("Leans on "+LOWNAME[S.low],"fit","check"));
   top.appendChild(chip(m.min>0?m.min+" min":(S.sit==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
-  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));
+  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));var band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);var sc=el("span","scribble");var vw0=vegWord(sh.veg);sc.appendChild(document.createTextNode(vw0==="None"?"no veg here yet":vw0.toLowerCase()+(vw0==="A little"?" veg on":" of")+" the plate"+(vw0==="A little"?"":" is veg")));main.appendChild(sc);
   txt.appendChild(el("h2",null,m.n));txt.appendChild(el("p","sub",summary(v.items)));main.appendChild(txt);
   var rd=el("div","read4");
   function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
@@ -223,6 +224,7 @@ function renderToday(){
       b.addEventListener("click",function(){sel=i;ADJ=false;FRESH=true;resetTune();render();if(LAYOUT==="phone")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(t.all.length>3){var mb=btn("linkbtn morebtn","Show three more plates","refresh","more");mb.addEventListener("click",function(){page++;sel=0;FRESH=true;resetTune();render();});v.appendChild(mb);}
+  var fw=el("div","colophon");fw.appendChild(stamp());fw.appendChild(sprig("colo-sprig"));v.appendChild(fw);
   v.appendChild(el("p","fine","Plates come from your coach's list: demonstration meals, not yet approved by your coach. Numbers are rough estimates from household measures; oil and katori size change them. General food guidance, not medical advice."));
   FRESH=false;
 }

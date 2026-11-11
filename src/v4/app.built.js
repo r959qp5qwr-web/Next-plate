@@ -683,6 +683,26 @@ function sprig(cls){
   return s;
 }
 
+/* an ink vine that rises and falls like the curve it borrows from */
+function vine(flip){
+  var s=svgEl("svg",{viewBox:"0 0 170 110","class":"vine"+(flip?" flip":""),"aria-hidden":"true"}),pts=[],x,d="";
+  for(x=0;x<=170;x+=5){var y=62-34*Math.sin((x/170)*Math.PI*1.5+.2);pts.push([x,y]);d+=(x?"L":"M")+x+","+y.toFixed(1)+" ";}
+  s.appendChild(svgEl("path",{d:d,"class":"vn-stem"}));
+  for(var i=2;i<pts.length-1;i+=2){var a=pts[i],b=pts[i+1],an=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI,up=(i/2)%2?1:-1,sc=.8+((i*37)%5)/10;
+    s.appendChild(svgEl("path",{d:"M0,0 C3,-6 12,-8 17,-4 C12,1 4,2 0,0 Z","class":"vn-leaf",transform:"translate("+a[0]+","+a[1].toFixed(1)+") rotate("+(an+up*48).toFixed(0)+") scale("+sc+")"}));
+    if(i%6===0)s.appendChild(svgEl("circle",{cx:String(a[0]+up*5),cy:String(a[1]-up*9),r:"1.6","class":"vn-bud"}));}
+  return s;
+}
+function stamp(){
+  var s=svgEl("svg",{viewBox:"0 0 120 120","class":"stamp","aria-hidden":"true"});
+  s.appendChild(svgEl("circle",{cx:"60",cy:"60",r:"54","class":"st-ring"}));s.appendChild(svgEl("circle",{cx:"60",cy:"60",r:"40","class":"st-ring thin"}));
+  var defs=svgEl("defs",{});defs.appendChild(svgEl("path",{id:"stp",d:"M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"}));s.appendChild(defs);
+  var t=svgEl("text",{"class":"st-txt"}),tp=svgEl("textPath",{href:"#stp",startOffset:"2%"});tp.textContent="DRAFT PLATES \u00B7 AWAITING YOUR COACH \u00B7 DRAFT PLATES \u00B7";t.appendChild(tp);s.appendChild(t);
+  var m=svgEl("text",{x:"60",y:"57","text-anchor":"middle","class":"st-mid"});m.textContent="not yet";s.appendChild(m);
+  var m2=svgEl("text",{x:"60",y:"73","text-anchor":"middle","class":"st-mid"});m2.textContent="approved";s.appendChild(m2);
+  return s;
+}
+
 /* ---------- motion helpers: numbers count, rings and the curve glide ---------- */
 var RM=false;try{RM=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
 var PREVN={},PREVR={},PREVC={};
@@ -757,6 +777,7 @@ function renderChrome(){
   PANELS.forEach(function(v){var t=$("tab-"+v);if(VIEW===v)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current");});
   $("ls-studio").setAttribute("aria-pressed",LAYOUT==="studio"?"true":"false");$("ls-phone").setAttribute("aria-pressed",LAYOUT==="phone"?"true":"false");
   $("composer").hidden=blocked();syncVoice();
+  var d0=new Date(now.getFullYear(),0,0),doy=Math.floor((now-d0)/864e5);$("issue").textContent="Issue No. "+doy;$("mastdate").textContent=now.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
 }
 function show(v,noScroll){
   if(PANELS.indexOf(v)<0)v="plate";
@@ -839,7 +860,7 @@ function heroCard(m,v){
   if(S.low!=="none"&&m.low.indexOf(S.low)>=0)top.appendChild(chip("Leans on "+LOWNAME[S.low],"fit","check"));
   top.appendChild(chip(m.min>0?m.min+" min":(S.sit==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
-  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));
+  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));var band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);var sc=el("span","scribble");var vw0=vegWord(sh.veg);sc.appendChild(document.createTextNode(vw0==="None"?"no veg here yet":vw0.toLowerCase()+(vw0==="A little"?" veg on":" of")+" the plate"+(vw0==="A little"?"":" is veg")));main.appendChild(sc);
   txt.appendChild(el("h2",null,m.n));txt.appendChild(el("p","sub",summary(v.items)));main.appendChild(txt);
   var rd=el("div","read4");
   function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
@@ -908,6 +929,7 @@ function renderToday(){
       b.addEventListener("click",function(){sel=i;ADJ=false;FRESH=true;resetTune();render();if(LAYOUT==="phone")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(t.all.length>3){var mb=btn("linkbtn morebtn","Show three more plates","refresh","more");mb.addEventListener("click",function(){page++;sel=0;FRESH=true;resetTune();render();});v.appendChild(mb);}
+  var fw=el("div","colophon");fw.appendChild(stamp());fw.appendChild(sprig("colo-sprig"));v.appendChild(fw);
   v.appendChild(el("p","fine","Plates come from your coach's list: demonstration meals, not yet approved by your coach. Numbers are rough estimates from household measures; oil and katori size change them. General food guidance, not medical advice."));
   FRESH=false;
 }

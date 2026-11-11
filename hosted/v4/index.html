@@ -576,6 +576,80 @@ h2,h3,.panel-h h2,.hero h2,.dish,.card-t,.empty-card h2,.sheet-h h2,.setup-hero 
   .app[data-layout="studio"] .hero-main .thali{width:min(300px,60%)}
   .app[data-layout="studio"] .tiles .tile2{background:transparent;box-shadow:none;border-top:1px solid var(--ink);border-radius:0;padding-left:0}
 }
+
+/* ----- raw linen, all the way: masthead, vines, margin notes, ticket stubs, tape, clay, stamp ----- */
+.top{height:auto;flex-wrap:wrap;justify-content:center;gap:2px 12px;padding-top:12px;padding-bottom:8px;border-bottom:3px double var(--ink)}
+.brand{width:100%;justify-content:center;font:500 34px/36px var(--display);letter-spacing:.2em;padding-left:.2em}
+.mast{order:2;width:100%;margin:0;display:flex;justify-content:space-between;align-items:baseline;gap:8px;font:400 12px/16px var(--text);font-variant:small-caps;letter-spacing:.1em;color:var(--ink2);border-top:1px solid var(--ink);padding-top:5px;margin-top:6px}
+.mast em{font:italic 400 14px var(--text);font-variant:normal;letter-spacing:0;color:var(--clay)}
+.myfood{order:3}.lswitch{order:4}
+.hero{padding-top:14px;overflow:hidden}
+.band{position:absolute;left:0;right:0;top:92px;height:132px;display:flex;justify-content:space-between;background:linear-gradient(rgba(150,125,95,.2) 1px,transparent 1px) 0 0/13px 13px,linear-gradient(90deg,rgba(150,125,95,.2) 1px,transparent 1px) 0 0/13px 13px;border-top:1px solid rgba(150,125,95,.35);border-bottom:1px solid rgba(150,125,95,.35);z-index:0}
+.vine{height:100%;width:auto;margin:0 -6px}.vine.flip{transform:scaleX(-1)}
+.vn-stem{fill:none;stroke:var(--ink);stroke-width:1.2;stroke-linecap:round}.vn-leaf{fill:none;stroke:var(--ink);stroke-width:.9}.vn-leaf:nth-of-type(3n){fill:#8A9858;fill-opacity:.55}.vn-bud{fill:var(--clay)}
+.hero-top,.hero-main,.read4,.tune,.modlog{position:relative;z-index:1}
+.hero-main .thali{width:min(292px,84%);filter:drop-shadow(0 14px 14px rgba(60,44,28,.28))}
+.hero-sprig{top:auto;bottom:128px;right:-14px;width:120px;transform:rotate(-28deg);z-index:2}
+.scribble{position:absolute;left:10px;top:238px;z-index:2;font:600 19px/20px var(--hand);color:var(--clay);transform:rotate(-9deg);max-width:96px;text-align:center}
+.scribble::after{content:"";display:block;width:34px;height:16px;margin:2px 0 0 52px;border-bottom:1.5px solid var(--clay);border-right:1.5px solid var(--clay);border-radius:0 0 14px 0;transform:rotate(-24deg)}
+.hero h2{font-size:35px;line-height:38px}
+.hero h2::after{content:"";display:block;width:64px;height:7px;margin:8px auto 0;background:radial-gradient(circle,var(--clay) 2px,transparent 2.5px) 0 0/12px 7px}
+/* ticket stubs */
+.read4{gap:9px;padding:8px 2px 8px}
+.tcard{border-radius:2px;padding:6px 8px 9px!important;-webkit-mask:radial-gradient(circle 5px at 0 31px,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 31px,transparent 98%,#000) right/51% 100% no-repeat;mask:radial-gradient(circle 5px at 0 31px,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 5px at 100% 31px,transparent 98%,#000) right/51% 100% no-repeat;background:#FFFDF8}
+.tcard:nth-child(1){transform:rotate(-2deg)}.tcard:nth-child(2){transform:rotate(1.2deg) translateY(2px)}.tcard:nth-child(3){transform:rotate(-.8deg)}.tcard:nth-child(4){transform:rotate(2deg) translateY(1px)}
+.tcard::after{top:31px;left:8px;right:8px}
+.tcard .cap{font:600 19px/22px var(--hand);font-variant:normal;text-transform:none;letter-spacing:0;color:var(--ink)}
+.read4 .v{margin-top:12px;font-size:27px}
+/* clay tablets */
+.tbtn{background:linear-gradient(160deg,#C97B55,#A65A36);color:#FFF4E8;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -2px 0 rgba(60,25,10,.3),0 3px 6px -2px rgba(60,44,28,.5);border-radius:10px;text-shadow:0 -1px 0 rgba(60,25,10,.35);font-size:16px}
+.tbtn[aria-pressed="true"]{background:linear-gradient(160deg,#7C8A45,#55632C);box-shadow:inset 0 2px 4px rgba(20,30,5,.45);transform:translateY(1px)}
+.btn.primary{background:linear-gradient(160deg,#C97B55,#A65A36);box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -2px 0 rgba(60,25,10,.3),0 4px 8px -3px rgba(60,44,28,.55)}
+/* kraft scraps and tape */
+.tip,.note{background:#DCC8A6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='k'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .15 0 0 0 .13 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23k)'/%3E%3C/svg%3E");transform:rotate(-.7deg);font:500 19px/23px var(--hand);padding:16px 18px}
+.tip b{font:700 20px var(--hand);color:#6B3A1F}.note{transform:rotate(.6deg)}
+.card.why,.ans,.inst,.card.bigplate{position:relative}
+.card.why::before,.inst::before,.card.bigplate::before{content:"";position:absolute;top:-9px;left:50%;width:78px;height:20px;margin-left:-39px;background:rgba(138,152,88,.5);transform:rotate(-2.5deg);box-shadow:0 1px 2px rgba(60,44,28,.2);z-index:2}
+.inst::before{background:rgba(176,97,61,.42);left:22%;transform:rotate(3deg)}
+.card.why{transform:rotate(.4deg)}
+.alt:nth-of-type(odd){transform:rotate(-.5deg)}.alt:nth-of-type(even){transform:rotate(.45deg)}
+.qty{font-style:italic}
+.panel-h h2{font-size:34px;line-height:38px;font-style:italic}
+.eyebrow::before{content:"\2767  "}
+.colophon{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 0 0}
+.stamp{width:104px;transform:rotate(-13deg);opacity:.82}
+.st-ring{fill:none;stroke:var(--clay);stroke-width:2.2}.st-ring.thin{stroke-width:1}
+.st-txt{font:700 8.2px var(--text);letter-spacing:.14em;fill:var(--clay)}.st-mid{font:700 15px var(--hand);fill:var(--clay)}
+.colo-sprig{width:110px;transform:rotate(8deg)}
+.tabs{border-top:3px double var(--ink)}
+.dslot{border-radius:2px}.dslot.now{box-shadow:inset 0 0 0 1px var(--clay)}
+@media (min-width:1080px){
+  .app[data-layout="studio"] .top{flex-wrap:wrap;justify-content:space-between}
+  .app[data-layout="studio"] .brand{font-size:56px;line-height:60px;letter-spacing:.24em}
+  .app[data-layout="studio"] .mast{font-size:14px}.app[data-layout="studio"] .mast em{font-size:19px}
+  .app[data-layout="studio"] .hero-main .thali{width:min(340px,62%)}
+  .app[data-layout="studio"] .band{top:96px;height:176px}
+  .app[data-layout="studio"] .scribble{left:7%;top:300px;font-size:23px;max-width:120px}
+}
+
+.brand{font-size:30px;line-height:32px}
+.top{gap:0 12px;padding-top:10px;padding-bottom:6px}
+.mast{white-space:nowrap;margin-top:4px}.mast em{font-size:13.5px}
+.myfood{min-height:30px;margin-top:2px}
+.hero-main{position:relative}
+.hero-main .thali{width:min(262px,74%);margin-left:9%}
+.scribble{left:-12px;top:auto;bottom:132px;max-width:74px;font-size:16px;line-height:17px}
+.scribble::after{margin-left:44px}
+.hero-sprig{bottom:auto;top:120px;right:-22px;width:104px;transform:rotate(-58deg)}
+@media (min-width:1080px){
+  .app[data-layout="studio"] .top{height:auto;padding-top:14px;padding-bottom:10px}
+  .app[data-layout="studio"] .brand{font-size:52px;line-height:56px}
+  .app[data-layout="studio"] .lswitch{position:absolute;right:max(28px,calc(50% - 680px));top:22px}
+  .app[data-layout="studio"] .myfood{position:absolute;left:max(28px,calc(50% - 680px));top:24px}
+  .app[data-layout="studio"] .hero-main .thali{margin-left:0}
+  .app[data-layout="studio"] .scribble{left:4%;bottom:150px;font-size:23px;line-height:24px;max-width:120px}
+  .app[data-layout="studio"] .hero-sprig{top:150px;right:2%;width:150px}
+}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -627,6 +701,7 @@ h2,h3,.panel-h h2,.hero h2,.dish,.card-t,.empty-card h2,.sheet-h h2,.setup-hero 
 <div class="app" id="app" data-layout="phone">
   <header class="top">
     <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6" fill="none" stroke="#F1F7F4" stroke-width="1.8"/><path d="M12 3.4A8.6 8.6 0 0 1 20.6 12H12z" fill="#5DB27B"/><path d="M20.6 12A8.6 8.6 0 0 1 9 20.1L12 12z" fill="#E59B3A"/><path d="M9 20.1A8.6 8.6 0 0 1 12 3.4V12z" fill="#EED39C"/><circle cx="12" cy="12" r="3.4" fill="#0B4544"/></svg></span>Next Plate</div>
+    <p class="mast" aria-hidden="true"><span id="mastdate"></span><em>your daily plate, journalled</em><span id="issue"></span></p>
     <div class="lswitch" id="lswitch" role="group" aria-label="Layout" hidden><button type="button" id="ls-studio">Studio</button><button type="button" id="ls-phone">Phone</button></div>
     <button type="button" class="myfood" id="myfood" aria-haspopup="dialog" hidden><span id="myfoodtxt"></span><svg class="i"><use href="#i-chevd"/></svg></button>
   </header>
@@ -1498,6 +1573,26 @@ function sprig(cls){
   return s;
 }
 
+/* an ink vine that rises and falls like the curve it borrows from */
+function vine(flip){
+  var s=svgEl("svg",{viewBox:"0 0 170 110","class":"vine"+(flip?" flip":""),"aria-hidden":"true"}),pts=[],x,d="";
+  for(x=0;x<=170;x+=5){var y=62-34*Math.sin((x/170)*Math.PI*1.5+.2);pts.push([x,y]);d+=(x?"L":"M")+x+","+y.toFixed(1)+" ";}
+  s.appendChild(svgEl("path",{d:d,"class":"vn-stem"}));
+  for(var i=2;i<pts.length-1;i+=2){var a=pts[i],b=pts[i+1],an=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI,up=(i/2)%2?1:-1,sc=.8+((i*37)%5)/10;
+    s.appendChild(svgEl("path",{d:"M0,0 C3,-6 12,-8 17,-4 C12,1 4,2 0,0 Z","class":"vn-leaf",transform:"translate("+a[0]+","+a[1].toFixed(1)+") rotate("+(an+up*48).toFixed(0)+") scale("+sc+")"}));
+    if(i%6===0)s.appendChild(svgEl("circle",{cx:String(a[0]+up*5),cy:String(a[1]-up*9),r:"1.6","class":"vn-bud"}));}
+  return s;
+}
+function stamp(){
+  var s=svgEl("svg",{viewBox:"0 0 120 120","class":"stamp","aria-hidden":"true"});
+  s.appendChild(svgEl("circle",{cx:"60",cy:"60",r:"54","class":"st-ring"}));s.appendChild(svgEl("circle",{cx:"60",cy:"60",r:"40","class":"st-ring thin"}));
+  var defs=svgEl("defs",{});defs.appendChild(svgEl("path",{id:"stp",d:"M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"}));s.appendChild(defs);
+  var t=svgEl("text",{"class":"st-txt"}),tp=svgEl("textPath",{href:"#stp",startOffset:"2%"});tp.textContent="DRAFT PLATES \u00B7 AWAITING YOUR COACH \u00B7 DRAFT PLATES \u00B7";t.appendChild(tp);s.appendChild(t);
+  var m=svgEl("text",{x:"60",y:"57","text-anchor":"middle","class":"st-mid"});m.textContent="not yet";s.appendChild(m);
+  var m2=svgEl("text",{x:"60",y:"73","text-anchor":"middle","class":"st-mid"});m2.textContent="approved";s.appendChild(m2);
+  return s;
+}
+
 /* ---------- motion helpers: numbers count, rings and the curve glide ---------- */
 var RM=false;try{RM=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){}
 var PREVN={},PREVR={},PREVC={};
@@ -1572,6 +1667,7 @@ function renderChrome(){
   PANELS.forEach(function(v){var t=$("tab-"+v);if(VIEW===v)t.setAttribute("aria-current","page");else t.removeAttribute("aria-current");});
   $("ls-studio").setAttribute("aria-pressed",LAYOUT==="studio"?"true":"false");$("ls-phone").setAttribute("aria-pressed",LAYOUT==="phone"?"true":"false");
   $("composer").hidden=blocked();syncVoice();
+  var d0=new Date(now.getFullYear(),0,0),doy=Math.floor((now-d0)/864e5);$("issue").textContent="Issue No. "+doy;$("mastdate").textContent=now.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
 }
 function show(v,noScroll){
   if(PANELS.indexOf(v)<0)v="plate";
@@ -1654,7 +1750,7 @@ function heroCard(m,v){
   if(S.low!=="none"&&m.low.indexOf(S.low)>=0)top.appendChild(chip("Leans on "+LOWNAME[S.low],"fit","check"));
   top.appendChild(chip(m.min>0?m.min+" min":(S.sit==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
-  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));
+  main.appendChild(thali(v.items,0,"Your "+mealName(S.meal).toLowerCase()+" plate: "+summary(v.items),S.meal));h.appendChild(sprig("hero-sprig"));var band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);var sc=el("span","scribble");var vw0=vegWord(sh.veg);sc.appendChild(document.createTextNode(vw0==="None"?"no veg here yet":vw0.toLowerCase()+(vw0==="A little"?" veg on":" of")+" the plate"+(vw0==="A little"?"":" is veg")));main.appendChild(sc);
   txt.appendChild(el("h2",null,m.n));txt.appendChild(el("p","sub",summary(v.items)));main.appendChild(txt);
   var rd=el("div","read4");
   function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
@@ -1723,6 +1819,7 @@ function renderToday(){
       b.addEventListener("click",function(){sel=i;ADJ=false;FRESH=true;resetTune();render();if(LAYOUT==="phone")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(t.all.length>3){var mb=btn("linkbtn morebtn","Show three more plates","refresh","more");mb.addEventListener("click",function(){page++;sel=0;FRESH=true;resetTune();render();});v.appendChild(mb);}
+  var fw=el("div","colophon");fw.appendChild(stamp());fw.appendChild(sprig("colo-sprig"));v.appendChild(fw);
   v.appendChild(el("p","fine","Plates come from your coach's list: demonstration meals, not yet approved by your coach. Numbers are rough estimates from household measures; oil and katori size change them. General food guidance, not medical advice."));
   FRESH=false;
 }
