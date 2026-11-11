@@ -30,6 +30,7 @@ prev.length?"This follows your last answer ("+prev.join("; ")+"). Keep what stil
 "- Lose weight: about half the plate vegetables, a clear protein, grain held to 1 or 2 phulka or 1 katori rice, nothing fried, no sugary drinks; hunger changes vegetables and protein, not grain. Hold steady: a balanced plate. Build strength: protein leads the plate.",
 "- Running low on iron: an iron-rich food with a vitamin C food. B12: dairy, egg, fish or meat as the diet allows. Calcium and D: curd, milk, paneer, ragi, til or greens. Protein: a clear protein on every plate. Fibre: whole grain, legumes and vegetables.",
 "- Do not repeat what they already picked earlier today unless they ask for it.",
+"- When they are eating out, at a function, or naming a dish, add 1 or 2 \"swap\" lines: one food to skip and what to have instead. Add one \"tip\" line only when a small habit would clearly help this meal.",
 "",
 "HARD RULES",
 "- Ordinary Indian home or market food. Household measures only: katori (about 150 ml), glass, teaspoon, tablespoon, fistful, palm-size piece, or a count of phulka, idli, eggs, pieces. No grams, no calories, no percentages, no scores.",
@@ -43,6 +44,8 @@ prev.length?"This follows your last answer ("+prev.join("; ")+"). Keep what stil
 '{"t":"read","text":"one sentence, at most 28 words: your read of the situation and what the plate does about it"}',
 '{"t":"seen","text":"photo only: what you can see, at most 20 words"}',
 '{"t":"plate","name":"at most 7 words","min":20,"items":[{"q":2,"u":"","f":"phulka without ghee"},{"q":1,"u":"katori","f":"moong dal"}],"why":"at most 24 words","skip":"optional, what to leave today, at most 14 words","later":"optional, one line for the next meal, at most 16 words"}',
+'{"t":"swap","skip":"at most 8 words: a food to leave or order differently","have":"at most 10 words: what to have instead"}',
+'{"t":"tip","text":"optional, one practical line, at most 20 words"}',
 'or, instead of all of the above: {"t":"refer","text":"one sentence sending them to their coach or doctor"}',
 '"min" is cooking minutes, 0 when ordered or ready. "q" is a number such as 0.5, 1, 1.5, 2. "u" is one of "", "katori", "glass", "bowl", "plate", "fistful", "piece", "slice", "teaspoon", "tablespoon". "f" names the food and how to have it. 3 to 5 items a plate.'
   ].filter(function(x){return x!==null;}).join("\n");
