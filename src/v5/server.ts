@@ -1,5 +1,7 @@
-/* Next Plate v5: hosted server. One file for Railway Functions (Bun).
-   Serves the page and answers /api/meals and /api/rescue through Google's Gemini API. The key stays here, never in the page.
+/* Next Plate: hosted server. One file for Railway Functions (Bun).
+   Serves the page and answers /api/<kind> through Google's Gemini API. The key stays here, never in the page.
+   This file is only transport, key and limits. The thinking (what a request may contain, the prompt, the reply schema and
+   the safety checks) lives in the page's np-core script and is run here unchanged, so a new PAGE_REF updates both.
    Every meal comes from Gemini (spec D1), in grams and kcal (D3), checked by the same core the page runs (np-core).
    Environment:
      GEMINI_API_KEY   key on a project with billing (paid tier: prompts not used to train)
@@ -31,8 +33,7 @@ async function loadPage(): Promise<string> {
 const PAGE: string = await loadPage();
 console.log("page loaded", PAGE_FILE || PAGE_REF, PAGE.length, "bytes");
 /* The option lists, schemas, prompts and checks live once, in the page's np-core script. Run it here too. */
-declare const SAFETY: string, SCH: any, readProfile: any, readCtx: any, dayTargets: any, mealTargets: any,
-  buildMealPrompt: any, buildRescuePrompt: any, checkReply: any, checkRescue: any;
+declare const KINDS: string[], plan: (kind: string, body: any) => any;
 { const open = '<script id="np-core">', a = PAGE.indexOf(open) + open.length; (0, eval)(PAGE.slice(a, PAGE.indexOf("</script>", a))); }
 
 const MODELS = ["gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
@@ -76,21 +77,20 @@ async function gemini(prompt: string, schema: any, image: string | null, signal:
   try { return { ok: true, data: JSON.parse(text) }; } catch { console.error("unparsed reply", c?.finishReason, text.slice(0, 200)); return { ok: false, code: "unparsed", status: 502 }; }
 }
 
-async function handle(kind: "meals" | "rescue", req: Request, ip: string) {
+async function handle(kind: string, req: Request, ip: string) {
   let body: any;
   try { body = await req.json(); } catch { return json(400, { code: "bad_request" }); }
   const isEval = !!EVAL && body?.key === EVAL;
   if (CODE && body?.key !== CODE && !isEval) return json(401, { code: "bad_key" });
-  const p = readProfile(body?.profile), c = readCtx(body?.ctx, kind);
-  if (!p || !c) return json(400, { code: "bad_request" });
-  /* kidney condition and pregnancy never reach the model (D7) */
-  if (p.health === "kidney" || p.health === "preg") return json(200, { status: "refer", read: SAFETY, meals: [] });
+  const pl = plan(kind, body);                       // the core validates the request and builds the prompt
+  if (pl.error) return json(400, { code: pl.error });
+  if (pl.reply) return json(200, pl.reply);          // answered without the model (referral states)
   if (!KEY) return json(503, { code: "not_set_up" });
   let image: string | null = null;
-  if (kind === "rescue" && typeof body?.image === "string") {
-    if (!PHOTOS) return json(400, { code: "photos_off" });
+  if (typeof body?.image === "string") {
+    if (!pl.image || !PHOTOS) return json(400, { code: "photos_off" });
     if (body.image.length > 1_600_000 || !/^[A-Za-z0-9+/=]+$/.test(body.image)) return json(400, { code: "bad_image" });
-    image = body.image; c.photo = true;
+    image = body.image;
   }
   if (!isEval) {
     roll();
@@ -99,16 +99,15 @@ async function handle(kind: "meals" | "rescue", req: Request, ip: string) {
     if (mine >= PER_PHONE) return json(429, { code: "limit_ip" });
     ledger.asks++; ledger.byIp.set(ip, mine + 1);
   }
-  c.target = mealTargets(dayTargets(p), c.meal, c.appetite || 5);
   const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 90_000);
   req.signal.addEventListener("abort", () => ctrl.abort());
   const t0 = Date.now();
-  const r = kind === "meals" ? await gemini(buildMealPrompt(p, c), SCH.meals, null, ctrl.signal) : await gemini(buildRescuePrompt(p, c), SCH.rescue, image, ctrl.signal);
+  const r = await gemini(pl.prompt, pl.schema, image, ctrl.signal);
   clearTimeout(timer);
   if (!r.ok) return json(r.status, { code: r.code });
-  const out = kind === "meals" ? checkReply(r.data, p) : checkRescue(r.data, p);
+  const out = pl.check(r.data);
   console.log(kind, out.status, out.meals ? out.meals.length : "", JSON.stringify(out.dropped || {}), Date.now() - t0, "ms");
-  return json(200, isEval ? { ...out, raw: r.data, ms: Date.now() - t0 } : out);
+  return json(200, isEval ? { ...out, raw: r.data, prompt: pl.prompt, ms: Date.now() - t0 } : out);
 }
 
 Bun.serve({
@@ -117,12 +116,11 @@ Bun.serve({
   async fetch(req, srv) {
     const url = new URL(req.url);
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || srv.requestIP(req)?.address || "?";
-    if (req.method === "POST" && url.pathname === "/api/meals") return handle("meals", req, ip);
-    if (req.method === "POST" && url.pathname === "/api/rescue") return handle("rescue", req, ip);
+    if (req.method === "POST" && url.pathname.startsWith("/api/")) { const kind = url.pathname.slice(5); if (KINDS.includes(kind)) return handle(kind, req, ip); }
     if (req.method === "GET" && url.pathname === "/health") return json(200, { ok: true, model: MODEL, ai: !!KEY, page: PAGE_FILE ? "file" : PAGE_REF });
     if (req.method === "GET" && (url.pathname === "/" || url.pathname === "/index.html"))
       return new Response(PAGE, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache", "x-content-type-options": "nosniff", "referrer-policy": "no-referrer" } });
     return new Response("Not found", { status: 404 });
   },
 });
-console.log("Next Plate v5 on", env("PORT", "3000"), "model", MODEL, "ai", !!KEY);
+console.log("Next Plate on", env("PORT", "3000"), "model", MODEL, "ai", !!KEY);

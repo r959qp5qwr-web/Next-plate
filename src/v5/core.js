@@ -283,3 +283,17 @@ function readCtx(x,kind){
     if(q.protein&&q.greens&&q.carbs&&q.fats&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2)c.ratio=q;}
   return c;
 }
+
+/* ---------- one entry point for the server: the server holds the key and the limits, the core holds the thinking ----------
+   plan(kind, body) -> {error} | {reply} (answered without the model) | {prompt, schema, image, check(data)} */
+var KINDS=["meals","rescue"];
+function plan(kind,body){
+  var p=readProfile(body&&body.profile),c=readCtx(body&&body.ctx,kind);
+  if(!p||!c)return {error:"bad_request"};
+  /* kidney condition and pregnancy never reach the model (D7) */
+  if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
+  c.target=mealTargets(dayTargets(p),c.meal,c.appetite||5);
+  if(kind==="meals")return {prompt:buildMealPrompt(p,c),schema:SCH.meals,image:false,check:function(d){return checkReply(d,p);}};
+  if(kind==="rescue"){c.photo=!!(body&&body.image);return {prompt:buildRescuePrompt(p,c),schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p);}};}
+  return {error:"bad_request"};
+}
