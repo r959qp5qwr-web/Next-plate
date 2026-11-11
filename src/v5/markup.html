@@ -1,0 +1,24 @@
+<div class="app" id="app" data-layout="phone">
+  <header class="top">
+    <div class="brand"><span>Next Plate</span></div>
+    <p class="mast" aria-hidden="true"><span id="mastdate"></span><em>your daily plate, journalled</em><span id="issue"></span></p>
+    <button type="button" class="myfood" id="myfood" aria-haspopup="dialog" hidden><span id="myfoodtxt"></span><svg class="i"><use href="#i-chevd"/></svg></button>
+  </header>
+  <main class="scroll" id="scroll">
+    <section class="view" id="v-setup" hidden></section>
+    <section class="view panel" id="v-plate" hidden></section>
+    <section class="view panel" id="v-build" hidden></section>
+    <section class="view panel" id="v-rescue" hidden></section>
+  </main>
+  <nav class="tabs" id="tabs" aria-label="Sections" hidden>
+    <button type="button" class="tab" id="tab-plate"><svg class="i"><use href="#i-plate"/></svg><span>Plate</span></button>
+    <button type="button" class="tab" id="tab-build"><svg class="i"><use href="#i-lab"/></svg><span>Builder</span></button>
+    <button type="button" class="tab" id="tab-rescue"><svg class="i"><use href="#i-rescue"/></svg><span>Rescue</span></button>
+  </nav>
+  <div class="toast" id="toast" hidden><svg class="i"><use href="#i-check"/></svg><span id="toasttxt"></span></div>
+  <div class="sheet" id="sheet" hidden></div>
+  <span class="said" id="said" role="status" aria-live="polite"></span>
+</div>
+
+<script id="np-core">/*CORE*/</script>
+<script>/*APP*/</script>

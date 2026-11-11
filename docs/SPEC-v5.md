@@ -81,8 +81,8 @@ alchemy: {protein, glucose, express, gut}: {label, titleSuffix, deltaKcal, delta
 ## 4. Screens (mobile, three tabs; [S] mobile nav minus Supplements)
 
 ### 4.1 Plate (home)
-1. Header strip: mode pills, appetite slider, today's kcal and protein against target.
-2. Cuisine switch and mood chips ([P] 618–660).
+1. Header strip: today's protein, kcal and plates against target.
+2. One row of pills, each opening its choices in place (the confirmed v4 pattern, which keeps the plate above the fold): mode, appetite, cuisine, mood, cooking and oil ([S] header; [P] 618–660).
 3. **Meal card:** title + alchemy suffixes, subtitle, prep time, kcal, plate emblem; macro strip (protein, fibre, carbs, fats, glycemic band); item list in grams ([S] hero card).
 4. **1-tap alchemy:** +Protein · Gentler on sugar · 10-min version · Easy on the gut. Toggles stack, and their notes are listed ([S] alchemy bar).
 5. **Customize drawer:** home / ordering out, protein swap, base swap, oil level ([P] customize drawer).
@@ -109,7 +109,7 @@ alchemy: {protein, glucose, express, gut}: {label, titleSuffix, deltaKcal, delta
 - No supplements, powders, tablets or doses (D2). The validator drops them.
 - Diabetes: the grain stays, paired with protein and fibre; no sweets or juice on a plate. High BP: no pickle, papad or added salt.
 - Kidney or pregnancy: no call; referral line only (D7).
-- Numbers are estimates and are labelled "approx." on screen. kcal must match 4·protein + 4·carbs + 9·fats within 10 %, or the meal is dropped.
+- Numbers are estimates and are labelled as estimates on screen. kcal must match 4·protein + 4·carbs + 9·fats within 15 %, or the meal is dropped. *(Built at 15 % rather than 10 %: fibre and rounding alone move a correct meal by 5 to 8 %.)*
 - **Plain language. No invented precision.** Not "+2000 % curcumin uptake", not "−42 % spike", no mTOR or leucine. The mechanism stays; the made-up percentages go.
 - No diagnosis, no treatment claims, no promised weight loss.
 
@@ -120,6 +120,6 @@ alchemy: {protein, glucose, express, gut}: {label, titleSuffix, deltaKcal, delta
 4. Rescue, including the menu photo.
 5. Full phone walkthrough, eval run, owner review. Deploy only on "Deploy."
 
-## 7. Open questions for the owner
-- **Q1, the after-meal curve:** Gemini shows predicted mg/dL ("+21 mg/dL", "140 mg/dL ceiling"). Those numbers come from made-up coefficients, and diabetic clients may read them as real readings. **Recommend: keep the curve and the toggles, show a Gentle / Moderate / Sharp band, no mg/dL.**
-- **Q2:** put both Gemini files in this public repo under `docs/foundation/`, so no later session can lose them? **Recommend: yes.**
+## 7. Owner answers
+- **Q1 (decided 2026-11-11: band):** the after-meal curve shows Gentle / Moderate / Sharp, never mg/dL. Gemini's mg/dL numbers come from made-up coefficients.
+- **Q2 (decided 2026-11-11: yes):** both Gemini files live in `docs/foundation/` (Pocket Dietitian = [P], Summit Edition = [S]).
