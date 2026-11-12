@@ -72,10 +72,10 @@ function phone(ctx, t, IMG) {
 // a detail lifts out of the screen and comes forward. [shot, rect, in, out, width, centre y, from rect on the phone's current screen]
 const LIFTS = [
   ['s03', [16, 126, 358, 194], 1.3, 3.9, 960, 1150],
-  ['s07', [6, 240, 378, 356], 5.9, 10.2, 980, 1130, [6, 240]],
+  ['s07', [6, 192, 378, 262], 5.9, 10.2, 980, 1130, [6, 192]],
   ['s05b', [16, 128, 358, 312], 13.2, 17.6, 960, 1160, [16, 600]],
-  ['s18', [20, 266, 352, 56], 18.6, 23.6, 980, 900, [20, 266]],
-  ['s05', [20, 290, 352, 76], 19.9, 23.6, 980, 1230],
+  ['s18', [20, 299, 352, 56], 18.6, 23.6, 980, 900, [20, 299]],
+  ['s05', [20, 266, 352, 78], 19.9, 23.6, 980, 1230],
 ];
 function lifts(ctx, t, IMG) {
   const c = camera(t), k = c.k; let veil = 0; const up = [];
@@ -105,7 +105,7 @@ function close(ctx, t, IMG) {
     ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.6); ctx.translate(W / 2, cy); ctx.rotate(rot);
     ctx.save(); ctx.shadowColor = 'rgba(45,30,14,0.28)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 30; ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.fill(); ctx.restore();
     ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.clip(); ctx.imageSmoothingQuality = 'high';
-    const s = 3, src = PLATE.r * s; ctx.drawImage(IMG.s04, PLATE.cx * s - src, PLATE.cy * s - src, src * 2, src * 2, -R, -R, R * 2, R * 2);
+    const s = 3, src = PLATE.r * s; ctx.drawImage(IMG.s04c, PLATE.cx * s - src, PLATE.cy * s - src, src * 2, src * 2, -R, -R, R * 2, R * 2);
     ctx.restore();
   }
   // the name, letter by letter as it is said
@@ -123,7 +123,7 @@ function close(ctx, t, IMG) {
 // sound: a soft tap, and a small chime as each detail arrives
 const HITS = [[4.45, 'tap', 'tick', { gain: 0.11 }], ...LIFTS.map(([, , a]) => [a + 0.15, 'card arrives', 'bell', { pitch: 'A5', gain: 0.045, len: 1.0 }]), [25.45, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
 
-const shots = { s03: '03-today-directive', s07: '07-how-numbers', s04: '04-plate', s05b: '05b-serve', s05: '05-planned-around', s18: '18-dinner-planned-around' };
+const shots = { s03: '03-today-directive', s07: '07-how-numbers', s04: '04-plate', s04c: '04-plate-clean', s05b: '05b-serve', s05: '05-planned-around', s18: '18-dinner-planned-around' };
 M.film({
   fonts: [fD(78), fD(78, 600), fI(78)],
   images: Object.fromEntries(Object.entries(shots).map(([k, v]) => [k, `assets/shots/${v}.png`])),

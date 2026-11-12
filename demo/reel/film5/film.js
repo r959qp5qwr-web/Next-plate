@@ -62,9 +62,9 @@ function cards(ctx, t) {
   });
 }
 // what the phone shows. [time, shot, cross-fade seconds]
-const SCREENS = [[0, 's03', 0], [6.5, 'm1', 0.4], [10.6, 'm2', 0.3], [12.2, 'm3', 0.45], [15.0, 'd1', 0.4], [17.2, 'd2', 0.4], [19.4, 'd3', 0.4], [22.0, 'k1', 0.4], [25.9, 'k2', 0.5],
+const SCREENS = [[0, 's03', 0], [6.5, 'm1', 0.4], [10.6, 'm2', 0.3], [12.2, 'm3', 0.45], [15.0, 'd1', 0.4], [18.0, 'd2', 0.4], [19.6, 'd3', 0.4], [22.0, 'k1', 0.4], [25.9, 'k2', 0.5],
   [29.5, 'k4', 0.4], [32.6, 'k5', 0.3], [37.0, 'v1', 0.4], [39.0, 'v2', 0.3], [42.0, 'v3', 0.45], [46.0, 't1', 0.45]].map(([a, k, f]) => [T(a), k, f]);
-const TAPS = [[9.6, 195, 266], [16.9, 166, 741], [25.75, 350, 738], [32.45, 278, 438], [38.4, 338, 600], [38.8, 338, 600]].map(([a, x, y]) => [T(a), x, y]);
+const TAPS = [[9.6, 195, 266], [17.3, 166, 719], [25.75, 350, 738], [32.45, 278, 438], [38.4, 338, 600], [38.8, 338, 600]].map(([a, x, y]) => [T(a), x, y]);
 function phone(ctx, t, IMG) {
   const c = camera(t), k = c.k, X = (x) => c.cx + (x - c.fx) * k, Y = (y) => c.cy + (y - c.fy) * k;
   const x0 = X(0), y0 = Y(0), w = 390 * k, h = 844 * k, bz = 9 * k, R = 46 * k;
@@ -88,10 +88,11 @@ const LIFTS = [
   ['s03', [16, 126, 358, 194], 2.4, 5.8, 980, 1130],
   ['ph', [0, 0, 400, 533.3], 10.0, 11.9, 720, 1150],
   ['m3', [16, 142, 358, 458], 12.3, 14.4, 880, 1180],
-  ['d2', [0, 391, 390, 340], 17.6, 19.0, 980, 1150],
+  ['d1', [0, 604, 390, 240], 16.9, 17.8, 980, 1150],
+  ['d2', [0, 391, 390, 340], 18.3, 19.3, 980, 1150],
   ['d3', [8, 406, 322, 88], 19.8, 21.6, 940, 1100],
   ['ka', [16, 705, 358, 66], 24.55, 25.75, 1000, 1150],
-  ['k2', [16, 170, 358, 282], 26.0, 28.6, 960, 1150],
+  ['k2', [16, 239, 358, 300], 26.0, 28.6, 960, 1150],
   ['k4', [32, 372, 326, 158], 30.7, 32.3, 980, 1120],
   ['k5', [32, 399, 326, 240], 33.0, 36.6, 980, 1150],
   ['v2', [16, 327, 358, 440], 39.4, 41.7, 860, 1160],
@@ -116,7 +117,7 @@ function lifts(ctx, t, IMG) {
 
 
 // the close, as in the 30 s film: the plate settles, the name comes up as it is said, then 'Made for you.'; the reply line sits under it, on screen only
-const PLATE = { cx: 210, cy: 297.2, r: 119 };       // the plate illustration on the k2 capture, CSS px (same layout as the 30 s film's)
+const PLATE = { cx: 210, cy: 366.2, r: 119 };       // on the k2c capture (the plate card sits lower after the asked line)       // the plate illustration on the k2 capture, CSS px (same layout as the 30 s film's)
 function close(ctx, t, IMG) {
   const tn = END + 1.0, tm = END + 2.42; if (t < tn - 1.6) return;
   const drift = 1 + 0.025 * ease(prog(t, tn, END + 6.3));
@@ -126,7 +127,7 @@ function close(ctx, t, IMG) {
     ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.6); ctx.translate(W / 2, cy); ctx.rotate(rot);
     ctx.save(); ctx.shadowColor = 'rgba(45,30,14,0.28)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 30; ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.fill(); ctx.restore();
     ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.clip(); ctx.imageSmoothingQuality = 'high';
-    const s = 3, src = PLATE.r * s; ctx.drawImage(IMG.k2, PLATE.cx * s - src, PLATE.cy * s - src, src * 2, src * 2, -R, -R, R * 2, R * 2);
+    const s = 3, src = PLATE.r * s; ctx.drawImage(IMG.k2c, PLATE.cx * s - src, PLATE.cy * s - src, src * 2, src * 2, -R, -R, R * 2, R * 2);
     ctx.restore();
   }
   const title = 'NEXT PLATE', size = 120, track = 24; ctx.font = fD(size, 600);
@@ -144,7 +145,7 @@ function close(ctx, t, IMG) {
 const HITS = [...TAPS.map(([tt]) => [tt, 'tap', 'tick', { gain: 0.11 }]), ...BEATS.map(([a]) => [a + 0.1, 'card', 'bell', { pitch: 'E5', gain: 0.04, len: 1.0 }]),
   ...LIFTS.map(([, , a]) => [a + 0.15, 'detail arrives', 'bell', { pitch: 'A5', gain: 0.04, len: 1.0 }]), [END + 1.45, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
 
-const shots = { s03: '03-today-directive', m1: 'M1-rescue-entry', m2: 'M2-reading', m3: 'M3-order', d1: 'D1-log-ask', d2: 'D2-log-estimate', d3: 'D3-day-updated', k1: 'K1-ask', ka: 'K1-ask', k2: 'K2-plate',
+const shots = { s03: '03-today-directive', m1: 'M1-rescue-entry', m2: 'M2-reading', m3: 'M3-order', d1: 'D1-log-ask', d2: 'D2-log-estimate', d3: 'D3-day-updated', k1: 'K1-ask', ka: 'K1-ask', k2: 'K2-plate', k2c: 'K2-plate-clean',
   k4: 'K4-taps', k5: 'K5-gentler', v1: 'V1-builder', v2: 'V2-more-veg', v3: 'V3-curve', t1: 'T1-day-done' };
 M.film({
   fonts: [fD(78), fD(78, 600), fI(78)],

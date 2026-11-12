@@ -69,7 +69,7 @@ const PHRASES = ['So far [^.]*\\.', '[A-Z][a-z]+ carries [^.]*\\.', 'That is eve
     await p.press('#askin', 'Enter'); await settle(p, 300);
     await p.waitForSelector('#plate-card', { timeout: 90000 }); await p.waitForFunction(() => !document.querySelector('.plate.wait'), null, { timeout: 90000 }); await settle(p, 1500);
     await into(p, '#plate-card'); await settle(p, 400); await shot(p, 'K2-plate');
-    await p.addStyleTag({ content: '.scribble,.hero-sprig,.band{visibility:hidden!important}' }); await settle(p, 200); await shot(p, 'K2-plate-clean'); await p.evaluate(() => { const s = [...document.querySelectorAll('style')].pop(); s.remove(); }); await settle(p, 200);
+    await p.evaluate(() => { const st = document.createElement('style'); st.id = 'clean-plate'; st.textContent = '.scribble,.hero-sprig,.band{visibility:hidden!important}'; document.head.appendChild(st); }); await settle(p, 200); await shot(p, 'K2-plate-clean'); await p.evaluate(() => document.getElementById('clean-plate').remove()); await settle(p, 200);
     await into(p, '.serve', 'start'); await settle(p, 400); await shot(p, 'K3-serve');
     await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 90000 }); await settle(p, 600);
     await into(p, '.tune', 'center'); await settle(p, 300); await shot(p, 'K4-taps');
