@@ -10,3 +10,6 @@ demo/reel/film4/audio/*.wav
 demo/reel/film4/audio/**/*.wav
 demo/reel/film5/audio/*.wav
 demo/reel/film5/audio/**/*.wav
+test/ux/out/
+.claude/.ux-dirty
+.claude/.ux-gate-tries

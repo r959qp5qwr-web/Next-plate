@@ -1,7 +1,7 @@
 // Stand-in for Google's API on localhost: returns the fixture in Gemini's response shape, after a short delay.
 const fx = require("./fixture.js"), fxMenu = require("../v6/fixture-menu.js");
 let calls = 0;
-Bun.serve({ port: 8787, async fetch(req) {
+Bun.serve({ port: Number(Bun.env.MOCK_PORT || 8787), async fetch(req) {
   const b: any = await req.json(); const text = b.contents[0].parts[0].text; calls++;
   let which = /THE DISH/.test(text) ? fx.rescue : /WHAT THEY ATE/.test(text) ? fx.log : /THE PLATE:/.test(text) ? { swaps: fx.meals.meals[0].swaps, alchemy: fx.meals.meals[0].alchemy } : fx.meals;
   const isMenu = /^THE MENU$/m.test(text);
@@ -16,7 +16,7 @@ Bun.serve({ port: 8787, async fetch(req) {
     which = { ...which, meals: which.meals.map((m: any, i: number) => ({ ...m, ...(lite ? { swaps: undefined, alchemy: undefined } : {}), planned_around: ids.slice(i, i + 3), for_you: "Layout sample: this line will say why the plate suits you today." })) };
   }
   if (!b.generationConfig?.responseSchema || b.generationConfig.responseMimeType !== "application/json") return new Response("no schema", { status: 400 });
-  await Bun.write(`/tmp/claude-0/last-prompt-${isMenu ? "menu" : /THE DISH/.test(text) ? "rescue" : "meals"}.txt`, text);
+  if (Bun.env.SAVE_PROMPTS) await Bun.write(`/tmp/last-prompt-${isMenu ? "menu" : /THE DISH/.test(text) ? "rescue" : "meals"}.txt`, text);
   await new Promise(r => setTimeout(r, Number(Bun.env.DELAY || 1200)));
   return Response.json({ candidates: [{ content: { parts: [{ text: JSON.stringify(which) }] }, finishReason: "STOP" }], usageMetadata: { calls } });
 } });
