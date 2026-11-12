@@ -1,0 +1,179 @@
+[
+ {
+  "id": "menu-north-indian-veg",
+  "kind": "menu",
+  "p": {
+   "diet": "veg"
+  },
+  "c": {
+   "meal": "dinner",
+   "time": "8:30 pm",
+   "hour": 20.5,
+   "dayNo": 316,
+   "text": "STARTERS\nPaneer Tikka 320\nChicken Tikka 360\nHara Bhara Kabab 260\nMAINS\nDal Tadka 240\nDal Makhani 280\nPalak Paneer 300\nKadai Paneer 310\nMalai Kofta 320\nButter Chicken 380\nMutton Rogan Josh 420\nChole Bhature 220\nRICE AND BREADS\nVeg Biryani 280\nJeera Rice 160\nTandoori Roti 30\nButter Naan 60\nSIDES\nCucumber Raita 90\nGreen Salad 80\nGulab Jamun 90"
+  },
+  "file": {},
+  "never": "chicken|mutton|fish|egg|prawn"
+ },
+ {
+  "id": "menu-south-tiffin-diabetes",
+  "kind": "menu",
+  "p": {
+   "diet": "veg",
+   "health": "diabetes",
+   "meds": "no",
+   "region": "s"
+  },
+  "c": {
+   "meal": "breakfast",
+   "time": "8:30 am",
+   "hour": 8.5,
+   "dayNo": 317,
+   "text": "Idli (2 pcs) 50\nMedu Vada (2 pcs) 60\nPlain Dosa 70\nMasala Dosa 90\nRava Dosa 100\nOnion Uttapam 90\nPongal 80\nUpma 60\nPoori Bhaji 80\nCurd Rice 70\nSambar Rice 80\nKesari Bath 50\nFilter Coffee 30\nButtermilk 30"
+  },
+  "file": {},
+  "never": "kesari|sugar|juice"
+ },
+ {
+  "id": "menu-indo-chinese-nonveg-build",
+  "kind": "menu",
+  "p": {
+   "diet": "nonveg",
+   "goal": "build",
+   "sex": "m",
+   "age": 34,
+   "cm": 172,
+   "kg": 74,
+   "act": "mod"
+  },
+  "c": {
+   "meal": "dinner",
+   "time": "8:45 pm",
+   "hour": 20.75,
+   "dayNo": 318,
+   "mode": "strength",
+   "text": "SOUPS\nVeg Manchow Soup 140\nChicken Hot and Sour Soup 160\nSTARTERS\nVeg Spring Rolls 180\nGobi Manchurian Dry 200\nChilli Paneer 240\nChilli Chicken 260\nChicken Lollipop 280\nMAINS\nVeg Hakka Noodles 200\nChicken Hakka Noodles 240\nVeg Fried Rice 190\nEgg Fried Rice 210\nChicken Fried Rice 240\nSchezwan Chicken 280\nSteamed Fish in Ginger Sauce 340\nMixed Veg in Hot Garlic Sauce 220\nSteamed Rice 120\nDESSERT\nDarsaan with Ice Cream 160"
+  },
+  "file": {}
+ },
+ {
+  "id": "menu-pizza-after-heavy-lunch",
+  "kind": "menu",
+  "p": {
+   "diet": "veg",
+   "goal": "lose",
+   "kg": 72
+  },
+  "c": {
+   "meal": "dinner",
+   "time": "8:40 pm",
+   "hour": 20.67,
+   "dayNo": 319,
+   "text": "Margherita Pizza (Regular / Medium) 249 / 449\nFarmhouse Pizza 299 / 529\nPaneer Tikka Pizza 329 / 569\nChicken Pepperoni Pizza 349 / 599\nVeggie Paradise Pizza 319 / 559\nGarlic Breadsticks 129\nCheesy Garlic Bread 169\nPasta Arrabbiata 229\nPasta Alfredo 249\nGarden Salad 149\nChoco Lava Cake 109\nCold Drink 60"
+  },
+  "file": {
+   "today": {
+    "kcal": 1120,
+    "protein": 30,
+    "carbs": 148,
+    "fats": 44,
+    "fiber": 18,
+    "lastHoursAgo": 6.5,
+    "lastKcal": 820,
+    "meals": [
+     {
+      "meal": "breakfast",
+      "kind": "had",
+      "title": "Vegetable poha",
+      "kcal": 300,
+      "protein": 8
+     },
+     {
+      "meal": "lunch",
+      "kind": "rescued",
+      "title": "Chole bhature",
+      "kcal": 820,
+      "protein": 22
+     }
+    ]
+   }
+  },
+  "never": "chicken|pepperoni"
+ },
+ {
+  "id": "menu-cafe-egg-no-nuts",
+  "kind": "menu",
+  "p": {
+   "diet": "egg",
+   "leave": [
+    "nut"
+   ]
+  },
+  "c": {
+   "meal": "lunch",
+   "time": "1:15 pm",
+   "hour": 13.25,
+   "dayNo": 320,
+   "text": "Grilled Veg Sandwich 220\nPaneer Tikka Wrap 260\nEgg Mayo Sandwich 240\nMasala Omelette with Toast 200\nAvocado Toast 320\nQuinoa Salad with Walnuts 340\nPeanut Butter Banana Toast 240\nPenne in Pesto with Pine Nuts 360\nMushroom Soup with Garlic Bread 240\nAlmond Croissant 180\nBanana Walnut Cake 160\nGreek Yogurt with Fruit and Honey 220\nCappuccino 180\nCold Coffee 220"
+  },
+  "file": {},
+  "never": "walnut|peanut|almond|pine nut|chicken|fish"
+ },
+ {
+  "id": "menu-wedding-buffet-sulfonylurea",
+  "kind": "menu",
+  "p": {
+   "diet": "veg",
+   "health": "diabetes",
+   "meds": "yes",
+   "goal": "lose",
+   "kg": 78
+  },
+  "c": {
+   "meal": "dinner",
+   "time": "9:00 pm",
+   "hour": 21,
+   "dayNo": 321,
+   "text": "WELCOME: Jaljeera, Fruit Punch\nCHAAT: Pani Puri, Aloo Tikki, Dahi Bhalla\nSTARTERS: Paneer Tikka, Hara Bhara Kabab, Veg Seekh Kabab\nMAIN COURSE: Dal Makhani, Shahi Paneer, Mix Veg, Aloo Gobi, Kadhi Pakora, Chole\nRICE AND BREADS: Veg Pulao, Jeera Rice, Tandoori Roti, Butter Naan, Missi Roti\nSALAD AND RAITA: Green Salad, Boondi Raita, Sprouts Salad\nDESSERT: Gulab Jamun, Moong Dal Halwa, Kulfi, Jalebi with Rabri"
+  },
+  "file": {},
+  "never": "jalebi|halwa|gulab jamun|kulfi|fruit punch"
+ },
+ {
+  "id": "menu-canteen-board-nonveg-bp",
+  "kind": "menu",
+  "p": {
+   "diet": "nonveg",
+   "health": "bp",
+   "sex": "m",
+   "age": 52,
+   "cm": 175,
+   "kg": 80
+  },
+  "c": {
+   "meal": "lunch",
+   "time": "1:10 pm",
+   "hour": 13.2,
+   "dayNo": 322,
+   "text": "TODAY'S LUNCH\nVeg Thali (2 roti, rice, dal, sabzi, curd, papad, pickle) 80\nChicken Curry Thali (2 roti, rice, chicken curry, salad) 110\nEgg Curry with Rice 70\nRajma Chawal 60\nCurd Rice 50\nVeg Pulao with Raita 60\nAloo Paratha with Curd and Pickle 50\nSamosa (2 pcs) 20\nBoiled Egg (2) 20\nSprouts Chaat 30\nButtermilk 15\nTea 10"
+  },
+  "file": {},
+  "never": "papad|pickle|namkeen"
+ },
+ {
+  "id": "menu-blurred-photo",
+  "kind": "menu",
+  "p": {
+   "diet": "veg"
+  },
+  "c": {
+   "meal": "dinner",
+   "time": "8:30 pm",
+   "hour": 20.5,
+   "dayNo": 323
+  },
+  "file": {},
+  "image": "menu-blurred.jpg",
+  "expect": "unreadable"
+ }
+]
