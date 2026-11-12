@@ -17,9 +17,9 @@ plate asked; toast; Builder, Builder adjusted; Rescue entry, result, menu typed,
 | ID | Criterion | Threshold | Sources |
 |---|---|---|---|
 | A1 | Nothing scrolls sideways; no element beyond the phone edge unless inside one horizontal scroller | page scrollWidth ≤ clientWidth at every width | BD-08, BD-76, VT-29, VT-32, AU-32, WCAG 1.4.10 Reflow (320 px) |
-| A2 | No text cut off by its box; input hints fit their box | scrollWidth/scrollHeight within the box when overflow is hidden; placeholder width ≤ input room | BD-03, BD-08, VT-12 |
-| A3 | Text and controls never overlap; the last content scrolls clear of the fixed ask bar and tabs | overlap ≤ 2 px | BD-08, BD-15, BD-76, IX-58 |
-| A4 | Type: no text under 14 px; body about 16 px or more; inputs 16 px or more (iOS zooms on focus below 16 px); the handwriting face only for short annotations at 22 px and up, never for buttons, labels, status or figures | 14 px floor; 16 px inputs; 22 px handwriting | BD-01, BD-02, BD-03, BD-04, BD-05, VT-02, VT-03, VT-04, A11Y (text size rows), DC-08 note on serif for low vision |
+| A2 | No text cut off by its box or running past it (where a neighbour paints over it); input hints fit their box | scrollWidth/scrollHeight within the box when overflow is hidden; placeholder width ≤ input room | BD-03, BD-08, VT-12 |
+| A3 | Text and controls never overlap; the last content scrolls clear of the fixed ask bar and tabs; what a tap produces comes into view | overlap ≤ 2 px | BD-08, BD-15, BD-76, IX-58 |
+| A4 | Type: no text under 14 px, chart text included; body about 16 px or more; inputs 16 px or more (iOS zooms on focus below 16 px); the handwriting face only for short annotations at 22 px and up, never for buttons, labels, status or figures | 14 px floor; 16 px inputs; 22 px handwriting | BD-01, BD-02, BD-03, BD-04, BD-05, VT-02, VT-03, VT-04, A11Y (text size rows), DC-08 note on serif for low vision |
 | A5 | Text contrast | 4.5:1 normal; 3:1 at 24 px or 18.66 px bold; placeholders included | BD-17, BD-18, VT-28, A11Y (WCAG 1.4.3), IX-44 |
 | A6 | Touch targets | 44 × 44 CSS px for every stand-alone control; inline text links exempt | BD-12, BD-13, BD-14, VT-30, IX-15, WCAG 2.5.5/2.5.8 |
 | A7 | Every control and image has a name; pinch zoom never blocked | accessible name present; no `user-scalable=no` / `maximum-scale=1` | BD-24, BD-09, AU-33, A11Y (4.1.2, 1.1.1, 1.4.4) |
@@ -28,6 +28,11 @@ plate asked; toast; Builder, Builder adjusted; Rescue entry, result, menu typed,
 | A10 | Every state renders; no page errors | each state reached; console clean | BD-45, BD-90, BD-92, AU-34 |
 | A11 | Coverage comes from the code | every tab, sheet and view in src/v6/app.js has at least one state in the review | BD-93 |
 | A12 | Each check catches a planted fault | `node test/ux/review.js --drill` plants one fault per rule and expects each to be caught | BD-91 |
+
+## Part A, changes after Critic round 1
+The Critic found what the first version of the review could not see: a figure running into the next tile, a Rescue answer landing
+below the fold, chart labels at 10 px, and a 130 % simulation that compounded on nested text. The review now checks each of these
+(rules text-overflow, feedback-hidden, chart text in text-too-small) and its drill plants them.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
