@@ -1,108 +1,119 @@
 VERDICT: FAIL
-BUILD: 53ea70d491a690fdb5dc98f5081760cfcbaaae355dcb52def0d9f069a84001fd
+BUILD: e7bbd6b49a6ac635196449797b67865c78760bf8254a6f272fda2ec40a8a735b
 
-# Critic, round 4 (app diff baa5e08..HEAD, both v6 pages, both films, the WhatsApp post, the gate)
+# Critic, round 5 (app diff baa5e08..HEAD, both v6 pages, both films, the WhatsApp post, the gate)
 
-I measured, rendered and viewed everything below myself. I did not use the builder's commit messages as evidence. Where a commit message makes a claim, I checked it against the screens.
+I measured, rendered and viewed everything below myself. I did not take the builder's commit message as evidence; where it makes a claim, I checked the claim.
+
+The app's round 4 finding is resolved, and nothing a client sees blocks this round. The FAIL comes from an owner-rule breach in a note in the owner-approved film script (finding 1). Rule 4 covers notes, and a breach is an automatic FAIL.
 
 ## What I measured
 - **Pages are current.** I rebuilt them in a fresh scratch copy with the repo's esbuild 0.24.2. hosted/v6/index.html, hosted/v6/index.min.html and hosted/v5/index.min.html came out byte-identical to the committed files. The working tree is clean.
-- **Drill.** `npm run drill`: "every planted fault was caught" (17 rules, 18 planted faults).
-- **Review.** `npm run review`: 9 runs x 34 states = 306 checks.
-  - No violations, no unreached states, no page errors, no coverage gaps; exit 0.
-  - Every screenshot was rewritten by my run; the oldest file in each folder is newer than my start.
-  - I also ran the review on the served page (`--page hosted/v6/index.min.html`, output in the scratchpad): 306 checks, no violations, exit 0.
+- **Drill.** `npm run drill`: "every planted fault was caught".
+- **Review.** `npm run review`: 9 runs x 37 states = 333 checks, exit 0.
+  - report.json: 0 violations, 0 state errors, 37 states, all 9 runs.
+  - Every screen in test/ux/out/screens was rewritten by my run (oldest file 15:35:14; my run started 15:35).
+  - I also ran the review on the served page (`--page hosted/v6/index.min.html`, output in the scratchpad): 333 checks, no violations, exit 0.
 - **Exceptions.** test/ux/allow.json is `[]`, so there are none to judge.
-- **Films.** I extracted frames at every beat to /tmp/np-frames-r4.
-  - 30 s film: 31.5 s, 1080x1920, 60 fps. 51 s film: 51.0 s, same format. WhatsApp copies: 720x1280.
-  - Mean level is -16.7 dB on both films; the copies are -16.7 and -16.8 dB.
-  - The 51 s soundtrack matches demo/reel/film5/audio/mix.wav (difference -44.6 dB).
-- **Voice timings.** demo/reel/film4/vo.js and film5/vo.js are unchanged since round 3. They match the approved scripts word for word, with no repeated words.
-- **Gap levels, 51 s film.** The gap at 17 s is now -13.7 dB, level with the spoken seconds (-13.4 to -14.8 dB). In round 3 it was -9.7 dB.
-- **Gap levels, 30 s film.** The gaps at 17 s and 24 s are -11.4 and -11.7 dB. The loudest spoken second is -14.9 dB.
+- **Films.** The films and their copies have not changed since commit 1619367 (git diff is empty for demo/ and docs/film/).
+  - 30 s film: 31.5 s. 51 s film: 51.0 s. Both 1080x1920 at 60 fps.
+  - Mean level is -16.7 dB on both films; the WhatsApp copies are -16.7 and -16.8 dB.
+- **Menu photo retry, my own probe.** I served the built page and failed /api/menu (scratchpad r5/probe/photo-retry.js).
+  - After a photo read fails, Try again sends the same photo again: both requests carry the same 151,748-character image.
+  - No page errors.
 
 ## Findings, most serious first
 
-1. **Read the menu and the log sheet: a failed request gives no next step (minor, B6).** This is the menu half of round 3 finding 6, which was titled "Rescue and menu errors".
-   - **Where:** Rescue, menu read (photo or typed), and the "I had something else" log sheet; seen at 320 light.
-   - **What is wrong:** when the server cannot be reached, the screen says only "Couldn't reach Next Plate just now." There is no Try again and no instruction.
-     - Typed Rescue dish: now has Try again and keeps the dish (app.js:515). Resolved.
-     - Menu path: the error is set at app.js:439 and has no retry. A menu photo is lost. At 320 the "Read the menu" button is scrolled off above the note.
-     - Log sheet: uses the same bare message (app.js:559).
-   - **Why it matters:** these readers order at a restaurant, often on a weak signal, after the effort of photographing the menu. "Read the menu" is the feature the 51 s film's beat 2 promises. The screen does not tell them what to do, and the Plate and dish errors both offer Try again, so this tab is inconsistent.
-   - **Evidence:**
-     - My renders with /api/menu failing: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/extra/320-menu-photo-neterror.png and 320-menu-typed-neterror.png.
-     - The note's text, read from the page: "Couldn't reach Next Plate just now."
-     - The review has no state for a menu or log failure.
+1. **A banned word in a note in the owner-approved film script (owner rule 4; automatic FAIL).**
+   - **Where:** docs/film/SCRIPT-features.md:35, in "Checks against the brief".
+   - **What is wrong:** the phrase "...-engine check heavy-lunch-lighter-dinner" begins with the banned word R-E-A-L. (I spell it out so this verdict does not use it.) The same bullet then says "No banned words."
+   - **The rule:** the owner extended the ban to "the script AND every note, brief or reply to the owner" in commit 0b50fe3, at 05:46. This line was written later, in 746040d at 09:35. Commit 0c1baf8 removed the same word from another note in this same file.
+   - **Why it matters:** the owner holds every note to the ban, and this note tells him the script was checked for banned words when it was not.
+   - **Missed before:** I missed this in rounds 1 to 4. My round 3 and round 4 verdicts also used banned words (R-E-A-L and the CSS property name T-R-A-N-S-F-O-R-M); this verdict does not.
+   - **Not affected:** no client-facing text. The app, both films' on-screen and spoken text, and the WhatsApp post are all free of banned words. The engine hits are Gemini prompt text and the word filter itself.
+   - **Same rule, in notes outside this round's named scope:**
+     - docs/film/RESEARCH-ad-films.md:5, "State the product's essence S-I-M-P-L-Y". This is a paraphrase, not a direct quote.
+     - demo/reel/film5/README.md:5, "cuts at measured Q-U-I-E-T points".
+     - demo/reel/README.md:11, "R-E-A-L captures of the v6 Phase 1 screens".
+     - RESEARCH-ad-films.md:27 has the word only inside a source web address, which cannot be changed. It can stay.
    - **Smallest correction:**
-     - Make the fallback in errText (app.js:56) read "Couldn't reach Next Plate just now. Check your signal and try again." This fixes every caller.
-     - For the menu, keep the last photo or text (as UI.rlast does for the dish) and add the same Try again button to the menu note.
-     - Add review states menu-error and log-error.
+     - Change the script note to "engine check heavy-lunch-lighter-dinner".
+     - Change the paraphrase to "plainly", the film5 README to "measured pauses", and the reel README to "Captures of the v6 Phase 1 screens".
+     - No voice line or approved script line changes. Tell the owner in one line that only the note changed.
 
 ## Cosmetic (all listed; none blocks on its own)
-- **"Next plate (1/2)" still breaks at 320.** The NBSP keeps "Next plate" together, but "(1/2)" drops to a second line, and the builder's commit says it is now on one line. Evidence: 320-light/plate-hero-5.png and 360-light-big/plate-hero-5.png (app.js:296, legible.css:186). At 360 and 390 it is on one line.
-- **Figures break from their units.**
-  - "≈ 500" / "kcal" in the order tile at 320, 360 and 130 % (320-light/rescue-menu-order-2.png, 360-dark/rescue-menu-order-2.png).
-  - "≈ 23" / "g protein" in "Also on this menu" at 320 (320-light/rescue-menu-order-3.png).
-  - "10" / "min" in "Also for lunch" at 320 and 130 % (320-light/plate-asked-7.png, 360-light-big/plate-hero-6.png).
+- **The 51 s film shows the old wait-card wording.**
+  - What the film shows: the menu wait card's line "around: gentle weight loss · minding iron · protein to catch up", at about 9.6-10.4 s, dimmed behind the menu photo.
+  - What the app now shows: "planned around: ..." (app.js:231).
+  - Evidence: demo/reel/film5/assets/rects.json, shot M2-reading, element p.planned. My frames at 9.6, 9.9 and 10.2 s.
+  - So the claim that this round's src changes appear in no film screen is not accurate for this one line. The other changes are not in the films:
+    - The fallback error text, the menu and log Try again buttons, and the retry button heights show only in error states.
+    - The Rescue arrow's added words are visually hidden, and neither film shows the Rescue compare bars.
+    - The Next plate icon is hidden only below 360 px, and the films were captured at 390 px.
+  - Fix: recapture M2 at the next re-render. A re-render for this alone is the owner's call.
+- **Try again is offered where retrying cannot help.**
+  - Read the menu, the dish and the log sheet show Try again for the daily limit, "Photos are switched off. Type it instead.", and the bad-link and bad-photo messages (app.js:515, 516, 578). A tap returns the same message.
+  - Evidence: scratchpad r5/probe/320-menu-photo-limit.png and 320-menu-photo-photosoff.png.
+  - Fix: offer Try again only for upstream or connection errors.
+- **The Try again buttons look different for the same action.**
+  - On the Plate error it is a filled clay button with the sparkle icon (app.js:332).
+  - On the dish, menu and log errors it is an outlined button with the refresh icon.
+  - Evidence: 320-light/plate-error-1.png against 320-light/menu-error-1.png.
+- **Figures still break from their units.**
+  - At 320:
+    - "≈ 500" / "kcal" in the order tile (320-light/rescue-menu-order-2.png).
+    - "≈ 23" / "g protein" in "Also on this menu" (rescue-menu-order-3.png).
+    - "10" / "min" in "Also for lunch" (plate-hero-7.png).
+  - At 130 % text:
+    - "560" / "kcal" in the plate's Energy tile (360-light-big/plate-hero-3.png).
+    - "1185" / "kcal" and "12" / "/ 100" in the Rescue answer (360-light-big/rescue-result-2.png).
+    - "≈ 500" / "kcal" in the order tile (rescue-menu-order-2.png).
   - Fix: a no-break space between each figure and its unit.
-- **Link buttons break at 130 % text.** "I had something / else" and "Skipped / it" wrap, with the icon left beside the second line (360-light-big/plate-hero-5.png).
-- **First view at 320x568.** The plate leads, but its grams and the dish name sit just below the fold (320-light/plate-hero-1.png). The date row now gives way below 340 px. At 360 and 390, the plate, its grams and the name are all in the first view.
-- **Wait-card fragment.** The wait card's second line starts with a lowercase fragment, "around: gentle weight loss · ..." (app.js:231; 320-light/menu-wait-2.png, plate-loading-1.png). "Planned around: ..." reads whole.
-- **Rescue arrows and screen readers.** The arrow's spoken text is an aria-label on a plain span (app.js:530), which screen readers may ignore. The struck "before" value is not voiced as "was". I did not check this with a screen reader.
-- **30 s film music swells.** The swells in the voice gaps (17 s, 24 s) still sit 3-5 dB above the spoken level. The 51 s film is fixed.
-- **Review coverage.** The review has no state for "no dish on that menu passed". I rendered it myself (scratchpad extra/320-menu-none-passed.png), and it reads well: it says what to do.
+- **Wraps at 130 % text.** "Next plate" / "(1/2)", "I had something" / "else" and "Skipped" / "it" wrap, with the icon left beside the second line (360-light-big/plate-hero-5.png).
+- **First view at 320x568.** The plate leads, but its grams and the dish name sit just below the fold (320-light/plate-hero-1.png). This is unchanged; at 360 and 390 all three are in the first view.
+- **30 s film music swells.** The voice gaps at 17 s and 24 s measure -11.4 and -11.7 dB. The spoken seconds around them measure -13.7 to -18.6 dB.
 
-## Round 3 findings, judged on my own evidence
-| Finding | Status | Evidence |
+## Round 4 findings, judged on my own evidence
+| Item | Status | Evidence |
 |---|---|---|
-| 1 One colour per nutrient in Rescue | RESOLVED | Energy bar ink, protein clay, carbs ochre, fats plum; the change is an arrow beside the figure. 320-light/rescue-result-2.png, 360-dark/rescue-result-2.png |
-| 2 Safety card wording | RESOLVED | "You said you are pregnant or nursing." / "You said you have a kidney condition."; coach and doctor in heading and body; "Change my answers". 320-light/plate-blocked-preg-1.png, rescue-blocked-1.png, builder-blocked-1.png |
-| 3 Legend by nutrient name | RESOLVED | "Protein foods 150 g · Vegetables 120 g · Grains and starch 200 g · Fats and seeds 30 g" (320-light/plate-hero-2.png). Films: 30 s at 11.2 s and 51 s at 22.6 s show the food-group legend |
-| 4 WhatsApp privacy line | RESOLVED | docs/film/WHATSAPP-post.md:8 names Google Gemini, the answers and recent meals, and "no name is sent" |
-| 5 Your data trigger and where-typed notes | RESOLVED | The sentence covers opening, typed meals, Rescue and menus (app.js:592). "What you type goes to Google Gemini." appears under the Rescue box, the typed menu and the log sheet. Checked against the code: only menu reads send a photo; the log sends no food file |
-| 6 Rescue and menu errors | PARTLY RESOLVED | Dish path resolved: the dish is kept, Try again is there (320-light/rescue-error-2.png). Menu and log paths are not resolved (finding 1) |
-| 7 Gate residue | RESOLVED | ux-gate.sh:18-20: the PASSED shortcut also needs a Critic PASS for the fingerprint. manifest.sh covers the WhatsApp copies, posters, the v5 page, settings.json, both hooks, the agent definition, manifest.sh and package.json |
-| 8a Screens stop at 6 | RESOLVED | Up to 14 stops; at 320 the Plate page is captured down to the fine print (320-light/plate-hero-10.png) |
-| 8b Missing states | MOSTLY RESOLVED | Pregnancy, Builder/Rescue blocked, Builder with no plate, Rescue wait/error, menu wait/unreadable all added. Menu error, "none passed" and log error are still missing |
-| 8c View loop | RESOLVED | Views are read from src/v5/markup.html (v-setup, v-plate, v-build, v-rescue) |
+| 1 Read the menu and log sheet errors give no next step | RESOLVED | See the evidence list under this table. |
+| "Next plate (1/2)" breaks at 320 | RESOLVED at 320; NOT RESOLVED at 130 % | One line at 320 with the icon hidden below 360 px (legible.css:189; 320-light/plate-hero-5.png). Still two lines at 130 %. |
+| Figures break from their units | NOT RESOLVED | Cosmetic list. |
+| Link buttons wrap at 130 % | NOT RESOLVED | 360-light-big/plate-hero-5.png |
+| First view at 320x568 | NOT RESOLVED (unchanged) | 320-light/plate-hero-1.png |
+| Wait-card fragment | RESOLVED in the app | "planned around: ..." on 320-light/menu-wait-1.png and plate-loading-1.png, 390-light/menu-wait-2.png. The 51 s film still shows the old line (cosmetic list). |
+| Rescue arrows and screen readers | RESOLVED | The arrow is aria-hidden; the words " up to " / " down to " are text in the visually hidden .said class (app.js:531). Not tried with a screen reader. |
+| 30 s film music swells | NOT RESOLVED | -11.4 / -11.7 dB at 17 s and 24 s |
+| No review state for "none passed" | RESOLVED | menu-nothing-fits is reached in all 9 runs. It says what to do and has no Try again, which is correct. |
 
-| Round 3 cosmetic | Status |
-|---|---|
-| Step 3 repeated "Kept on this phone", "Four answers" | RESOLVED ("Your body / The last step.") |
-| C5 wraps at 320 / 130 % | NOT RESOLVED (cosmetic list) |
-| C8 jargon | RESOLVED: plain words first, the formula name in brackets, "sugar tablets such as glimepiride or gliclazide" in the note, toast and targets |
-| "Change my food" | RESOLVED |
-| 320 first view | PARTLY RESOLVED (date row hidden; grams still just below the fold) |
-| Step 2 Next disabled with no line | RESOLVED ("Answer the medicine question to go on.") |
-| 51 s beat 3 typing unseen | RESOLVED (the typed "2 aloo paratha with curd" lifts out, 14.3-15.0 s, frame t14.75) |
-| 51 s beat 4 two dishes | RESOLVED (K1 shows the ask box "Craving chaat" with prompts, no dish; K2 and the end card are the same Tangy Tofu Chaat) |
-| 30 s beat 2 lift cut mid-sentence | RESOLVED (whole Maintenance and Weight loss items, 5.9-10.2 s) |
-| End-card fragments | RESOLVED (clean-plate captures; the one leaf left is the plate's own garnish inside the well, as in the app) |
-| Music swells | 51 s RESOLVED; 30 s NOT RESOLVED (cosmetic list) |
-| Criteria doc said 25 states | RESOLVED (34) |
+Evidence for item 1 (menu and log errors):
+- The fallback now reads "Couldn't reach Next Plate just now. Check your signal and try again." (app.js:56).
+- Menu error: the typed menu stays in its box and a Try again sits in the note (app.js:516). See 320-light, 360-dark, 390-light and 360-light-big menu-error-1 and -2.
+- A failed photo read sends the same photo again (my probe).
+- Log sheet: the typed meal stays in the box and Try again is there (app.js:578). See sheet-log-error at all four looks.
+- The new review states menu-error, menu-nothing-fits and sheet-log-error are reached in all 9 runs.
 
 ## Checked and holding
-- **Safety.** Kidney and pregnancy are referred on Plate, Builder and Rescue. engine.js, core.js and server.ts are unchanged since baa5e08.
-- **Diabetes keeps the grain.** "the grain stays (diabetes)" appears on plates, and the diabetes note is shown. A snack without grain is within the engine rule, which covers breakfast, lunch and dinner (core.js:180).
-- **After-meal rise.** Shown only as Gentle, Moderate or Sharp, with "not a blood-sugar reading".
-- **Units and supplements.** Grams and kcal throughout. "Phulka" is a food name, never a unit. No supplements.
-- **Banned words.** None in user-facing text changed this round, nor in the post or the film text. The hits are CSS `transform`, code comments, and the engine's prompt and word filter.
-- **Brand line.** "Next Plate. Made for you." is spoken and shown in both films and on both posters. The stamp reads "NEXT PLATE · MADE FOR YOU".
-- **Dark mode.** The paper look holds at 320, 360 and 390.
-- **Large text.** 130 % text holds at 360; the only issues are the wraps in the cosmetic list.
-- **Served v5 page.** The rebuilt v5 page differs from the last version only in the targets-note text from params.js.
-- **Gate verdict.** The gate will block on this verdict: line 1 is not PASS, so critic_ok fails, the review runs, and then the gate blocks with "the Critic's verdict is not PASS".
-  - I did not run ux-gate.sh. A run would add a block for this fingerprint to .claude/.ux-gate-tries, which counts toward the builder's three-block release.
+- **Safety.** Kidney and pregnancy are referred on Plate, Builder and Rescue, with "Change my answers" (plate-blocked-kidney, plate-blocked-preg, builder-blocked, rescue-blocked at all four looks).
+  - engine.js, core.js and server.ts are unchanged since baa5e08.
+- **Diabetes keeps the grain.** "With diabetes the grain stays on the plate, next to protein and vegetables. Your doctor's advice comes first." is on every plate state.
+- **After-meal rise.** Shown only as Gentle, Moderate or Sharp, with "The curve is a model of direction, not a blood-sugar reading."
+- **Units and supplements.** Grams and kcal throughout; no katori or phulka as units; no supplements.
+- **Banned words.** None in any user-facing app string, in the film text, or in the WhatsApp post. Finding 1 is in notes.
+- **Brand line.** "Next Plate. Made for you." is spoken and shown in both films. The stamp reads "NEXT PLATE · MADE FOR YOU".
+- **One look.** The Raw Linen paper look holds in dark mode at 360 and across Plate, Builder, Rescue, the sheets and every error and blocked state.
+- **WhatsApp post.** Unchanged and accurate. It names Google Gemini, the answers and recent meals, and "no name is sent".
+- **The gate.** ux-gate.sh, ux-mark.sh, settings.json and manifest.sh are unchanged since round 4. The PASSED shortcut still needs a Critic PASS for the fingerprint.
+  - This verdict is FAIL, so the gate will block. I did not run ux-gate.sh.
+  - The fingerprint does not cover docs/film/SCRIPT-features.md or the READMEs. Fixing finding 1 leaves BUILD unchanged; the next verdict can bind the same fingerprint.
 
 ## Not inspected
-- The owner's own phone and clients' real phones.
-- Real Android font scaling and Samsung/Chrome "force dark". I simulated these with fonts x1.3 and colorScheme; the page declares `only light`.
-- Live Gemini output: every state used the mock, so the "Layout sample" lines, dish names and menu answers are fixture text.
+- The owner's own phone and clients' phones.
+- Android font scaling and Samsung/Chrome "force dark" on devices. I simulated these with fonts x1.3 and colorScheme; the page declares `only light`.
+- Live Gemini output: every state used the mock or my own routed responses, so dish names, "Layout sample" lines and menu answers are fixture text.
 - Audio by ear: clipped syllables, pronunciation, and how the swells feel.
-  - mix.wav is not a plain sum of the vo, music and sfx stems (residual -12 dB, so they were processed before mixing). That makes per-word voice-over-music margins taken from the stems unreliable, so I judged levels from the film's own soundtrack.
 - WhatsApp's re-compression of the forwarded copies.
 - Whether the Stop hook's systemMessage reaches the owner.
-- The live v5 screens, which I did not render.
+- The live v5 screens, which I did not render. The rebuilt v5 page is byte-identical to the committed one.
 - Screen-reader behaviour beyond the measured accessible names.
-- Widths 375/393/430, and 320 and 390 in dark mode, beyond the review's measurements. I viewed 320 light, 360 dark, 390 light and 360 light at 130 % for all 34 states, plus my own renders of the menu errors and "none passed" at 320.
+- Widths 375, 393 and 430; 320 and 390 in dark mode; and 412. These have the review's measurements only (0 violations). I viewed all 37 states at 320 light, 360 dark, 390 light and 360 light at 130 %, plus my own menu-photo error renders at 320.
