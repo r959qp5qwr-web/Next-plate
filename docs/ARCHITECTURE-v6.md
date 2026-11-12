@@ -241,21 +241,13 @@ Goal · nutrient focus · rhythm (water, walks, windows, mode tips, trek turn-ba
 ### 12.3 New in v6
 Event log and food file · context brief with verifiable hooks · family pot · logger · learned likes, portions and patterns · calendar (treks, fasts, functions) · question picker · weekly review with one change · over-time safety gate · Fullness band · *My food file*.
 
-## 13. Owner parameters (the owner sets them; the proposals are marked, not facts)
-| Parameter | Proposal | Status |
-|---|---|---|
-| protein per kg | 0.83 g (ICMR-NIN 2020 adult RDA) | in v5; owner may raise for "build strength" |
-| goal adjustment, lose | proposal: 15 % below maintenance, never below BMR | **needs your number** |
-| goal adjustment, build | proposal: maintenance, protein raised | **needs your number** |
-| meal split | 25 / 35 / 10 / 30 % (v5 placeholder) | needs your confirmation |
-| late-dinner cut-off | proposal: 9:30 pm | needs your confirmation |
-| pace flag (loss per week) | leave empty until you set it | **needs your number** |
-| low-intake flag | leave empty until you set it | **needs your number** |
+## 13. Owner parameters
+Researched on 2026-11-12: see **`docs/RESEARCH-parameters.md`** for what each number depends on, the evidence, the sources and the five choices that are yours. Every value lives in `src/v6/params.js` with its source beside it. In short: targets now depend on sex, age, height, weight, BMI band (Indian cut-offs), goal, activity and diabetes medicine; weight loss is applied only at BMI 23 and above, under 65, and not on insulin or sulfonylurea tablets.
 
 ## 14. Build phases (each shown rendered on a phone and checked against real Gemini before the next)
 | Phase | Delivers | Done when |
 |---|---|---|
-| 1 | event log, food file, day planner, directive, context brief with hooks, goal and nutrient focus restored, had / other / skipped | a plate shows *planned around* tags that match the day; what's left updates after logging |
+| 1 **(built 2026-11-12; engine checked on real Gemini 18/18; screens await "Deploy.")** | event log, food file, day planner, directive, context brief with hooks, goal and nutrient focus restored, had / other / skipped, typed meal logging, researched targets, variety rotation, two-step loading | a plate shows *planned around* tags that match the day; what's left updates after logging |
 | 2 | logger (text and photo), learned likes, portions and patterns, family pot | after a week of test events, plates visibly change with likes and patterns |
 | 3 | rhythm strip, voice, WhatsApp, one question a day | one-hand use from WhatsApp, voice in and out |
 | 4 | Week review, *My food file* | one change a week; every learned item editable |
