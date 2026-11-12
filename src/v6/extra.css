@@ -1,7 +1,7 @@
 /* ===== v6 additions, Raw Linen only ===== */
 .tip.directive{font-size:16.5px;line-height:23px;margin:2px 2px 0}
 .tip.directive .linkbtn,.tip .linkbtn{display:flex;min-height:30px;margin-top:4px;color:#6B3A1F;font-size:14.5px}
-.hero .planned,.plate.wait .planned{margin:8px 0 0;font:600 18px/21px var(--hand);color:var(--olive)}
+.hero .planned,.plate.wait .planned,.order .planned{margin:8px 0 0;font:600 18px/21px var(--hand);color:var(--olive)}
 .hero .planned span{white-space:nowrap}
 .logrow{display:flex;justify-content:space-between;gap:10px;padding:2px 16px 12px}
 .logrow .linkbtn svg.i{width:15px;height:15px}
@@ -16,3 +16,22 @@
 .why p.lead{font:italic 500 18px/25px var(--display);color:var(--ink)}
 .acts.two{grid-template-columns:1fr 1fr}
 .acts.two .primary{grid-column:1/-1}
+/* Read the menu (Rescue tab): two entries side by side, the typed-menu box, the order card */
+.entries{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start}
+.menu-in{display:flex;flex-direction:column;align-items:center}
+.menu-in .btn{min-height:50px;padding:0 16px 0 14px;white-space:nowrap}
+.menu-in .linkbtn{min-height:30px}
+.menu-box{display:flex;flex-direction:column;gap:10px}
+.menu-box textarea{display:block;width:100%;min-height:176px;border:0;border-radius:4px;background:var(--surface);box-shadow:var(--shadow);padding:12px 14px;font:italic 400 17px/24px var(--text);color:var(--ink);resize:none}
+.menu-box textarea:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.card.order{display:flex;flex-direction:column;gap:6px;padding:16px;scroll-margin-top:12px}
+.order .hero-top{justify-content:flex-start;gap:2px 10px}.order .hchip{padding:0}
+.order .dish{font-size:29px;line-height:33px;margin:2px 0 0}
+.order .tsub{font-style:italic;font-size:16px;line-height:22px;color:var(--ink2);margin:0}
+.order .owith{margin:4px 0 0;font-size:18px;line-height:24px}.order .owith .cap{margin-right:2px}
+.order .oask{margin:0;font:600 21px/25px var(--hand);color:var(--clay)}
+.order .read4{padding:12px 2px 6px}
+.order .apx{font:400 19px var(--text);margin-right:3px}
+.order .planned{margin:2px 0 0}.order .planned span{white-space:nowrap}
+.order>.btn{margin-top:10px}
+.alt.menu{grid-template-columns:minmax(0,1fr) 20px}
