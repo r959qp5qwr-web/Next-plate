@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F2ECE1"><style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style></head><body><title>Next Plate</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F2ECE1"><meta name="color-scheme" content="only light"><style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style></head><body><title>Next Plate</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,16 +16,8 @@
   --text:"Figtree",ui-sans-serif,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --r-card:22px; --r-ctl:14px; --settle:cubic-bezier(.2,.8,.2,1);
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0B1211; --surface:#131D1B; --surface2:#192523; --ink:#E5EEEA; --ink2:#A3B4AE; --ink3:#7E8F89; --line:#25332F;
-  --brand:#37A399; --brand-ink:#04201D; --brand-soft:#17302C; --brand-text:#6FCDC2;
-  --hero1:#11524E; --hero2:#0A2B2A; --track:#25332F; --chilli:#E58069; --ok:#5DC48C; --warn-bg:#382C10; --warn-ink:#F2D89E;
-  --toast:#E5EEEA; --toast-ink:#0B1211; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#0B1211; --surface:#131D1B; --surface2:#192523; --ink:#E5EEEA; --ink2:#A3B4AE; --ink3:#7E8F89; --line:#25332F;
-  --brand:#37A399; --brand-ink:#04201D; --brand-soft:#17302C; --brand-text:#6FCDC2;
-  --hero1:#11524E; --hero2:#0A2B2A; --track:#25332F; --chilli:#E58069; --ok:#5DC48C; --warn-bg:#382C10; --warn-ink:#F2D89E;
-  --toast:#E5EEEA; --toast-ink:#0B1211; --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+
+
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -291,8 +283,8 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 
 /* ===== v4: instruments, studio ===== */
 :root{--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--ink-panel:#0C2B2C;--panel2:#081D1F;--glow:#58E0B4;--amber:#F2B43C;--p-ink:#EAF4F0;--p-ink2:rgba(234,244,240,.68);--p-line:rgba(234,244,240,.13);--band-g:#7BE3B5;--band-m:#F6C665;--band-s:#FF9B7D;--panelbg:#F4F6F2}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--panelbg:#0F1716}}
-:root[data-theme="dark"]{--panelbg:#0F1716}
+
+
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 .eyebrow{margin:0;font:700 10.5px/14px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--brand-text)}
 .panel-h{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
@@ -783,6 +775,144 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 .pairs .plus{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 17px/1 var(--display);color:var(--surface);background:var(--olive);margin-top:1px}
 .pairs .pf{font:italic 600 17px/22px var(--display);color:var(--ink)}
 .pairs .pe{display:block;font:400 15.5px/21px var(--text);color:var(--ink2)}
+
+/* ===== v6 legibility layer, loaded last (docs/ux/UX-CRITERIA.md). The Raw Linen look stays; what changes is what a 45+ reader on a
+   320-412 px phone needs: one text face for everything functional (EB Garamond, figures included), the handwriting face only for the
+   pencilled annotation on the plate, a 15 px floor for captions, darker inks that pass WCAG AA on every paper, and 44 px touch targets.
+   Selectors start with #app so they win over the layers above without !important. ===== */
+:root{color-scheme:light only;
+  --ink3:#6A5F51;            /* captions and hints: 5.3:1 on paper, 5.8:1 on surface (was #857967, 3.6:1) */
+  --fine:#5E5446;            /* small print: 6.5:1 on paper */
+  --pro-t:#9A4F2E;--veg-t:#5A6830;--grain-t:#8A6420;--side-t:#7A4958;   /* nutrient colours as text: each 4.5:1 or more on paper and cards */
+  --band-g:#56652C;--band-m:#80561A;--band-s:#A0412A;                   /* Gentle / Moderate / Sharp as text */
+  --clay-t:#9A4F2E;--olive-t:#56652C;
+  --cap:600 15px/20px var(--text)}
+#app{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* --- captions: upright, readable, no small caps at 12 px --- */
+#app .cap,#app .eyebrow,#app .tsub.cap,#app .stp small,#app .cmp-row .lab{font:var(--cap);font-variant:normal;text-transform:none;letter-spacing:.01em;color:var(--ink2)}
+#app .eyebrow{color:var(--clay-t)}
+#app .fine,#app .privacy{font:italic 400 15px/22px var(--text);color:var(--fine)}
+#app .tsub,#app .sub,#app .dish-s,#app .alt small,#app .move small,#app .tile2 .v small,#app .read4 .v small,#app .ringmid small,#app .hab small{font-size:15px;line-height:21px;color:var(--ink2)}
+#app .hchip{font-size:15px;color:var(--ink2)}
+#app .tag{font-size:14px}
+
+/* --- masthead: fits 320 px, nothing under 14 px --- */
+#app .brand{font-size:clamp(28px,9.2vw,38px);letter-spacing:clamp(.1em,1.6vw,.22em);max-width:100%;white-space:nowrap}
+#app .mast{font-size:14px;line-height:20px;flex-wrap:wrap;row-gap:0}
+#app .mast em{font-size:15px}
+#app .myfood{min-height:44px;font-size:17px}
+
+/* --- one text face for functional text: the handwriting face leaves labels, figures and status --- */
+#app .tip,#app .tip b,#app .note,#app .tiles .tile2 .v,#app .read4 .v,#app .tcard .cap,#app .risev,#app .cmp-row .val,#app .pv,#app .hero .cuis,
+#app .slide-v b,#app .readline .asked,#app .ringmid b,#app .ctr output,#app .hero .suffix,#app .hero .planned,#app .plate.wait .planned,
+#app .order .planned,#app .order .oask,#app .pairs .ph b{font-family:var(--text)}
+#app .tip.directive,#app .tip{font:400 17px/25px var(--text);color:var(--ink)}
+#app .tip b{font-style:italic;font-weight:600}
+#app .note p{font-size:16px;line-height:23px}
+#app .hero .planned,#app .plate.wait .planned,#app .order .planned{font:italic 500 16.5px/23px var(--text);color:var(--olive-t)}
+#app .hero .suffix{font:italic 500 17px/23px var(--text);color:var(--clay-t)}
+#app .readline .asked{font:italic 500 19px/26px var(--text);color:var(--clay-t)}
+#app .order .oask{font:italic 500 17px/24px var(--text);color:var(--clay-t)}
+#app .pairs .ph b{font:italic 600 19px/24px var(--text)}
+#app .pairs .ph small{font-size:15px;color:var(--ink2)}
+#app .scribble{font-size:22px;line-height:24px}
+
+/* --- figures: lining, in the text face, big enough to read at a glance --- */
+#app .read4 .v{font:500 28px/30px var(--text);font-style:normal;font-variant-numeric:lining-nums tabular-nums}
+#app .read4 .v small{font-size:16px}
+#app .tcard .cap{font:600 15px/20px var(--text);color:var(--ink)}
+#app .tcard.n-pro .cap{color:var(--pro-t)}#app .tcard.n-veg .cap{color:var(--veg-t)}#app .tcard.n-grain .cap{color:var(--grain-t)}#app .tcard.n-side .cap{color:var(--side-t)}
+#app .tile2[class*="n-"] .cap{color:var(--ink2)}
+#app .tiles .tile2 .v{font:600 21px/26px var(--text);font-variant-numeric:lining-nums tabular-nums}
+#app .risev,#app .read4 .v.band-g,#app .read4 .v.band-m,#app .read4 .v.band-s{font:600 22px/26px var(--text)}
+#app .band-g,#app .risev.band-g{color:var(--band-g)}#app .band-m,#app .risev.band-m{color:var(--band-m)}#app .band-s,#app .risev.band-s{color:var(--band-s)}
+#app .qty{font-variant-numeric:lining-nums tabular-nums}
+#app .ringmid b{font:600 30px/32px var(--text)}
+#app .ctr output{font:600 19px/24px var(--text);min-width:56px;text-align:center}
+#app .cmp-row .val{font:600 17px/22px var(--text)}
+
+/* --- plate card text --- */
+#app .taste{font-size:15px;letter-spacing:.16em;color:var(--clay-t)}
+#app .prlegend{font-size:16px}
+#app .hero .sub{font-size:17px;line-height:24px}
+#app .measures .food b{font-size:17px}
+#app .modlog li{font-size:16px;line-height:23px}
+#app .pairs .pf{font-size:17px}#app .pairs .pe{font-size:16px;line-height:22px}
+#app .why h3{font:italic 600 18px/24px var(--text);letter-spacing:0;text-transform:none;color:var(--clay-t)}
+#app .why p{font-size:16px;line-height:23px}
+#app .alt b{font-size:17px}
+
+/* --- targets: 44 px for every stand-alone control --- */
+#app .linkbtn{min-height:44px;display:inline-flex;align-items:center;font-size:16px;padding:0 4px}
+#app .tip .linkbtn{display:flex}
+#app .pillsel,#app .meal,#app .choice,#app .preset,#app .sit,#app .tbtn,#app .hab,#app .prompt{min-height:44px}
+#app .pillsel,#app .meal,#app .choice,#app .preset,#app .sit{font-size:16px}
+#app .tbtn{font-size:16px;line-height:20px}
+#app .ctr button{width:44px;height:44px;min-width:44px}
+#app .tab{font-size:15px;min-height:56px}
+#app input[type=range]{min-height:44px}
+
+/* --- Builder: four presets as a 2 x 2 grid, labels never wrap --- */
+#app .presets.four{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0}
+#app .presets.four .preset{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:0 10px;background:var(--surface)}
+#app .presets.four .preset[aria-checked="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+#app .stp b{font-size:17px}
+#app .inst-lg{font-size:15px}
+
+/* --- Rescue entry: two labelled parts, full width --- */
+#app .entries{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+#app .menu-in{align-items:stretch;gap:4px}
+#app .menu-in .btn{width:100%;justify-content:center;min-height:50px}
+#app .menu-in .linkbtn{align-self:center}
+#app .entries form.rin{display:flex;flex-direction:column;gap:6px}
+#app .rin-row{display:flex;gap:8px;align-items:center}
+#app .rin-row input{flex:1;min-width:0;min-height:50px;font-size:17px}
+#app .sits .sit{font-size:16px}
+
+/* --- inputs: 16 px or more (iOS zooms below), visible hint colour --- */
+#app input,#app textarea,#app select{font-size:17px}
+#app input::placeholder,#app textarea::placeholder{color:var(--ink3);opacity:1}
+
+/* --- buttons on clay: light text needs the darker clay --- */
+#app .btn.primary,#app .tbtn,#app .send{color:#FFFFFF}
+#app .tbtn,#app .btn.primary,#app .send{background:linear-gradient(180deg,#A85A37,#94492A)}
+#app .tbtn[aria-pressed="true"]{background:linear-gradient(180deg,#5E6D2E,#4E5B26)}
+#app .toast,#app #toasttxt{font-size:16px;line-height:22px}
+
+/* --- fixes from the first measured pass --- */
+#app .band-g{color:var(--band-g)!important}
+#app .linkbtn,#app .linkbtn span{color:var(--clay-t)}
+#app .brand{font-size:clamp(24px,8.2vw,34px);letter-spacing:.14em;padding-left:.14em;line-height:1.1}
+#app .cap{white-space:normal}
+#app .entries form.rin,#app .rin-row,#app .menu-in{width:100%;min-width:0}
+#app .tip .linkbtn,#app .tip .linkbtn span{color:#55301A}
+#app .slide-v b{color:var(--clay-t)}
+#app .band-m{color:var(--band-m)!important}#app .band-s{color:var(--band-s)!important}
+#app .cmp-row .val small{font:600 14px var(--text);opacity:1;color:var(--ink2)}
+/* toast: spans the screen so a long notice (the insulin warning) reads in two or three lines, not eight */
+#app .toast{left:16px;right:16px;transform:none;max-width:none;width:auto;top:12px;display:flex;align-items:flex-start;gap:10px;padding:12px 16px;box-shadow:0 10px 26px -12px rgba(29,26,22,.6)}
+#app .toast svg.i{flex:none;margin-top:2px}
+/* masthead: one row on every phone; the issue number is ornament and gives way below 380 px */
+#app .mast{flex-wrap:wrap;white-space:normal;column-gap:10px}
+#app .mast>*{white-space:nowrap}
+@media (max-width:379.98px){#app #issue{display:none}}
+/* the pencilled note needs room beside the plate; below 380 px the legend already says how much veg there is */
+@media (max-width:379.98px){#app .platebox .scribble{display:none}}
+#app .platebox .scribble{max-width:84px}
+/* action labels stay on one line */
+#app .acts{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+#app .acts .btn{padding:0 10px;min-width:0;text-wrap:balance;line-height:20px}
+/* meal tabs: one line each; with enlarged text the row scrolls instead of wrapping */
+#app .meals{overflow-x:auto;scrollbar-width:none}
+#app .meals::-webkit-scrollbar{display:none}
+#app .meal{white-space:nowrap;flex:1 0 auto}
+#app .meals{display:flex}
+#app .hab small{font-variant:normal;text-transform:none;letter-spacing:0;font-style:italic}
+/* the after-meal curve: its band and time labels read at 12 px (they were about 7 px) */
+#app .curve .c-lab,#app .curve .c-ax{font-size:12px;letter-spacing:.04em}
+#app .mast em{color:var(--clay-t)}
+#app .pairs .plus{background:var(--olive-t);color:#FFFFFF}
 
 </style>
 
@@ -2193,7 +2323,7 @@ function heroCard(m,v,r){
     var pu=el("ul");m.why.forEach(function(w){var li=el("li"),pl=el("span","plus","+"),tx=el("span");pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
     pr.appendChild(pu);card.appendChild(pr);}
   var acts=el("div","acts two");
-  var total=r.meals.length,nx=btn("btn",total>1?"Next plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
+  var total=r.meals.length,nx=btn("btn",total>1?"Next\u00A0plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
   var tr=btn("btn","Try it","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
@@ -2211,7 +2341,7 @@ function askBlock(host){
 }
 function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
-  var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="A craving, a dish, what's in the fridge";i.setAttribute("aria-label","Ask for a meal");
+  var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();makePlates(t);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
@@ -2378,17 +2508,17 @@ function renderRescue(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out anyway");
   if(blocked()){v.appendChild(blockedCard());return;}
-  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in");
+  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in");me.appendChild(el("p","cap","At a restaurant or a function"));
   var mb=btn("btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";
   mb.addEventListener("click",function(){mf.click();});
   mf.addEventListener("change",function(){var file=mf.files&&mf.files[0];if(!file)return;shrink(file,function(b){if(!b){UI.merr=errText("bad_image");render();return;}readMenu("",b);},1600);});
-  var mt=btn("linkbtn","or type it",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
+  var mt=btn("linkbtn","or type the menu",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
   mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
   add(me,mb,mt,mf);
-  var f=el("form","rin");f.autocomplete="off";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="Name the dish";i.setAttribute("aria-label","Dish or order");
+  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="e.g. chole bhature";
   var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)rescue(t,null);});
-  add(f,i,go);add(ent,me,f);v.appendChild(ent);
+  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow);add(ent,me,f);v.appendChild(ent);
   if(UI.mopen&&!UI.mbusy){
     var bx=el("form","menu-box"),ta=el("textarea");ta.id="mtext";ta.maxLength=2000;ta.rows=7;ta.placeholder="Paste or type the menu. One dish per line.";ta.value=UI.mtext||"";ta.setAttribute("aria-label","The menu, typed or pasted");
     ta.addEventListener("input",function(){UI.mtext=ta.value;});
@@ -2433,9 +2563,12 @@ function renderRescue(){
 }
 
 /* ---------- sheets: my food, how targets are worked out, logging another meal ---------- */
-function openSheet(kind){UI.sheet=kind;$("sheet").hidden=false;renderSheet();}
-function closeSheet(){UI.sheet="";$("sheet").hidden=true;}
-function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h");h.appendChild(el("h2",null,title));var dn=btn("btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="40px";dn.style.padding="0 18px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
+var SHEETFROM=null;
+function behind(on){["scroll","tabs"].forEach(function(id){var x=$(id);if(!x)return;if(on){x.setAttribute("inert","");x.setAttribute("aria-hidden","true");}else{x.removeAttribute("inert");x.removeAttribute("aria-hidden");}});var t=document.querySelector(".top");if(t){if(on)t.setAttribute("inert","");else t.removeAttribute("inert");}}
+function openSheet(kind){SHEETFROM=document.activeElement;UI.sheet=kind;$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
+function closeSheet(){UI.sheet="";$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;}
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
+function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn("btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text,image){
   if(UI.lbusy)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
@@ -2444,7 +2577,7 @@ function logOther(text,image){
     if(UI.sheet==="log")renderSheet();});
 }
 function renderSheet(){
-  var sh=$("sheet");sh.textContent="";var c=el("div","sheet-card");c.setAttribute("role","dialog");
+  var sh=$("sheet");sh.textContent="";var c=el("div","sheet-card");c.setAttribute("role","dialog");c.setAttribute("aria-modal","true");
   if(UI.sheet==="targets"){
     c.setAttribute("aria-label","How your targets are worked out");sheetHead(c,"How these numbers are worked out","Done",closeSheet);
     var d=PL?PL.day:null;if(d){var ul=el("ul","checks");d.notes.forEach(function(nn){var li=el("li","ok"),i=el("i");i.appendChild(ic("check"));var s=el("span");s.appendChild(el("b",null,nn[0]+" "));s.appendChild(document.createTextNode(nn[1]));add(li,i,s);ul.appendChild(li);});c.appendChild(ul);

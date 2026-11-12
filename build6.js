@@ -6,14 +6,18 @@ const v4 = rd('src/v4/shell.html').split('\n');
 const close = v4.indexOf('</style>'), appAt = v4.findIndex(l => l.startsWith('<div class="app"'));
 if (close < 0 || appAt < 0) throw new Error('v4 shell layout changed');
 const head = v4.slice(0, close).join('\n'), icons = v4.slice(close, appAt).join('\n');
+// One palette: the Raw Linen paper in every scheme. The base sheet still carries the old teal dark-mode colours, which phones in dark mode
+// picked up under the Raw Linen layer (illegible dark-on-dark text). They are removed here, and the page declares a light-only scheme.
+const headLight = head.replace(/@media \(prefers-color-scheme:dark\)\{:root:not\(\[data-theme="light"\]\)\{[^}]*\}\}/g, '').replace(/:root\[data-theme="dark"\]\{[^}]*\}/g, '');
+if (/prefers-color-scheme:dark/.test(headLight)) throw new Error('a dark-mode rule is still in the base sheet');
 const core = [rd('src/v5/core.js'), rd('src/v6/params.js'), rd('src/v6/engine.js')].join('\n');
 // drawing helpers are taken from the v5 app as they are: everything before its state block, and the helper block after it
 const a5 = rd('src/v5/app.js'), s0 = a5.indexOf('/* ---------- state ---------- */'), s1 = a5.indexOf('/* ---------- motion helpers (from v4) ---------- */'), s2 = a5.indexOf('/* ---------- the meal after the person');
 if (s0 < 0 || s1 < 0 || s2 < 0) throw new Error('v5 app markers moved');
 const js = a5.slice(0, s0) + a5.slice(s1, s2) + rd('src/v6/plate.js') + '\n' + rd('src/v6/app.js');
 const body = rd('src/v5/markup.html').replace('/*CORE*/', () => core).replace('/*APP*/', () => js);
-const shell = head + '\n' + rd('src/v5/extra.css') + '\n' + rd('src/v6/extra.css') + '\n' + icons + '\n' + body;
-const top = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F2ECE1"><style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style></head><body>';
+const shell = headLight + '\n' + rd('src/v5/extra.css') + '\n' + rd('src/v6/extra.css') + '\n' + rd('src/v6/legible.css') + '\n' + icons + '\n' + body;
+const top = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F2ECE1"><meta name="color-scheme" content="only light"><style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style></head><body>';
 const page = top + shell + '</body></html>';
 fs.mkdirSync('hosted/v6', { recursive: true });
 fs.writeFileSync('hosted/v6/index.html', page);

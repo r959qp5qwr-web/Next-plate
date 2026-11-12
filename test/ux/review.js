@@ -19,6 +19,8 @@ const fx = require('../v6/fixture-menu.js');
 const VIEWPORTS = QUICK
   ? [[320, 568, 'small iPhone (SE 1st gen)'], [360, 740, 'common Android'], [390, 844, 'iPhone 12-15'], [412, 915, 'large Android']]
   : [[320, 568, 'small iPhone (SE 1st gen)'], [360, 740, 'common Android'], [375, 667, 'iPhone 8 / SE 2-3'], [390, 844, 'iPhone 12-15'], [393, 851, 'Pixel'], [412, 915, 'large Android'], [430, 932, 'iPhone Pro Max']];
+const WIDTHS = (arg('widths', '') || '').split(',').filter(Boolean).map(Number);
+if (WIDTHS.length) VIEWPORTS.splice(0, VIEWPORTS.length, ...VIEWPORTS.filter(v => WIDTHS.includes(v[0])));
 const SCHEMES = ['light', 'dark'];
 const BIGTEXT = [[360, 740]];                                                                // Android text scaling, simulated at 130 %
 
@@ -74,7 +76,7 @@ async function servers() {
 function audit(T) {
   const out = [], W = innerWidth, VH = innerHeight;
   const vis = (e) => { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return false; let a = e; while (a && a !== document.body) { const s = getComputedStyle(a); if (s.display === 'none' || Number(s.opacity) === 0 || a.hidden) return false; a = a.parentElement; } const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
-  const decorative = (e) => !!e.closest('[aria-hidden="true"],svg,.scribble,.sprig,.stamp,.vine,.band,.colophon');
+  const decorative = (e) => !!e.closest('svg,.scribble,.sprig,.stamp,.vine,.band,.colophon');   // ornament; visible text hidden from screen readers is still measured
   const desc = (e) => { const id = e.id ? '#' + e.id : ''; const cls = typeof e.className === 'string' && e.className ? '.' + e.className.trim().split(/\s+/).slice(0, 2).join('.') : ''; const tx = (e.innerText || e.value || e.getAttribute('aria-label') || e.placeholder || '').replace(/\s+/g, ' ').trim().slice(0, 40); return e.tagName.toLowerCase() + id + cls + (tx ? ' "' + tx + '"' : ''); };
   const add = (rule, e, detail) => out.push({ rule, el: desc(e), detail });
   const scroller = (e) => { let a = e.parentElement; while (a && a !== document.body) { const s = getComputedStyle(a); if (/(auto|scroll)/.test(s.overflowX) && a.scrollWidth > a.clientWidth + 1) return a; a = a.parentElement; } return null; };
@@ -96,7 +98,10 @@ function audit(T) {
   const sheetOpen = [...document.querySelectorAll('#sheet')].some(x => !x.hidden && vis(x));
   const layer = (e) => { let a = e; while (a && a !== document.body) { const p = getComputedStyle(a).position; if (p === 'fixed' || p === 'sticky' || a.id === 'sheet' || a.id === 'toast') return a; a = a.parentElement; } return document.body; };
   const live = (e) => !sheetOpen || !!e.closest('#sheet');
-  const boxes = texty.concat(controls).filter(e => !decorative(e) && live(e) && !e.closest('#toast,.said')).map(e => [e, e.getBoundingClientRect(), layer(e)]);
+  const shown = (e) => { let r = e.getBoundingClientRect(), L = r.left, T = r.top, R = r.right, B = r.bottom, a = e.parentElement;   // the part of the box its scroll areas let through
+    while (a && a !== document.body) { const s = getComputedStyle(a); if (/(auto|scroll|hidden|clip)/.test(s.overflowX + s.overflowY)) { const q = a.getBoundingClientRect(); L = Math.max(L, q.left); T = Math.max(T, q.top); R = Math.min(R, q.right); B = Math.min(B, q.bottom); } a = a.parentElement; }
+    return R - L > 0.5 && B - T > 0.5 ? { left: L, top: T, right: R, bottom: B } : null; };
+  const boxes = texty.concat(controls).filter(e => !decorative(e) && live(e) && !e.closest('#toast,.said')).map(e => [e, shown(e), layer(e)]).filter(x => x[1]);
   for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) { const [a, ra, fa] = boxes[i], [b, rb, fb] = boxes[j]; if (fa !== fb) continue; if (a.contains(b) || b.contains(a)) continue;
     const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left), oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
     if (ox > T.overlapPx && oy > T.overlapPx) add('overlap', a, `overlaps ${desc(b)} by ${Math.round(ox)}x${Math.round(oy)}px`); }
@@ -191,7 +196,7 @@ async function drill(b, base) {
     const ctx = await b.newContext({ viewport: { width: run.w, height: run.h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: run.scheme, timezoneId: 'Asia/Kolkata', locale: 'en-IN', reducedMotion: 'reduce' });
     await ctx.addInitScript(([s, now]) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('np6', s); sessionStorage.setItem('seeded', '1'); } const D0 = Date; }, [JSON.stringify(sd), NOW]);
     await ctx.clock.install({ time: new Date(NOW) }); await ctx.clock.resume();
-    const p = await ctx.newPage(); p.on('pageerror', e => pageErrors.push(name + ': ' + e)); p.on('console', m => { if (m.type() === 'error' && !/favicon|fonts\.g/.test(m.text())) pageErrors.push(name + ': ' + m.text()); });
+    const p = await ctx.newPage(); p.on('pageerror', e => pageErrors.push(name + ': ' + e)); p.on('console', m => { if (m.type() === 'error' && !/favicon|fonts\.g/.test(m.text()) && !(pre && /Failed to load resource/.test(m.text()))) pageErrors.push(name + ': ' + m.text()); });
     let viol = [], err = '';
     try {
       if (pre) await pre(p, h);

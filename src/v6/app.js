@@ -292,7 +292,7 @@ function heroCard(m,v,r){
     var pu=el("ul");m.why.forEach(function(w){var li=el("li"),pl=el("span","plus","+"),tx=el("span");pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
     pr.appendChild(pu);card.appendChild(pr);}
   var acts=el("div","acts two");
-  var total=r.meals.length,nx=btn("btn",total>1?"Next plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
+  var total=r.meals.length,nx=btn("btn",total>1?"Next\u00A0plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
   var tr=btn("btn","Try it","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
@@ -310,7 +310,7 @@ function askBlock(host){
 }
 function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
-  var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="A craving, a dish, what's in the fridge";i.setAttribute("aria-label","Ask for a meal");
+  var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();makePlates(t);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
@@ -477,17 +477,17 @@ function renderRescue(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out anyway");
   if(blocked()){v.appendChild(blockedCard());return;}
-  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in");
+  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in");me.appendChild(el("p","cap","At a restaurant or a function"));
   var mb=btn("btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";
   mb.addEventListener("click",function(){mf.click();});
   mf.addEventListener("change",function(){var file=mf.files&&mf.files[0];if(!file)return;shrink(file,function(b){if(!b){UI.merr=errText("bad_image");render();return;}readMenu("",b);},1600);});
-  var mt=btn("linkbtn","or type it",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
+  var mt=btn("linkbtn","or type the menu",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
   mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
   add(me,mb,mt,mf);
-  var f=el("form","rin");f.autocomplete="off";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="Name the dish";i.setAttribute("aria-label","Dish or order");
+  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="e.g. chole bhature";
   var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)rescue(t,null);});
-  add(f,i,go);add(ent,me,f);v.appendChild(ent);
+  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow);add(ent,me,f);v.appendChild(ent);
   if(UI.mopen&&!UI.mbusy){
     var bx=el("form","menu-box"),ta=el("textarea");ta.id="mtext";ta.maxLength=2000;ta.rows=7;ta.placeholder="Paste or type the menu. One dish per line.";ta.value=UI.mtext||"";ta.setAttribute("aria-label","The menu, typed or pasted");
     ta.addEventListener("input",function(){UI.mtext=ta.value;});
@@ -532,9 +532,12 @@ function renderRescue(){
 }
 
 /* ---------- sheets: my food, how targets are worked out, logging another meal ---------- */
-function openSheet(kind){UI.sheet=kind;$("sheet").hidden=false;renderSheet();}
-function closeSheet(){UI.sheet="";$("sheet").hidden=true;}
-function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h");h.appendChild(el("h2",null,title));var dn=btn("btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="40px";dn.style.padding="0 18px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
+var SHEETFROM=null;
+function behind(on){["scroll","tabs"].forEach(function(id){var x=$(id);if(!x)return;if(on){x.setAttribute("inert","");x.setAttribute("aria-hidden","true");}else{x.removeAttribute("inert");x.removeAttribute("aria-hidden");}});var t=document.querySelector(".top");if(t){if(on)t.setAttribute("inert","");else t.removeAttribute("inert");}}
+function openSheet(kind){SHEETFROM=document.activeElement;UI.sheet=kind;$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
+function closeSheet(){UI.sheet="";$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;}
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
+function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn("btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text,image){
   if(UI.lbusy)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
@@ -543,7 +546,7 @@ function logOther(text,image){
     if(UI.sheet==="log")renderSheet();});
 }
 function renderSheet(){
-  var sh=$("sheet");sh.textContent="";var c=el("div","sheet-card");c.setAttribute("role","dialog");
+  var sh=$("sheet");sh.textContent="";var c=el("div","sheet-card");c.setAttribute("role","dialog");c.setAttribute("aria-modal","true");
   if(UI.sheet==="targets"){
     c.setAttribute("aria-label","How your targets are worked out");sheetHead(c,"How these numbers are worked out","Done",closeSheet);
     var d=PL?PL.day:null;if(d){var ul=el("ul","checks");d.notes.forEach(function(nn){var li=el("li","ok"),i=el("i");i.appendChild(ic("check"));var s=el("span");s.appendChild(el("b",null,nn[0]+" "));s.appendChild(document.createTextNode(nn[1]));add(li,i,s);ul.appendChild(li);});c.appendChild(ul);
