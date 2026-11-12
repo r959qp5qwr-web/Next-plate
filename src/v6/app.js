@@ -155,7 +155,7 @@ function bodyQs(host,after){
 function renderSetup(){
   var v=$("v-setup");v.textContent="";
   var h=el("div","setup-hero"),st=el("div","steps");for(var i=0;i<3;i++)st.appendChild(el("i",UI.step>=i?"on":null));
-  var head=[["Your next plate, every meal","Three short steps, asked once and kept on this phone. The rest it learns from what you eat."],["Your health","This keeps the plates safe for you."],["Your body","Calories and protein for each meal come from these."]][UI.step];
+  var head=[["Your next plate, every meal","Three short steps, asked once and kept on this phone. The rest it learns from what you eat."],["Your health","This keeps the plates safe for you."],["Your body","Four answers. Kept on this phone."]][UI.step];
   add(h,st,el("h1",null,head[0]),el("p",null,head[1]));v.appendChild(h);
   function again(){render();}
   if(UI.step===0){goalQs(v,again);foodQs(v,again);}else if(UI.step===1){healthQs(v,again);}else{bodyQs(v,function(soft){if(!soft)again();});}
@@ -169,7 +169,7 @@ function renderSetup(){
 }
 function blockedCard(){
   var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("shield"));
-  add(c,i,el("h2",null,SAFETY),el("p",null,"Your health setting asks for your coach and doctor to plan meals with you. Nothing here is suggested for now."));
+  add(c,i,el("h2",null,SAFETY),el("p",null,"You told Next Plate about "+(lab("health",P.health)||"a health condition").toLowerCase()+". For this, meals are best planned with your doctor, so nothing is suggested here for now."));
   var b=btn("btn","Change my food",null,null);b.addEventListener("click",function(){openSheet("food");});c.appendChild(b);return c;
 }
 
@@ -318,7 +318,7 @@ function composer(host){
 function renderPlate(){
   var v=$("v-plate");v.textContent="";
   if(blocked()){v.appendChild(blockedCard());return;}
-  directiveCard(v);ctxBlock(v);choices(v);
+  choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
   if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for what you asked":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
@@ -349,6 +349,7 @@ function renderPlate(){
         add(b,thali(x.items,56,"Plate"),tx,ic("chev"));b.addEventListener("click",function(){logEv("chosen",{title:x.title});UI.sel=i;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
       v.appendChild(wrap);}
   }
+  var dh=el("div","sec-h day-h");dh.appendChild(el("h3",null,"Your day"));v.appendChild(dh);directiveCard(v);ctxBlock(v);
   askBlock(v);
   var fw=el("div","colophon");fw.appendChild(stamp());fw.appendChild(sprig("colo-sprig"));v.appendChild(fw);
   v.appendChild(el("p","fine","Plates are planned by AI (Google Gemini) from your choices and your day, and checked against your food rules on the way. What you type goes to Google Gemini; no names are sent. Numbers are estimates for the portion as served. General food guidance, not medical advice."));
@@ -485,12 +486,13 @@ function renderRescue(){
   panelHead(v,"03 · Rescue","Eating out anyway");
   if(blocked()){v.appendChild(blockedCard());return;}
   var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in");me.appendChild(el("p","cap","At a restaurant or a function"));
-  var mb=btn("btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";
+  var mb=btn(UI.mopen?"btn":"btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";
   mb.addEventListener("click",function(){mf.click();});
   mf.addEventListener("change",function(){var file=mf.files&&mf.files[0];if(!file)return;shrink(file,function(b){if(!b){UI.merr=errText("bad_image");render();return;}readMenu("",b);},1600);});
   var mt=btn("linkbtn","or type the menu",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
   mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
-  add(me,mb,mt,mf);
+  var pn=el("p","fine","The photo goes to Google Gemini to read the dishes.");pn.id="photo-note";
+  add(me,mb,pn,mt,mf);
   var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="for example, chole bhature";
   var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)rescue(t,null);});
@@ -583,8 +585,8 @@ function renderSheet(){
   function again(soft){if(!soft)renderSheet();}
   goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
   var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));
-  dq.appendChild(el("p",null,"Your answers and what you eat are kept on this phone only. There is no account and no name."));
-  dq.appendChild(el("p",null,"When a plate is planned, your answers and today's meals go to Google Gemini to plan it. What you type goes too. Nothing else is shared."));
+  dq.appendChild(el("p",null,"Your answers and your food record are kept on this phone. There is no account, and no name is sent."));
+  dq.appendChild(el("p",null,"When you ask for a plate, rescue a dish or read a menu, Google Gemini receives your answers, your meals from the last few days, what you type, and any menu photo, so it can plan for you."));
   if(!UI.wipe){var wb=btn("btn danger-link","Remove my data from this phone",null,"wipe");wb.addEventListener("click",function(){UI.wipe=true;renderSheet();var x=$("wipe-keep");if(x)x.focus({preventScroll:true});});dq.appendChild(wb);}
   else{var cf=el("div","confirm");cf.setAttribute("role","alertdialog");cf.setAttribute("aria-labelledby","wipe-q");var q=el("p",null,"Remove your answers, your food record and today's plates from this phone? This cannot be undone.");q.id="wipe-q";cf.appendChild(q);
     var kr=el("div","pick-acts"),kp=btn("btn","Keep my data",null,"wipe-keep"),rm=btn("btn danger","Remove my data",null,"wipe-yes");

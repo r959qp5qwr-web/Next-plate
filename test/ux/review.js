@@ -160,6 +160,8 @@ function coverage() {
   const steps = (app.match(/UI\.step<2/g) || []).length ? 3 : 0; if (!ONLY.length && steps && !['setup-1-goal-food', 'setup-2-health', 'setup-3-body'].every(n => names.has(n))) miss.push('a setup step has no review state');
   return miss;
 }
+// feedback in view: the element exists, starts above the fixed bars (or the sheet bottom) and is not hidden under the masthead
+async function inViewCheck(p, sel) { return p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(), bar = document.querySelector('#sheet:not([hidden])') ? innerHeight : Math.min(...[...document.querySelectorAll('#tabs,.composer')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect().top), innerHeight); return r.top < bar - 40 && r.bottom > 60; }, sel); }
 // A12 drill: plant one fault per rule on a ready page and require the review to catch each one (BD-91)
 async function drill(b, base) {
   const ctx = await b.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true, colorScheme: 'light' });
@@ -169,21 +171,31 @@ async function drill(b, base) {
     const v = document.getElementById('v-plate'), mk = (h) => { const d = document.createElement('div'); d.innerHTML = h; v.prepend(d.firstChild); };
     mk('<p style="font-size:10px">planted small text</p>');
     mk('<p style="width:600px;font-size:16px">planted wide box</p>');
-    mk('<p style="color:#cfc6b8;font-size:16px">planted faint text</p>');
+    mk('<p style="color:#cfc6b8;background:#F2ECE1;font-size:16px">planted faint text</p>');
     mk('<button style="width:20px;height:20px;font-size:16px">x</button>');
-    mk('<button style="width:48px;height:48px"></button>');
+    mk('<button id="planted-noname" style="width:48px;height:48px"></button>');
     mk('<p style="width:80px;height:20px;overflow:hidden;white-space:nowrap;font-size:16px">planted clipped text that runs on</p>');
     mk('<div style="position:relative;height:30px"><span style="font-size:16px">planted under</span><span style="position:absolute;left:0;top:0;font-size:16px">planted over</span></div>');
     mk('<p style="font-family:Caveat;font-size:26px">planted 450 kcal</p>');
+    mk('<p style="font-family:Caveat;font-size:18px">planted pencil note</p>');
     mk('<input style="width:90px;font-size:16px" placeholder="planted hint far too long for this box">');
+    mk('<input style="width:200px;font-size:14px" aria-label="planted small input">');
     mk('<div style="width:60px;font-size:16px;white-space:nowrap">planted run-on figure 1200 kcal</div>');
     mk('<svg viewBox="0 0 320 40" style="width:160px" role="img" aria-label="planted chart"><text x="4" y="20" style="font-size:12px">planted tiny chart label</text></svg>');
+    const last = document.createElement('p'); last.style.cssText = 'font-size:16px;margin-bottom:-600px'; last.textContent = 'planted last line'; v.appendChild(last);
+    const ans = document.createElement('p'); ans.id = 'planted-answer'; ans.style.cssText = 'font-size:16px;margin-top:2400px'; ans.textContent = 'planted answer'; v.insertBefore(ans, last);
     document.body.style.background = '#0B1211';
     const m = document.querySelector('meta[name=viewport]'); m.setAttribute('content', m.getAttribute('content') + ',user-scalable=no');
   });
-  const got = new Set((await p.evaluate(audit, C.T)).map(v => v.rule)); await ctx.close();
-  const want = ['text-too-small', 'overflow-x', 'off-screen', 'contrast', 'target-small', 'no-name', 'text-clipped', 'overlap', 'handwriting-figures', 'placeholder-clipped', 'palette', 'zoom-blocked', 'text-overflow'];
-  return want.filter(r => !got.has(r));
+  const res = await p.evaluate(audit, C.T); const hidden = !(await inViewCheck(p, '#planted-answer')); await ctx.close();
+  const has = (rule, txt) => res.some(v => v.rule === rule && (v.el + ' ' + v.detail).includes(txt));
+  const want = [['text-too-small', 'planted small text'], ['off-screen', 'planted wide box'], ['overflow-x', 'content'], ['contrast', 'planted faint text'], ['target-small', '"x"'],
+    ['no-name', 'planted-noname'], ['text-clipped', 'planted clipped text'], ['overlap', 'planted over'], ['handwriting-figures', 'planted 450 kcal'], ['handwriting-too-small', 'planted pencil note'],
+    ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-too-small', 'chart text'],
+    ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable']];
+  const missed = want.filter(([r, t]) => !has(r, t)).map(([r, t]) => r + ' (' + t + ')');
+  if (!hidden) missed.push('feedback-hidden (planted answer)');
+  return missed;
 }
 
 (async () => {
@@ -196,7 +208,7 @@ async function drill(b, base) {
     settle: async (ms) => { await new Promise(r => setTimeout(r, ms || 500)); },
     plate: async (p) => { await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await new Promise(r => setTimeout(r, 700)); },
     slowApi: async (p, ms) => { await p.route('**/api/meals', async r => { await new Promise(x => setTimeout(x, ms)); await r.continue(); }); },
-    inView: async (p, sel, what) => { const ok = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(), bar = document.querySelector('#sheet:not([hidden])') ? innerHeight : Math.min(...[...document.querySelectorAll('#tabs,.composer')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect().top), innerHeight); return r.top < bar - 40 && r.bottom > 60; }, sel); if (!ok) (p.__late = p.__late || []).push({ rule: 'feedback-hidden', el: sel, detail: what + ' is not in view after the tap' }); },
+    inView: async (p, sel, what) => { const ok = await inViewCheck(p, sel); if (!ok) (p.__late = p.__late || []).push({ rule: 'feedback-hidden', el: sel, detail: what + ' is not in view after the tap' }); },
     failApi: async (p) => { await p.route('**/api/meals', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); },
   };
   const runs = [];

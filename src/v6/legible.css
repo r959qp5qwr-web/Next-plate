@@ -164,6 +164,12 @@
 #app .confirm p{color:var(--ink)}
 #app .confirm .pick-acts{display:flex;gap:8px}#app .confirm .btn{flex:1;min-height:48px}
 /* enlarged text: habit buttons take a row each when three no longer fit; the eaten-out figures may wrap */
-#app .habits{grid-template-columns:repeat(auto-fit,minmax(min(100%,96px),1fr))}
-#app .hab span{overflow-wrap:break-word;hyphens:auto}
+#app .habits{grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr))}
 #app .cmp-row .val{white-space:normal;overflow-wrap:anywhere}
+/* ===== Critic round 2 ===== */
+#app .entries form.rin{align-items:stretch}
+#app .entries form.rin .cap{text-align:left}
+#app .cb-ax{margin-top:-18px}
+#app .menu-box textarea{font-style:normal}
+#app .menu-in .fine{text-align:center;margin:2px 0 0}
+#app .day-h{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}

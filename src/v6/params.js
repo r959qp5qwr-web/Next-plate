@@ -78,8 +78,8 @@ function dayTargets6(p,par){
   var protein=rw*gk,pmax=kcal*par.proteinMaxEnergyShare/4;if(protein>pmax)protein=pmax;
   notes.push(["Protein.","About "+Math.round(protein)+" g a day: "+why+(rw<p.kg-0.5?", counted on "+Math.round(rw)+" kg (the weight at BMI 25 for your height) so the target stays realistic":"")+". Spread evenly over breakfast, lunch and dinner."]);
   var fibre=p.health==="diabetes"?Math.min(par.fibreDiabetesMax,Math.max(par.fibreDiabetesMin,kcal*par.fibreDiabetesPer1000/1000)):kcal*par.fibrePer1000/1000;
-  notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":", from the ICMR-NIN figure of 30 g per 2000 kcal.")]);
-  notes.push(["Meals.","Lunch is the largest meal and dinner a lighter one, following the ICMR-NIN sample day. A missed meal is spread over the rest of the day; no single meal is asked to make up for it."]);
+  notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":", from the figure of India's national nutrition institute (ICMR-NIN): 30 g per 2000 kcal.")]);
+  notes.push(["Meals.","Lunch is the largest meal and dinner a lighter one, following the sample day of India's national nutrition institute (ICMR-NIN). A missed meal is spread over the rest of the day; no single meal is asked to make up for it."]);
   if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sulfonylurea tablets can cause low sugar; your doctor's advice comes first."]);
   return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};
 }

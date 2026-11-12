@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
-# Stop gate: if screen code changed (see ux-mark.sh), the work is not done until
-#   1. the page is rebuilt from source,
-#   2. the surface review (test/ux/review.js --quick) finds no violations, and
-#   3. the ux-critic agent has written VERDICT: PASS for this exact build (test/ux/out/CRITIC.md, line 2 = BUILD: <sha256 of hosted/v6/index.html>).
-# Exit 2 blocks the stop and shows the reason to Claude. After 3 blocked attempts in a row it lets the stop through with a BLOCKED notice,
-# so a gate that cannot be satisfied is reported to the owner instead of looping. A hook proves only that these steps ran (Builders Doctrine).
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; M="$ROOT/.claude/.ux-dirty"; N="$ROOT/.claude/.ux-gate-tries"
-[ -f "$M" ] || exit 0
-cd "$ROOT" || exit 0
-tries=$(cat "$N" 2>/dev/null || echo 0); tries=$((tries+1)); echo $tries > "$N"
-block() { if [ "$tries" -ge 3 ]; then echo "UX GATE BLOCKED after $tries attempts: $1. Tell the owner this is unresolved; do not call the work done." >&2; rm -f "$N"; exit 0; fi; echo "UX GATE: $1" >&2; exit 2; }
-node build6.js >/dev/null 2>&1 || block "the page does not build (node build6.js)"
-node test/ux/review.js --quick --page hosted/v6/index.html --out test/ux/out >/dev/null 2>&1; rc=$?
-[ $rc -eq 2 ] && block "the surface review could not run (needs bun and playwright)"
-[ $rc -ne 0 ] && block "surface review found violations; read test/ux/out/report.md, fix them, and stop again. $(sed -n '5,8p' test/ux/out/report.md | tr '\n' ' ')"
-sha=$(sha256sum hosted/v6/index.html | cut -c1-64)
-[ -f test/ux/out/CRITIC.md ] || block "no Critic verdict. Run the ux-critic agent on this build; it writes test/ux/out/CRITIC.md"
-head -1 test/ux/out/CRITIC.md | grep -q '^VERDICT: PASS' || block "the Critic did not pass this work; fix its findings (test/ux/out/CRITIC.md) and ask it again"
-sed -n 2p test/ux/out/CRITIC.md | grep -q "BUILD: $sha" || block "the Critic's PASS is for a different build; the page changed after it. Ask the Critic again"
-rm -f "$M" "$N"; echo "UX gate: review clean and Critic PASS for build ${sha:0:12}." ; exit 0
+# Stop gate for Next Plate. Work that changes what a client sees or hears is not finished until, for its exact state:
+#   1. both pages are rebuilt from source (hosted/v6/index.html and the served index.min.html),
+#   2. the surface review (test/ux/review.js --quick, drill first) finds nothing, and
+#   3. the ux-critic agent has written VERDICT: PASS for that state's fingerprint (test/ux/manifest.sh) in test/ux/CRITIC.md.
+# The state is fingerprinted, not the edit, so changes made through the shell, films and the post are covered too.
+# Exit 2 blocks the stop and tells Claude why. After 3 blocks on the same state it lets the stop through with a message to the owner,
+# so an unsatisfiable gate is reported instead of looping. A hook proves only that these steps ran (Builders Doctrine BD-94);
+# it cannot prove who wrote CRITIC.md: the verdict history in git is the record.
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$ROOT" || exit 0
+N="$ROOT/.claude/.ux-gate-tries"
+[ -f node_modules/esbuild/package.json ] || npm install --silent --no-audit --no-fund >/dev/null 2>&1
+block() { M="$1"; why="$2"; prev=$(cat "$N" 2>/dev/null); cnt=1; [ "${prev%% *}" = "$M" ] && cnt=$(( ${prev##* } + 1 )); echo "$M $cnt" > "$N"
+  if [ "$cnt" -ge 3 ]; then rm -f "$N"; printf '{"systemMessage":"UX gate: NOT RESOLVED after %s attempts on this build: %s. The work must not be presented as finished."}\n' "$cnt" "$(echo "$why" | tr '"\n' "' ")"; exit 0; fi
+  echo "UX GATE: $why" >&2; exit 2; }
+ESBUILD=./node_modules/esbuild node build6.js >/dev/null 2>&1 || block "unbuilt" "the pages do not build (npm run build)"
+M=$(test/ux/manifest.sh)
+grep -qx "$M" test/ux/PASSED 2>/dev/null && { rm -f "$N"; exit 0; }
+node test/ux/review.js --quick --pool 6 --out test/ux/out >/dev/null 2>&1; rc=$?
+[ $rc -eq 2 ] && block "$M" "the surface review could not run or its drill failed (UNVERIFIED); see test/ux/out"
+[ $rc -ne 0 ] && block "$M" "the surface review found violations; read test/ux/out/report.md, fix them, stop again. $(sed -n '5p' test/ux/out/report.md)"
+[ -f test/ux/CRITIC.md ] || block "$M" "no Critic verdict for this state. Run the ux-critic agent; it writes test/ux/CRITIC.md"
+head -1 test/ux/CRITIC.md | grep -q '^VERDICT: PASS' || block "$M" "the Critic's verdict is not PASS; fix its findings (test/ux/CRITIC.md) and ask it again"
+sed -n 2p test/ux/CRITIC.md | grep -q "BUILD: $M" || block "$M" "the Critic's verdict is for a different state (fingerprint $M expected); ask the Critic again"
+echo "$M" > test/ux/PASSED; rm -f "$N"; exit 0

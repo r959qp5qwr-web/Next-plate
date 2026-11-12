@@ -1,0 +1,13 @@
+{
+  "name": "next-plate",
+  "private": true,
+  "description": "Next Plate: build and review tooling. The app itself is hosted/v6/index.min.html, served by src/v5/server.ts.",
+  "scripts": {
+    "build": "ESBUILD=./node_modules/esbuild node build6.js",
+    "review": "node test/ux/review.js --quick --pool 6 --out test/ux/out",
+    "drill": "node test/ux/review.js --drill --out /tmp/np-drill"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.2"
+  }
+}

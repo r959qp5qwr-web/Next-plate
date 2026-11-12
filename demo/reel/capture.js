@@ -50,7 +50,7 @@ const PHRASES = ['So far [^.]*\\.', '[A-Z][a-z]+ carries [^.]*\\.', 'That is eve
   let p; const ON = (k) => !process.env.ONLY || process.env.ONLY.split(',').includes(k);
   if (ON('A')) {
   p = await ctx({ p: P, c: {}, ev: week.concat(today) }); await p.goto(BASE); await p.evaluate(() => document.fonts.ready); await settle(p, 300);
-  await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1500); await shot(p, '03-today-directive');
+  await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1500); await into(p, '#directive', 'start'); await settle(p, 400); await shot(p, '03-today-directive');
   await p.waitForSelector('#alc-protein:not([disabled])', { timeout: 60000 }); await settle(p, 600);
   await into(p, '#plate-card'); await settle(p, 400); await shot(p, '04-plate');
   await into(p, '.hero h2', 'start'); await settle(p, 400); await shot(p, '05-planned-around');
@@ -83,7 +83,7 @@ const PHRASES = ['So far [^.]*\\.', '[A-Z][a-z]+ carries [^.]*\\.', 'That is eve
   await p.click('#meal-lunch'); await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 800);
   await into(p, '.logrow', 'center'); await settle(p, 300); await p.click('#log-other'); await settle(p, 400); await p.fill('#login', '2 aloo paratha with curd'); await shot(p, 'D1-log-ask');
   await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 60000 }); await settle(p, 400); await shot(p, 'D2-log-estimate');
-  await p.click('#log-ok'); await settle(p, 900); await shot(p, 'D3-day-updated');
+  await p.click('#log-ok'); await settle(p, 900); await into(p, '.tiles', 'center'); await settle(p, 400); await shot(p, 'D3-day-updated');
   await p.click('#meal-dinner'); await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1200); await shot(p, 'D4-dinner-after');
   await into(p, '.hero h2', 'start'); await settle(p, 400); await shot(p, 'D5-dinner-planned');
   }

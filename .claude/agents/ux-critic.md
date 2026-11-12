@@ -30,7 +30,7 @@ viewing images, listing files, `ffprobe`); never for changing files.
 ## What you judge
 Read docs/ux/UX-CRITERIA.md first: part A (measured) and part B (judged on rendered screens), each criterion with its source (Builders Doctrine
 module ux-design-assurance v1.1, WCAG 2.2, the installed design skills). Then:
-1. Measured: run `node test/ux/review.js --quick` (or read the report the builder names, but re-run it if the build changed after it).
+1. Measured: run `npm run drill` and `npm run review` yourself (re-run if anything changed after the builder's run).
    Any violation, any state that could not be reached, any page error = FAIL. Read test/ux/allow.json: every exception must have a reason
    that holds up; an exception that hides a defect = FAIL.
 2. Rendered: open the screens in test/ux/out/screens/<width>-<scheme>/ for every state at 320, 360 and 390 px, light and dark, and 360 px at
@@ -45,10 +45,11 @@ module ux-design-assurance v1.1, WCAG 2.2, the installed design skills). Then:
    mean near -16 dB, not -23 dB) and that the transcript, if supplied, has no repeated or clipped words.
 
 ## How you answer
-- Write your full answer to `test/ux/out/CRITIC.md` (the only file you may write; use a Bash heredoc) and return the same text.
-  The Stop hook (.claude/hooks/ux-gate.sh) reads it and will not let the work be handed to the owner without your PASS for the exact build.
+- Write your full answer to `test/ux/CRITIC.md` (the only file you may write; use a Bash heredoc) and return the same text.
+  The Stop hook (.claude/hooks/ux-gate.sh) reads it and will not let work be handed to the owner without your PASS for the exact state.
 - First line: `VERDICT: PASS` or `VERDICT: FAIL`.
-- Second line: `BUILD: ` followed by the output of `sha256sum hosted/v6/index.html | cut -c1-64`, taken after you finished measuring.
+- Second line: `BUILD: ` followed by the output of `test/ux/manifest.sh`, taken after you finished measuring (it fingerprints both built
+  pages, their sources, the review, both films and the WhatsApp post).
 - Then findings, most serious first, each: surface/state and width/scheme, what is wrong, why it matters for these users, the criterion ID,
   the evidence (file:line, screenshot path, measured value), and the smallest correction.
 - Then "Not inspected:" listing what you could not see (for example the owner's own phone model, live Gemini text variety, audio by ear).

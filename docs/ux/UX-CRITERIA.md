@@ -32,7 +32,8 @@ plate asked; toast; Builder, Builder adjusted; Rescue entry, result, menu typed,
 ## Part A, changes after Critic round 1
 The Critic found what the first version of the review could not see: a figure running into the next tile, a Rescue answer landing
 below the fold, chart labels at 10 px, and a 130 % simulation that compounded on nested text. The review now checks each of these
-(rules text-overflow, feedback-hidden, chart text in text-too-small) and its drill plants them.
+(rules text-overflow, feedback-hidden, chart text in text-too-small). After round 2 the drill plants every rule, 18 faults,
+and matches each to its element by text, so a rule that stops working is caught even when another rule of the same name fires.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
@@ -52,10 +53,13 @@ below the fold, chart labels at 10 px, and a 130 % simulation that compounded on
 
 ## Part C. How the criteria are enforced
 1. `test/ux/review.js` measures Part A on every state (exit 0 clean, 1 violations, 2 could not run = UNVERIFIED, BD-92).
-2. Hook (`.claude/settings.json`): editing screen code marks the build unreviewed (`ux-mark.sh`); finishing work runs `ux-gate.sh`:
-   rebuild, review to zero, and a Critic PASS bound to the exact build hash. A hook proves only that the steps ran (BD: hooks prove configuration).
+2. Hook (`.claude/settings.json`): finishing work runs `ux-gate.sh`. It rebuilds both pages, fingerprints the state (`test/ux/manifest.sh`:
+   pages, sources, the review itself, both films, the WhatsApp post), re-runs the review to zero, and requires a Critic PASS for that
+   fingerprint in `test/ux/CRITIC.md`. Edits made any way (editor, shell, films) change the fingerprint. After three blocks on one state
+   it lets the stop through with a message to the owner that the work is not resolved. A hook proves only that the steps ran (BD-94);
+   who wrote CRITIC.md is shown by git history, not by the hook.
 3. The Critic (`.claude/agents/ux-critic.md`) is independent of the builder: it re-runs the review, reads the screens for Part B and the
-   diff for regressions, and writes VERDICT and BUILD to `test/ux/out/CRITIC.md`. Nothing reaches the owner without its PASS.
+   diff for regressions, and writes VERDICT and BUILD (the fingerprint) to `test/ux/CRITIC.md`. Nothing reaches the owner without its PASS.
 4. Still outside what code and the Critic can prove (BD-87, BD-94): the owner's own phone, and clients' comprehension. These stay listed
    as "Not inspected" in each verdict.
 
