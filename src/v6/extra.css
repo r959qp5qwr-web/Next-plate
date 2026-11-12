@@ -1,0 +1,16 @@
+/* ===== v6 additions, Raw Linen only ===== */
+.tip.directive{font-size:16.5px;line-height:23px;margin:2px 2px 0}
+.tip.directive .linkbtn,.tip .linkbtn{display:flex;min-height:30px;margin-top:4px;color:#6B3A1F;font-size:14.5px}
+.hero .planned,.plate.wait .planned{margin:8px 0 0;font:600 18px/21px var(--hand);color:var(--olive)}
+.hero .planned span{white-space:nowrap}
+.logrow{display:flex;justify-content:space-between;gap:10px;padding:2px 16px 12px}
+.logrow .linkbtn svg.i{width:15px;height:15px}
+.card.logged{display:flex;flex-direction:column;gap:6px;padding:16px}
+.card.logged .dish{font-size:27px;line-height:31px}
+.card.logged .tsub{font-style:italic;font-size:16px;line-height:22px;color:var(--ink2);margin:0}
+.card.logged .pick-acts{margin-top:8px}.card.logged .pick-acts .btn{flex:1;padding:0 14px}
+.sheet-card .dish{font-size:26px;line-height:30px;margin:0}
+.sheet-card .tsub{font-style:italic;font-size:15.5px;line-height:21px;color:var(--ink2);margin:0}
+.sheet-card .pick-acts .btn{flex:1;padding:0 14px}
+.sheet-card .checks b{font-style:italic}
+.why p.lead{font:italic 500 18px/25px var(--display);color:var(--ink)}

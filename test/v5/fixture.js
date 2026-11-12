@@ -42,3 +42,5 @@ exports.rescue = {
     { title: "A brisk 15-minute walk after the meal", kind: "move", deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 },
   ],
 };
+exports.log = { status: "ok", title: "Aloo paratha with curd", items: [{ food: "Aloo paratha", grams: 240, group: "carbs" }, { food: "Curd", grams: 100, group: "protein" }],
+  kcal: 640, protein: 17, carbs: 84, fats: 26, fiber: 8, assumed: "Layout sample, not AI output: 2 medium parathas and a small bowl of curd." };

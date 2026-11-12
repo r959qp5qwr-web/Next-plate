@@ -15,9 +15,12 @@ const baseC = { meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cui
     catch (e) { j = { code: 'fetch ' + e }; }
     const ms = Date.now() - t0, got = status === 200 ? j.status : 'http-' + status + ':' + (j.code || '');
     const issues = [];
-    const texts = s.kind === 'meals' ? (j.meals || []).flatMap(m => [m.title, m.subtitle, ...m.items.map(i => i.food), ...m.why.map(w => w.pair + ' ' + w.effect), ...Object.values(m.alchemy).map(a => a.suffix + ' ' + a.note)])
-      : j.dish ? [j.dish.name && s.c.text ? '' : j.dish.name, j.dish.warning, j.dish.breakdown, ...(j.hacks || []).map(h => h.title)] : [];
+    const whys = s.kind === 'meals' ? (j.meals || []).flatMap(m => m.why.map(w => w.pair + ' ' + w.effect)) : [];
+    const texts = s.kind === 'meals' ? (j.meals || []).flatMap(m => [m.title, m.subtitle, ...m.items.map(i => i.food), ...Object.values(m.alchemy).map(a => a.suffix + ' ' + a.note)])
+      : j.dish ? (j.hacks || []).map(h => h.title) : [];   // the dish they named and its description may name what is in it; the moves may not break their rules
+    if (j.dish) [j.dish.warning, j.dish.breakdown].forEach(t => { if (t && core.supp(t)) issues.push('supplement: ' + t); if (t && core.CLAIM.test(t)) issues.push('claim: ' + t); });
     texts.forEach(t => { if (t && core.crosses(t, p)) issues.push('crosses: ' + t); if (t && core.supp(t)) issues.push('supplement: ' + t); if (t && core.CLAIM.test(t)) issues.push('claim: ' + t); if (/!/.test(t || '')) issues.push('exclamation: ' + t); });
+    whys.forEach(t => { if (core.supp(t)) issues.push('supplement: ' + t); if (core.CLAIM.test(t)) issues.push('claim: ' + t); });   // explanations may name a food to avoid; items may not
     (j.meals || []).forEach(m => { const e = 4 * m.protein + 4 * m.carbs + 9 * m.fats; if (Math.abs(e - m.kcal) / m.kcal > .15) issues.push('energy: ' + m.title);
       if (p.health === 'diabetes' && !m.items.some(i => i.group === 'carbs')) issues.push('diabetes grain missing: ' + m.title);
       if (Object.keys(m.alchemy).length < 4) issues.push('alchemy ' + Object.keys(m.alchemy).length + '/4: ' + m.title); });
