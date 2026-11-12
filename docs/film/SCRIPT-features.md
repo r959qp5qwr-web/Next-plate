@@ -1,5 +1,6 @@
 # Next Plate features film (60 s): script and storyboard, gate 3
 
+Script approved by the owner (2026-11-12: "No all good."). Gate 4 waits on Gemini credits.
 Concept B, "The day says, the plate answers" (owner's pick, 2026-11-12, after the concept A script was turned down: "No. Doesn't work.").
 Proposition: Whatever your day does, Next Plate plans the next plate around it.
 Owner's change (2026-11-12): the opening "Skipped breakfast" beat replaced by "Heavy lunch" (skipping read as a loophole for weight loss and a risk on diabetes medicine).
