@@ -25,3 +25,6 @@ Every concept uses the app's own screens, the owner's voice and the 30 s film's 
 
 ## Recommendation
 A. It is the only concept where every feature serves the one thought, the day moving and the plate following, and it is all the app's own screens. Only A clears 4 on every line.
+
+## Owner's decision
+2026-11-12: A was picked first; its script was turned down ("No. Doesn't work."). The owner then chose **B, the day says, the plate answers**. B is fixed.
