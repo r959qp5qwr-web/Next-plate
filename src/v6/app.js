@@ -6,7 +6,7 @@ var CLOCK=hr<4?"dinner":hr<11?"breakfast":hr<15.5?"lunch":hr<18.5?"snack":"dinne
 var MEALS=[["breakfast","Breakfast","sunrise"],["lunch","Lunch","sun"],["snack","Snack","cup"],["dinner","Dinner","moon"]];
 var MODEICON={strength:"dumbbell",trek:"mountain",focus:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
 var DAY=dayOf(now.getTime());
-var P={goal:null,focus:"none",diet:null,health:null,region:"n",leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
+var P={goal:null,focus:"none",meds:"",diet:null,health:null,region:"n",leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
 var C={meal:CLOCK,mode:"focus",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="";
@@ -14,7 +14,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="";
   var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
   if(!raw){old=JSON.parse(localStorage.getItem("np5")||"null");if(old)raw={p:old.p,c:old.c,k:old.k};}
   if(!raw)return;var rp=raw.p||{};
-  ["goal","focus","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
+  ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
   if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
   ["age","cm","kg"].forEach(function(k){if(+rp[k]>0)P[k]=Math.round(+rp[k]);});
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal;
@@ -36,7 +36,7 @@ var FILE=null,PL=null,HOOKS=[];
 function blocked(){return P.done&&(P.health==="kidney"||P.health==="preg");}
 function clockText(){var h=now.getHours(),m=now.getMinutes();return ((h%12)||12)+":"+(m<10?"0":"")+m+(h<12?" am":" pm");}
 function mealName(k){return lab("meal",k);}
-function profileOut(){return {goal:P.goal,focus:P.focus,diet:P.diet,health:P.health,region:P.region,leave:P.leave,sex:P.sex,age:P.age,cm:P.cm,kg:P.kg,act:P.act};}
+function profileOut(){return {goal:P.goal,focus:P.focus,meds:P.health==="diabetes"?(P.meds||"unsure"):"no",diet:P.diet,health:P.health,region:P.region,leave:P.leave,sex:P.sex,age:P.age,cm:P.cm,kg:P.kg,act:P.act};}
 function appetite(){return APP[C.meal]!=null?APP[C.meal]:suggestAppetite(FILE,C.meal).v;}
 function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());
   HOOKS=hooksFor(profileOut(),FILE,{meal:C.meal,hour:C.meal===CLOCK?hr:null,mode:C.mode},PL);}
@@ -47,7 +47,7 @@ function curKey(){return STORE.shown[C.meal]||ctxKey();}
 function curRes(){return STORE.res[curKey()]||null;}
 function lastForMeal(){var best=null;Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r.meal===C.meal&&r.meals&&r.meals.length&&(!best||r.at>best.at))best=r;});return best;}
 function fileOut(){return {today:FILE.today,patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days};}
-function ctxOut(text){var c={meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
+function ctxOut(text){var c={lite:true,meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
@@ -67,13 +67,22 @@ function makePlates(text){
     UI.busy="";
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
-      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;save();
+      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";}
     else UI.err=errText(j.code);
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});
   });
 }
 
+/* The swaps and one-tap changes for one plate arrive a few seconds after the plates themselves, so the plates never wait for them. */
+var TUNING={};
+function tune(key,i){
+  var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
+  api("/api/tune",{profile:profileOut(),meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+    delete TUNING[key+"#"+i];
+    if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
+    if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
+}
 /* ---------- the meal after the person's taps ---------- */
 function viewOf(m){
   var n={kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber},title=m.title,notes=[],minutes=m.minutes,items=m.items.map(function(i){return {food:i.food,grams:i.grams,group:i.group};});
@@ -128,6 +137,7 @@ function foodQs(host,after){
 }
 function healthQs(host,after){
   var a=q(host,"Anything on the health side?");tiles(a,"health",function(v){return P.health===v;},function(v){P.health=v;after();});
+  if(P.health==="diabetes"){var m=q(host,"Do you take insulin, or sugar tablets such as glimepiride or gliclazide?",true);m.appendChild(el("p","fine","These can cause low sugar when you eat less, so the plates stay steadier for you."));choiceRow(m,"meds",function(v){return P.meds===v;},function(v){P.meds=v;after();},3);}
   var b=q(host,"Minding any nutrient?",true),lw=el("div","lows");lw.setAttribute("role","radiogroup");
   OPT.focus.forEach(function(o){var x=btn("choice",o[0]==="none"?"Nothing":o[1],null,"focus-"+o[0]);x.setAttribute("role","radio");x.setAttribute("aria-checked",P.focus===o[0]?"true":"false");x.addEventListener("click",function(){P.focus=o[0];after();});lw.appendChild(x);});b.appendChild(lw);
 }
@@ -150,7 +160,7 @@ function renderSetup(){
   if(UI.step===0){goalQs(v,again);foodQs(v,again);}else if(UI.step===1){healthQs(v,again);}else{bodyQs(v,function(soft){if(!soft)again();});}
   var row=el("div","choice-row");row.style.gridTemplateColumns=UI.step?"1fr 2fr":"1fr";
   if(UI.step){var bk=btn("btn","Back",null,"setup-back");bk.addEventListener("click",function(){UI.step--;render();});row.appendChild(bk);}
-  var ok=UI.step===0?!!P.diet&&!!P.goal:UI.step===1?!!P.health:true;
+  var ok=UI.step===0?!!P.diet&&!!P.goal:UI.step===1?!!P.health&&(P.health!=="diabetes"||!!P.meds):true;
   var go=btn("btn primary",UI.step<2?"Next":"Show my plate",null,"setup-next");if(!ok){go.disabled=true;go.style.opacity=".5";}
   go.addEventListener("click",function(){if(!ok)return;if(UI.step<2){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
   row.appendChild(go);v.appendChild(row);
@@ -218,7 +228,8 @@ function waitCard(text){
 function loggedCard(s){
   var c=el("article","card logged"),nm=mealName(s.meal),kind={had:"from your plates",other:"your own meal",rescued:"eaten out",skipped:"skipped"}[s.kind];
   c.appendChild(el("p","cap",nm+" · "+kind));
-  if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));c.appendChild(el("p","tsub","The rest of the day adjusts. No meal is asked to make up for it in one sitting."));}
+  if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));c.appendChild(el("p","tsub","The rest of the day adjusts. No meal is asked to make up for it in one sitting."));
+    if(PL&&PL.day.meds)c.appendChild(el("p","tsub","On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice."));}
   else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈ "+Math.round(s.kcal)+" kcal · "+Math.round(s.protein)+" g protein"));c.appendChild(p);}
   var row=el("div","pick-acts"),ch=btn("btn","Change",null,"slot-change");ch.addEventListener("click",function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");});row.appendChild(ch);
   var nx=nextOpen();if(nx){var go=btn("btn primary","Plan "+mealName(nx).toLowerCase(),"chev","slot-next");go.addEventListener("click",function(){C.meal=nx;UI.sel=0;UI.alc={};UI.fresh=true;render();$("scroll").scrollTop=0;});row.appendChild(go);}
@@ -245,10 +256,11 @@ function heroCard(m,v,r){
   function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",n.protein),"g"),cell("Carbs",tw("h-c",n.carbs),"g"),cell("Fats",tw("h-f",n.fats),"g"),
     cell("Energy",tw("h-k",n.kcal),"kcal"),cell("Fibre",tw("h-fi",n.fiber),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
-  var tn=el("div","tune alc");tn.appendChild(el("p","cap","One-tap changes"));
+  var waitT=!m.tuned&&!m.tuneFailed;if(waitT)tune(curKey(),UI.sel);
+  var tn=el("div","tune alc");tn.appendChild(el("p","cap",waitT?"One-tap changes \u00B7 getting them ready":"One-tap changes"));
   [["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
     var a=m.alchemy[x[0]];var b=btn("tbtn",ALCHLABEL[x[0]],x[1],"alc-"+x[0]);setPressed(b,!!UI.alc[x[0]]);
-    if(!a){b.disabled=true;b.title="Not offered for this plate";}
+    if(!a){b.disabled=true;b.title=waitT?"Getting ready":"Not offered for this plate";}
     b.addEventListener("click",function(){if(!a)return;UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();});tn.appendChild(b);});
   add(h,top,main,rd,tn);
   if(v.notes.length){var ml=el("ul","modlog");v.notes.forEach(function(x){ml.appendChild(el("li",null,x));});h.appendChild(ml);}
@@ -276,7 +288,7 @@ function heroCard(m,v,r){
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". The rest of the day follows it.");});
   add(acts,nx,tr,hv);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
-  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;});add(lg,o,sk);card.appendChild(lg);
+  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.");});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
 var PROMPTS=["Craving chaat at 6 pm","Heavy leg day: a high-protein dinner","Trek tomorrow: food to carry","What to order at a restaurant tonight","Post-workout, under 600 kcal","Only eggs, spinach and bread at home"];

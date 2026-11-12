@@ -4,7 +4,7 @@ const fs = require('fs'), path = require('path');
 const [,, BASE, CODE = '', LABEL = 'run'] = process.argv;
 const sc = JSON.parse(fs.readFileSync(path.join(__dirname, 'scenarios.json'), 'utf8')).filter(c => !process.env.ONLY || process.env.ONLY.split(',').includes(c.id));
 const baseP = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 68, act: 'low' };
-const baseC = { meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cuisine: 'indian', prep: 'home', oil: 'min', appetite: 5 };
+const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cuisine: 'indian', prep: 'home', oil: 'min', appetite: 5 };
 (async () => {
   const out = [];
   for (const s of sc) {
@@ -26,11 +26,18 @@ const baseC = { meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cui
       if (s.avoid) j.meals.forEach(m => { if (new RegExp('\\b' + s.avoid + '\\b', 'i').test(m.title + ' ' + m.items.map(i => i.food).join(' '))) issues.push('repeats ' + s.avoid + ': ' + m.title); });
       if (j.meals.length < 3) issues.push('meals ' + j.meals.length + '/3');
     }
+    if (s.kind === 'meals' && got === 'ok' && s.tune && j.meals[0]) {     // the follow-up call: swaps and one-tap changes for the plate on screen
+      const m = j.meals[0], t1 = Date.now();
+      let tj = {}; try { const r = await fetch(BASE + '/api/tune', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: CODE, profile: p, meal: { title: m.title, subtitle: m.subtitle, cuisine: m.cuisine, prepMinutes: m.minutes, minutes: m.minutes, items: m.items, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats, fiber: m.fiber, why: [] } }) }); tj = await r.json(); } catch (e) { tj = { code: String(e) }; }
+      j.tune = tj; j.tuneMs = Date.now() - t1;
+      if (tj.status !== 'ok') issues.push('tune failed: ' + (tj.status || tj.code));
+      else { if (Object.keys(tj.alchemy).length < 4) issues.push('one-tap changes ' + Object.keys(tj.alchemy).length + '/4'); if (tj.swaps.protein.length < 2) issues.push('protein swaps ' + tj.swaps.protein.length); }
+    }
     if (s.kind === 'log' && got === 'ok' && s.kcalRange && (j.kcal < s.kcalRange[0] || j.kcal > s.kcalRange[1])) issues.push(`log estimate ${j.kcal} kcal outside the plausible range ${s.kcalRange.join(' to ')}`);
     const expect = s.expect || 'ok', ok = got === expect && !issues.length;
     out.push({ id: s.id, expect, got, ok, ms, issues, dropped: j.dropped || {}, reply: j });
     const brief = s.kind === 'meals' && got === 'ok' ? j.meals.map(m => `${m.title} [${m.kcal} kcal, ${m.protein} g] {${(m.planned || []).join(',')}}`).join(' / ') : s.kind === 'log' && got === 'ok' ? `${j.title}: ${j.kcal} kcal, ${j.protein} g protein` : '';
-    console.log(`${ok ? 'OK  ' : 'FAIL'} ${s.id.padEnd(28)} got=${got} ${ms}ms ${issues.join(' | ')}\n       ${brief}`);
+    console.log(`${ok ? 'OK  ' : 'FAIL'} ${s.id.padEnd(28)} got=${got} ${ms}ms${j.tuneMs ? ' +tune ' + j.tuneMs + 'ms' : ''} ${issues.join(' | ')}\n       ${brief}`);
     await new Promise(r => setTimeout(r, Number(process.env.GAP || 500)));
   }
   fs.writeFileSync(path.join(__dirname, `results-${LABEL}.json`), JSON.stringify(out, null, 1));

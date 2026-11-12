@@ -2,7 +2,7 @@
 const { chromium } = require('playwright');
 const DSF = Number(process.argv[2] || 2), BASE = process.argv[3] || 'http://localhost:3006/', OUT = 'screens/v6-phase1/';
 const NOW = new Date('2026-11-12T20:40:00+05:30').getTime(), H = 36e5, D = 864e5;
-const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
+const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 const week = []; for (let i = 1; i <= 6; i++) { week.push({ t: NOW - i * D - 12 * H, type: i % 2 ? 'skipped' : 'had', meal: 'breakfast', title: 'Vegetable poha', kcal: 300, protein: 8, carbs: 50, fats: 8, fiber: 4 });
   week.push({ t: NOW - i * D + (i < 5 ? 1.3 : -1) * H, type: 'had', meal: 'dinner', title: i < 4 ? 'Rajma chawal' : 'Dal, sabzi and phulka', kcal: 520, protein: 16, carbs: 80, fats: 12, fiber: 12 }); }
 const today = [{ t: NOW - 11.5 * H, type: 'skipped', meal: 'breakfast' }, { t: NOW - 6.5 * H, type: 'other', meal: 'lunch', title: 'Chole bhature', kcal: 820, protein: 22, carbs: 98, fats: 36, fiber: 14 }];

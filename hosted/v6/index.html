@@ -1102,22 +1102,90 @@ function plan(kind,body){
   return {error:"bad_request"};
 }
 
-/* ===== Next Plate v6 parameters. Every number that sets a target or a flag lives here, with its source.
-   docs/RESEARCH-parameters.md explains each one. The owner can change any of them; nothing below is a prescription. ===== */
+/* ===== Next Plate v6 parameters. Every number that sets a target or raises a flag lives here, with its source.
+   docs/RESEARCH-parameters.md gives the evidence (S-numbers below refer to its source list) and says which values are
+   guideline figures and which are engine conventions. The owner can change any of them. Nothing here is a prescription. ===== */
 var PARAM={
-  split:{breakfast:.25,lunch:.35,snack:.10,dinner:.30},   /* share of the day per meal; engine default, owner may change */
+  /* --- energy --- */
+  /* Activity factor applied to Mifflin-St Jeor BMR. 1.3 for "mostly sitting" reproduces ICMR-NIN 2020's sedentary requirement
+     (BMR x PAL 1.40 on an Indian-adjusted BMR; S1) to within about 0 to 7 % for reference adults, and sits near the measured PAL of
+     1.35 in sedentary young Indian men (S3). The usual 1.2 runs about 10 % below ICMR-NIN. 1.55 and 1.725 are the conventional
+     exercise multipliers (origin not verified); they stay below ICMR-NIN's figures for moderate and heavy work. */
+  activity:{low:1.3,light:1.4,mod:1.55,high:1.725},
+  /* --- weight loss --- */
+  bmiOverweight:23,        /* Asian-Indian overweight from 23.0 (WHO 2004 S10, Misra 2009 S11, ICMR-NIN 2024 S12) */
+  bmiObese:27.5,           /* ICMR-NIN 2024 and NICE use 27.5; Misra 2009 and AIIMS-DST use 25. The higher line keeps the larger deficit for fewer people */
+  bmiUnder:18.5,
+  deficitOverweight:300,   /* kcal/day for BMI 23 to 27.4: NHLBI's 300 to 500 for overweight (S16) */
+  deficitObese:500,        /* kcal/day for BMI 27.5 and above: ICMR-NIN 2024, AIIMS-DST, ICMR T2D (S12, S13, S8) */
+  deficitMaxShare:.30,     /* never more than 30 % below maintenance (AHA/ACC/TOS option, S17; ICMR-NIN's outer limit is 40 %, S12) */
+  floor:{f:1200,m:1500},   /* lower ends of the AHA/ACC/TOS prescription ranges (S17); ICMR-NIN's minimum is 1000 kcal (S12) */
+  olderAge:65,             /* ESPEN: weight-reducing diets are avoided in overweight older adults, and individual in obese ones (S9) */
+  /* --- protein, g per kg of reference weight per day --- */
+  proteinBase:1.0,         /* ICMR-NIN: 1 g/kg for the cereal-based diets most Indians eat; RDA 0.83 with high-quality protein (S1) */
+  proteinOlder:1.0,proteinOlderActive:1.2,   /* 65 and over: 1.0 to 1.2, at least 1.2 if active (PROT-AGE S20, ESPEN S21) */
+  proteinLose:1.2,         /* during weight loss: 1.2 to 1.6 (ISSN 2026, S22); at least 1.0 keeps more lean mass after 50 (S23) */
+  proteinBuild:1.4,        /* with resistance training: 1.4 to 2.0, no further gain beyond about 1.6 (S25, S26) */
+  proteinCap:1.6,proteinCapDiabetes:1.5,     /* type 2 diabetes: typically 1 to 1.5 g/kg (ADA consensus, S19) */
+  proteinMaxEnergyShare:.30,                 /* protein stays within 30 % of the day's energy (upper end of AIIMS-DST's weight-loss range, S13) */
+  refBmi:25,               /* engine convention: above BMI 25, protein is set on the weight at BMI 25 for the person's height.
+                              No guideline for general adults was found; ICMR's diabetes guideline uses ideal body weight (S8) */
+  mealProteinMax:.55,      /* g/kg in one meal: the upper figure in the per-meal review (S30) */
+  /* --- fibre --- */
+  fibrePer1000:15,         /* ICMR-NIN 2020: about 30 g per 2000 kcal (S2) */
+  fibreDiabetesPer1000:20,fibreDiabetesMin:25,fibreDiabetesMax:40,   /* ICMR T2D: 40 g per 2000 kcal; RSSDI: 25 to 40 g/day (S8, S28) */
+  /* --- the day --- */
+  split:{breakfast:.27,lunch:.40,snack:.05,dinner:.28},        /* ICMR-NIN 2024 sample menu is about 27/43/28 with a small evening drink (S12); 3 points moved to a snack */
+  proteinSplit:{breakfast:.31,lunch:.32,snack:.06,dinner:.31}, /* protein spread evenly over the main meals (S31; total matters more, S22) */
+  bedtimeHour:23.5,dinnerGapHours:2,                           /* dinner counts as late within 2 h of bed (2 to 3 h, S38; at least 1 to 2 h, S28). Bedtime is assumed until asked */
   catchUp:1.25,            /* engine rule: after a missed meal, no later meal grows beyond 1.25 x its usual energy */
-  catchUpProtein:1.5,      /* engine rule: protein may catch up faster than energy, up to 1.5 x the meal's usual share */
-  mealFloor:.6,            /* engine rule: after overeating earlier, a meal never shrinks below 0.6 x its usual size */
-  lateDinnerHour:21.5,     /* dinner logged at or after 9:30 pm counts as late; owner may change */
-  patternMin:3,            /* a habit is called a pattern only when seen on 3 of the last 7 days */
-  hookProteinGap:6,        /* grams above the meal's usual protein before "protein to catch up" is raised */
-  hookLighter:.85,         /* a meal at or under 0.85 x its usual energy is described as "lighter" */
-  hookLongGap:5            /* hours since the last meal before hunger is planned for */
+  catchUpProtein:1.5,      /* engine rule: protein may catch up faster, to 1.5 x the meal's usual share, within mealProteinMax */
+  mealFloor:.6,            /* engine rule: after a heavy earlier meal, no meal shrinks below 0.6 x its usual size */
+  patternMin:3,            /* a habit is called a pattern when seen on 3 of the last 7 days */
+  hookProteinGap:6,hookLighter:.85,hookLongGap:5,
+  /* --- flags (Phase 4 uses these; listed here so the owner sees them) --- */
+  flagLowIntake:1000,      /* a fully logged day under 1000 kcal (ICMR-NIN 2024, S12; ESPEN for older adults, S9) */
+  flagPaceKgPerWeek:1.0,   /* faster than the top of the 0.5 to 1 kg/week guidance (S12, S18, S9), on two weekly weights in a row */
+  flagUnintendedLoss:.05,  /* 5 % of body weight in 6 to 12 months when not trying to lose (S41) */
+  waterGlasses:8           /* about 2 litres a day including beverages (ICMR-NIN 2024, S12) */
 };
+PARAM.lateDinnerHour=PARAM.bedtimeHour-PARAM.dinnerGapHours;
+OPT.meds=[["no","No, neither"],["yes","Yes"],["unsure","Not sure"]];
+
+function bmiOf(p){return p&&p.kg>0&&p.cm>0?p.kg/Math.pow(p.cm/100,2):null;}
+function refWeight(p,par){par=par||PARAM;var b=bmiOf(p);if(b==null)return null;return b>par.refBmi?par.refBmi*Math.pow(p.cm/100,2):p.kg;}
+/* The day's targets, each with the reason it is what it is. notes: [label, sentence] pairs shown to the person as written. */
 function dayTargets6(p,par){
-  par=par||PARAM;var d=dayTargets(p);if(!d)return null;
-  d.fiber=0;d.notes=[["Energy.","About "+d.kcal+" kcal a day."],["Protein.","About "+d.protein+" g a day."]];return d;
+  par=par||PARAM;
+  if(!p||!(p.kg>0)||!(p.cm>0)||!(p.age>0)||!par.activity[p.act]||(p.sex!=="m"&&p.sex!=="f"))return null;
+  var notes=[],bmr=10*p.kg+6.25*p.cm-5*p.age+(p.sex==="m"?5:-161),maint=bmr*par.activity[p.act],bmi=bmiOf(p),goal=p.goal||"hold";
+  var r10=function(x){return Math.round(x/10)*10;};
+  notes.push(["Maintenance.","About "+r10(maint)+" kcal a day: your resting need from the Mifflin-St Jeor formula (age, sex, height, weight), times "+par.activity[p.act]+" for "+lab("act",p.act).toLowerCase()+". For an individual this estimate can be off by a tenth or more, so your weight trend has the last word."]);
+  var kcal=maint,older=p.age>=par.olderAge,meds=p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"),hold="";
+  if(goal==="lose"){
+    if(bmi<par.bmiOverweight)hold="Your BMI is about "+bmi.toFixed(1)+", inside the healthy range for Indian adults (under 23), so plates hold your weight steady instead of cutting calories.";
+    else if(older)hold="After 65, weight loss is planned one person at a time with a doctor, to protect muscle. Plates hold your weight steady and raise protein.";
+    else if(meds)hold="With insulin or sulfonylurea tablets, eating less can drop blood sugar too far. Plates hold steady with an even amount of grain at each meal, until your doctor adjusts the plan.";
+    if(hold)notes.push(["Weight loss.",hold]);
+    else{
+      var def=bmi>=par.bmiObese?par.deficitObese:par.deficitOverweight,cap=maint*par.deficitMaxShare,fl=par.floor[p.sex];
+      def=Math.min(def,cap);kcal=Math.max(fl,maint-def);
+      notes.push(["Weight loss.","About "+r10(maint-kcal)+" kcal a day under maintenance, for a BMI of about "+bmi.toFixed(1)+" (Indian guidance: 500 kcal for obesity, less when only overweight; about half a kilo a week is considered safe). Never under "+fl+" kcal a day."]);
+    }
+  }
+  if(goal!=="lose"&&bmi<par.bmiUnder)notes.push(["Weight.","Your BMI is about "+bmi.toFixed(1)+", under 18.5. Please show this to your coach or doctor."]);
+  var rw=refWeight(p,par),gk=par.proteinBase,why="1 g per kg, the ICMR-NIN figure for the cereal-based meals most Indians eat";
+  if(older){gk=p.act==="mod"||p.act==="high"?par.proteinOlderActive:par.proteinOlder;why=gk+" g per kg, the range advised from 65 to protect muscle";}
+  if(goal==="lose"&&!hold||goal==="lose"&&older){if(par.proteinLose>gk){gk=par.proteinLose;why=gk+" g per kg, because more protein helps keep muscle while losing weight";}}
+  if(goal==="build"&&par.proteinBuild>gk){gk=par.proteinBuild;why=gk+" g per kg, the lower end of the range used with strength training";}
+  gk=Math.min(gk,p.health==="diabetes"?par.proteinCapDiabetes:par.proteinCap);
+  var protein=rw*gk,pmax=kcal*par.proteinMaxEnergyShare/4;if(protein>pmax)protein=pmax;
+  notes.push(["Protein.","About "+Math.round(protein)+" g a day: "+why+(rw<p.kg-0.5?", counted on "+Math.round(rw)+" kg (the weight at BMI 25 for your height) so the target stays realistic":"")+". Spread evenly over breakfast, lunch and dinner."]);
+  var fibre=p.health==="diabetes"?Math.min(par.fibreDiabetesMax,Math.max(par.fibreDiabetesMin,kcal*par.fibreDiabetesPer1000/1000)):kcal*par.fibrePer1000/1000;
+  notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":", from the ICMR-NIN figure of 30 g per 2000 kcal.")]);
+  notes.push(["Meals.","Lunch is the largest meal and dinner a lighter one, following the ICMR-NIN sample day. A missed meal is spread over the rest of the day; no single meal is asked to make up for it."]);
+  if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sulfonylurea tablets can cause low sugar; your doctor's advice comes first."]);
+  return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};
 }
 
 /* ===== Next Plate v6 engine. Loaded after the v5 core, in the page and on the server (np-core).
@@ -1182,12 +1250,13 @@ function planDay(p,file,meal,appetite,par){
   var idx=SLOTS.indexOf(meal),ek=0,ep=0,ak=0,apr=0;                       /* e = logged, a = assumed for earlier meals nobody logged */
   SLOTS.forEach(function(s,i){var m=by[s];if(s===meal)return;
     if(m){if(m.kind!=="skipped"){ek+=m.kcal;ep+=m.protein;}}
-    else if(i<idx){ak+=day.kcal*par.split[s];apr+=day.protein*par.split[s];}});       /* not logged is not the same as not eaten */
-  var left=SLOTS.filter(function(s,i){return i>=idx&&(s===meal||!by[s]);}),wsum=0;left.forEach(function(s){wsum+=par.split[s];});
+    else if(i<idx){ak+=day.kcal*par.split[s];apr+=day.protein*par.proteinSplit[s];}});       /* not logged is not the same as not eaten */
+  var left=SLOTS.filter(function(s,i){return i>=idx&&(s===meal||!by[s]);}),wk=0,wp=0;left.forEach(function(s){wk+=par.split[s];wp+=par.proteinSplit[s];});
   var remK=Math.max(0,day.kcal-ek-ak),remP=Math.max(0,day.protein-ep-apr);
-  var usualK=day.kcal*par.split[meal],usualP=day.protein*par.split[meal];
-  var k=remK*par.split[meal]/wsum,pr=remP*par.split[meal]/wsum;
-  k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein));
+  var usualK=day.kcal*par.split[meal],usualP=day.protein*par.proteinSplit[meal];
+  var k=remK*par.split[meal]/wk,pr=remP*par.proteinSplit[meal]/wp;
+  k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));
+  pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein,Math.max(usualP,par.mealProteinMax*day.refKg)));
   var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling */
   var t=file.today,mine=by[meal]&&by[meal].kind!=="skipped"?by[meal]:null;
   return {day:day,eaten:{kcal:Math.round(ek+(mine?mine.kcal:0)),protein:Math.round(ep+(mine?mine.protein:0)),fiber:Math.round(t.fiber)},left:{kcal:Math.round(remK),protein:Math.round(remP)},
@@ -1231,6 +1300,7 @@ function hooksFor(p,file,c,pl,par){
     if(low===meal&&Object.keys(file.slotProtein).length>=2)add("low_protein_meal","protein at "+mn,mn.charAt(0).toUpperCase()+mn.slice(1)+" has been their lowest-protein meal this week (about "+file.slotProtein[low]+" g). Lead with protein.");}
   if(c.mode==="strength")add("mode_strength","strength day","Today is a strength-training day: protein leads, with enough carbohydrate to refuel.");
   if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, enough salt and fluid with the meal, easy to digest.");
+  if(p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))add("steady_carbs","steady grain (diabetes medicine)","They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.");
   if(p.health==="diabetes")add("diabetes_grain","the grain stays (diabetes)","Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.");
   if(p.health==="bp")add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
   return H.slice(0,9);
@@ -1263,7 +1333,7 @@ function readFile(x,par){
   f.days=num(x.days,0,7)||0;
   return f;
 }
-readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";return p;};})(readProfile);
+readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";if(p.age&&p.age<18)p.age=0;return p;};})(readProfile);
 readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;var h=+((x||{}).hour);c.hour=isFinite(h)&&h>=0&&h<24?h:null;return c;};})(readCtx);
 
 /* ---------- prompts ---------- */
@@ -1275,14 +1345,59 @@ function briefText(p,c,file,pl,hooks){
   else L.push("- Nothing logged today.");
   L.push("");L.push("WHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)");
   hooks.forEach(function(h){L.push("- ["+h.id+"] "+h.brief);});
-  if(!hooks.length)L.push("- (nothing special today)");
+  if(!hooks.length)L.push("- [plain_day] Nothing unusual today: a balanced plate at the target.");
   return L.join("\n");
 }
-function buildMealPrompt6(p,c,file,pl,hooks){
-  var base=buildMealPrompt(p,c),cut=base.indexOf("HARD RULES");
-  return base.slice(0,cut)+briefText(p,c,file,pl,hooks)+"\n\n"+base.slice(cut)+"\n"+
-"- planned_around: for each meal, the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n"+
-"- for_you: for each meal, one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.";
+/* lite = the three plates only (fast). The swaps and one-tap changes for a plate are asked for separately (kind "tune"). */
+function buildPlatesPrompt(p,c,file,pl,hooks,lite){
+  var t=c.target;
+  return [
+"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.",
+"",
+profileText(p,c),
+"",
+"THIS MEAL",
+"- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
+t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein. The first plate should land within 10 percent of the kcal target.":"- No calorie target set; keep portions moderate for an adult.",
+"- Appetite: "+c.appetite+" of 10.",
+"- Mood: "+lab("mood",c.mood)+". Cuisine: "+lab("cuisine",c.cuisine)+(c.cuisine==="indian"?" ("+lab("region",p.region)+" Indian home style first, other Indian regions welcome)":"")+".",
+"- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
+c.ratio?"- Plate ratio by volume they asked for: protein "+c.ratio.protein+"%, vegetables and greens "+c.ratio.greens+"%, carbohydrate "+c.ratio.carbs+"%, fats "+c.ratio.fats+"%.":null,
+c.text?"- They wrote: \""+c.text+"\". Answer that with the meals. If it is a craving or a named dish, meal 1 is that food made to fit; meal 2 is a lighter cousin.":null,
+"",
+briefText(p,c,file,pl,hooks),
+"",
+rulesText(p),
+"- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.",
+"",
+"WHAT TO RETURN",
+"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).",
+"- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
+"- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).",
+"- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).",
+"- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+lite?null:TUNETEXT(p)
+  ].filter(function(x){return x!==null;}).join("\n");
+}
+function TUNETEXT(p){return [
+"- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.",
+"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
+"  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
+function buildTunePrompt(p,m){
+  return [
+"You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.",
+"",
+profileText(p,null),
+"",
+"THE PLATE: "+m.title+" ("+m.subtitle+")",
+"- "+m.items.map(function(i){return i.grams+" g "+i.food+" ["+i.group+"]";}).join("; "),
+"- As written: "+m.kcal+" kcal, "+m.protein+" g protein, "+m.carbs+" g carbs, "+m.fats+" g fats, "+m.fiber+" g fibre. Prep "+m.minutes+" minutes.",
+"",
+rulesText(p),
+"",
+"WHAT TO RETURN",
+TUNETEXT(p)
+  ].join("\n");
 }
 function buildLogPrompt(p,c){
   return [
@@ -1299,11 +1414,13 @@ profileText(p,null),
 "- Plain words. No advice, no warnings, no percentages, no exclamation marks."
   ].join("\n");
 }
-function schemaWithHooks(ids){
+function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
-  m.properties.planned_around={type:"ARRAY",items:ids.length?{type:"STRING",enum:ids}:{type:"STRING"}};m.properties.for_you={type:"STRING"};
+  if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
+  m.properties.planned_around={type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};
   m.required=m.required.concat(["planned_around","for_you"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you"]);return s;
 }
+SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
 SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},title:{type:"STRING"},
   items:{type:"ARRAY",items:{type:"OBJECT",properties:{food:{type:"STRING"},grams:{type:"INTEGER"},group:{type:"STRING",enum:GROUPS}},required:["food","grams","group"]}},
   kcal:{type:"INTEGER"},protein:{type:"INTEGER"},carbs:{type:"INTEGER"},fats:{type:"INTEGER"},fiber:{type:"INTEGER"},assumed:{type:"STRING"}},required:["status"],
@@ -1315,8 +1432,14 @@ function checkReply6(r,p,hooks){
   var raw=(r&&Array.isArray(r.meals))?r.meals:[],byTitle={};raw.forEach(function(m){if(m&&typeof m.title==="string")byTitle[clean(m.title,70)]=m;});
   out.meals.forEach(function(m){var src=byTitle[m.title]||{};
     m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
-    var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";});
+    var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";
+    m.tuned=Object.keys(m.alchemy).length>0||m.swaps.protein.length>0;});
   out.hooks=tags;return out;
+}
+function checkTune(r,p,meal){
+  var m={};for(var k in meal)m[k]=meal[k];m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;
+  var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
+  return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
 function checkLog(r){
   if(!r||typeof r!=="object")return {status:"error"};
@@ -1329,21 +1452,24 @@ function checkLog(r){
   return {status:"ok",title:clean(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
-/* ---------- the entry point, replacing v5's. A request without a food file still works (it is simply a day with nothing logged) ---------- */
-KINDS=["meals","rescue","log"];
+/* ---------- the entry point, replacing v5's. A request without a food file still works (it is simply a day with nothing logged).
+   weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
+KINDS=["meals","rescue","log","tune"];
 plan=function(kind,body){
-  var p=readProfile(body&&body.profile),c=readCtx(body&&body.ctx,kind);
-  if(!p||!c)return {error:"bad_request"};
+  var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
+  if(kind==="tune"){var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
+    return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
+  var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
   c.target=pl?pl.target:null;
-  if(kind==="meals"){c.had=[];var hooks=hooksFor(p,file,c,pl);
-    return {prompt:buildMealPrompt6(p,c,file,pl,hooks),schema:schemaWithHooks(hooks.map(function(h){return h.id;})),image:false,check:function(d){return checkReply6(d,p,hooks);}};}
+  if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
+    return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
-    var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Eaten so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
-    return {prompt:pr,schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p);}};}
+    var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Logged so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: about "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
+    return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){return checkRescue(d,p);}};}
   if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
-    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,check:checkLog};}
+    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:checkLog};}
   return {error:"bad_request"};
 };
 </script>
@@ -1515,7 +1641,7 @@ var CLOCK=hr<4?"dinner":hr<11?"breakfast":hr<15.5?"lunch":hr<18.5?"snack":"dinne
 var MEALS=[["breakfast","Breakfast","sunrise"],["lunch","Lunch","sun"],["snack","Snack","cup"],["dinner","Dinner","moon"]];
 var MODEICON={strength:"dumbbell",trek:"mountain",focus:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
 var DAY=dayOf(now.getTime());
-var P={goal:null,focus:"none",diet:null,health:null,region:"n",leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
+var P={goal:null,focus:"none",meds:"",diet:null,health:null,region:"n",leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
 var C={meal:CLOCK,mode:"focus",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="";
@@ -1523,7 +1649,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="";
   var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
   if(!raw){old=JSON.parse(localStorage.getItem("np5")||"null");if(old)raw={p:old.p,c:old.c,k:old.k};}
   if(!raw)return;var rp=raw.p||{};
-  ["goal","focus","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
+  ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
   if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
   ["age","cm","kg"].forEach(function(k){if(+rp[k]>0)P[k]=Math.round(+rp[k]);});
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal;
@@ -1545,7 +1671,7 @@ var FILE=null,PL=null,HOOKS=[];
 function blocked(){return P.done&&(P.health==="kidney"||P.health==="preg");}
 function clockText(){var h=now.getHours(),m=now.getMinutes();return ((h%12)||12)+":"+(m<10?"0":"")+m+(h<12?" am":" pm");}
 function mealName(k){return lab("meal",k);}
-function profileOut(){return {goal:P.goal,focus:P.focus,diet:P.diet,health:P.health,region:P.region,leave:P.leave,sex:P.sex,age:P.age,cm:P.cm,kg:P.kg,act:P.act};}
+function profileOut(){return {goal:P.goal,focus:P.focus,meds:P.health==="diabetes"?(P.meds||"unsure"):"no",diet:P.diet,health:P.health,region:P.region,leave:P.leave,sex:P.sex,age:P.age,cm:P.cm,kg:P.kg,act:P.act};}
 function appetite(){return APP[C.meal]!=null?APP[C.meal]:suggestAppetite(FILE,C.meal).v;}
 function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());
   HOOKS=hooksFor(profileOut(),FILE,{meal:C.meal,hour:C.meal===CLOCK?hr:null,mode:C.mode},PL);}
@@ -1556,7 +1682,7 @@ function curKey(){return STORE.shown[C.meal]||ctxKey();}
 function curRes(){return STORE.res[curKey()]||null;}
 function lastForMeal(){var best=null;Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r.meal===C.meal&&r.meals&&r.meals.length&&(!best||r.at>best.at))best=r;});return best;}
 function fileOut(){return {today:FILE.today,patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days};}
-function ctxOut(text){var c={meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
+function ctxOut(text){var c={lite:true,meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
@@ -1576,13 +1702,22 @@ function makePlates(text){
     UI.busy="";
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
-      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;save();
+      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";}
     else UI.err=errText(j.code);
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});
   });
 }
 
+/* The swaps and one-tap changes for one plate arrive a few seconds after the plates themselves, so the plates never wait for them. */
+var TUNING={};
+function tune(key,i){
+  var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
+  api("/api/tune",{profile:profileOut(),meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+    delete TUNING[key+"#"+i];
+    if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
+    if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
+}
 /* ---------- the meal after the person's taps ---------- */
 function viewOf(m){
   var n={kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber},title=m.title,notes=[],minutes=m.minutes,items=m.items.map(function(i){return {food:i.food,grams:i.grams,group:i.group};});
@@ -1637,6 +1772,7 @@ function foodQs(host,after){
 }
 function healthQs(host,after){
   var a=q(host,"Anything on the health side?");tiles(a,"health",function(v){return P.health===v;},function(v){P.health=v;after();});
+  if(P.health==="diabetes"){var m=q(host,"Do you take insulin, or sugar tablets such as glimepiride or gliclazide?",true);m.appendChild(el("p","fine","These can cause low sugar when you eat less, so the plates stay steadier for you."));choiceRow(m,"meds",function(v){return P.meds===v;},function(v){P.meds=v;after();},3);}
   var b=q(host,"Minding any nutrient?",true),lw=el("div","lows");lw.setAttribute("role","radiogroup");
   OPT.focus.forEach(function(o){var x=btn("choice",o[0]==="none"?"Nothing":o[1],null,"focus-"+o[0]);x.setAttribute("role","radio");x.setAttribute("aria-checked",P.focus===o[0]?"true":"false");x.addEventListener("click",function(){P.focus=o[0];after();});lw.appendChild(x);});b.appendChild(lw);
 }
@@ -1659,7 +1795,7 @@ function renderSetup(){
   if(UI.step===0){goalQs(v,again);foodQs(v,again);}else if(UI.step===1){healthQs(v,again);}else{bodyQs(v,function(soft){if(!soft)again();});}
   var row=el("div","choice-row");row.style.gridTemplateColumns=UI.step?"1fr 2fr":"1fr";
   if(UI.step){var bk=btn("btn","Back",null,"setup-back");bk.addEventListener("click",function(){UI.step--;render();});row.appendChild(bk);}
-  var ok=UI.step===0?!!P.diet&&!!P.goal:UI.step===1?!!P.health:true;
+  var ok=UI.step===0?!!P.diet&&!!P.goal:UI.step===1?!!P.health&&(P.health!=="diabetes"||!!P.meds):true;
   var go=btn("btn primary",UI.step<2?"Next":"Show my plate",null,"setup-next");if(!ok){go.disabled=true;go.style.opacity=".5";}
   go.addEventListener("click",function(){if(!ok)return;if(UI.step<2){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
   row.appendChild(go);v.appendChild(row);
@@ -1727,7 +1863,8 @@ function waitCard(text){
 function loggedCard(s){
   var c=el("article","card logged"),nm=mealName(s.meal),kind={had:"from your plates",other:"your own meal",rescued:"eaten out",skipped:"skipped"}[s.kind];
   c.appendChild(el("p","cap",nm+" · "+kind));
-  if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));c.appendChild(el("p","tsub","The rest of the day adjusts. No meal is asked to make up for it in one sitting."));}
+  if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));c.appendChild(el("p","tsub","The rest of the day adjusts. No meal is asked to make up for it in one sitting."));
+    if(PL&&PL.day.meds)c.appendChild(el("p","tsub","On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice."));}
   else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈ "+Math.round(s.kcal)+" kcal · "+Math.round(s.protein)+" g protein"));c.appendChild(p);}
   var row=el("div","pick-acts"),ch=btn("btn","Change",null,"slot-change");ch.addEventListener("click",function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");});row.appendChild(ch);
   var nx=nextOpen();if(nx){var go=btn("btn primary","Plan "+mealName(nx).toLowerCase(),"chev","slot-next");go.addEventListener("click",function(){C.meal=nx;UI.sel=0;UI.alc={};UI.fresh=true;render();$("scroll").scrollTop=0;});row.appendChild(go);}
@@ -1754,10 +1891,11 @@ function heroCard(m,v,r){
   function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",n.protein),"g"),cell("Carbs",tw("h-c",n.carbs),"g"),cell("Fats",tw("h-f",n.fats),"g"),
     cell("Energy",tw("h-k",n.kcal),"kcal"),cell("Fibre",tw("h-fi",n.fiber),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
-  var tn=el("div","tune alc");tn.appendChild(el("p","cap","One-tap changes"));
+  var waitT=!m.tuned&&!m.tuneFailed;if(waitT)tune(curKey(),UI.sel);
+  var tn=el("div","tune alc");tn.appendChild(el("p","cap",waitT?"One-tap changes \u00B7 getting them ready":"One-tap changes"));
   [["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
     var a=m.alchemy[x[0]];var b=btn("tbtn",ALCHLABEL[x[0]],x[1],"alc-"+x[0]);setPressed(b,!!UI.alc[x[0]]);
-    if(!a){b.disabled=true;b.title="Not offered for this plate";}
+    if(!a){b.disabled=true;b.title=waitT?"Getting ready":"Not offered for this plate";}
     b.addEventListener("click",function(){if(!a)return;UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();});tn.appendChild(b);});
   add(h,top,main,rd,tn);
   if(v.notes.length){var ml=el("ul","modlog");v.notes.forEach(function(x){ml.appendChild(el("li",null,x));});h.appendChild(ml);}
@@ -1785,7 +1923,7 @@ function heroCard(m,v,r){
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". The rest of the day follows it.");});
   add(acts,nx,tr,hv);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
-  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;});add(lg,o,sk);card.appendChild(lg);
+  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.");});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
 var PROMPTS=["Craving chaat at 6 pm","Heavy leg day: a high-protein dinner","Trek tomorrow: food to carry","What to order at a restaurant tonight","Post-workout, under 600 kcal","Only eggs, spinach and bread at home"];

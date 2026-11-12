@@ -60,12 +60,13 @@ function planDay(p,file,meal,appetite,par){
   var idx=SLOTS.indexOf(meal),ek=0,ep=0,ak=0,apr=0;                       /* e = logged, a = assumed for earlier meals nobody logged */
   SLOTS.forEach(function(s,i){var m=by[s];if(s===meal)return;
     if(m){if(m.kind!=="skipped"){ek+=m.kcal;ep+=m.protein;}}
-    else if(i<idx){ak+=day.kcal*par.split[s];apr+=day.protein*par.split[s];}});       /* not logged is not the same as not eaten */
-  var left=SLOTS.filter(function(s,i){return i>=idx&&(s===meal||!by[s]);}),wsum=0;left.forEach(function(s){wsum+=par.split[s];});
+    else if(i<idx){ak+=day.kcal*par.split[s];apr+=day.protein*par.proteinSplit[s];}});       /* not logged is not the same as not eaten */
+  var left=SLOTS.filter(function(s,i){return i>=idx&&(s===meal||!by[s]);}),wk=0,wp=0;left.forEach(function(s){wk+=par.split[s];wp+=par.proteinSplit[s];});
   var remK=Math.max(0,day.kcal-ek-ak),remP=Math.max(0,day.protein-ep-apr);
-  var usualK=day.kcal*par.split[meal],usualP=day.protein*par.split[meal];
-  var k=remK*par.split[meal]/wsum,pr=remP*par.split[meal]/wsum;
-  k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein));
+  var usualK=day.kcal*par.split[meal],usualP=day.protein*par.proteinSplit[meal];
+  var k=remK*par.split[meal]/wk,pr=remP*par.proteinSplit[meal]/wp;
+  k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));
+  pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein,Math.max(usualP,par.mealProteinMax*day.refKg)));
   var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling */
   var t=file.today,mine=by[meal]&&by[meal].kind!=="skipped"?by[meal]:null;
   return {day:day,eaten:{kcal:Math.round(ek+(mine?mine.kcal:0)),protein:Math.round(ep+(mine?mine.protein:0)),fiber:Math.round(t.fiber)},left:{kcal:Math.round(remK),protein:Math.round(remP)},
@@ -109,6 +110,7 @@ function hooksFor(p,file,c,pl,par){
     if(low===meal&&Object.keys(file.slotProtein).length>=2)add("low_protein_meal","protein at "+mn,mn.charAt(0).toUpperCase()+mn.slice(1)+" has been their lowest-protein meal this week (about "+file.slotProtein[low]+" g). Lead with protein.");}
   if(c.mode==="strength")add("mode_strength","strength day","Today is a strength-training day: protein leads, with enough carbohydrate to refuel.");
   if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, enough salt and fluid with the meal, easy to digest.");
+  if(p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))add("steady_carbs","steady grain (diabetes medicine)","They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.");
   if(p.health==="diabetes")add("diabetes_grain","the grain stays (diabetes)","Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.");
   if(p.health==="bp")add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
   return H.slice(0,9);
@@ -141,7 +143,7 @@ function readFile(x,par){
   f.days=num(x.days,0,7)||0;
   return f;
 }
-readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";return p;};})(readProfile);
+readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";if(p.age&&p.age<18)p.age=0;return p;};})(readProfile);
 readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;var h=+((x||{}).hour);c.hour=isFinite(h)&&h>=0&&h<24?h:null;return c;};})(readCtx);
 
 /* ---------- prompts ---------- */
@@ -153,14 +155,59 @@ function briefText(p,c,file,pl,hooks){
   else L.push("- Nothing logged today.");
   L.push("");L.push("WHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)");
   hooks.forEach(function(h){L.push("- ["+h.id+"] "+h.brief);});
-  if(!hooks.length)L.push("- (nothing special today)");
+  if(!hooks.length)L.push("- [plain_day] Nothing unusual today: a balanced plate at the target.");
   return L.join("\n");
 }
-function buildMealPrompt6(p,c,file,pl,hooks){
-  var base=buildMealPrompt(p,c),cut=base.indexOf("HARD RULES");
-  return base.slice(0,cut)+briefText(p,c,file,pl,hooks)+"\n\n"+base.slice(cut)+"\n"+
-"- planned_around: for each meal, the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n"+
-"- for_you: for each meal, one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.";
+/* lite = the three plates only (fast). The swaps and one-tap changes for a plate are asked for separately (kind "tune"). */
+function buildPlatesPrompt(p,c,file,pl,hooks,lite){
+  var t=c.target;
+  return [
+"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.",
+"",
+profileText(p,c),
+"",
+"THIS MEAL",
+"- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
+t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein. The first plate should land within 10 percent of the kcal target.":"- No calorie target set; keep portions moderate for an adult.",
+"- Appetite: "+c.appetite+" of 10.",
+"- Mood: "+lab("mood",c.mood)+". Cuisine: "+lab("cuisine",c.cuisine)+(c.cuisine==="indian"?" ("+lab("region",p.region)+" Indian home style first, other Indian regions welcome)":"")+".",
+"- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
+c.ratio?"- Plate ratio by volume they asked for: protein "+c.ratio.protein+"%, vegetables and greens "+c.ratio.greens+"%, carbohydrate "+c.ratio.carbs+"%, fats "+c.ratio.fats+"%.":null,
+c.text?"- They wrote: \""+c.text+"\". Answer that with the meals. If it is a craving or a named dish, meal 1 is that food made to fit; meal 2 is a lighter cousin.":null,
+"",
+briefText(p,c,file,pl,hooks),
+"",
+rulesText(p),
+"- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.",
+"",
+"WHAT TO RETURN",
+"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).",
+"- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
+"- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).",
+"- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).",
+"- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+lite?null:TUNETEXT(p)
+  ].filter(function(x){return x!==null;}).join("\n");
+}
+function TUNETEXT(p){return [
+"- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.",
+"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
+"  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
+function buildTunePrompt(p,m){
+  return [
+"You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.",
+"",
+profileText(p,null),
+"",
+"THE PLATE: "+m.title+" ("+m.subtitle+")",
+"- "+m.items.map(function(i){return i.grams+" g "+i.food+" ["+i.group+"]";}).join("; "),
+"- As written: "+m.kcal+" kcal, "+m.protein+" g protein, "+m.carbs+" g carbs, "+m.fats+" g fats, "+m.fiber+" g fibre. Prep "+m.minutes+" minutes.",
+"",
+rulesText(p),
+"",
+"WHAT TO RETURN",
+TUNETEXT(p)
+  ].join("\n");
 }
 function buildLogPrompt(p,c){
   return [
@@ -177,11 +224,13 @@ profileText(p,null),
 "- Plain words. No advice, no warnings, no percentages, no exclamation marks."
   ].join("\n");
 }
-function schemaWithHooks(ids){
+function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
-  m.properties.planned_around={type:"ARRAY",items:ids.length?{type:"STRING",enum:ids}:{type:"STRING"}};m.properties.for_you={type:"STRING"};
+  if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
+  m.properties.planned_around={type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};
   m.required=m.required.concat(["planned_around","for_you"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you"]);return s;
 }
+SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
 SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},title:{type:"STRING"},
   items:{type:"ARRAY",items:{type:"OBJECT",properties:{food:{type:"STRING"},grams:{type:"INTEGER"},group:{type:"STRING",enum:GROUPS}},required:["food","grams","group"]}},
   kcal:{type:"INTEGER"},protein:{type:"INTEGER"},carbs:{type:"INTEGER"},fats:{type:"INTEGER"},fiber:{type:"INTEGER"},assumed:{type:"STRING"}},required:["status"],
@@ -193,8 +242,14 @@ function checkReply6(r,p,hooks){
   var raw=(r&&Array.isArray(r.meals))?r.meals:[],byTitle={};raw.forEach(function(m){if(m&&typeof m.title==="string")byTitle[clean(m.title,70)]=m;});
   out.meals.forEach(function(m){var src=byTitle[m.title]||{};
     m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
-    var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";});
+    var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";
+    m.tuned=Object.keys(m.alchemy).length>0||m.swaps.protein.length>0;});
   out.hooks=tags;return out;
+}
+function checkTune(r,p,meal){
+  var m={};for(var k in meal)m[k]=meal[k];m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;
+  var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
+  return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
 function checkLog(r){
   if(!r||typeof r!=="object")return {status:"error"};
@@ -207,20 +262,23 @@ function checkLog(r){
   return {status:"ok",title:clean(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
-/* ---------- the entry point, replacing v5's. A request without a food file still works (it is simply a day with nothing logged) ---------- */
-KINDS=["meals","rescue","log"];
+/* ---------- the entry point, replacing v5's. A request without a food file still works (it is simply a day with nothing logged).
+   weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
+KINDS=["meals","rescue","log","tune"];
 plan=function(kind,body){
-  var p=readProfile(body&&body.profile),c=readCtx(body&&body.ctx,kind);
-  if(!p||!c)return {error:"bad_request"};
+  var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
+  if(kind==="tune"){var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
+    return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
+  var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
   c.target=pl?pl.target:null;
-  if(kind==="meals"){c.had=[];var hooks=hooksFor(p,file,c,pl);
-    return {prompt:buildMealPrompt6(p,c,file,pl,hooks),schema:schemaWithHooks(hooks.map(function(h){return h.id;})),image:false,check:function(d){return checkReply6(d,p,hooks);}};}
+  if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
+    return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
-    var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Eaten so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
-    return {prompt:pr,schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p);}};}
+    var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Logged so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: about "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
+    return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){return checkRescue(d,p);}};}
   if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
-    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,check:checkLog};}
+    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:checkLog};}
   return {error:"bad_request"};
 };

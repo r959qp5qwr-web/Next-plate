@@ -12,7 +12,8 @@
      THINKING         optional: minimal, low, medium or high
      PHOTOS           "off" switches menu photos off (default on)
      EVAL_CODE        optional second code for the quality check (eval/): skips the per-phone and daily counters and returns the raw reply
-     PAGE_REF         git commit the page is loaded from (GitHub raw); PAGE_FILE loads a local file instead (testing)
+     PAGE_REF         git commit the page is loaded from (GitHub raw); PAGE_PATH the file in the repo (default hosted/v5/index.min.html);
+                      PAGE_FILE loads a local file instead (testing)
    Counters live in memory, so a restart resets them.
    Sent to Google: meal, time, mode, mood, cuisine, appetite, cooking/ordering, oil, plate ratio, meals eaten today, typed words,
    a menu photo when given, diet, region, leave-outs, age, sex, weight, activity, diabetes or high BP if set.
@@ -20,7 +21,8 @@
 const env = (k: string, d: string) => (Bun.env[k] ?? "").trim() || d;
 const PAGE_REF = env("PAGE_REF", "main");
 const PAGE_FILE = env("PAGE_FILE", "");
-const PAGE_URL = `https://raw.githubusercontent.com/r959qp5qwr-web/Next-plate/${PAGE_REF}/hosted/v5/index.min.html`;
+const PAGE_PATH = env("PAGE_PATH", "hosted/v5/index.min.html");
+const PAGE_URL = `https://raw.githubusercontent.com/r959qp5qwr-web/Next-plate/${PAGE_REF}/${PAGE_PATH}`;
 async function loadPage(): Promise<string> {
   if (PAGE_FILE) return await Bun.file(PAGE_FILE).text();
   for (let i = 0; i < 5; i++) {
@@ -97,7 +99,8 @@ async function handle(kind: string, req: Request, ip: string) {
     if (ledger.asks >= DAILY) return json(429, { code: "limit_day" });
     const mine = ledger.byIp.get(ip) ?? 0;
     if (mine >= PER_PHONE) return json(429, { code: "limit_ip" });
-    ledger.asks++; ledger.byIp.set(ip, mine + 1);
+    const w = typeof pl.weight === "number" ? pl.weight : 1;      // small follow-ups (one-tap changes, a logged meal) use a quarter of an ask
+    ledger.asks += w; ledger.byIp.set(ip, mine + w);
   }
   const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 90_000);
   req.signal.addEventListener("abort", () => ctrl.abort());

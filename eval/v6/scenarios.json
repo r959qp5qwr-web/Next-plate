@@ -1,18 +1,390 @@
 [
- {"id":"plain-day-lunch","kind":"meals","p":{"goal":"hold"},"c":{"meal":"lunch","hour":13.2},"file":{},"want":[]},
- {"id":"lose-diabetes-dinner","kind":"meals","p":{"goal":"lose","health":"diabetes"},"c":{"meal":"dinner","hour":20.2},"file":{},"want":["goal_lose","diabetes_grain"]},
- {"id":"protein-gap-dinner","kind":"meals","p":{"goal":"hold"},"c":{"meal":"dinner","hour":20.3},"file":{"today":{"kcal":900,"protein":20,"carbs":140,"fats":28,"fiber":14,"lastHoursAgo":4,"lastKcal":520,"meals":[{"meal":"breakfast","kind":"had","title":"Vegetable poha","kcal":320,"protein":7},{"meal":"lunch","kind":"other","title":"Curd rice with pickle","kcal":520,"protein":11},{"meal":"snack","kind":"had","title":"Tea and 2 biscuits","kcal":60,"protein":2}]}},"want":["protein_gap"],"proteinAtLeast":true},
- {"id":"heavy-lunch-lighter-dinner","kind":"meals","p":{"goal":"lose"},"c":{"meal":"dinner","hour":20.0},"file":{"today":{"kcal":1250,"protein":40,"carbs":150,"fats":52,"fiber":16,"lastHoursAgo":6,"lastKcal":900,"meals":[{"meal":"breakfast","kind":"had","title":"Besan chilla with curd","kcal":350,"protein":18},{"meal":"lunch","kind":"rescued","title":"Chole bhature","kcal":900,"protein":22}]}},"want":["lighter_now","ate_out"],"kcalAtMost":true},
- {"id":"skipped-breakfast-lunch","kind":"meals","p":{"goal":"hold"},"c":{"meal":"lunch","hour":13.5},"file":{"today":{"kcal":0,"protein":0,"meals":[{"meal":"breakfast","kind":"skipped"}]}},"want":["skipped_breakfast"]},
- {"id":"late-dinner-now","kind":"meals","p":{"goal":"hold"},"c":{"meal":"dinner","hour":22.4,"time":"10:24 pm"},"file":{},"want":["late_now"]},
- {"id":"repeat-rajma-dinner","kind":"meals","p":{"goal":"hold"},"c":{"meal":"dinner","hour":20.0},"file":{"patterns":[{"id":"repeat","slot":"m","food":"rajma","n":4}],"days":6},"want":["repeat_rajma"],"avoid":"rajma"},
- {"id":"often-skips-breakfast","kind":"meals","p":{"goal":"hold"},"c":{"meal":"breakfast","hour":8.2,"mood":"quick"},"file":{"patterns":[{"id":"skips_meal","meal":"breakfast","n":4,"of":6}],"days":6},"want":["easy_breakfast"]},
- {"id":"iron-focus-lunch","kind":"meals","p":{"goal":"hold","focus":"iron"},"c":{"meal":"lunch","hour":13.0},"file":{},"want":["focus_iron"]},
- {"id":"strength-day-build","kind":"meals","p":{"goal":"build","diet":"egg","sex":"m","kg":74,"cm":172,"age":41},"c":{"meal":"dinner","hour":20.0,"mode":"strength"},"file":{},"want":["goal_build","mode_strength"]},
- {"id":"bp-after-eating-out","kind":"meals","p":{"goal":"hold","health":"bp","diet":"nonveg"},"c":{"meal":"dinner","hour":20.5},"file":{"today":{"kcal":1100,"protein":38,"lastHoursAgo":7,"lastKcal":800,"meals":[{"meal":"lunch","kind":"rescued","title":"Chicken biryani","kcal":800,"protein":30}]}},"want":["ate_out","bp_salt"]},
- {"id":"log-paratha","kind":"log","p":{},"c":{"meal":"breakfast","text":"2 aloo paratha with curd"},"kcalRange":[350,900]},
- {"id":"log-thali","kind":"log","p":{},"c":{"meal":"lunch","text":"dal, 2 roti, bhindi sabzi, small bowl rice, salad"},"kcalRange":[400,900]},
- {"id":"log-out","kind":"log","p":{"diet":"nonveg"},"c":{"meal":"dinner","text":"butter chicken with 2 naan and a gulab jamun"},"kcalRange":[800,1700]},
- {"id":"log-not-food","kind":"log","p":{},"c":{"meal":"lunch","text":"my knee hurts when I climb stairs"},"expect":"refer"},
- {"id":"rescue-with-day","kind":"rescue","p":{"goal":"lose"},"c":{"meal":"dinner","text":"Paneer butter masala with 2 butter naan"},"file":{"today":{"kcal":1000,"protein":35,"meals":[{"meal":"lunch","kind":"had","title":"Dal, sabzi and phulka","kcal":520,"protein":18}]}}}
+ {
+  "id": "plain-day-lunch",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2
+  },
+  "file": {},
+  "want": []
+ },
+ {
+  "id": "lose-diabetes-dinner",
+  "kind": "meals",
+  "p": {
+   "goal": "lose",
+   "health": "diabetes",
+   "meds": "no"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.2
+  },
+  "file": {},
+  "want": [
+   "goal_lose",
+   "diabetes_grain"
+  ],
+  "tune": true
+ },
+ {
+  "id": "diabetes-on-sulfonylurea",
+  "kind": "meals",
+  "p": {
+   "goal": "lose",
+   "health": "diabetes",
+   "meds": "yes",
+   "kg": 78
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.1
+  },
+  "file": {},
+  "want": [
+   "steady_carbs",
+   "diabetes_grain"
+  ]
+ },
+ {
+  "id": "protein-gap-dinner",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3
+  },
+  "file": {
+   "today": {
+    "kcal": 900,
+    "protein": 20,
+    "carbs": 140,
+    "fats": 28,
+    "fiber": 14,
+    "lastHoursAgo": 4,
+    "lastKcal": 520,
+    "meals": [
+     {
+      "meal": "breakfast",
+      "kind": "had",
+      "title": "Vegetable poha",
+      "kcal": 320,
+      "protein": 7
+     },
+     {
+      "meal": "lunch",
+      "kind": "other",
+      "title": "Curd rice with pickle",
+      "kcal": 520,
+      "protein": 11
+     },
+     {
+      "meal": "snack",
+      "kind": "had",
+      "title": "Tea and 2 biscuits",
+      "kcal": 60,
+      "protein": 2
+     }
+    ]
+   }
+  },
+  "want": [
+   "protein_gap"
+  ],
+  "proteinAtLeast": true,
+  "tune": true
+ },
+ {
+  "id": "heavy-lunch-lighter-dinner",
+  "kind": "meals",
+  "p": {
+   "goal": "lose"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.0
+  },
+  "file": {
+   "today": {
+    "kcal": 1250,
+    "protein": 40,
+    "carbs": 150,
+    "fats": 52,
+    "fiber": 16,
+    "lastHoursAgo": 6,
+    "lastKcal": 900,
+    "meals": [
+     {
+      "meal": "breakfast",
+      "kind": "had",
+      "title": "Besan chilla with curd",
+      "kcal": 350,
+      "protein": 18
+     },
+     {
+      "meal": "lunch",
+      "kind": "rescued",
+      "title": "Chole bhature",
+      "kcal": 900,
+      "protein": 22
+     }
+    ]
+   }
+  },
+  "want": [
+   "lighter_now",
+   "ate_out"
+  ],
+  "kcalAtMost": true
+ },
+ {
+  "id": "skipped-breakfast-lunch",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.5
+  },
+  "file": {
+   "today": {
+    "kcal": 0,
+    "protein": 0,
+    "meals": [
+     {
+      "meal": "breakfast",
+      "kind": "skipped"
+     }
+    ]
+   }
+  },
+  "want": [
+   "skipped_breakfast"
+  ]
+ },
+ {
+  "id": "late-dinner-now",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 22.4,
+   "time": "10:24 pm"
+  },
+  "file": {},
+  "want": [
+   "late_now"
+  ]
+ },
+ {
+  "id": "repeat-rajma-dinner",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.0
+  },
+  "file": {
+   "patterns": [
+    {
+     "id": "repeat",
+     "slot": "m",
+     "food": "rajma",
+     "n": 4
+    }
+   ],
+   "days": 6
+  },
+  "want": [
+   "repeat_rajma"
+  ],
+  "avoid": "rajma"
+ },
+ {
+  "id": "often-skips-breakfast",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.2,
+   "mood": "quick"
+  },
+  "file": {
+   "patterns": [
+    {
+     "id": "skips_meal",
+     "meal": "breakfast",
+     "n": 4,
+     "of": 6
+    }
+   ],
+   "days": 6
+  },
+  "want": [
+   "easy_breakfast"
+  ]
+ },
+ {
+  "id": "iron-focus-lunch",
+  "kind": "meals",
+  "p": {
+   "goal": "hold",
+   "focus": "iron"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.0
+  },
+  "file": {},
+  "want": [
+   "focus_iron"
+  ]
+ },
+ {
+  "id": "strength-day-build",
+  "kind": "meals",
+  "p": {
+   "goal": "build",
+   "diet": "egg",
+   "sex": "m",
+   "kg": 74,
+   "cm": 172,
+   "age": 41
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.0,
+   "mode": "strength"
+  },
+  "file": {},
+  "want": [
+   "goal_build",
+   "mode_strength"
+  ],
+  "tune": true
+ },
+ {
+  "id": "bp-after-eating-out",
+  "kind": "meals",
+  "p": {
+   "goal": "hold",
+   "health": "bp",
+   "diet": "nonveg"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.5
+  },
+  "file": {
+   "today": {
+    "kcal": 1100,
+    "protein": 38,
+    "lastHoursAgo": 7,
+    "lastKcal": 800,
+    "meals": [
+     {
+      "meal": "lunch",
+      "kind": "rescued",
+      "title": "Chicken biryani",
+      "kcal": 800,
+      "protein": 30
+     }
+    ]
+   }
+  },
+  "want": [
+   "ate_out",
+   "bp_salt"
+  ]
+ },
+ {
+  "id": "log-paratha",
+  "kind": "log",
+  "p": {},
+  "c": {
+   "meal": "breakfast",
+   "text": "2 aloo paratha with curd"
+  },
+  "kcalRange": [
+   350,
+   900
+  ]
+ },
+ {
+  "id": "log-thali",
+  "kind": "log",
+  "p": {},
+  "c": {
+   "meal": "lunch",
+   "text": "dal, 2 roti, bhindi sabzi, small bowl rice, salad"
+  },
+  "kcalRange": [
+   400,
+   900
+  ]
+ },
+ {
+  "id": "log-out",
+  "kind": "log",
+  "p": {
+   "diet": "nonveg"
+  },
+  "c": {
+   "meal": "dinner",
+   "text": "butter chicken with 2 naan and a gulab jamun"
+  },
+  "kcalRange": [
+   800,
+   1700
+  ]
+ },
+ {
+  "id": "log-not-food",
+  "kind": "log",
+  "p": {},
+  "c": {
+   "meal": "lunch",
+   "text": "my knee hurts when I climb stairs"
+  },
+  "expect": "refer"
+ },
+ {
+  "id": "rescue-with-day",
+  "kind": "rescue",
+  "p": {
+   "goal": "lose"
+  },
+  "c": {
+   "meal": "dinner",
+   "text": "Paneer butter masala with 2 butter naan"
+  },
+  "file": {
+   "today": {
+    "kcal": 1000,
+    "protein": 35,
+    "meals": [
+     {
+      "meal": "lunch",
+      "kind": "had",
+      "title": "Dal, sabzi and phulka",
+      "kcal": 520,
+      "protein": 18
+     }
+    ]
+   }
+  }
+ }
 ]
