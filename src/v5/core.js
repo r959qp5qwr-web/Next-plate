@@ -86,7 +86,7 @@ var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave ou
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 var SAFETY="This one is for your coach and doctor to plan with you.";
 
-var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
+var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
 function wordRx(list){return new RegExp("\\b("+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")\\b","i");}
 function badWords(p){
   var bad=[];
@@ -133,8 +133,10 @@ function checkMeal(m,p){
     .filter(function(w){return w.pair&&w.effect&&!CLAIM.test(w.pair+" "+w.effect)&&!supp(w.pair+" "+w.effect);});
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
       return {food:clean(s&&s.food,60),grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return s.food&&!crosses(s.food,p)&&!supp(s.food);});}
-  var sw=m.swaps||{},swaps={protein:swapList(sw.protein),base:swapList(sw.base)};
+    .filter(function(s){return s.food&&!crosses(s.food,p)&&!supp(s.food)&&
+      /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
+      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!GRAINW.test(s.food));});}
+  var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
     var x={suffix:clean(a.titleSuffix,50),note:clean(a.note,140),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
@@ -218,7 +220,7 @@ rulesText(p),
 "- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other.",
 "- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
 "- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).",
-"- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.",
+"- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
 "- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
 "  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
   ].filter(function(x){return x!==null;}).join("\n");

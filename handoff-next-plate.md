@@ -1,6 +1,6 @@
 # active-memory handoff: Next Plate
 
-**Handoff #3** · 2026-11-12 · Lineage: #1 (2026-11-11): built, redesigned (Raw Linen), deployed on Railway, Gemini quality-checked 26/26, made a 66 s narrated demo video; custom domain nextplate.in pending; #2 (2026-11-12): owner rejected that app as not built on his Gemini files; rebuilt AI-first (v5), reframed as a context engine (v6 architecture approved, Phase 1 built, engine deployed under the v5 screens), researched personal targets, made an 80 s promo film, then a menu reader; #3 (2026-11-12): proved the menu reader up to the real-engine check; five promo films rejected; researched ad-film craft and wrote a promo-film skill; surveyed the owner with option questions; made and the owner approved a 30 s film ending "Next Plate. Made for you."; WhatsApp post written; analysed Gemini's "Kinfolk Raw Linen Edition" and the owner chose to adopt items 1 to 5
+**Handoff #3** · 2026-11-12 · Lineage: #1 (2026-11-11): built, redesigned (Raw Linen), deployed on Railway, Gemini quality-checked 26/26, made a 66 s narrated demo video; custom domain nextplate.in pending; #2 (2026-11-12): owner rejected that app as not built on his Gemini files; rebuilt AI-first (v5), reframed as a context engine (v6 architecture approved, Phase 1 built, engine deployed under the v5 screens), researched personal targets, made an 80 s promo film, then a menu reader; #3 (2026-11-12): proved the menu reader up to the live-engine check; five promo films rejected; researched ad-film craft and wrote a promo-film skill; surveyed the owner with option questions; made and the owner approved a 30 s film ending "Next Plate. Made for you."; WhatsApp post written; analysed Gemini's "Kinfolk Raw Linen Edition" and the owner chose to adopt items 1 to 5
 
 ## 0. Instructions for Claude (read first)
 
@@ -8,14 +8,14 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 
 1. Read this whole file before replying.
 2. Follow sections 3 (Style), 4 (Hard rules) and 5 (Corrections) in every reply, for the rest of this chat. They override your defaults.
-3. Use the values in section 8 exactly. Never round, re-estimate, or "correct" them.
+3. Use the values in section 8 as written. Never round, re-estimate, or "correct" them.
 4. Do not suggest anything listed in section 7 (Changed / rejected) again unless the user brings it up.
-5. Code word: Start every reply with exactly "Yes Boss!"
+5. Code word: Start every reply with "Yes Boss!"
 6. Your first reply: at most 5 lines covering the goal, the current state, and the next step (section 11). Mention any files from section 13 that were not attached. Ask the questions in section 12 if there are any. End with "Ready to continue with <next step>?" Then wait for the user's go.
 
 ## 1. Mission
 - **Goal:** Next Plate is a context engine for one person's eating: it builds that person's diet context (what they ate, patterns, targets) and uses AI to recommend each meal for their goals. Owner's words: "It's almost as if we are building a context engine, that identifies or build the diet related context of a person, uses AI to serve his diet/nutrition wellness goals." Foundation: the owner's two Gemini files in `docs/foundation/` ([P] Pocket Dietitian, [S] Summit Edition). The owner wants "the highest grade product", not a skeleton.
-- **Done looks like:** live on nextplate.in; behaviour, look and film the owner approves; safe answers; checked on the real engine.
+- **Done looks like:** live on nextplate.in; behaviour, look and film the owner approves; safe answers; checked on the live engine.
 - **Why it matters:** for the owner's coaching clients: sedentary, pain-prone, middle-aged, mostly Indian, small homes, WhatsApp-first. They need a diet plan for weight loss and guidance on nutrition issues (vitamin deficiency, iron deficiency, diabetes).
 
 ## 2. About the user (as relevant to this work)
@@ -45,7 +45,7 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 8. "We are not doing supplements."
 9. "grams and calories, not katori and fulka" (amounts are grams and kcal; never household units).
 10. "Don't copy geminis look. The most recent confirmed look is our look" (the look is Raw Linen; the owner has now chosen to adopt specific Gemini elements, see section 6).
-11. The user declined the secure form for the Gemini key: do not ask for the key again, and never read Railway variable values. Real-engine checks use a temporary `EVAL_CODE` Railway variable that Claude generates, uses, then sets back to empty (each change restarts the live app for a few seconds; say so).
+11. The user declined the secure form for the Gemini key: do not ask for the key again, and never read Railway variable values. Live-engine checks use a temporary `EVAL_CODE` Railway variable that Claude generates, uses, then sets back to empty (each change restarts the live app for a few seconds; say so).
 12. Develop and push only on branch `claude/nice-hawking-307ljy` of `r959qp5qwr-web/Next-plate`; no pull request unless asked.
 13. "Don't you dare use real screens, quiet, fucking bullshit AI lingo again." Banned in scripts AND in every note, brief or reply: real, quiet, quietly, simply, seamlessly, effortlessly, exactly, just works, journey, unlock, empower, smart, magic, game-changer, revolutionary, transform, curated, tailored, personalised, holistic, wellness journey. ("When is food not real?")
 14. "Don't use Sunita. Don't personalize. Don't do all those bullshit AI things." No invented personas or invented insights (e.g. no "50,000 times", no "nobody likes a lecture").
@@ -122,8 +122,8 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 | Live now | v5 screens + v6 engine: function `hosted/v5/server.ts`, `PAGE_REF=5f1d63fb9df7e9f4f44a51df34aa2cfcf1e171b0`, page `hosted/v5/index.min.html` |
 | Railway variables | GEMINI_API_KEY [secret removed: re-enter it], ACCESS_CODE [secret removed: re-enter it], DAILY_ASKS (default 150), ASKS_PER_PHONE (default 15), MODEL, FALLBACK_MODEL, THINKING=low, PHOTOS, EVAL_CODE (empty), PAGE_REF, PAGE_PATH, PAGE_FILE |
 | To put the v6 screens live | `PAGE_PATH=hosted/v6/index.min.html` and `PAGE_REF=<commit>` |
-| Engine checks (real engine) | v5 26/26 (`eval/v5/results-live-final.json`); v6 18/18 (`eval/v6/results-live4.json`), both before the rescue fix |
-| Menu reader proof | code read against `docs/FEATURE-menu.md`, no defects; `node eval/v6/menu-checks.js` 19/19 on both built pages; `test/v6/shots-menu.js` 10 screens, no errors; `test/v6/shots.js` re-run: only sample text differs (committed screens are real-engine captures, kept); 8 real-menu scenarios (`eval/v6/scenarios-menu.json`, `node eval/v6/run-menu.js <base-url> <code> [label]`) not yet run (need "Deploy.") |
+| Engine checks (live engine) | v5 26/26 (`eval/v5/results-live-final.json`); v6 18/18 (`eval/v6/results-live4.json`), both before the rescue fix |
+| Menu reader proof | code read against `docs/FEATURE-menu.md`, no defects; `node eval/v6/menu-checks.js` 19/19 on both built pages; `test/v6/shots-menu.js` 10 screens, no errors; `test/v6/shots.js` re-run: only sample text differs (committed screens are live-engine captures, kept); 8 printed-menu scenarios (`eval/v6/scenarios-menu.json`, `node eval/v6/run-menu.js <base-url> <code> [label]`) not yet run (need "Deploy.") |
 | Local test servers | `DELAY=1500 bun test/v5/mock-gemini.ts` (port 8787); `GEMINI_BASE_URL=http://localhost:8787 GEMINI_API_KEY=mock PAGE_FILE=hosted/v6/index.min.html PORT=3006 ASKS_PER_PHONE=999 DAILY_ASKS=999 bun src/v5/server.ts` (raise the ask limits or the shots time out) |
 | Targets engine (`src/v6/params.js`) | Mifflin-St Jeor × 1.3 / 1.4 / 1.55 / 1.725; deficit 300 kcal (BMI 23–27.4) or 500 kcal (BMI ≥ 27.5), ≤ 30 %, floor 1200 f / 1500 m; protein 1.0 g/kg (1.2 losing, 1.4 building, cap 1.6, 1.5 diabetes); fibre 15 g / 1000 kcal (diabetes 20); energy split 27 / 40 / 5 / 28 |
 | Palette (Raw Linen) | paper #F2ECE1, surface #FAF6EE, ink #1D1A16, ink2 #4B443B, ink3 #857967, line #DCD1BF, clay #B0613D, olive #6B7A3A, kraft #DCC8A6; EB Garamond + Caveat |
@@ -149,7 +149,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 |---|---|---|---|
 | Engine v6 | live under v5 screens | `src/v6/` | 18/18 before rescue fix |
 | Phase 1 screens + menu reader | built, not live | `hosted/v6/index.min.html` | wait for "Deploy." |
-| Menu reader proof | done except real engine | see section 8 | 8 scenarios after deploy |
+| Menu reader proof | done except live engine | see section 8 | 8 scenarios after deploy |
 | 30 s film | approved | `demo/next-plate-film-30s.mp4` | re-make with the revised look once it is built |
 | WhatsApp post | written, not yet reviewed by owner | `docs/film/WHATSAPP-post.md` | headline "Next Plate. Made for you." |
 | Gemini look items 1–5 | approved to adopt; not started | — | mock-up screens first, owner reviews, then build into `src/v6/` |
@@ -159,7 +159,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 ## 11. Next steps
 1. **Next action:** make mock-up screens of the five adopted items (portion ring, nutrient colours, stoneware plate, pairing tips, taste notes) on the Plate screen using the Phase 1 page and the mock engine, and show them to the owner before changing the app.
 2. On approval, build them into `src/v6/` (taste notes and pairing tips need new schema fields from Gemini, food only; check them in code like the other text: no supplements, no claims).
-3. Ask for "Deploy."; then set `PAGE_REF` and `PAGE_PATH=hosted/v6/index.min.html`, run real-engine checks with a temporary `EVAL_CODE` (v5 26, v6 18, menu 8), fix failures, clear `EVAL_CODE`.
+3. Ask for "Deploy."; then set `PAGE_REF` and `PAGE_PATH=hosted/v6/index.min.html`, run live-engine checks with a temporary `EVAL_CODE` (v5 26, v6 18, menu 8), fix failures, clear `EVAL_CODE`.
 4. Re-capture the film's screens from the revised app and re-render the same 30 s film (same script, voice, music, timing).
 5. Owner's five target choices; DAILY_ASKS (recommend 60); domain (recommend www + forwarding); hosting after the trial.
 

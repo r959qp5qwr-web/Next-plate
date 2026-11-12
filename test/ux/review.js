@@ -63,9 +63,14 @@ const STATES = [
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); }],
   ['rescue-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(600); await h.inView(p, '#v-rescue .ans-read', 'the Rescue wait line'); }],
-  ['rescue-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.inView(p, '#rescue-retry', 'Try again after a failed Rescue'); }, () => {}],
+  ['rescue-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.inView(p, '#rescue-retry', 'Try again after a failed Rescue'); await h.next(p, { has: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']] }, 'Rescue after an upstream error'); }, () => {}],
   ['menu-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(700); await h.inView(p, '#v-rescue .plate.wait', 'the menu wait card'); }],
   ['menu-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#menu-retry', 'Try again after a failed menu read'); }, () => {}],
+  ['rescue-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { has: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']], text: 'busy just now' }, 'Rescue when the engine is busy'); }, () => {}],
+  ['rescue-limit', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { hasNot: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']] }, 'Rescue at the daily limit'); }, () => {}],
+  ['menu-unparsed', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"unparsed"}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { has: ['#menu-retry'], value: [['#mtext', fx.typed]] }, 'Menu read when the reply came back broken'); }, () => {}],
+  ['sheet-log-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.next(p, { has: ['#log-retry'], value: [['#login', '2 aloo paratha with curd']] }, 'Log when the engine is busy'); }, () => {}],
+  ['plate-limit', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], text: "today's limit" }, 'Plate at the daily limit'); }, (p, h) => p.route('**/api/meals', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' }))],
   ['menu-nothing-fits', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok","orders":[]}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#v-rescue .note', 'the nothing-fits note'); }],
   ['sheet-log-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.inView(p, '#log-retry', 'Try again after a failed log'); }, () => {}],
   ['menu-unreadable', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'eval/v6/menu-blurred.jpg')); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the unreadable-menu note'); }],
@@ -173,6 +178,13 @@ function coverage() {
   return miss;
 }
 // feedback in view: the element exists, starts above the fixed bars (or the sheet bottom) and is not hidden under the masthead
+// next-step (A13): after an error, Try again is there where it can help and absent where it cannot, the typed text stays, and the words fit the error
+async function stepCheck(p, w) { return p.evaluate((w) => { const out = [];
+  (w.has || []).forEach(s => { if (!document.querySelector(s)) out.push(s + ' missing'); });
+  (w.hasNot || []).forEach(s => { if (document.querySelector(s)) out.push(s + ' offered where trying again cannot help'); });
+  (w.value || []).forEach(([s, v]) => { const e = document.querySelector(s); if (!e || e.value !== v) out.push(s + ' lost what was typed (' + (e ? JSON.stringify(e.value) : 'no box') + ')'); });
+  if (w.text && !document.body.innerText.toLowerCase().includes(w.text.toLowerCase())) out.push('the message does not say "' + w.text + '"');
+  return out; }, w); }
 async function inViewCheck(p, sel) { return p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(), bar = document.querySelector('#sheet:not([hidden])') ? innerHeight : Math.min(...[...document.querySelectorAll('#tabs,.composer')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect().top), innerHeight); return r.top < bar - 40 && r.bottom > 60; }, sel); }
 // A12 drill: plant one fault per rule on a ready page and require the review to catch each one (BD-91)
 async function drill(b, base) {
@@ -199,7 +211,8 @@ async function drill(b, base) {
     document.body.style.background = '#0B1211';
     const m = document.querySelector('meta[name=viewport]'); m.setAttribute('content', m.getAttribute('content') + ',user-scalable=no');
   });
-  const res = await p.evaluate(audit, C.T); const hidden = !(await inViewCheck(p, '#planted-answer')); await ctx.close();
+  const res = await p.evaluate(audit, C.T); const hidden = !(await inViewCheck(p, '#planted-answer'));
+  const step = await stepCheck(p, { has: ['#planted-retry'], hasNot: ['#planted-noname'], value: [['#rin', 'planted dish']], text: 'planted message' }); await ctx.close();
   const has = (rule, txt) => res.some(v => v.rule === rule && (v.el + ' ' + v.detail).includes(txt));
   const want = [['text-too-small', 'planted small text'], ['off-screen', 'planted wide box'], ['overflow-x', 'content'], ['contrast', 'planted faint text'], ['target-small', '"x"'],
     ['no-name', 'planted-noname'], ['text-clipped', 'planted clipped text'], ['overlap', 'planted over'], ['handwriting-figures', 'planted 450 kcal'], ['handwriting-too-small', 'planted pencil note'],
@@ -207,6 +220,7 @@ async function drill(b, base) {
     ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable']];
   const missed = want.filter(([r, t]) => !has(r, t)).map(([r, t]) => r + ' (' + t + ')');
   if (!hidden) missed.push('feedback-hidden (planted answer)');
+  if (step.length !== 4) missed.push('next-step (planted missing retry, offered retry, lost text, wrong message: ' + step.length + ' of 4 caught)');
   return missed;
 }
 
@@ -221,6 +235,7 @@ async function drill(b, base) {
     plate: async (p) => { await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await new Promise(r => setTimeout(r, 700)); },
     slowApi: async (p, ms) => { await p.route('**/api/meals', async r => { await new Promise(x => setTimeout(x, ms)); await r.continue(); }); },
     inView: async (p, sel, what) => { const ok = await inViewCheck(p, sel); if (!ok) (p.__late = p.__late || []).push({ rule: 'feedback-hidden', el: sel, detail: what + ' is not in view after the tap' }); },
+    next: async (p, w, what) => { (await stepCheck(p, w)).forEach(d => (p.__late = p.__late || []).push({ rule: 'next-step', el: what, detail: d })); },
     failApi: async (p) => { await p.route('**/api/meals', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); },
   };
   const runs = [];

@@ -20,5 +20,5 @@ Structure (about 55 s, 9:16):
 | 6 | care | push in to "the grain stays (diabetes)" and the 110 g grain row | It keeps your roti. | And with diabetes... |
 | 7 | close | phone settles; NEXT PLATE masthead; "a dietitian in your pocket"; Message me for your link | | Next Plate. A dietitian in your pocket. Message me... |
 
-Look: Raw Linen paper (#F2ECE1) seamless, ink type in EB Garamond, one clay accent. No colour fields, no numerals, no pen marks.
+Look: a Raw Linen paper backdrop (#F2ECE1), ink type in EB Garamond, one clay accent. No colour fields, no numerals, no pen marks.
 Proof first: a 15 s test of shots 1 to 3 for the owner's eye before the rest is built.

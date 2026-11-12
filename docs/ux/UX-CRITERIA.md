@@ -10,9 +10,10 @@ the app from WhatsApp. Where a source offers a range, the stricter end is used f
 
 ## Part A. Measured on every surface and state (test/ux/review.js; thresholds in test/ux/criteria.js)
 Viewports: 320×568, 360×740, 390×844, 412×915 in the gate set; 375×667, 393×851 and 430×932 added in the full set. Light and dark scheme.
-360 px with text at 130 % (Android text scaling). 37 states: setup steps 1-3; plate loading, ready, dial open, swap open, one-tap on, logged,
+360 px with text at 130 % (Android text scaling). 42 states: setup steps 1-3; plate loading, ready, dial open, swap open, one-tap on, logged,
 skipped (on tablets), error, blocked (kidney), no body data; sheets: my food, how the numbers work, log a meal (ask and estimate);
-plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder blocked; Rescue entry, wait, result, error, blocked; menu typed, wait, unreadable, error, nothing fits, order; log error; pregnancy referral; removal confirmation.
+plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder blocked; Rescue entry, wait, result, error, blocked; menu typed, wait, unreadable, error, nothing fits, order; log error; pregnancy referral; removal confirmation;
+errors by kind (after Critic round 6): Rescue busy, Rescue at the daily limit, menu reply broken, log busy, plate at the daily limit.
 
 | ID | Criterion | Threshold | Sources |
 |---|---|---|---|
@@ -28,12 +29,23 @@ plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder bl
 | A10 | Every state renders; no page errors | each state reached; console clean | BD-45, BD-90, BD-92, AU-34 |
 | A11 | Coverage comes from the code | every tab, sheet and view in src/v6/app.js has at least one state in the review | BD-93 |
 | A12 | Each check catches a planted fault | `node test/ux/review.js --drill` plants one fault per rule and expects each to be caught | BD-91 |
+| A13 | After an error the next step fits the error: Try again where trying again can help (connection, busy, a broken reply), none where it cannot (a daily limit, the link, set-up, photos off, a photo that did not come through); what the person typed stays in its box | rule next-step on the five error-by-kind states and the upstream-error states | BD-46, BD-48, IX-36, IX-40, AU-19 |
+| A14 | The safety rules hold in the code every page and the server run: with diabetes every plate and every base swap the app offers keeps a whole grain or millet; kidney condition and pregnancy are referred, never planned | `node test/rules/check.js <page>` on all three built pages | owner rule 3, BD-56 |
+| A15 | The owner's banned words appear in no note and no app text, except the listed exceptions, each with its reason | `node test/words/check.js` (exceptions in test/words/allow.json) | owner rule 4 |
+| A16 | Every delivered film and its WhatsApp copy has its picture from 0 s, a frame for every 1/fps, no decode errors, no picture held 7 s or more, and its sound near the 30 s film's level | `test/films/check.sh` | owner's film gates; BD-90 |
 
 ## Part A, changes after Critic round 1
 The Critic found what the first version of the review could not see: a figure running into the next tile, a Rescue answer landing
 below the fold, chart labels at 10 px, and a 130 % simulation that compounded on nested text. The review now checks each of these
 (rules text-overflow, feedback-hidden, chart text in text-too-small). After round 2 the drill plants every rule, 18 faults,
 and matches each to its element by text, so a rule that stops working is caught even when another rule of the same name fires.
+
+## Part A, changes after Critic round 6
+Round 6 found three things no check could see: a film that passed its sound check with no picture, a base swap that took the grain off a
+diabetes plate, and Try again missing after two kinds of server error. Each now has a check (A13 to A16), each check was shown to catch a
+planted fault, and all four run in the Stop gate before the review. Notes joined the fingerprint, so editing a note needs a new review too.
+A figure now stays on one line with its unit: where tiles are too narrow, the row drops to two columns (switch points measured, in em, so
+enlarged text moves them too). On screens 600 px tall or less the plate sits beside its grams, so plate, grams and dish name share the first view.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
@@ -54,7 +66,7 @@ and matches each to its element by text, so a rule that stops working is caught 
 ## Part C. How the criteria are enforced
 1. `test/ux/review.js` measures Part A on every state (exit 0 clean, 1 violations, 2 could not run = UNVERIFIED, BD-92).
 2. Hook (`.claude/settings.json`): finishing work runs `ux-gate.sh`. It rebuilds both pages, fingerprints the state (`test/ux/manifest.sh`:
-   pages, sources, the review itself, both films, the WhatsApp post), re-runs the review to zero, and requires a Critic PASS for that
+   pages, sources, the review and its checks, both films, the WhatsApp post, every note), runs the rule, word and film checks (A14 to A16), re-runs the review to zero, and requires a Critic PASS for that
    fingerprint in `test/ux/CRITIC.md`. Edits made any way (editor, shell, films) change the fingerprint. After three blocks on one state
    it lets the stop through with a message to the owner that the work is not resolved. A hook proves only that the steps ran (BD-94);
    who wrote CRITIC.md is shown by git history, not by the hook.
@@ -71,3 +83,10 @@ and matches each to its element by text, so a rule that stops working is caught 
 - D3 Serif for low vision (DC-08 advises sans): EB Garamond stays for the look, with larger sizes (body 17 px, floor 14 px, figures 22 px+) and
   darker ink to compensate; the handwriting face leaves all functional text (BD-04).
 - D4 Targets 44 px (AA product target) rather than 48 px (AAA / Android native): 44 px with spacing is the doctrine's product target (BD-12).
+- D5 Ornament text: the meal words drawn on the plate's rim, the circular stamp and the vine and sprig drawings are ornament from the owner's
+  confirmed look, not text to read. Each repeats a label shown at full size nearby (the meal tabs above the plate; the masthead), and the plate
+  drawing is one image with one spoken name. The review leaves them out of A4 (test/ux/review.js, svg text inside .thali, .stamp, .vine, .sprig);
+  the Critic checks that each still repeats a full-size label. If one ever carries information found nowhere else, it must meet A4.
+- D6 The 30 s film keeps the owner-approved soundtrack, taken unchanged from the approved cut (git b890035). Its music rises in two voice
+  gaps (17 s, 24 s): that is the ducking letting go between lines, part of the mix the owner approved. Re-mixing would change approved work;
+  the 51 s film, mixed here, sets the music beat by beat instead.

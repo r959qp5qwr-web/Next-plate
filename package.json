@@ -5,7 +5,10 @@
   "scripts": {
     "build": "ESBUILD=./node_modules/esbuild node build6.js",
     "review": "node test/ux/review.js --quick --pool 6 --out test/ux/out",
-    "drill": "node test/ux/review.js --drill --out /tmp/np-drill"
+    "drill": "node test/ux/review.js --drill --out /tmp/np-drill",
+    "rules": "node test/rules/check.js hosted/v6/index.html && node test/rules/check.js hosted/v6/index.min.html && node test/rules/check.js hosted/v5/index.min.html",
+    "films": "test/films/check.sh",
+    "words": "node test/words/check.js"
   },
   "devDependencies": {
     "esbuild": "0.24.2"

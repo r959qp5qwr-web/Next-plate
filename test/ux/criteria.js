@@ -28,7 +28,8 @@ exports.RULES = {
   'covered-at-end': 'the last content scrolls clear of the fixed bars (A3)',
   'text-overflow': 'text never runs past its own box, where a neighbour can paint over it (A2)',
   'feedback-hidden': 'what a tap produces comes into view (A3, B6)',
+  'next-step': 'after an error the next step fits the error: Try again where it can help, none where it cannot, and what was typed stays (A13, B6)',
 };
-exports.BIGTEXT_RULES = ['overflow-x', 'off-screen', 'text-clipped', 'overlap', 'covered-at-end', 'text-overflow', 'feedback-hidden'];
+exports.BIGTEXT_RULES = ['overflow-x', 'off-screen', 'text-clipped', 'overlap', 'covered-at-end', 'text-overflow', 'feedback-hidden', 'next-step'];
 // Allowed exceptions, each with its reason. Keep this list short; every entry is read by the Critic.
 exports.ALLOW = require('./allow.json');

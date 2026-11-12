@@ -30,8 +30,9 @@ viewing images, listing files, `ffprobe`); never for changing files.
 ## What you judge
 Read docs/ux/UX-CRITERIA.md first: part A (measured) and part B (judged on rendered screens), each criterion with its source (Builders Doctrine
 module ux-design-assurance v1.1, WCAG 2.2, the installed design skills). Then:
-1. Measured: run `npm run drill` and `npm run review` yourself (re-run if anything changed after the builder's run).
-   Any violation, any state that could not be reached, any page error = FAIL. Read test/ux/allow.json: every exception must have a reason
+1. Measured: run `npm run drill`, `npm run review`, `npm run rules`, `npm run words` and `npm run films` yourself (re-run if anything changed
+   after the builder's run). Any violation, any state that could not be reached, any page error, any rule, word or film check that fails = FAIL.
+   Read test/words/allow.json as you read test/ux/allow.json: each exception must be the rule itself, a quoted record or a web address. Read test/ux/allow.json: every exception must have a reason
    that holds up; an exception that hides a defect = FAIL.
 2. Rendered: open the screens in test/ux/out/screens/<width>-<scheme>/ for every state at 320, 360 and 390 px, light and dark, and 360 px at
    130 % text. Judge each against part B: alignment and rhythm (edges line up, spacing steps consistent), hierarchy (one clear first read per
