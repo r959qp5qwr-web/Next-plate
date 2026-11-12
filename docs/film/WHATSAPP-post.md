@@ -1,13 +1,15 @@
 # WhatsApp post to go with the film
 
-Chole bhature at lunch? Fine.
-Next Plate plans your dinner around it.
+Next Plate: a meal planner that works from your numbers.
 
-It plans every meal for your goal and your health: weight loss, low iron, diabetes. One plate, in grams, with the reason it suits you today.
+• Daily targets: energy from the Mifflin-St Jeor equation and your activity level, with a set deficit for weight loss (300 to 500 kcal, never below 1200 kcal for women or 1500 for men). Protein by body weight, fibre by calories. Indian BMI cut-offs (ICMR-NIN).
+• Each meal: Gemini, Google's AI, plans one plate from what you've already eaten today. Grams, kcal, protein, carbs, fats and fibre.
+• Code checks every plate against your health rules before you see it: diabetes, low iron, BP. Kidney disease and pregnancy go to your doctor.
+• Your food log is kept on your phone. No account, no names sent.
 
 30-second film below. Reply "plate" and I'll send your link.
 
 ---
-Owner's pick (option A of three, 2026-11-12: "quirky and concise"). Written as a message, not an ad: one light opening, one low-pressure ask.
-Every claim matches the app: the film's day has chole bhature at lunch and plans dinner around it. Grams and kcal only; no supplements; no blood-sugar numbers.
-Replaces the earlier longer draft ("Most diet plans are written once and handed over...").
+Owner's direction (2026-11-12): "more technical, not quirky". Replaces the chole bhature version.
+Every figure is from src/v6/params.js (Mifflin-St Jeor x activity factor; deficit 300 kcal at BMI 23-27.4, 500 at 27.5+; floor 1200 f / 1500 m;
+protein g/kg; fibre 15 g per 1000 kcal; ICMR-NIN 2024 BMI lines). Grams and kcal only; no supplements; no blood-sugar numbers.
