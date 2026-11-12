@@ -53,7 +53,7 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
   bad_key:"This link needs the code from your coach's message. Open the link they sent you.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it."};
-function errText(code){return ERRS[code]||"Couldn't reach Next Plate just now.";}
+function errText(code){return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal and try again.";}
 function api(path,body,cb){
   body.key=KEYCODE;
   var done=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){if(ctl)ctl.abort();},95000);
@@ -228,7 +228,7 @@ function choices(host){
 function waitCard(text,label){
   var c=el("article","plate wait"),h=el("div","hero"),band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);
   var main=el("div","hero-main");main.appendChild(thali([],0,label||"Your plate is being planned",C.meal));var tx=el("div");tx.appendChild(el("p","ans-read wait",text));
-  if(HOOKS.length)tx.appendChild(el("p","planned","around: "+HOOKS.slice(0,3).map(function(h){return h.tag;}).join(" · ")));main.appendChild(tx);h.appendChild(main);c.appendChild(h);return c;
+  if(HOOKS.length)tx.appendChild(el("p","planned","planned around: "+HOOKS.slice(0,3).map(function(h){return h.tag;}).join(" · ")));main.appendChild(tx);h.appendChild(main);c.appendChild(h);return c;
 }
 function loggedCard(s){
   var c=el("article","card logged"),nm=mealName(s.meal),kind={had:"from your plates",other:"your own meal",rescued:"eaten out",ordered:"ordered from the menu",skipped:"skipped"}[s.kind];
@@ -431,7 +431,7 @@ function rescue(text,image){
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
 function readMenu(text,image){
   if(UI.mbusy||UI.rbusy)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
-  UI.mbusy=true;UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
+  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";}
@@ -513,6 +513,7 @@ function renderRescue(){
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rlast){var tb=btn("btn","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rlast;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
+    if(k===0&&UI.mlast&&(UI.mlast.t||UI.mlast.i)&&!/read that menu|passed the checks/.test(t)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
     n.appendChild(tx);v.appendChild(n);});
   if(UI.mres){orderView(v,UI.mres);return;}
   var r=UI.rres;
@@ -527,7 +528,7 @@ function renderRescue(){
   if(d.breakdown)inst.appendChild(el("p","tsub",d.breakdown));
   var cmp=el("div","cmp"),mx=Math.max(d.kcal,a.kcal,1),NB={Energy:"ink",Protein:"pro",Carbs:"grain",Fats:"side"};
   function row(label,b0,b1,unit,max,warnUp){var rw=el("div","cmp-row");rw.appendChild(el("span","lab",label));var bars=el("div","cmp-bars"),i0=el("i","b0"),i1=el("i","b1 nb-"+(NB[label]||"ink"));i0.style.width=Math.round(b0/max*100)+"%";i1.style.width=Math.round(b1/max*100)+"%";add(bars,i0,i1);rw.appendChild(bars);
-    var val=el("span","val");if(b0!==b1){val.appendChild(el("s",null,String(b0)));val.appendChild(el("span","dir",b1>b0?" ↑ ":" ↓ "));val.lastChild.setAttribute("aria-label",b1>b0?"up to":"down to");}val.appendChild(document.createTextNode(String(b1)));val.appendChild(el("small",null," "+unit));rw.appendChild(val);cmp.appendChild(rw);}
+    var val=el("span","val");if(b0!==b1){val.appendChild(el("s",null,String(b0)));var dr=el("span","dir",b1>b0?" ↑ ":" ↓ ");dr.setAttribute("aria-hidden","true");val.appendChild(dr);val.appendChild(el("span","said",b1>b0?" up to ":" down to "));}val.appendChild(document.createTextNode(String(b1)));val.appendChild(el("small",null," "+unit));rw.appendChild(val);cmp.appendChild(rw);}
   row("Energy",d.kcal,a.kcal,"kcal",mx,true);row("Protein",d.protein,a.protein,"g",Math.max(d.protein,a.protein,1));row("Carbs",d.carbs,a.carbs,"g",Math.max(d.carbs,a.carbs,1),true);row("Fats",d.fats,a.fats,"g",Math.max(d.fats,a.fats,1),true);
   inst.appendChild(cmp);
   var sumr=el("p","tsub");sumr.appendChild(document.createTextNode("Rise: "));sumr.appendChild(el("b",bandCls(r0.band),r0.band));if(r1.band!==r0.band){sumr.appendChild(document.createTextNode(" → "));sumr.appendChild(el("b",bandCls(r1.band),r1.band));}
@@ -573,7 +574,9 @@ function renderSheet(){
       var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Estimate it");go.appendChild(ic("send"));
       f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)logOther(t,null);});add(f,i,go);c.appendChild(f);
       if(UI.lbusy)c.appendChild(el("p","ans-read wait","Working out what that adds up to"));
-      if(UI.lerr){var n=el("div","note");n.appendChild(ic("info"));n.appendChild(el("p",null,UI.lerr));c.appendChild(n);}
+      if(UI.lerr){var n=el("div","note"),nt=el("div");n.appendChild(ic("info"));nt.appendChild(el("p",null,UI.lerr));
+        if(UI.ltext&&!/didn't read as a meal/.test(UI.lerr)){var lb=btn("btn","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
+        n.appendChild(nt);c.appendChild(n);}
       c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
       sh.appendChild(c);setTimeout(function(){var x=$("login");if(x&&!UI.lbusy)x.focus();},60);return;}
     var r=UI.lres;c.appendChild(el("h3","dish",r.title));

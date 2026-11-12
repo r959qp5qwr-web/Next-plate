@@ -184,3 +184,6 @@
 @media (max-width:339.98px){#app .mast{display:none}}
 /* plate actions: the wider button holds 'Next plate (1/2)' on one line */
 #app .acts.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+/* ===== Critic round 4 ===== */
+#app .note #menu-retry,#app .note #log-retry{min-height:44px}
+@media (max-width:359.98px){#app #next svg.i{display:none}#app #next{padding:0 8px}}
