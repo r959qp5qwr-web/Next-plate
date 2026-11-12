@@ -209,9 +209,10 @@ rulesText(p),
 "WHAT TO RETURN",
 "- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).",
 "- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
-"- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).",
+"- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.",
+"- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.",
 "- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).",
-"- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+"- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.",
 lite?null:TUNETEXT(p)
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -253,8 +254,8 @@ profileText(p,null),
 function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
   if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
-  m.properties.planned_around={type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};
-  m.required=m.required.concat(["planned_around","for_you"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you"]);return s;
+  m.properties.planned_around={type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};m.properties.taste={type:"ARRAY",items:{type:"STRING"}};
+  m.required=m.required.concat(["planned_around","for_you","taste"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you","taste"]);return s;
 }
 SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
 SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},title:{type:"STRING"},
@@ -269,8 +270,17 @@ function checkReply6(r,p,hooks){
   out.meals.forEach(function(m){var src=byTitle[m.title]||{};
     m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
     var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";
+    m.taste=tasteWords(src.taste);
+    m.why=m.why.filter(function(w){return !FIGTXT.test(w.effect)&&!/\d/.test(w.pair)&&!crosses(w.pair+" "+w.effect,p);});   /* pairing tips: no figures, nothing the person leaves out */
     m.tuned=Object.keys(m.alchemy).length>0||m.swaps.protein.length>0;});
   out.hooks=tags;return out;
+}
+/* taste notes: 2 or 3 plain taste words; health words, claims and the owner's banned words are dropped, and fewer than 2 shows none */
+var NOTTASTE=/^(healthy|healthier|nutritious|wholesome|balanced|clean|light|lean|guilt|guilt-free|detox|superfood|diet|low-fat|low-carb|protein-rich|high-protein|fibre-rich|fiber-rich|real|quiet|simple|smart|magic|curated|tailored|personalised|personalized|holistic|perfect|delicious|tasty|yummy)$/;
+function tasteWords(a){
+  var out=(Array.isArray(a)?a:[]).map(function(w){return clean(w,20).toLowerCase().replace(/[.!]+$/,"");})
+    .filter(function(w,i,all){return /^[a-z][a-z-]{1,15}$/.test(w)&&!NOTTASTE.test(w)&&!CLAIM.test(w)&&!supp(w)&&all.indexOf(w)===i;}).slice(0,3);
+  return out.length>=2?out:[];
 }
 function checkTune(r,p,meal){
   var m={};for(var k in meal)m[k]=meal[k];m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;

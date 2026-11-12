@@ -1,4 +1,4 @@
-// Layout-check fixture. Meals and numbers come from the owner's Gemini file (docs/foundation): [S] CURATED_MEALS
+// Layout-check fixture. Taste words and pairing lines are layout samples written for the check. Meals and numbers come from the owner's Gemini file (docs/foundation): [S] CURATED_MEALS
 // "pahadi-paneer", [P] MEALS_DB "ind-3" and "exp-1", [S] DELIVERY_DISHES "andhra-biryani". Item grams are placeholders
 // for the layout check only (the Gemini files do not give them); the read line says so on screen. Never served to clients.
 const z = { deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 };
@@ -10,8 +10,10 @@ exports.meals = {
       items: [{ food: "Paneer tikka, charred", grams: 150, group: "protein" }, { food: "Foxtail millet khichdi", grams: 200, group: "carbs" },
               { food: "Sauteed palak with garlic", grams: 120, group: "greens" }, { food: "Walnut-mint chutney", grams: 30, group: "fats" }],
       kcal: 560, protein: 38, carbs: 44, fats: 23, fiber: 14,
-      why: [{ pair: "Turmeric + black pepper", effect: "Pepper helps the body take up the turmeric in the marinade." },
-            { pair: "Foxtail millet + walnuts", effect: "A slow-digesting grain with walnut fats keeps you full for longer." }],
+      why: [{ pair: "Palak + a squeeze of lemon", effect: "The lemon helps the body take up the iron in the palak." },
+            { pair: "Turmeric + black pepper", effect: "Pepper helps the body take up the turmeric in the marinade." },
+            { pair: "Tea or coffee, an hour later", effect: "Taken with the meal, they hold back the iron." }],
+      taste: ["smoky", "garlicky", "fresh"],
       swaps: { protein: [{ food: "Malai paneer tikka", grams: 150, ...z }, { food: "Tandoori chicken tikka", grams: 160, ...z, deltaKcal: -35, deltaProtein: 12 },
                          { food: "Sprouted moong and tofu bhurji", grams: 180, ...z, deltaKcal: -60, deltaProtein: -4 }],
                base: [{ food: "Foxtail millet khichdi", grams: 200, ...z }, { food: "Hand-pounded brown basmati", grams: 180, ...z, deltaFiber: -4 }, { food: "Cauliflower and green pea mash", grams: 200, ...z, deltaFiber: 1 }] },
@@ -24,11 +26,11 @@ exports.meals = {
       items: [{ food: "Sprouted kala chana", grams: 150, group: "protein" }, { food: "Roasted sweet potato, cooled", grams: 150, group: "carbs" },
               { food: "Hung curd drizzle", grams: 60, group: "protein" }, { food: "Cucumber, onion and pomegranate", grams: 100, group: "greens" }, { food: "Pumpkin seeds", grams: 10, group: "fats" }],
       kcal: 490, protein: 28, carbs: 56, fats: 14, fiber: 16,
-      why: [{ pair: "Cooled sweet potato + kala chana", effect: "Cooled potato and chana fibre digest slowly." }],
+      why: [{ pair: "Kala chana + pomegranate and lemon", effect: "Both help the body take up the iron in the chana." }], taste: ["tangy", "crunchy", "sweet"],
       swaps: { protein: [], base: [] }, alchemy: {} },
     { title: "10-Min Miso Glazed Tofu & Buckwheat Soba", subtitle: "Sesame, bok choy and a little chilli crisp", cuisine: "High-protein express", prepMinutes: 10,
       items: [{ food: "Firm tofu, miso glazed", grams: 150, group: "protein" }, { food: "Buckwheat soba", grams: 160, group: "carbs" }, { food: "Bok choy and edamame", grams: 120, group: "greens" }],
-      kcal: 510, protein: 38, carbs: 51, fats: 16, fiber: 14, why: [], swaps: { protein: [], base: [] }, alchemy: {} },
+      kcal: 510, protein: 38, carbs: 51, fats: 16, fiber: 14, why: [], taste: ["savoury", "nutty", "light"], swaps: { protein: [], base: [] }, alchemy: {} },
   ],
 };
 exports.rescue = {

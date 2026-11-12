@@ -1,6 +1,6 @@
-// Phone screens of the look mock-up against a local server (mock engine).  node mock/look/shots.js <base-url> <out-dir> [scale]
+// Phone screens of the plate look (portion ring, nutrient colours, stoneware plate, Pair it, taste notes).  node test/v6/shots-look.js <base-url> <out-dir> [scale]
 const { chromium } = require('playwright');
-const BASE = process.argv[2] || 'http://localhost:3007/', OUT = (process.argv[3] || 'screens/look-mock') + '/', DSF = Number(process.argv[4] || 2);
+const BASE = process.argv[2] || 'http://localhost:3006/', OUT = (process.argv[3] || 'screens/v6-look') + '/', DSF = Number(process.argv[4] || 2);
 const NOW = new Date('2026-11-12T13:10:00+05:30').getTime(), H = 36e5, D = 864e5;
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 const ev = [{ t: NOW - 4.5 * H, type: 'had', meal: 'breakfast', title: 'Vegetable poha', kcal: 300, protein: 8, carbs: 50, fats: 8, fiber: 4 }];

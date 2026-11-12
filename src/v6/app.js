@@ -185,11 +185,11 @@ function directiveCard(host){
 }
 function ctxBlock(host){
   var t=FILE.today,dt=PL?PL.day:null,tl=el("div","tiles");
-  function tile(cap,val,unit,frac){var d=el("div","tile2");d.appendChild(el("p","cap",cap));var v=el("span","v");v.appendChild(val);if(unit)v.appendChild(el("small",null,unit));d.appendChild(v);
+  function tile(cap,val,unit,frac,nc){var d=el("div","tile2 n-"+nc);d.appendChild(el("p","cap",cap));var v=el("span","v");v.appendChild(val);if(unit)v.appendChild(el("small",null,unit));d.appendChild(v);
     if(frac!=null){var b=el("div","bar"),i=el("i");i.style.width=Math.min(100,Math.round(frac*100))+"%";b.appendChild(i);d.appendChild(b);}return d;}
-  tl.appendChild(tile("Protein today",tw("t-p",Math.round(t.protein)),dt?" / "+dt.protein+" g":" g",dt?t.protein/dt.protein:null));
-  tl.appendChild(tile("Energy today",tw("t-k",Math.round(t.kcal)),dt?" / "+dt.kcal+" kcal":" kcal",dt?t.kcal/dt.kcal:null));
-  tl.appendChild(tile("Fibre today",tw("t-f",Math.round(t.fiber)),dt&&dt.fiber?" / "+dt.fiber+" g":" g",dt&&dt.fiber?t.fiber/dt.fiber:null));
+  tl.appendChild(tile("Protein today",tw("t-p",Math.round(t.protein)),dt?" / "+dt.protein+" g":" g",dt?t.protein/dt.protein:null,"pro"));
+  tl.appendChild(tile("Energy today",tw("t-k",Math.round(t.kcal)),dt?" / "+dt.kcal+" kcal":" kcal",dt?t.kcal/dt.kcal:null,"ink"));
+  tl.appendChild(tile("Fibre today",tw("t-f",Math.round(t.fiber)),dt&&dt.fiber?" / "+dt.fiber+" g":" g",dt&&dt.fiber?t.fiber/dt.fiber:null,"veg"));
   host.appendChild(tl);
   var rail=el("div","rail"),sg=suggestAppetite(FILE,C.meal),ap=appetite();
   function pill(key,icon,label,value){var b=el("button","pillsel");b.type="button";b.id="dial-"+key;b.setAttribute("aria-expanded",UI.open===key?"true":"false");b.appendChild(ic(icon));if(label)b.appendChild(el("span",null,label));b.appendChild(el("b",null,value));b.appendChild(ic("chevd"));
@@ -251,15 +251,19 @@ function heroCard(m,v,r){
   var pb=el("div","platebox");pb.appendChild(thali(v.items,0,"Your "+mealName(C.meal).toLowerCase()+" plate: "+v.items.map(function(i){return i.food;}).join(", "),C.meal));main.appendChild(pb);
   h.appendChild(sprig("hero-sprig"));var band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);
   var vw=vegWord(shares(v.items).veg),sc=el("span","scribble");sc.textContent=vw==="None"?"no veg here yet":vw.toLowerCase()+(vw==="A little"?" veg on":" of")+" the plate"+(vw==="A little"?"":" is veg");pb.appendChild(sc);
+  var gb=gramsBy(v.items),lg=el("ul","prlegend");lg.setAttribute("aria-hidden","true");
+  NUTORDER.forEach(function(k){if(!gb[k])return;var li=el("li","n-"+NUTC[k]);add(li,el("i"),el("span",null,NUTNAME[k]),el("b",null,gb[k]+" g"));lg.appendChild(li);});
+  if(lg.firstChild)txt.appendChild(lg);
+  if(m.taste&&m.taste.length){var ts=el("p","taste");ts.setAttribute("aria-label","Tastes "+m.taste.join(", "));m.taste.forEach(function(w){ts.appendChild(el("span",null,w));});txt.appendChild(ts);}
   txt.appendChild(el("h2",m.title.length>34?"long":null,m.title));if(v.suffix)txt.appendChild(el("p","suffix",v.suffix));
   txt.appendChild(el("p","sub",m.subtitle));
   var tags=(m.planned||[]).map(function(id){return r.hooks&&r.hooks[id];}).filter(Boolean);
   if(tags.length){var pa=el("p","planned");pa.id="planned";pa.appendChild(document.createTextNode("planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode(" · "));pa.appendChild(el("span",null,t));});txt.appendChild(pa);}
   main.appendChild(txt);
   var rd=el("div","read4 six");
-  function cell(cap,node,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
-  add(rd,cell("Protein",tw("h-p",n.protein),"g"),cell("Carbs",tw("h-c",n.carbs),"g"),cell("Fats",tw("h-f",n.fats),"g"),
-    cell("Energy",tw("h-k",n.kcal),"kcal"),cell("Fibre",tw("h-fi",n.fiber),"g"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band)));
+  function cell(cap,node,unit,cls,nc){var d=el("div","tcard n-"+nc);d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
+  add(rd,cell("Protein",tw("h-p",n.protein),"g",null,"pro"),cell("Carbs",tw("h-c",n.carbs),"g",null,"grain"),cell("Fats",tw("h-f",n.fats),"g",null,"side"),
+    cell("Energy",tw("h-k",n.kcal),"kcal",null,"ink"),cell("Fibre",tw("h-fi",n.fiber),"g",null,"veg"),cell("Rise",el("span","mono",rs.band),null,bandCls(rs.band),"ink"));
   var waitT=!m.tuned&&!m.tuneFailed;if(waitT)tune(curKey(),UI.sel);
   var tn=el("div","tune alc");tn.appendChild(el("p","cap",waitT?"One-tap changes \u00B7 getting them ready":"One-tap changes"));
   [["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
@@ -284,6 +288,9 @@ function heroCard(m,v,r){
     if(it.grams){qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));}else qy.textContent="—";
     var f=el("span","food");f.appendChild(el("b",null,it.food));if(it.tag)f.appendChild(el("span","tag","swapped"));add(li,qy,f);ul.appendChild(li);});
   sv.appendChild(ul);card.appendChild(sv);
+  if(m.why.length){var pr=el("div","pairs"),ph=el("p","ph");ph.id="pairs";add(ph,el("b",null,"Pair it"),el("small",null,"to take up more from this plate"));pr.appendChild(ph);
+    var pu=el("ul");m.why.forEach(function(w){var li=el("li"),pl=el("span","plus","+"),tx=el("span");pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
+    pr.appendChild(pu);card.appendChild(pr);}
   var acts=el("div","acts two");
   var total=r.meals.length,nx=btn("btn",total>1?"Next plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
@@ -334,9 +341,8 @@ function renderPlate(){
     var m=curMeal(),vw=viewOf(m);
     v.appendChild(heroCard(m,vw,r));
     if(P.health==="diabetes"||P.health==="bp"){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,P.health==="diabetes"?"With diabetes the grain stays on the plate, next to protein and vegetables. Your doctor's advice comes first.":"With high BP these plates leave out pickle, papad and added salt. Your doctor's advice comes first."));v.appendChild(nt);}
-    if(m.forYou||m.why.length){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
-      if(m.forYou)wt.appendChild(el("p","lead",m.forYou));
-      m.why.forEach(function(w){var p=el("p");p.appendChild(el("b",null,w.pair+". "));p.appendChild(document.createTextNode(w.effect));wt.appendChild(p);});add(wc,wi,wt);v.appendChild(wc);}
+    if(m.forYou){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
+      wt.appendChild(el("p","lead",m.forYou));add(wc,wi,wt);v.appendChild(wc);}
     if(r.meals.length>1){var hh=el("div","sec-h");hh.appendChild(el("h3",null,"Also for "+mealName(C.meal).toLowerCase()));v.appendChild(hh);
       var wrap=el("div","alts");r.meals.forEach(function(x,i){if(i===UI.sel)return;var b=el("button","alt");b.type="button";b.id="alt-"+i;
         var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈ "+x.protein+" g protein · "+x.kcal+" kcal"+(x.minutes?" · "+x.minutes+" min":"")));
