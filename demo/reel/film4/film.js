@@ -44,7 +44,7 @@ function supers(ctx, t) {
 
 // the phone: on screen from the first frame. camera keys [time, k, focus x, focus y (CSS), canvas x, canvas y]
 const REST = [2.05, 195, 422, 540, 1330];
-const CAM = [[0, 2.12, 195, 422, 540, 1300], [4.0, ...REST], [23.8, ...REST], [25.0, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100]];
+const CAM = [[0, 2.12, 195, 422, 540, 1300], [4.0, ...REST], [23.6, ...REST], [24.6, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100]];
 function camera(t) {
   let i = 0; while (i + 1 < CAM.length && t >= CAM[i + 1][0]) i++;
   const a = CAM[i], b = CAM[Math.min(i + 1, CAM.length - 1)], p = b === a ? 0 : ease(prog(t, a[0], b[0]));
@@ -93,19 +93,35 @@ function lifts(ctx, t, IMG) {
   }
 }
 
-// the name, as the app sets it
-function close(ctx, t) {
-  const t0 = at('nextplate', 22); if (t < t0 - 0.8) return;
-  const a = out(prog(t, t0 - 0.6, t0 + 0.8)), title = 'NEXT PLATE', size = 124, track = 24;
-  ctx.font = fD(size, 600); const ws = [...title].map((ch) => ctx.measureText(ch).width), total = ws.reduce((p, q) => p + q + track, -track);
-  let x = W / 2 - total / 2; ctx.globalAlpha = a; ctx.fillStyle = C.ink; ctx.textAlign = 'left';
-  [...title].forEach((ch, i) => { ctx.fillText(ch, x, 960 + (1 - a) * 18); x += ws[i] + track; });
-  const r = out(prog(t, t0 + 0.2, t0 + 1.2)); ctx.fillRect(W / 2 - 450 * r, 1006, 900 * r, 3); ctx.fillRect(W / 2 - 450 * r, 1017, 900 * r, 1.2);
+// the close: the app's own plate settles, the name comes up under it as it is said, then "Made for you."
+const PLATE = { cx: 210, cy: 278, r: 119 };       // the plate illustration on the 04-plate capture, CSS px
+function close(ctx, t, IMG) {
+  const tn = at('nextplate', 22), tm = at('made', 22); if (t < tn - 1.6) return;
+  const drift = 1 + 0.025 * ease(prog(t, tn, 31.5));                       // a slow push over the hold
+  ctx.save(); ctx.translate(W / 2, 1000); ctx.scale(drift, drift); ctx.translate(-W / 2, -1000);
+  // the plate: rises and turns into place
+  const p = ease(prog(t, tn - 0.6, tn + 0.6)), R = 250 * lerp(0.86, 1, p), cy = lerp(740, 690, p), rot = lerp(-0.35, 0, p);
+  if (p > 0) {
+    ctx.save(); ctx.globalAlpha = Math.min(1, p * 1.6); ctx.translate(W / 2, cy); ctx.rotate(rot);
+    ctx.save(); ctx.shadowColor = 'rgba(45,30,14,0.28)'; ctx.shadowBlur = 70; ctx.shadowOffsetY = 30; ctx.fillStyle = C.surface; ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.clip(); ctx.imageSmoothingQuality = 'high';
+    const s = 3, src = PLATE.r * s; ctx.drawImage(IMG.s04, PLATE.cx * s - src, PLATE.cy * s - src, src * 2, src * 2, -R, -R, R * 2, R * 2);
+    ctx.restore();
+  }
+  // the name, letter by letter as it is said
+  const title = 'NEXT PLATE', size = 120, track = 24; ctx.font = fD(size, 600);
+  const ws = [...title].map((ch) => ctx.measureText(ch).width), total = ws.reduce((a, b) => a + b + track, -track);
+  let x = W / 2 - total / 2; ctx.fillStyle = C.ink; ctx.textAlign = 'left';
+  [...title].forEach((ch, i) => { const k = out(prog(t, tn - 0.15 + i * 0.045, tn + 0.55 + i * 0.045)); if (k > 0) { ctx.globalAlpha = k; ctx.fillText(ch, x, 1110 + (1 - k) * 22); } x += ws[i] + track; });
   ctx.globalAlpha = 1;
+  const r = out(prog(t, tn + 0.45, tn + 1.4)); ctx.fillRect(W / 2 - 450 * r, 1156, 900 * r, 3); ctx.fillRect(W / 2 - 450 * r, 1167, 900 * r, 1.2);
+  // the line, as it is said
+  const m = out(prog(t, tm - 0.15, tm + 0.8)); lineMixed(ctx, '*Made for you.*', W / 2, 1290 + (1 - m) * 14, 96, m);
+  ctx.restore();
 }
 
 // sound: a soft tap, and a small chime as each detail arrives
-const HITS = [[4.45, 'tap', 'tick', { gain: 0.11 }], ...LIFTS.map(([, , a]) => [a + 0.15, 'card arrives', 'bell', { pitch: 'A5', gain: 0.045, len: 1.0 }])];
+const HITS = [[4.45, 'tap', 'tick', { gain: 0.11 }], ...LIFTS.map(([, , a]) => [a + 0.15, 'card arrives', 'bell', { pitch: 'A5', gain: 0.045, len: 1.0 }]), [25.45, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
 
 const shots = { s03: '03-today-directive', s07: '07-how-numbers', s04: '04-plate', s05b: '05b-serve', s05: '05-planned-around', s18: '18-dinner-planned-around' };
 M.film({
@@ -114,5 +130,5 @@ M.film({
   hits: HITS.map(([s, ...r]) => [s / (60 / 72), ...r]),
   samples: 10,
   init() { GRAIN = makeGrain(); },
-  draw(ctx, u, t, IMG) { page(ctx); phone(ctx, t, IMG); lifts(ctx, t, IMG); supers(ctx, t); close(ctx, t); },
+  draw(ctx, u, t, IMG) { page(ctx); phone(ctx, t, IMG); lifts(ctx, t, IMG); supers(ctx, t); close(ctx, t, IMG); },
 });
