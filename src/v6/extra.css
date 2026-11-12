@@ -14,3 +14,5 @@
 .sheet-card .pick-acts .btn{flex:1;padding:0 14px}
 .sheet-card .checks b{font-style:italic}
 .why p.lead{font:italic 500 18px/25px var(--display);color:var(--ink)}
+.acts.two{grid-template-columns:1fr 1fr}
+.acts.two .primary{grid-column:1/-1}

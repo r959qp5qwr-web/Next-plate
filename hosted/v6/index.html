@@ -731,6 +731,8 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 .sheet-card .pick-acts .btn{flex:1;padding:0 14px}
 .sheet-card .checks b{font-style:italic}
 .why p.lead{font:italic 500 18px/25px var(--display);color:var(--ink)}
+.acts.two{grid-template-columns:1fr 1fr}
+.acts.two .primary{grid-column:1/-1}
 
 </style>
 
@@ -890,6 +892,7 @@ var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave ou
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 var SAFETY="This one is for your coach and doctor to plan with you.";
 
+var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
 function wordRx(list){return new RegExp("\\b("+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")\\b","i");}
 function badWords(p){
   var bad=[];
@@ -927,7 +930,7 @@ function checkMeal(m,p){
   var all=title+" "+sub+" "+items.map(function(i){return i.food;}).join(" ");
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
-  if(p.health==="diabetes"&&!items.some(function(i){return i.group==="carbs";}))return {drop:"diabetes-grain"};
+  if(p.health==="diabetes"&&p.slot!=="snack"&&!items.some(function(i){return GRAINW.test(i.food);}))return {drop:"diabetes-grain"};
   var n={kcal:num(m.kcal,40,2500),protein:num(m.protein,0,250),carbs:num(m.carbs,0,400),fats:num(m.fats,0,200),fiber:num(m.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
   var est=4*n.protein+4*n.carbs+9*n.fats;
@@ -980,7 +983,7 @@ function rulesText(p){
 "HARD RULES",
 "- Diet is absolute: "+lab("diet",p.diet)+(p.diet==="jain"?" (no egg, meat, fish, onion, garlic, ginger or root vegetables)":p.diet==="vegan"?" (no dairy, egg, meat or fish)":p.diet==="veg"?" (no egg, meat or fish)":p.diet==="egg"?" (eggs allowed; no meat or fish)":"")+".",
 "- Never use: "+((p.leave||[]).length?p.leave.map(function(k){return lab("leave",k).toLowerCase();}).join(", "):"(no extra exclusions)")+".",
-p.health==="diabetes"?"- Diabetes: keep a whole-grain or millet portion on every meal, paired with protein and fibre. No sweets, juice, sugar, honey or jaggery.":null,
+p.health==="diabetes"?"- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.":null,
 p.health==="bp"?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":null,
 "- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.",
 "- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.",
@@ -1324,9 +1327,10 @@ function anchorFor(p,file,c){
   return ok[(c.dayNo*4+SLOTS.indexOf(c.meal))%ok.length][0];
 }
 /* One plain sentence for the top of Today, written by code from the plan and the strongest hook ([S] "Live Dietitian Directive") */
-function directive(p,pl,hooks,meal){
+function directive(p,pl,hooks,meal,done){
   if(!pl)return "";
   var s="Today: about "+pl.day.kcal+" kcal and "+pl.day.protein+" g protein. ";
+  if(done)return s+"So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. That is every meal for today.";
   if(pl.eaten.kcal>0)s+="So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. ";
   s+=lab("meal",meal)+" carries about "+pl.target.kcal+" kcal and "+pl.target.protein+" g protein";
   var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
@@ -1472,7 +1476,7 @@ function checkLog(r){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a real meal */
   var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
-  var as=clean(r.assumed,140);if(CLAIM.test(as))as="";
+  var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as))as="";else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
   return {status:"ok",title:clean(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
@@ -1482,11 +1486,11 @@ KINDS=["meals","rescue","log","tune"];
 plan=function(kind,body){
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  if(kind==="tune"){var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
+  if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
-  c.target=pl?pl.target:null;
+  c.target=pl?pl.target:null;p.slot=c.meal;
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
@@ -1738,7 +1742,7 @@ function makePlates(text){
 var TUNING={};
 function tune(key,i){
   var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
-  api("/api/tune",{profile:profileOut(),meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
     delete TUNING[key+"#"+i];
     if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
     if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
@@ -1836,7 +1840,10 @@ function blockedCard(){
 function directiveCard(host){
   if(!PL){var n=el("p","tip");n.appendChild(el("b",null,"Add your height and weight. "));n.appendChild(document.createTextNode("Then every meal gets a calorie and protein target that follows your day."));
     var b=btn("linkbtn","Add them now",null,"add-body");b.addEventListener("click",function(){openSheet("food");});n.appendChild(b);host.appendChild(n);return;}
-  var d=el("p","tip directive");d.id="directive";d.appendChild(el("b",null,"Today. "));d.appendChild(document.createTextNode(directive(profileOut(),PL,HOOKS,C.meal).replace(/^Today: /,"")));
+  var meal=C.meal,pl=PL,hk=HOOKS,done=false;
+  if(slotOf(meal)){var nx=nextOpen();if(nx){meal=nx;pl=planDay(profileOut(),FILE,nx,APP[nx]!=null?APP[nx]:suggestAppetite(FILE,nx).v);hk=hooksFor(profileOut(),FILE,{meal:nx,hour:null,mode:C.mode},pl);}else done=true;}
+  var txt=directive(profileOut(),pl,hk,meal,done).replace(/^Today: about/,"About");
+  var d=el("p","tip directive");d.id="directive";d.appendChild(el("b",null,"Today. "));d.appendChild(document.createTextNode(txt));
   var how=btn("linkbtn","How these numbers are worked out",null,"how");how.addEventListener("click",function(){openSheet("targets");});d.appendChild(how);host.appendChild(d);
 }
 function ctxBlock(host){
@@ -1940,13 +1947,13 @@ function heroCard(m,v,r){
     if(it.grams){qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));}else qy.textContent="—";
     var f=el("span","food");f.appendChild(el("b",null,it.food));if(it.tag)f.appendChild(el("span","tag","swapped"));add(li,qy,f);ul.appendChild(li);});
   sv.appendChild(ul);card.appendChild(sv);
-  var acts=el("div","acts");acts.style.gridTemplateColumns="1fr 1fr 1.25fr";
-  var total=r.meals.length,nx=btn("btn",total>1?"Next ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
+  var acts=el("div","acts two");
+  var total=r.meals.length,nx=btn("btn",total>1?"Next plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
   var tr=btn("btn","Try it","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". The rest of the day follows it.");});
-  add(acts,nx,tr,hv);card.appendChild(acts);
+  add(acts,hv,nx,tr);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
   var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.");});add(lg,o,sk);card.appendChild(lg);
   return card;
@@ -1969,7 +1976,7 @@ function renderPlate(){
   if(blocked()){v.appendChild(blockedCard());return;}
   directiveCard(v);ctxBlock(v);choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(s&&!UI.busy&&!asked){v.appendChild(loggedCard(s));}
+  if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for what you asked":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
     var last=lastForMeal(),auto=!STORE.shown.hasOwnProperty(C.meal)&&!UI.err;
@@ -2146,7 +2153,7 @@ function renderSheet(){
     c.appendChild(el("p","tsub","≈ "+r.kcal+" kcal · "+r.protein+" g protein · "+r.carbs+" g carbs · "+r.fats+" g fats · "+r.fiber+" g fibre (an estimate)"));
     if(r.assumed)c.appendChild(el("p","fine","Assumed: "+r.assumed));
     var row=el("div","pick-acts"),fix=btn("btn","Not quite",null,"log-fix");fix.addEventListener("click",function(){UI.lres=null;renderSheet();});
-    var ok=btn("btn primary","That's right, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. The rest of the day follows it.");});
+    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. The rest of the day follows it.");});
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
   sheetHead(c,"My food","Done",function(){STORE.res={};STORE.shown={};UI.rres=null;save();closeSheet();render();});

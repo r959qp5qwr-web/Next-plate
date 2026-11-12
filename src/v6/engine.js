@@ -134,9 +134,10 @@ function anchorFor(p,file,c){
   return ok[(c.dayNo*4+SLOTS.indexOf(c.meal))%ok.length][0];
 }
 /* One plain sentence for the top of Today, written by code from the plan and the strongest hook ([S] "Live Dietitian Directive") */
-function directive(p,pl,hooks,meal){
+function directive(p,pl,hooks,meal,done){
   if(!pl)return "";
   var s="Today: about "+pl.day.kcal+" kcal and "+pl.day.protein+" g protein. ";
+  if(done)return s+"So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. That is every meal for today.";
   if(pl.eaten.kcal>0)s+="So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. ";
   s+=lab("meal",meal)+" carries about "+pl.target.kcal+" kcal and "+pl.target.protein+" g protein";
   var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
@@ -282,7 +283,7 @@ function checkLog(r){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a real meal */
   var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
-  var as=clean(r.assumed,140);if(CLAIM.test(as))as="";
+  var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as))as="";else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
   return {status:"ok",title:clean(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
@@ -292,11 +293,11 @@ KINDS=["meals","rescue","log","tune"];
 plan=function(kind,body){
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  if(kind==="tune"){var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
+  if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
-  c.target=pl?pl.target:null;
+  c.target=pl?pl.target:null;p.slot=c.meal;
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);

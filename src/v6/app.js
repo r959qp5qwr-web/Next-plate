@@ -79,7 +79,7 @@ function makePlates(text){
 var TUNING={};
 function tune(key,i){
   var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
-  api("/api/tune",{profile:profileOut(),meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
     delete TUNING[key+"#"+i];
     if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
     if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
@@ -177,7 +177,10 @@ function blockedCard(){
 function directiveCard(host){
   if(!PL){var n=el("p","tip");n.appendChild(el("b",null,"Add your height and weight. "));n.appendChild(document.createTextNode("Then every meal gets a calorie and protein target that follows your day."));
     var b=btn("linkbtn","Add them now",null,"add-body");b.addEventListener("click",function(){openSheet("food");});n.appendChild(b);host.appendChild(n);return;}
-  var d=el("p","tip directive");d.id="directive";d.appendChild(el("b",null,"Today. "));d.appendChild(document.createTextNode(directive(profileOut(),PL,HOOKS,C.meal).replace(/^Today: /,"")));
+  var meal=C.meal,pl=PL,hk=HOOKS,done=false;
+  if(slotOf(meal)){var nx=nextOpen();if(nx){meal=nx;pl=planDay(profileOut(),FILE,nx,APP[nx]!=null?APP[nx]:suggestAppetite(FILE,nx).v);hk=hooksFor(profileOut(),FILE,{meal:nx,hour:null,mode:C.mode},pl);}else done=true;}
+  var txt=directive(profileOut(),pl,hk,meal,done).replace(/^Today: about/,"About");
+  var d=el("p","tip directive");d.id="directive";d.appendChild(el("b",null,"Today. "));d.appendChild(document.createTextNode(txt));
   var how=btn("linkbtn","How these numbers are worked out",null,"how");how.addEventListener("click",function(){openSheet("targets");});d.appendChild(how);host.appendChild(d);
 }
 function ctxBlock(host){
@@ -281,13 +284,13 @@ function heroCard(m,v,r){
     if(it.grams){qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));}else qy.textContent="—";
     var f=el("span","food");f.appendChild(el("b",null,it.food));if(it.tag)f.appendChild(el("span","tag","swapped"));add(li,qy,f);ul.appendChild(li);});
   sv.appendChild(ul);card.appendChild(sv);
-  var acts=el("div","acts");acts.style.gridTemplateColumns="1fr 1fr 1.25fr";
-  var total=r.meals.length,nx=btn("btn",total>1?"Next ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
+  var acts=el("div","acts two");
+  var total=r.meals.length,nx=btn("btn",total>1?"Next plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
   var tr=btn("btn","Try it","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". The rest of the day follows it.");});
-  add(acts,nx,tr,hv);card.appendChild(acts);
+  add(acts,hv,nx,tr);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
   var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.");});add(lg,o,sk);card.appendChild(lg);
   return card;
@@ -310,7 +313,7 @@ function renderPlate(){
   if(blocked()){v.appendChild(blockedCard());return;}
   directiveCard(v);ctxBlock(v);choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(s&&!UI.busy&&!asked){v.appendChild(loggedCard(s));}
+  if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for what you asked":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
     var last=lastForMeal(),auto=!STORE.shown.hasOwnProperty(C.meal)&&!UI.err;
@@ -487,7 +490,7 @@ function renderSheet(){
     c.appendChild(el("p","tsub","≈ "+r.kcal+" kcal · "+r.protein+" g protein · "+r.carbs+" g carbs · "+r.fats+" g fats · "+r.fiber+" g fibre (an estimate)"));
     if(r.assumed)c.appendChild(el("p","fine","Assumed: "+r.assumed));
     var row=el("div","pick-acts"),fix=btn("btn","Not quite",null,"log-fix");fix.addEventListener("click",function(){UI.lres=null;renderSheet();});
-    var ok=btn("btn primary","That's right, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. The rest of the day follows it.");});
+    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. The rest of the day follows it.");});
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
   sheetHead(c,"My food","Done",function(){STORE.res={};STORE.shown={};UI.rres=null;save();closeSheet();render();});
