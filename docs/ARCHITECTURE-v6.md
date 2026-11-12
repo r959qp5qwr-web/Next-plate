@@ -19,7 +19,7 @@ v5 could not say this; it knew a profile and six toggles. That gap is the whole 
 
 ## 2. Design principles
 
-1. **Context over toggles.** The app sets the choices from what it knows (mode, appetite, what's left today), and the person corrects them. This is Gemini's "zero-input brain" ([S] §1), done with real signals instead of invented HRV.
+1. **Context over toggles.** The app sets the choices from what it knows (mode, appetite, what's left today), and the person corrects them. This is Gemini's "zero-input brain" ([S] §1), done with the person's own signals instead of invented HRV.
 2. **Observe before asking.** Learn from what the person picks, swaps, skips and logs. Ask one question at a time, only when the answer would change a plate.
 3. **Code counts, AI cooks.** Arithmetic, targets, patterns and safety are deterministic code. Food knowledge, menus, estimates from free text or photos, and plain-language explanation come from Gemini.
 4. **Every number is honest.** It is either an estimate labelled as one, a band from a stated model, or not shown. Nothing is invented (§9).
@@ -83,7 +83,7 @@ v5 could not say this; it knew a profile and six toggles. That gap is the whole 
 | tonight's pot | free text ("rajma chawal, bhindi") | the strongest single input for a family-cooked meal |
 | staples at home | list, learned from fridge photos and "had" logs | plates use what is there |
 | tiffin days | weekdays | packable, travels well, eats cold |
-| equipment | pressure cooker, air fryer, microwave | express versions that are real |
+| equipment | pressure cooker, air fryer, microwave | express versions that hold up |
 
 ### 4.3 Calendar
 | Event | Effect on plans |
@@ -215,10 +215,10 @@ Tabs: Today · Builder · Rescue · Week. On a wide screen, the v4 studio layout
 ### 12.1 From the Gemini files
 | Gemini | In v6 |
 |---|---|
-| [S] zero-input bio-state | **inferred** mode and appetite from real signals, overridable |
-| [S] HRV, glycogen, hydration readouts | dropped: no sensor; replaced by real check-ins |
+| [S] zero-input bio-state | **inferred** mode and appetite from the person's own signals, overridable |
+| [S] HRV, glycogen, hydration readouts | dropped: no sensor; replaced by the person's check-ins |
 | [S] Live Dietitian Directive | day directive (§6) |
-| [S] curated meals and one-tap changes | plate engine and adjuster |
+| [S] hand-picked meal list and one-tap changes | plate engine and adjuster |
 | [S] synergies | why-pairs, plus *planned around* |
 | [S] satietyHours | Fullness band |
 | [S] CGM twin and habit toggles | Builder curve, a band |
@@ -244,10 +244,10 @@ Event log and food file · context brief with verifiable hooks · family pot · 
 ## 13. Owner parameters
 Researched on 2026-11-12: see **`docs/RESEARCH-parameters.md`** for what each number depends on, the evidence, the sources and the five choices that are yours. Every value lives in `src/v6/params.js` with its source beside it. In short: targets now depend on sex, age, height, weight, BMI band (Indian cut-offs), goal, activity and diabetes medicine; weight loss is applied only at BMI 23 and above, under 65, and not on insulin or sulfonylurea tablets.
 
-## 14. Build phases (each shown rendered on a phone and checked against real Gemini before the next)
+## 14. Build phases (each shown rendered on a phone and checked against live Gemini before the next)
 | Phase | Delivers | Done when |
 |---|---|---|
-| 1 **(built 2026-11-12; engine checked on real Gemini 18/18; screens await "Deploy.")** | event log, food file, day planner, directive, context brief with hooks, goal and nutrient focus restored, had / other / skipped, typed meal logging, researched targets, variety rotation, two-step loading | a plate shows *planned around* tags that match the day; what's left updates after logging |
+| 1 **(built 2026-11-12; engine checked on live Gemini 18/18; screens await "Deploy.")** | event log, food file, day planner, directive, context brief with hooks, goal and nutrient focus restored, had / other / skipped, typed meal logging, researched targets, variety rotation, two-step loading | a plate shows *planned around* tags that match the day; what's left updates after logging |
 | 2 | logger (text and photo), learned likes, portions and patterns, family pot | after a week of test events, plates visibly change with likes and patterns |
 | 3 | rhythm strip, voice, WhatsApp, one question a day | one-hand use from WhatsApp, voice in and out |
 | 4 | Week review, *My food file* | one change a week; every learned item editable |
@@ -260,5 +260,5 @@ The quality check grows with each phase: v5's 26 scenarios, plus context scenari
 1. **Thesis and architecture:** approve as the product. *Recommend: approve.*
 2. **Storage:** phone first (A), or Supabase from day one (B)? *Recommend: A.*
 3. **Phase 1 start:** build Phase 1 now? *Recommend: yes.*
-4. **v5 on Railway** to test the Gemini plate engine with real output while Phase 1 is built: "Deploy."? *Recommend: yes; v6 reuses that engine.*
+4. **v5 on Railway** to test the Gemini plate engine with live output while Phase 1 is built: "Deploy."? *Recommend: yes; v6 reuses that engine.*
 5. **Owner numbers** in §13: send them when ready; until then the flagged fields stay empty and those flags stay off.

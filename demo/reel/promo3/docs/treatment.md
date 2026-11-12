@@ -3,9 +3,9 @@
 Reference: Apple's product films (iPhone and Apple Watch feature films). What they do, and what v2 did not:
 - One idea per shot, held long enough to read twice. A shot lasts 4 to 8 seconds, never under 3.
 - The device is the hero: large, centred, still or drifting slowly. The screen is shown at a size you can read.
-- Real interactions at real speed: a tap, the screen changes, a card arrives. Nothing is drawn over the UI.
+- App interactions at their own speed: a tap, the screen changes, a card arrives. Nothing is drawn over the UI.
 - When a detail matters, the camera moves in to it (a slow push to the order card), instead of a pen circling it.
-- Type is sparse: one short line at a time, set large, in quiet ink on paper. It fades in and holds; it never bounces.
+- Type is sparse: one short line at a time, set large, in soft ink on paper. It fades in and holds; it never bounces.
 - Music: felt piano, soft strings, a low pulse. Calm and warm. Silence is allowed.
 - Voice: calm and close, as if speaking to one person. Long pauses.
 

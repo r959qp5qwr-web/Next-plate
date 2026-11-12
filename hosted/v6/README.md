@@ -4,7 +4,7 @@ Architecture: `docs/ARCHITECTURE-v6.md`. Parameters and their sources: `docs/RES
 
 ## What is live right now
 The Railway function (source: `hosted/v5/server.ts`) serves **the v5 screens with the v6 engine underneath**
-(`hosted/v5/index.min.html` at `PAGE_REF`). The engine is shared code (`np-core`), so it was checked against real Gemini
+(`hosted/v5/index.min.html` at `PAGE_REF`). The engine is shared code (`np-core`), so it was checked against live Gemini
 without changing what a client sees. The v6 screens are built (`hosted/v6/index.min.html`) and wait for the owner's "Deploy."
 
 ## To put the v6 screens live (only on the owner's word "Deploy.")
@@ -30,7 +30,7 @@ build6 writes `hosted/v6/index.html`, `hosted/v6/index.min.html`, and refreshes 
 - `eval/v5/run.js`: 26 scenarios on the v5 path (diet, leave-outs, diabetes, BP, referrals, rescue).
 - `eval/v6/run.js`: 18 context scenarios (hooks offered and cited, targets met, variety, diabetes grain and medicine, logging).
 - `eval/v6/menu-checks.js`: unit checks for Read the menu on the built core, no engine needed (`node eval/v6/menu-checks.js`).
-- `eval/v6/run-menu.js` with `eval/v6/scenarios-menu.json`: 8 menus for the real-engine check (`node eval/v6/run-menu.js https://<app> <code> live`). Not yet run on real Gemini.
+- `eval/v6/run-menu.js` with `eval/v6/scenarios-menu.json`: 8 menus for the live-engine check (`node eval/v6/run-menu.js https://<app> <code> live`). Not yet run on live Gemini.
 - `test/v6/shots-menu.js`: phone screenshots of Read the menu against the local server and mock engine (`screens/v6-menu/`).
-- `test/v6/shots.js`: phone screenshots; with `LIVE=<url> CODE=<code>` every call goes to the live engine, so the screens show real output.
+- `test/v6/shots.js`: phone screenshots; with `LIVE=<url> CODE=<code>` every call goes to the live engine, so the screens show live output.
 - `EVAL_CODE` (Railway variable) lets the checks run without touching client limits. Set it for a run, clear it after.

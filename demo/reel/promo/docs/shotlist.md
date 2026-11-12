@@ -1,11 +1,14 @@
 # Next Plate promo: shot list
 
+> Record of a rejected film (promo v1). The voice lines below are quoted as written then; their wording was rejected by the owner and is not to be reused.
+
+
 80 s, 9:16 (1080 x 1920, 60 fps). 90 bpm bed, 120 beats. Narration in the owner's voice is the clock:
 each spoken word rises into the column above the rule as it is said; the stage below the rule shows the evidence.
 Brief: do not tour features. Say what the app does for the person using it.
 
 Look: Raw Linen (paper #F2ECE1, ink #1D1A16, one accent, clay #B0613D). EB Garamond for the spoken line,
-Caveat for the pen. Every app screen is a real capture of the v6 Phase 1 screens (capture.js, 3x), never a drawn one.
+Caveat for the pen. Every app screen is a capture of the v6 Phase 1 screens (capture.js, 3x), never a drawn one.
 
 | # | Beats | Narration | Stage | Motion | Sound |
 |---|---|---|---|---|---|
@@ -17,7 +20,7 @@ Caveat for the pen. Every app screen is a real capture of the v6 Phase 1 screens
 | 6 | 61 to 70 | Eating out anyway? It shows you the two or three moves that make even chole bhature fit. | Rescue (14), the moves (15), the before and after (15, top). | Pen underlines the screen's own heading, circles the first move, then "Fit 45 to 68 / 100" on "fit". | clicks, ticks |
 | 7 | 70 to 77 | It remembers your week, so dinner isn't rajma again. | Dinner plate (18). | Push to the "planned around" line. Underline "dinners run late", circle "less rajma this week" on "rajma". | click, ticks |
 | 8 | 77 to 89 | Your numbers are not copied from a chart. They are worked out from your age, your body and your goal. And it shows you how. | Today (03), then "How these numbers are worked out" (07). | Underline the targets, tap the link, the sheet comes up. Underlines land on "age, sex, height, weight", "counted on 62 kg", "Weight loss." Pull back, circle the sheet's title on "how". | clicks, pop, ticks |
-| 9 | 89 to 103 | And it is careful. With diabetes, the grain stays on your plate. If something needs your doctor, it says so, and steps back. | No phone: two cards cut from the real screens. The diabetes note (06) with the grain row of the same dinner (05b), then the step-back card (19). | Phone leaves. Note comes in from the right, the grain row from the left with a circle on its grams. Both go up under the rule as the step-back card rises. Underlines on "coach and doctor" and "Nothing here is suggested for now". | whooshes, thuds, ticks |
+| 9 | 89 to 103 | And it is careful. With diabetes, the grain stays on your plate. If something needs your doctor, it says so, and steps back. | No phone: two cards cut from the app screens. The diabetes note (06) with the grain row of the same dinner (05b), then the step-back card (19). | Phone leaves. Note comes in from the right, the grain row from the left with a circle on its grams. Both go up under the rule as the step-back card rises. Underlines on "coach and doctor" and "Nothing here is suggested for now". | whooshes, thuds, ticks |
 | 10 | 103 to 111 | No guesswork. No guilt. Just your next plate, decided. | The app's own plate art (from 04). | Plate rolls in, nods, eases forward. A pen tick on "decided". | thud, bell |
 | 11 | 111 to 120 | Next Plate. Message me for your link. | End card. | Plate rises; the rule becomes the masthead's rule; NEXT PLATE rises letter by letter; the app's tagline; "Message me for your link" written in as spoken, underlined. Holds 3 s. | whoosh, thud, tick |
 

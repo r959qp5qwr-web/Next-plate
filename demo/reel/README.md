@@ -8,7 +8,7 @@ The film is code: `promo/film.js` paints any frame from its time, so it can be c
 | `promo/film.js` | The film. Scenes, type, camera, pen marks, sound list. |
 | `promo/vo.js`, `promo/audio/place.py` | The narration on the beat grid. `place.py` holds the script and which take is used for each line. |
 | `promo/audio/vo/` | The voiced takes (ElevenLabs, voice "Mine"), and their word timings. |
-| `promo/assets/shots/` | Real captures of the v6 Phase 1 screens at 3x. `promo/assets/rects.json`: where each element sits on them. |
+| `promo/assets/shots/` | Captures of the v6 Phase 1 screens at 3x. `promo/assets/rects.json`: where each element sits on them. |
 | `capture.js` | Takes those captures from the page in `hosted/v6/` with the live engine answering. |
 | `promo/docs/shotlist.md`, `promo/docs/critique.md` | The plan and the review rounds. |
 

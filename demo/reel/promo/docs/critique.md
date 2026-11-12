@@ -15,7 +15,7 @@ Scores 1 to 10. A round ends with the three most damaging problems and what was 
 | 6.5  |  8   |   8    |    7    |   9   |  8   | 6.5 |
 
 1. Beats 0 to 2: still nothing to read in the first second. Fix: the question is on the page from frame 0 in a soft tone, and each word takes ink as it is spoken.
-2. Beats 25 to 103: one layout (phone under the rule) for 52 s. Fix: "careful" has no phone; it is two cards cut from the real screens, with the grain row of the same dinner circled.
+2. Beats 25 to 103: one layout (phone under the rule) for 52 s. Fix: "careful" has no phone; it is two cards cut from the app screens, with the grain row of the same dinner circled.
 3. Fast slides showed banding from too few sub-frames. Fix: 18 sub-frames where something travels fast, 6 elsewhere.
 
 ## Round 3

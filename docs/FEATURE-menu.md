@@ -19,7 +19,7 @@ Status: design fixed 2026-11-12 (owner's request). Build order: before the v6 Ph
 | **Trigger** | The person is about to order: restaurant, delivery app, wedding buffet card, office canteen board. On the Rescue tab ("Eating out anyway") the first choice is **Read the menu**: a photo, or the menu typed or pasted. |
 | **Process** | 1. Code builds the same brief the plates use: what this meal should carry today (`planDay`), goal, focus, food pattern, leave-outs, health, what was eaten today, the week's patterns, the hooks. 2. Gemini reads the menu and returns up to 8 dishes **that are on it**, each as that kind of place usually serves it (portion, kcal, protein, carbs, fats, fibre), with one way to order it better and the side from the same menu that completes it. It also names up to 3 dishes to leave today, each with a short reason, and one tip on the order of eating. 3. Code checks every dish (food pattern, leave-outs, no supplements, no health claims, sane numbers), scores each order against this meal's target (`fitOf`) and its after-meal band (`riseOf`), ranks them, and keeps the best three. Gemini does not rank; code does. |
 | **Artefact** | **Your order**: one order to place (dish, its side, how to ask for it), with ≈ kcal and protein, fit out of 100, the after-meal band, and "planned around" tags. Two alternates below it. Then **Leave for another day** (the dishes to skip, with the reason) and the one eating-order tip. |
-| **Outcome** | In the time it takes to open a menu, the person has one order and the reason. "I'll order this" counts it as this meal, so the day line and the next meal follow it, exactly as a rescued or typed meal does. |
+| **Outcome** | In the time it takes to open a menu, the person has one order and the reason. "I'll order this" counts it as this meal, so the day line and the next meal follow it, just as a rescued or typed meal does. |
 
 ## 3. Rules the code enforces (not the model)
 
@@ -52,7 +52,7 @@ Rescue tab, top to bottom:
 
 - Unit checks for `checkMenu`: off-menu dish dropped (typed menu), non-veg dropped for a vegetarian, diabetes order without grain dropped, numbers out of range dropped, ranking by fit, "nothing fits" path, unreadable path, kidney and pregnancy stopped before the model.
 - Mock-engine screenshots of the Rescue tab: entry, reading, result, alternates, leave list, after "I'll order this".
-- Real-engine check (needs the owner's "Deploy." because the live engine reads its code from the pinned commit): at least 8 menus (North Indian, South Indian tiffin, Indo-Chinese, pizza, cafe, wedding buffet card, canteen board, a blurred photo) across vegetarian, diabetes, non-veg and leave-out profiles. Recorded in `eval/v6/`.
+- Live-engine check (needs the owner's "Deploy." because the live engine reads its code from the pinned commit): at least 8 menus (North Indian, South Indian tiffin, Indo-Chinese, pizza, cafe, wedding buffet card, canteen board, a blurred photo) across vegetarian, diabetes, non-veg and leave-out profiles. Recorded in `eval/v6/`.
 
 ## 7. Later, not now
 

@@ -32,7 +32,7 @@ Each beat opens on a paper card in the Raw Linen style (EB Garamond, linen paper
 | 44.7–51.0 | (end card) | As in the 30 s film: the plate settles, NEXT PLATE, "Made for you.", and "Reply 'plate' for your link." on screen only. | Next Plate. Made for you. |
 
 ## Checks against the brief
-- Every voice line matches what the app does: after a heavy earlier meal the next plate is lighter (hook "lighter after earlier meals"; real-engine check heavy-lunch-lighter-dinner); Read the menu takes a photo and returns one order with a portion; "I had something else" counts a typed meal and the day re-plans; Ask returns a plate in grams; the four one-tap changes are the app's own; Builder shows the after-meal band (Gentle, Moderate, Sharp), never a number.
+- Every voice line matches what the app does: after a heavy earlier meal the next plate is lighter (hook "lighter after earlier meals"; live-engine check heavy-lunch-lighter-dinner); Read the menu takes a photo and returns one order with a portion; "I had something else" counts a typed meal and the day re-plans; Ask returns a plate in grams; the four one-tap changes are the app's own; Builder shows the after-meal band (Gentle, Moderate, Sharp), never a number.
 - No personas or invented figures. Grams only. No supplements. No banned words.
 - Brand early: the masthead NEXT PLATE is on screen in the first beat and the name is said at about 3 s. Gate 2 marked B weaker on this; putting the app on screen under the first card fixes it.
 - Sound off: the cards carry the day and the screens carry the answers. Sound on: the voice alone tells it.

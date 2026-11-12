@@ -2136,6 +2136,7 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
   bad_key:"This link needs the code from your coach's message. Open the link they sent you.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it."};
+function RETRY(code){return !code||code==="network"||code==="upstream_error"||code==="timeout";}
 function errText(code){return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal and try again.";}
 function api(path,body,cb){
   body.key=KEYCODE;
@@ -2272,7 +2273,7 @@ function ctxBlock(host){
   function tile(cap,val,unit,frac,nc){var d=el("div","tile2 n-"+nc);d.appendChild(el("p","cap",cap));var v=el("span","v");v.appendChild(val);if(unit)v.appendChild(el("small",null,unit));d.appendChild(v);
     if(frac!=null){var b=el("div","bar"),i=el("i");i.style.width=Math.min(100,Math.round(frac*100))+"%";b.appendChild(i);d.appendChild(b);}return d;}
   tl.appendChild(tile("Protein today",tw("t-p",Math.round(t.protein)),dt?" / "+dt.protein+" g":" g",dt?t.protein/dt.protein:null,"pro"));
-  tl.appendChild(tile("Energy today",tw("t-k",Math.round(t.kcal)),dt?" / "+dt.kcal+" kcal":" kcal",dt?t.kcal/dt.kcal:null,"ink"));
+  tl.appendChild(tile("Energy today",tw("t-k",Math.round(t.kcal)),dt?" / "+dt.kcal+"\u00A0kcal":" kcal",dt?t.kcal/dt.kcal:null,"ink"));
   tl.appendChild(tile("Fibre today",tw("t-f",Math.round(t.fiber)),dt&&dt.fiber?" / "+dt.fiber+" g":" g",dt&&dt.fiber?t.fiber/dt.fiber:null,"veg"));
   host.appendChild(tl);
   var rail=el("div","rail"),sg=suggestAppetite(FILE,C.meal),ap=appetite();
@@ -2294,7 +2295,7 @@ function ctxBlock(host){
   if(UI.open==="cook"){radios(OPT.prep.map(function(o){return {id:"prep-"+o[0],v:o[0],t:o[1]};}),function(v){return C.prep===v;},function(v){C.prep=v;STORE.shown[C.meal]=null;save();render();},function(v){return v==="out"?"store":"pan";});
     radios(OPT.oil.map(function(o){return {id:"oil-"+o[0],v:o[0],t:o[1]};}),function(v){return C.oil===v;},function(v){C.oil=v;changed();},function(v){return v==="min"?"leaf":"flame";});}
   if(UI.open==="appetite"){
-    var sl=el("div","slide"),sh=el("div","slide-h"),sv=el("span","slide-v");sv.appendChild(el("b",null,String(ap)));sv.appendChild(document.createTextNode(" of 10"+(PL?" · about "+PL.target.kcal+" kcal":"")));
+    var sl=el("div","slide"),sh=el("div","slide-h"),sv=el("span","slide-v");sv.appendChild(el("b",null,String(ap)));sv.appendChild(document.createTextNode(" of 10"+(PL?" · about "+PL.target.kcal+"\u00A0kcal":"")));
     add(sh,el("span",null,"A little"),sv,el("span",null,"Very hungry"));
     var r=el("input");r.type="range";r.min="1";r.max="10";r.value=String(ap);r.id="appetite";r.setAttribute("aria-label","Appetite, 1 to 10");r.style.setProperty("--fill",((ap-1)/9*100)+"%");
     r.addEventListener("input",function(){r.style.setProperty("--fill",((+r.value-1)/9*100)+"%");sv.firstChild.textContent=r.value;});
@@ -2318,7 +2319,7 @@ function loggedCard(s){
   c.appendChild(el("p","cap",nm+" · "+kind));
   if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));c.appendChild(el("p","tsub","The rest of the day adjusts. No meal is asked to make up for it in one sitting."));
     if(PL&&PL.day.meds)c.appendChild(el("p","tsub","On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice."));}
-  else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈ "+Math.round(s.kcal)+" kcal · "+(s.kind==="ordered"?"≈ ":"")+Math.round(s.protein)+" g protein"));c.appendChild(p);}
+  else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈\u00A0"+Math.round(s.kcal)+"\u00A0kcal · "+(s.kind==="ordered"?"≈\u00A0":"")+Math.round(s.protein)+"\u00A0g protein"));c.appendChild(p);}
   var row=el("div","pick-acts"),ch=btn("btn","Change",null,"slot-change");ch.addEventListener("click",function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");});row.appendChild(ch);
   var nx=nextOpen();if(nx){var go=btn("btn primary","Plan "+mealName(nx).toLowerCase(),"chev","slot-next");go.addEventListener("click",function(){C.meal=nx;UI.sel=0;UI.alc={};UI.fresh=true;render();$("scroll").scrollTop=0;});row.appendChild(go);}
   c.appendChild(row);return c;
@@ -2330,7 +2331,7 @@ function heroCard(m,v,r){
   top.appendChild(chip(lab("diet",P.diet),"fit","check"));
   P.leave.forEach(function(k){top.appendChild(chip("No "+lab("leave",k).toLowerCase(),"fit","check"));});
   if(fit!=null)top.appendChild(chip("Fit "+fit+" / 100","fit","target"));
-  top.appendChild(chip(v.minutes>0?v.minutes+" min":(C.prep==="out"?"Order it":"Ready"),"time","clock"));
+  top.appendChild(chip(v.minutes>0?v.minutes+"\u00A0min":(C.prep==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
   var pb=el("div","platebox");pb.appendChild(thali(v.items,0,"Your "+mealName(C.meal).toLowerCase()+" plate: "+v.items.map(function(i){return i.food;}).join(", "),C.meal));main.appendChild(pb);
   h.appendChild(sprig("hero-sprig"));var band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);
@@ -2364,7 +2365,7 @@ function heroCard(m,v,r){
   sv.appendChild(sh2);
   if(UI.adj&&hasSw){var d=el("div","drawer");
     [["protein","Main protein","swp"],["base","Base","swb"]].forEach(function(x){var list=m.swaps[x[0]];if(list.length<2)return;var g=el("div");g.appendChild(el("p","cap",x[1]));var w=el("div","lows");
-      list.forEach(function(s,i){var lbl=s.food+(i&&s.deltaProtein?" ("+(s.deltaProtein>0?"+":"")+s.deltaProtein+" g protein)":"");var b=btn("choice",lbl,null,x[2]+"-"+i);b.setAttribute("role","radio");b.setAttribute("aria-checked",UI[x[2]]===i?"true":"false");
+      list.forEach(function(s,i){var lbl=s.food+(i&&s.deltaProtein?" ("+(s.deltaProtein>0?"+":"")+s.deltaProtein+"\u00A0g protein)":"");var b=btn("choice",lbl,null,x[2]+"-"+i);b.setAttribute("role","radio");b.setAttribute("aria-checked",UI[x[2]]===i?"true":"false");
         b.addEventListener("click",function(){UI[x[2]]=i;if(i)logEv("swapped",{from:list[0].food,to:s.food});render();});w.appendChild(b);});g.appendChild(w);d.appendChild(g);});
     sv.appendChild(d);}
   var ul=el("ul","measures");
@@ -2412,7 +2413,7 @@ function renderPlate(){
     else{
       var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));
       add(c,i,el("h2",null,UI.err?UI.err:"Your day has moved on. Plan fresh plates?"));
-      var b=btn("btn primary",UI.err?"Try again":"Plan my plates","spark","remake");b.addEventListener("click",function(){makePlates("");});c.appendChild(b);
+      var b=btn(UI.err?"btn":"btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates("");});c.appendChild(b);
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
   }else if(r.status==="refer"){
@@ -2429,7 +2430,7 @@ function renderPlate(){
       wt.appendChild(el("p","lead",m.forYou));add(wc,wi,wt);v.appendChild(wc);}
     if(r.meals.length>1){var hh=el("div","sec-h");hh.appendChild(el("h3",null,"Also for "+mealName(C.meal).toLowerCase()));v.appendChild(hh);
       var wrap=el("div","alts");r.meals.forEach(function(x,i){if(i===UI.sel)return;var b=el("button","alt");b.type="button";b.id="alt-"+i;
-        var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈ "+x.protein+" g protein · "+x.kcal+" kcal"+(x.minutes?" · "+x.minutes+" min":"")));
+        var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈\u00A0"+x.protein+"\u00A0g protein · "+x.kcal+"\u00A0kcal"+(x.minutes?" · "+x.minutes+"\u00A0min":"")));
         add(b,thali(x.items,56,"Plate"),tx,ic("chev"));b.addEventListener("click",function(){logEv("chosen",{title:x.title});UI.sel=i;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
       v.appendChild(wrap);}
   }
@@ -2460,7 +2461,7 @@ function renderBuild(){
   v.appendChild(pr);
   var R=UI.ratio,c=el("article","card bigplate"),sh={veg:R.greens/100,pro:R.protein/100,grain:R.carbs/100,side:R.fats/100};
   var rg=ring(sh,"Plate ratio: protein "+R.protein+"%, vegetables "+R.greens+"%, carbs "+R.carbs+"%, fats "+R.fats+"%","build");
-  var t=PL?PL.target:null,mid=el("div","ringmid");if(t){mid.appendChild(el("b",null,String(t.kcal)));mid.appendChild(el("small",null,"kcal · "+t.protein+" g protein"));}else mid.appendChild(el("small",null,"by plate"));
+  var t=PL?PL.target:null,mid=el("div","ringmid");if(t){mid.appendChild(el("b",null,String(t.kcal)));mid.appendChild(el("small",null,"kcal · "+t.protein+"\u00A0g protein"));}else mid.appendChild(el("small",null,"by plate"));
   var rw=el("div","ringwrap");add(rw,rg,mid);
   var stp=el("div","steppers");
   [["protein","Protein","pro"],["greens","Vegetables and greens","veg"],["carbs","Slow carbs","grain"],["fats","Fats and seeds","side"]].forEach(function(x){
@@ -2470,7 +2471,7 @@ function renderBuild(){
     mn.addEventListener("click",function(){UI.ratio=rebalance(UI.ratio,x[0],-5);UI.preset="";render();});pl.addEventListener("click",function(){UI.ratio=rebalance(UI.ratio,x[0],5);UI.preset="";render();});
     add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
   add(c,rw,stp);v.appendChild(c);
-  if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+" kcal and "+t.protein+" g protein. Gemini fills in the grams."));
+  if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
   mk.addEventListener("click",function(){C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
   v.appendChild(mk);
@@ -2508,7 +2509,7 @@ function rescue(text,image){
     if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};(j.hacks||[]).slice(0,1).forEach(function(h,i){UI.rmoves[i]=true;});}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read};}
     else if(s===200)UI.rerr="That didn't come back as a dish that fits your food rules. Try naming it differently.";
-    else{UI.rerr=errText(j.code);UI.rlast=text||"";}
+    else{UI.rerr=errText(j.code);UI.rlast=RETRY(j.code)?text||"":"";}
     render();});
 }
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
@@ -2519,7 +2520,7 @@ function readMenu(text,image){
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
-    else{UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"I could not read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
+    else{UI.mretry=s!==200&&RETRY(j.code);UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"I could not read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();});
 }
 function orderView(v,r){
@@ -2551,12 +2552,12 @@ function orderView(v,r){
   if(r.moves.length){var mh=el("div","sec-h");mh.appendChild(el("h3",null,"The two moves that help most"));v.appendChild(mh);
     var mv=el("div","moves");r.moves.forEach(function(m,k){var b=el("button","move");b.type="button";b.id="order-move-"+k;setPressed(b,!!UI.mmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
       var tx=el("span"),sc=m.kind==="portion"?scaleN(o.n,m.scale):null;tx.appendChild(document.createTextNode(m.title));
-      tx.appendChild(el("small",null,sc?"≈ "+sc.kcal+" kcal · ≈ "+sc.protein+" g protein":"softens the rise"));add(b,ii,tx);
+      tx.appendChild(el("small",null,sc?"≈\u00A0"+sc.kcal+"\u00A0kcal · ≈\u00A0"+sc.protein+"\u00A0g protein":"softens the rise"));add(b,ii,tx);
       b.addEventListener("click",function(){UI.mmoves[k]=!UI.mmoves[k];render();});mv.appendChild(b);});
     v.appendChild(mv);}
   if(r.orders.length>1){var ah=el("div","sec-h");ah.appendChild(el("h3",null,"Also on this menu"));v.appendChild(ah);
     var wrap=el("div","alts");r.orders.forEach(function(x,i){if(i===UI.msel)return;var b=el("button","alt menu");b.type="button";b.id="order-alt-"+i;
-      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+" · ":"")+"≈ "+x.n.kcal+" kcal · ≈ "+x.n.protein+" g protein"+(x.fit!=null?" · fit "+x.fit:"")));
+      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+" · ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal · ≈\u00A0"+x.n.protein+"\u00A0g protein"+(x.fit!=null?" · fit "+x.fit:"")));
       add(b,tx,ic("chev"));b.addEventListener("click",function(){logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(r.leave.length){var lh=el("div","sec-h");lh.appendChild(el("h3",null,"Leave for another day"));v.appendChild(lh);
@@ -2596,11 +2597,11 @@ function renderRescue(){
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rlast){var tb=btn("btn","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rlast;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
-    if(k===0&&UI.mlast&&(UI.mlast.t||UI.mlast.i)&&!/read that menu|passed the checks/.test(t)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
+    if(k===0&&UI.mlast&&UI.mretry&&(UI.mlast.t||UI.mlast.i)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
     n.appendChild(tx);v.appendChild(n);});
   if(UI.mres){orderView(v,UI.mres);return;}
   var r=UI.rres;
-  if(!r){v.appendChild(el("p","fine","Before you order, read the menu: you get one order for your "+mn+", and the reason. Already chosen? Name the dish and see the two or three moves that make it fit your day"+(PL&&FILE.today.kcal>0?": "+PL.left.kcal+" kcal and "+PL.left.protein+" g protein are left today.":".")));return;}
+  if(!r){v.appendChild(el("p","fine","Before you order, read the menu: you get one order for your "+mn+", and the reason. Already chosen? Name the dish and see the two or three moves that make it fit your day"+(PL&&FILE.today.kcal>0?": "+PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today.":".")));return;}
   if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s,el("h2",null,r.read||SAFETY));v.appendChild(e);return;}
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
@@ -2619,7 +2620,7 @@ function renderRescue(){
   inst.appendChild(sumr);v.appendChild(inst);
   var mh=el("div","sec-h");mh.appendChild(el("h3",null,"Moves that make it fit"));v.appendChild(mh);
   var mv=el("div","moves");r.hacks.forEach(function(h,k){var b=el("button","move");b.type="button";b.id="move-"+k;setPressed(b,!!UI.rmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
-    var tx=el("span");tx.appendChild(document.createTextNode(h.title));var bits=[];if(h.deltaKcal)bits.push((h.deltaKcal>0?"+":"")+h.deltaKcal+" kcal");if(h.deltaProtein)bits.push((h.deltaProtein>0?"+":"")+h.deltaProtein+" g protein");if(h.kind==="sequence"||h.kind==="move")bits.push("softens the rise");
+    var tx=el("span");tx.appendChild(document.createTextNode(h.title));var bits=[];if(h.deltaKcal)bits.push((h.deltaKcal>0?"+":"")+h.deltaKcal+"\u00A0kcal");if(h.deltaProtein)bits.push((h.deltaProtein>0?"+":"")+h.deltaProtein+"\u00A0g protein");if(h.kind==="sequence"||h.kind==="move")bits.push("softens the rise");
     if(bits.length)tx.appendChild(el("small",null,bits.join(" · ")));add(b,ii,tx);b.addEventListener("click",function(){UI.rmoves[k]=!UI.rmoves[k];render();});mv.appendChild(b);});
   v.appendChild(mv);
   var had=btn("btn primary","I had this, for "+mealName(C.meal).toLowerCase(),"check","rescue-had");
@@ -2640,7 +2641,7 @@ function logOther(text,image){
   if(UI.lbusy)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
   api("/api/log",body,function(s,j){UI.lbusy=false;
-    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200)UI.lerr="That didn't read as a meal. Say it the way you'd tell a friend: “2 aloo paratha with curd”.";else UI.lerr=errText(j.code);
+    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Say it the way you'd tell a friend: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code);}
     if(UI.sheet==="log")renderSheet();});
 }
 function renderSheet(){
@@ -2658,13 +2659,13 @@ function renderSheet(){
       f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)logOther(t,null);});add(f,i,go);c.appendChild(f);
       if(UI.lbusy)c.appendChild(el("p","ans-read wait","Working out what that adds up to"));
       if(UI.lerr){var n=el("div","note"),nt=el("div");n.appendChild(ic("info"));nt.appendChild(el("p",null,UI.lerr));
-        if(UI.ltext&&!/didn't read as a meal/.test(UI.lerr)){var lb=btn("btn","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
+        if(UI.ltext&&UI.lretry){var lb=btn("btn","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
         n.appendChild(nt);c.appendChild(n);}
       c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
       sh.appendChild(c);setTimeout(function(){var x=$("login");if(x&&!UI.lbusy)x.focus();},60);return;}
     var r=UI.lres;c.appendChild(el("h3","dish",r.title));
     var ul2=el("ul","measures");r.items.forEach(function(it){var li=el("li"),qy=el("span","qty g");qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));var fd=el("span","food");fd.appendChild(el("b",null,it.food));add(li,qy,fd);ul2.appendChild(li);});c.appendChild(ul2);
-    c.appendChild(el("p","tsub","≈ "+r.kcal+" kcal · "+r.protein+" g protein · "+r.carbs+" g carbs · "+r.fats+" g fats · "+r.fiber+" g fibre (an estimate)"));
+    c.appendChild(el("p","tsub","≈\u00A0"+r.kcal+"\u00A0kcal · "+r.protein+"\u00A0g protein · "+r.carbs+"\u00A0g carbs · "+r.fats+"\u00A0g fats · "+r.fiber+"\u00A0g fibre (an estimate)"));
     if(r.assumed)c.appendChild(el("p","fine","Assumed: "+r.assumed));
     var row=el("div","pick-acts"),fix=btn("btn","Not quite",null,"log-fix");fix.addEventListener("click",function(){UI.lres=null;renderSheet();});
     var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. The rest of the day follows it.");});

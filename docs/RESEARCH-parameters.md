@@ -52,7 +52,7 @@
 
 ## 4. Your decisions (each has a working default; change any)
 
-1. **The 1200 kcal floor for women.** It is the standard clinical lower end, and many of your clients will sit exactly on it (see the first example). If you want gentler, say a number (for example 1300) and the 500 kcal step softens for smaller women.
+1. **The 1200 kcal floor for women.** It is the standard clinical lower end, and many of your clients will sit right on it (see the first example). If you want gentler, say a number (for example 1300) and the 500 kcal step softens for smaller women.
 2. **Obesity line at 27.5 or 25.** I used 27.5 (ICMR-NIN 2024), so fewer people get the larger 500 kcal cut. Misra 2009 and AIIMS-DST use 25.
 3. **Activity factor 1.3 for sitting.** It follows India's standard more closely than 1.2 and raises every sedentary target by about 8 %.
 4. **Protein counted on the weight at BMI 25.** This is my convention; no guideline settles it.
@@ -62,7 +62,7 @@
 
 - Targets are personal and explained on screen. The same goal gives different numbers, or no deficit at all, depending on the person.
 - One new question for people with diabetes (insulin or sulfonylurea tablets: yes / no / not sure).
-- The honest limit: any formula can be 10 % or more off for one person. The real fix is planned for Phase 4: **the app corrects the target from the person's own weight trend.**
+- The honest limit: any formula can be 10 % or more off for one person. The fix is planned for Phase 4: **the app corrects the target from the person's own weight trend.**
 
 ## 6. What could not be verified (stated plainly)
 

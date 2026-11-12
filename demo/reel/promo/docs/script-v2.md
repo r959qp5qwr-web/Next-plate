@@ -1,5 +1,8 @@
 # Narration, second version: said the way a coach says it
 
+> Record of a rejected script (promo v1, narration v2). Lines are quoted as written then; the owner rejected this narration.
+
+
 Owner's note on the first version (2026-11-12): "the video language sounds too much like an AI."
 
 ## What made the first version sound written by a machine
@@ -28,6 +31,6 @@ Owner's note on the first version (2026-11-12): "the video language sounds too m
 
 ## Before this is cut into the film
 
-- Line 6 names the menu reader (`docs/FEATURE-menu.md`). The film shows real screens only, so that line needs the menu reader live first.
+- Line 6 names the menu reader (`docs/FEATURE-menu.md`). The film shows app screens only, so that line needs the menu reader live first.
 - The words are spoken in the owner's voice to the owner's clients: the owner edits or approves them before the film is re-cut.
 - Each line is true of the app as built: 3 and 4 (day line, one plate, grams, "planned around"), 5 (typed meal, counted, day follows), 7 (repeat pattern over the last 7 days), 8 ("How these numbers are worked out"), 9 (diabetes note; kidney condition and pregnancy step back).

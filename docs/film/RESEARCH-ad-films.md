@@ -2,7 +2,7 @@
 
 | Source | What it says | What we take |
 |---|---|---|
-| Bill Bernbach (DDB) | State the product's essence simply, in terms of its basic advantage; single-minded, not simple-minded; make the product an actor, not a prop. | One proposition; the app is the actor. |
+| Bill Bernbach (DDB) | State the product's essence plainly, in terms of its basic advantage; single-minded, not simple-minded; make the product an actor, not a prop. | One proposition; the app is the actor. |
 | David Ogilvy | Without a big idea an ad fades; when the product can be the hero, show it with utter simplicity; positioning = what it does and who it is for. | Show the app doing the job. |
 | Piyush Pandey (Ogilvy India) | Start from a human truth; the language people actually speak; simplify without being simplistic; humour engages. | An Indian household truth, plain Hinglish-friendly English. |
 | Seth Godin, Purple Cow | Very good is invisible; be remarkable; design for the people who spread ideas (sneezers); playing safe is the risk. | Lead with something people would forward. |

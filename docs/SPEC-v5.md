@@ -7,7 +7,7 @@
 
 Line numbers below refer to those files. This spec replaces handoff sections 1, 6 and 9 wherever they disagree.
 
-**What the Gemini files are, read in full:** working mock-ups. Their meals are hard-coded ([P] 57–240, [S] 128–315), and their "AI" replies are canned text returned on a timer ([P] 388–427, [S] handleCustomPromptSubmit). So they define the **features, screens and data shape**. v5 makes all of that real: **Gemini generates every meal, in exactly the shape the mock-ups use.**
+**What the Gemini files are, read in full:** working mock-ups. Their meals are hard-coded ([P] 57–240, [S] 128–315), and their "AI" replies are canned text returned on a timer ([P] 388–427, [S] handleCustomPromptSubmit). So they define the **features, screens and data shape**. v5 makes all of that the fix: **Gemini generates every meal, in the same shape the mock-ups use.**
 
 ---
 

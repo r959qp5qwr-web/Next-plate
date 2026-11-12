@@ -1,5 +1,8 @@
 # Promo v2: narration (owner's voice "Mine", ElevenLabs eleven_v4, take A)
 
+> Record of a rejected script (promo v2). Lines are quoted as written then; the owner rejected this narration ("sounds too much like an AI").
+
+
 One continuous take, cut into seven groups; each group starts on a bar of the music (audio/place.py).
 "chole bhature" is voiced from the spelling "chho-lay bha-too-ray".
 

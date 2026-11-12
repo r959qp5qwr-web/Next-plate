@@ -15,5 +15,5 @@ Long (80 s), slogans in the voice, the highlights not evident, one paper-coloure
 | hook | read | motion | variety | brand | sync |
 |  8   |  8   |   8    |    9    |   9   |  8   |
 1. Week card covered the rajma cross. Fix: card lowered 110 px.
-2. (kept) Lower third is quiet on the feature scenes: it is the 9:16 safe zone where Reels and Status put captions and buttons.
-3. (kept) Scene 2 shows the Read the menu result from the mock engine (layout sample). It is the real app screen, but the dish data is test data; re-capture on the real engine after "Deploy." and swap one file.
+2. (kept) Lower third is kept clear on the feature scenes: it is the 9:16 safe zone where Reels and Status put captions and buttons.
+3. (kept) Scene 2 shows the Read the menu result from the mock engine (layout sample). It is the app's own screen, but the dish data is test data; re-capture on the live engine after "Deploy." and swap one file.
