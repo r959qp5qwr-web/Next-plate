@@ -1,3 +1,6 @@
 node_modules/
 .DS_Store
 *.log
+demo/reel/promo2/audio/*.wav
+demo/reel/promo2/audio/**/*.wav
+demo/reel/out/
