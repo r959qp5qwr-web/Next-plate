@@ -15,11 +15,11 @@
 | Language | English |
 | Length, visuals, pace | About 30 s; app only; calm |
 | Line style | Plain statement |
-| Ending | Name only |
+| Ending | Name only; later extended by the owner to the brand line "Next Plate. Made for you." |
 
 ## Approved script
 1. Next Plate plans your meals for your goal and your health.
 2. Tell it your age, height, weight and goal. It works out what you need each day, and shows you how.
 3. Then, at every meal, it gives you one plate. What to eat, and how much, in grams.
 4. Losing weight, low on iron, or managing diabetes, each plate is planned around it.
-5. Next Plate.
+5. Next Plate. Made for you. (the close line chosen by the owner after the option rounds; spoken and shown)
