@@ -5,7 +5,7 @@
 2. **Insight:** they already know what healthy food looks like. What wears them down is the decision itself, three times a day, after a day that never goes to plan. "Aaj kya khaun?" is asked in every Indian home, every day.
 3. **Category convention (avoid):** calorie counting, logging every bite, before/after bodies, scales, celebrities, salad shots, guilt.
 4. **Single-minded proposition:** *Next Plate tells you what to eat next.*
-5. **Reasons to believe (all shown on real screens):** one plate, every item in grams, with the reason it suits today · type what you actually ate and it plans the rest of the day around it · show it a menu and it picks your order · with diabetes the grain stays, in grams.
+5. **Reasons to believe (each shown in the app):** one plate, every item in grams, with the reason it suits today · type what you actually ate and it plans the rest of the day around it · show it a menu and it picks your order · with diabetes the grain stays, in grams.
 6. **Purple cow:** a diet app that does not ask you to count anything; it does the deciding. The number in concept A gives people something to repeat ("you've asked that 50,000 times").
 7. **Desired response:** message the coach for the link.
 8. **Mandatories and bans:** grams and kcal only; no supplements; no blood-sugar numbers; Raw Linen look; banned word list (skill, Gate 3); the owner's voice, storyteller tone, natural pace.
@@ -13,7 +13,7 @@
 ## Gate 2. Concepts
 
 ### A. "Fifty thousand times" (recommended)
-The question everyone asks, counted. Opens on one line, *What should I eat?*, and a counter running to 49,275 (3 meals a day x 365 days x 45 years, from age 5 to 50). "Most days, you guessed." Then the product answers it, four times, on real screens. Ends on the name and the ask.
+The question everyone asks, counted. Opens on one line, *What should I eat?*, and a counter running to 49,275 (3 meals a day x 365 days x 45 years, from age 5 to 50). "Most days, you guessed." Then the product answers it, four times, in the app. Ends on the name and the ask.
 - First 3 s: the question, large, and the counter starting.
 - Why it works: a household truth (Pandey), one proposition (Bernbach), the product as hero (Ogilvy), a number people repeat (Godin), relief as the feeling (Binet and Field).
 

@@ -23,7 +23,7 @@ Write three different concepts on one page each: a title, the idea in two senten
 
 ## Gate 3. Script and storyboard
 - Write the narration as spoken words, then read it aloud. Cut every word that does not carry information.
-- **Banned words** (they sound machine-written and say nothing): real, quietly, simply, seamlessly, effortlessly, exactly, just works, journey, unlock, empower, smart, magic, game-changer, revolutionary, transform, curated, tailored, personalised, holistic, wellness journey. No three-beat taglines. No slogans in the owner's voice.
+- **Banned words** in the script AND in every note, brief or reply to the owner (they sound machine-written and say nothing): real, quiet, quietly, simply, seamlessly, effortlessly, exactly, just works, journey, unlock, empower, smart, magic, game-changer, revolutionary, transform, curated, tailored, personalised, holistic, wellness journey. No three-beat taglines. No slogans in the owner's voice.
 - Order follows the proposition: the core use first, the remarkable feature where it does most work, safety where trust is needed, the call to action last.
 - Storyboard every shot on one line: time, picture, words on screen, voice.
 
@@ -32,7 +32,7 @@ Write three different concepts on one page each: a title, the idea in two senten
 - **Branding:** the product name or the product on screen within the first 5 seconds, and again at the end.
 - **Connection:** the viewer should feel something (relief, recognition, a laugh). Emotional campaigns outperform rational ones over time (Binet and Field, IPA).
 - **Direction:** one clear call to action, written and spoken.
-- **Demonstration:** the product is the hero (Ogilvy). Show the real product doing the thing. No invented screens.
+- **Demonstration:** the product is the hero (Ogilvy). Show the app doing the thing, using its own screens. Nothing invented.
 - **Sound-off test:** the story reads with the sound off. **Sound-on test:** the voice alone tells it.
 
 ## Checklist to score a concept or a cut (1 to 5 each; ship only at 4+ on all)

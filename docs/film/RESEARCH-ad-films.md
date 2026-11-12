@@ -3,13 +3,13 @@
 | Source | What it says | What we take |
 |---|---|---|
 | Bill Bernbach (DDB) | State the product's essence simply, in terms of its basic advantage; single-minded, not simple-minded; make the product an actor, not a prop. | One proposition; the app is the actor. |
-| David Ogilvy | Without a big idea an ad fades; when the product can be the hero, show it with utter simplicity; positioning = what it does and who it is for. | Demonstration of the real product. |
+| David Ogilvy | Without a big idea an ad fades; when the product can be the hero, show it with utter simplicity; positioning = what it does and who it is for. | Show the app doing the job. |
 | Piyush Pandey (Ogilvy India) | Start from a human truth; the language people actually speak; simplify without being simplistic; humour engages. | An Indian household truth, plain Hinglish-friendly English. |
 | Seth Godin, Purple Cow | Very good is invisible; be remarkable; design for the people who spread ideas (sneezers); playing safe is the risk. | Lead with something people would forward. |
 | Google with Ipsos, Kantar, Nielsen: ABCD | Attention (hook fast, high contrast, supers), Branding (early and repeated), Connection (feel something), Direction (tell them what to do). Kantar: up to 30% short-term sales lift, 17% long-term brand contribution (Google-reported). | Production checklist. |
 | Binet and Field, IPA "The Long and the Short of It" | Emotional campaigns about twice as efficient as rational over the long term; rational works near purchase. | One feeling (relief) carries the facts. |
 | Apple | Show, don't tell; minimal copy; the product in use by people like you. | Calm demonstration; few words. |
-| Dollar Shave Club launch film | Founder's own voice; jokes built on real customer pain; addresses the obvious objection; shareable. | The coach's voice; name the pain. |
+| Dollar Shave Club launch film | Founder's own voice; jokes built on customers' actual pain; addresses the obvious objection; shareable. | The coach's voice; name the pain. |
 | CRED, "Indiranagar ka gunda" | One unexpected inversion, a meme-able line, released on social first. | One remarkable moment. |
 | Noom, HealthifyMe | Category talks weight loss, transformation, celebrities, psychology, user stories. | Our convention to avoid: before/after, calorie counting, guilt. |
 
