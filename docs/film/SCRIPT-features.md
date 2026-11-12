@@ -17,7 +17,7 @@ Each beat opens on a paper card in the Raw Linen style (EB Garamond, linen paper
 5. One tap changes the plate: more protein, gentler on sugar, ready in ten minutes, or easy on the gut.
 6. Want more vegetables? Set your own plate in Builder, and see if the rise after the meal is gentle or sharp.
 7. Whatever your day does, Next Plate plans the next plate around it.
-8. Reply "plate", and I'll send you your link.
+8. Next Plate. Made for you. (the brand line, the 30 s film's own read; "Reply plate for your link." is on screen only — owner, 2026-11-12: "next plate made for you has to be consistent. That's our brand slogan.")
 
 ## Storyboard
 | Time | Card | The app's answer (its own screen, live engine) | Voice |

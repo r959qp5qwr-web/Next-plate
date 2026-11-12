@@ -31,7 +31,7 @@ function lineMixed(ctx, raw, x, y, size, alpha) {
 }
 // the phone: on screen from the first frame. camera keys [time, k, focus x, focus y (CSS), canvas x, canvas y]
 const REST = [2.05, 195, 422, 540, 1330];
-const CAM = [[0, 2.12, 195, 422, 540, 1300], [3.0, ...REST], [51.4, ...REST], [52.6, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100]];
+const CAM = [[0, 2.12, 195, 422, 540, 1300], [3.0, ...REST], [44.1, ...REST], [45.3, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100]];
 function camera(t) {
   let i = 0; while (i + 1 < CAM.length && t >= CAM[i + 1][0]) i++;
   const a = CAM[i], b = CAM[Math.min(i + 1, CAM.length - 1)], p = b === a ? 0 : ease(prog(t, a[0], b[0]));
@@ -39,8 +39,11 @@ function camera(t) {
 }
 
 // the day, beat by beat. [start, card text ('*' marks the clay italic part)]
-const BEATS = [[0.0, 'Heavy *lunch.*'], [6.5, 'Lunch *out.*'], [15.0, 'Had something *else.*'], [22.0, 'Craving *at six.*'], [29.5, 'Make it *gentler.*'], [37.0, 'More *vegetables.*'], [46.0, 'Whatever your *day does.*']];
-const END = 52.0;
+// first cut's beat starts -> tightened beat starts (each beat = 0.6 s card lead + its line + 0.7 s); every time inside a beat is mapped across
+const OLD = [0, 6.5, 15, 22, 29.5, 37, 46, 52], NEW = [0, 5.98, 12.43, 18.13, 24.48, 32.3, 39.71, 44.69];
+function T(x) { let i = 0; while (i + 2 < OLD.length && x >= OLD[i + 1]) i++; return NEW[i] + (x - OLD[i]) * (NEW[i + 1] - NEW[i]) / (OLD[i + 1] - OLD[i]); }
+const BEATS = [[0.0, 'Heavy *lunch.*'], [6.5, 'Lunch *out.*'], [15.0, 'Had something *else.*'], [22.0, 'Craving *at six.*'], [29.5, 'Make it *gentler.*'], [37.0, 'More *vegetables.*'], [46.0, 'Whatever your *day does.*']].map(([a, x]) => [T(a), x]);
+const END = NEW[NEW.length - 1];
 // the card: comes up over the dimmed phone as each beat opens, then settles to the top as the beat's label
 function cards(ctx, t) {
   BEATS.forEach(([a, raw], i) => {
@@ -60,8 +63,8 @@ function cards(ctx, t) {
 }
 // what the phone shows. [time, shot, cross-fade seconds]
 const SCREENS = [[0, 's03', 0], [6.5, 'm1', 0.4], [10.2, 'm3', 0.45], [15.0, 'd1', 0.4], [17.2, 'd2', 0.4], [19.4, 'd3', 0.4], [22.0, 'k1', 0.4], [24.2, 'k2', 0.5],
-  [29.5, 'k4', 0.4], [32.6, 'k5', 0.3], [37.0, 'v1', 0.4], [39.0, 'v2', 0.3], [42.0, 'v3', 0.45], [46.0, 't1', 0.45]];
-const TAPS = [[16.9, 340, 745], [32.45, 278, 427], [38.4, 342, 515], [38.8, 342, 515]];
+  [29.5, 'k4', 0.4], [32.6, 'k5', 0.3], [37.0, 'v1', 0.4], [39.0, 'v2', 0.3], [42.0, 'v3', 0.45], [46.0, 't1', 0.45]].map(([a, k, f]) => [T(a), k, f]);
+const TAPS = [[16.9, 340, 745], [32.45, 278, 427], [38.4, 342, 515], [38.8, 342, 515]].map(([a, x, y]) => [T(a), x, y]);
 function phone(ctx, t, IMG) {
   const c = camera(t), k = c.k, X = (x) => c.cx + (x - c.fx) * k, Y = (y) => c.cy + (y - c.fy) * k;
   const x0 = X(0), y0 = Y(0), w = 390 * k, h = 844 * k, bz = 9 * k, R = 46 * k;
@@ -92,7 +95,7 @@ const LIFTS = [
   ['v2', [16, 258, 358, 401], 39.4, 41.7, 900, 1160],
   ['v3', [16, 353, 358, 340], 42.5, 45.6, 940, 1150],
   ['t1', [16, 384, 358, 52], 47.0, 51.2, 1000, 1080],
-];
+].map(([k, r, a, b, w, y]) => [k, r, T(a), Math.min(T(b), END - 0.5), w, y]);
 function lifts(ctx, t, IMG) {
   const c = camera(t), k = c.k; let veil = 0; const up = [];
   for (const [shot, r, a, b, tw, cy, from] of LIFTS) {
@@ -110,11 +113,11 @@ function lifts(ctx, t, IMG) {
 }
 
 
-// the close: the app's own plate settles, the name comes up under it, then the reply line as it is said
+// the close, as in the 30 s film: the plate settles, the name comes up as it is said, then 'Made for you.'; the reply line sits under it, on screen only
 const PLATE = { cx: 210, cy: 278, r: 119 };       // the plate illustration on the k2 capture, CSS px (same layout as the 30 s film's)
 function close(ctx, t, IMG) {
-  const tn = END + 0.5, tm = 53.6; if (t < tn - 1.6) return;
-  const drift = 1 + 0.025 * ease(prog(t, tn, 60));
+  const tn = END + 1.0, tm = END + 2.42; if (t < tn - 1.6) return;
+  const drift = 1 + 0.025 * ease(prog(t, tn, END + 6.3));
   ctx.save(); ctx.translate(W / 2, 1000); ctx.scale(drift, drift); ctx.translate(-W / 2, -1000);
   const p = ease(prog(t, tn - 0.6, tn + 0.6)), R = 250 * lerp(0.86, 1, p), cy = lerp(740, 690, p), rot = lerp(-0.35, 0, p);
   if (p > 0) {
@@ -130,13 +133,14 @@ function close(ctx, t, IMG) {
   [...title].forEach((ch, i) => { const k = out(prog(t, tn - 0.15 + i * 0.045, tn + 0.55 + i * 0.045)); if (k > 0) { ctx.globalAlpha = k; ctx.fillText(ch, x, 1110 + (1 - k) * 22); } x += ws[i] + track; });
   ctx.globalAlpha = 1;
   const r = out(prog(t, tn + 0.45, tn + 1.4)); ctx.fillRect(W / 2 - 450 * r, 1156, 900 * r, 3); ctx.fillRect(W / 2 - 450 * r, 1167, 900 * r, 1.2);
-  const m = out(prog(t, tm - 0.15, tm + 0.8)); lineMixed(ctx, 'Reply *plate* for your link.', W / 2, 1290 + (1 - m) * 14, 84, m);
+  const m = out(prog(t, tm - 0.15, tm + 0.8)); lineMixed(ctx, '*Made for you.*', W / 2, 1290 + (1 - m) * 14, 96, m);
+  const c = out(prog(t, tm + 1.3, tm + 2.1)); ctx.save(); ctx.globalAlpha = c; ctx.font = fD(52); ctx.fillStyle = '#6A6052'; ctx.textAlign = 'center'; ctx.fillText('Reply \u201Cplate\u201D for your link.', W / 2, 1450 + (1 - c) * 10); ctx.restore();
   ctx.restore();
 }
 
 // sound: a soft tap on each tap, a small chime as each card and each detail arrives, a low bell as the plate lands
 const HITS = [...TAPS.map(([tt]) => [tt, 'tap', 'tick', { gain: 0.11 }]), ...BEATS.map(([a]) => [a + 0.1, 'card', 'bell', { pitch: 'E5', gain: 0.04, len: 1.0 }]),
-  ...LIFTS.map(([, , a]) => [a + 0.15, 'detail arrives', 'bell', { pitch: 'A5', gain: 0.04, len: 1.0 }]), [END + 0.95, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
+  ...LIFTS.map(([, , a]) => [a + 0.15, 'detail arrives', 'bell', { pitch: 'A5', gain: 0.04, len: 1.0 }]), [END + 1.45, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
 
 const shots = { s03: '03-today-directive', m1: 'M1-rescue-entry', m3: 'M3-order', d1: 'D1-log-ask', d2: 'D2-log-estimate', d3: 'D3-day-updated', k1: 'K1-ask', k2: 'K2-plate',
   k4: 'K4-taps', k5: 'K5-gentler', v1: 'V1-builder', v2: 'V2-more-veg', v3: 'V3-curve', t1: 'T1-day-done' };
