@@ -38,4 +38,4 @@ Every picture is the app's own screen, captured with the live engine answering. 
 - Gemini credits topped up, for the live-engine captures.
 - New voice takes from the owner's ElevenLabs voice "Mine" (same style prompt as the 30 s film), transcribed so the cuts land on words.
 - A longer cut of score B (the 30 s film's piano), or a new take in the same family, for 60 s.
-- A photo of a plain printed menu (no real restaurant's name or branding) to feed Read the menu.
+- A photo of a plain printed menu (no restaurant's name or branding) to feed Read the menu.
