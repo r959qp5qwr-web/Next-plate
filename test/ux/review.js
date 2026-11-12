@@ -46,6 +46,10 @@ const STATES = [
   ['plate-skipped-meds', seed({ p: Object.assign({}, P, { meds: 'yes' }) }), async (p, h) => { await h.plate(p); await p.click('#log-skip'); await h.settle(900); }],
   ['plate-error', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); }, (p, h) => h.failApi(p)],
   ['plate-blocked-kidney', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); }],
+  ['plate-blocked-preg', seed({ p: Object.assign({}, P, { health: 'preg' }) }), async (p, h) => { await h.settle(800); }],
+  ['builder-blocked', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(600); await p.click('#tab-build'); await h.settle(); }],
+  ['rescue-blocked', seed({ p: Object.assign({}, P, { health: 'preg' }) }), async (p, h) => { await h.settle(600); await p.click('#tab-rescue'); await h.settle(); }],
+  ['builder-no-plate', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await p.click('#tab-build'); await h.settle(); }, (p, h) => h.failApi(p)],
   ['plate-no-body', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); }],
   ['sheet-my-food', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); }],
   ['sheet-data-confirm', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#wipe'); await h.settle(); await h.inView(p, '#wipe-q', 'the remove-data question'); }],
@@ -58,6 +62,10 @@ const STATES = [
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#st-greens-p'); await p.click('#st-greens-p'); await h.settle(); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); }],
+  ['rescue-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(600); await h.inView(p, '#v-rescue .ans-read', 'the Rescue wait line'); }],
+  ['rescue-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.inView(p, '#rescue-retry', 'Try again after a failed Rescue'); }, () => {}],
+  ['menu-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(700); await h.inView(p, '#v-rescue .plate.wait', 'the menu wait card'); }],
+  ['menu-unreadable', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'eval/v6/menu-blurred.jpg')); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the unreadable-menu note'); }],
   ['rescue-menu-typed', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await h.settle(300); await p.fill('#mtext', fx.typed); await h.settle(200); }],
   ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the menu order'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
@@ -155,7 +163,8 @@ const COVER = { sheet: { food: 'sheet-my-food', targets: 'sheet-how-numbers', lo
 function coverage() {
   const app = fs.readFileSync(path.join(ROOT, 'src/v6/app.js'), 'utf8'), names = new Set(STATES.map(s => s[0])), miss = [];
   for (const m of new Set([...app.matchAll(/openSheet\("([a-z]+)"\)/g)].map(m => m[1]))) if (!COVER.sheet[m] || (!ONLY.length && !names.has(COVER.sheet[m]))) miss.push('sheet "' + m + '" has no review state');
-  for (const m of new Set([...app.matchAll(/\["(plate|build|rescue|[a-z]+)","(?:build|rescue|plate)","(?:rescue|plate|build)"\]/g)].map(m => m[0]))) {}
+  const markup = fs.readFileSync(path.join(ROOT, 'src/v5/markup.html'), 'utf8'), VIEW = { setup: 'setup-1-goal-food', plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' };
+  for (const v of new Set([...markup.matchAll(/id="v-([a-z]+)"/g)].map(m => m[1]))) if (!VIEW[v] || (!ONLY.length && !names.has(VIEW[v]))) miss.push('view "v-' + v + '" has no review state');
   for (const t of Object.keys(COVER.tab)) if (!ONLY.length && !names.has(COVER.tab[t])) miss.push('tab "' + t + '" has no review state');
   const steps = (app.match(/UI\.step<2/g) || []).length ? 3 : 0; if (!ONLY.length && steps && !['setup-1-goal-food', 'setup-2-health', 'setup-3-body'].every(n => names.has(n))) miss.push('a setup step has no review state');
   return miss;
@@ -231,7 +240,7 @@ async function drill(b, base) {
       const dir = path.join(OUT, 'screens', `${run.w}-${run.scheme}${run.big !== 1 ? '-big' : ''}`); fs.mkdirSync(dir, { recursive: true });
       const sheetUp = await p.evaluate(() => !!document.querySelector('#sheet:not([hidden]) .sheet-card'));
       const scrollSel = sheetUp ? '#sheet .sheet-card' : '#scroll';
-      const stops = await p.evaluate((sel) => { const s = document.querySelector(sel); if (!s) return [0]; if (sel === '#sheet .sheet-card' && document.activeElement && document.activeElement.id === 'wipe-keep') return [s.scrollTop]; const n = Math.min(6, Math.ceil(s.scrollHeight / s.clientHeight)); return [...Array(n).keys()].map(i => i * s.clientHeight * 0.9); }, scrollSel);
+      const stops = await p.evaluate((sel) => { const s = document.querySelector(sel); if (!s) return [0]; if (sel === '#sheet .sheet-card' && document.activeElement && document.activeElement.id === 'wipe-keep') return [s.scrollTop]; const n = Math.min(14, Math.ceil(s.scrollHeight / (s.clientHeight * 0.9))); return [...Array(n).keys()].map(i => i * s.clientHeight * 0.9); }, scrollSel);
       for (let i = 0; i < stops.length; i++) { await p.evaluate(([sel, y]) => { const s = document.querySelector(sel); if (s) s.scrollTop = y; }, [scrollSel, stops[i]]); await h.settle(150); await p.screenshot({ path: path.join(dir, `${name}-${i + 1}.png`) }); }
     } catch (e) { err = String(e.message || e).split('\n')[0]; }
     // allowed exceptions (each with its reason) in test/ux/allow.json

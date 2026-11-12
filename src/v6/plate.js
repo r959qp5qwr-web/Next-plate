@@ -1,6 +1,6 @@
 /* ===== v6 plate art (owner-approved items 1 and 3): stoneware plate with ceramic depth and speckle, and the portion ring at the well's edge.
    Wraps thali() from the v5 helpers, so every plate in v6 (hero, waiting, alternatives) gets it. ===== */
-var NUTC={protein:"pro",greens:"veg",carbs:"grain",fats:"side",other:"other"},NUTNAME={protein:"Protein",greens:"Greens",carbs:"Carbs",fats:"Fats",other:"Other"},NUTORDER=["protein","greens","carbs","fats","other"];
+var NUTC={protein:"pro",greens:"veg",carbs:"grain",fats:"side",other:"other"},NUTNAME={protein:"Protein foods",greens:"Vegetables",carbs:"Grains and starch",fats:"Fats and seeds",other:"Other"},NUTORDER=["protein","greens","carbs","fats","other"];
 function gramsBy(items){var a={protein:0,greens:0,carbs:0,fats:0,other:0};(items||[]).forEach(function(it){a[it.group in a?it.group:"other"]+=it.grams||0;});return a;}
 var _thali=thali,PLID=0;
 thali=function(items,size,label,dial){

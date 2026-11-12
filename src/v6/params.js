@@ -56,12 +56,12 @@ function dayTargets6(p,par){
   if(!p||!(p.kg>0)||!(p.cm>0)||!(p.age>0)||!par.activity[p.act]||(p.sex!=="m"&&p.sex!=="f"))return null;
   var notes=[],bmr=10*p.kg+6.25*p.cm-5*p.age+(p.sex==="m"?5:-161),maint=bmr*par.activity[p.act],bmi=bmiOf(p),goal=p.goal||"hold";
   var r10=function(x){return Math.round(x/10)*10;};
-  notes.push(["Maintenance.","About "+r10(maint)+" kcal a day: your resting need from the Mifflin-St Jeor formula (age, sex, height, weight), times "+par.activity[p.act]+" for "+lab("act",p.act).toLowerCase()+". For an individual this estimate can be off by a tenth or more, so your weight trend has the last word."]);
+  notes.push(["Maintenance.","About "+r10(maint)+" kcal a day: your resting need, worked out from your age, sex, height and weight (the Mifflin-St Jeor formula), times "+par.activity[p.act]+" for "+lab("act",p.act).toLowerCase()+". For an individual this estimate can be off by a tenth or more, so your weight trend has the last word."]);
   var kcal=maint,older=p.age>=par.olderAge,meds=p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"),hold="";
   if(goal==="lose"){
     if(bmi<par.bmiOverweight)hold="Your BMI is about "+bmi.toFixed(1)+", inside the healthy range for Indian adults (under 23), so plates hold your weight steady instead of cutting calories.";
     else if(older)hold="After 65, weight loss is planned one person at a time with a doctor, to protect muscle. Plates hold your weight steady and raise protein.";
-    else if(meds)hold="With insulin or sulfonylurea tablets, eating less can drop blood sugar too far. Plates hold steady with an even amount of grain at each meal, until your doctor adjusts the plan.";
+    else if(meds)hold="With insulin or sugar tablets such as glimepiride or gliclazide, eating less can drop blood sugar too far. Plates hold steady with an even amount of grain at each meal, until your doctor adjusts the plan.";
     if(hold)notes.push(["Weight loss.",hold]);
     else{
       var def=bmi>=par.bmiObese?par.deficitObese:par.deficitOverweight,cap=maint*par.deficitMaxShare,fl=par.floor[p.sex];
@@ -76,11 +76,11 @@ function dayTargets6(p,par){
   if(goal==="build"&&par.proteinBuild>gk){gk=par.proteinBuild;why=gk+" g per kg, the lower end of the range used with strength training";}
   gk=Math.min(gk,p.health==="diabetes"?par.proteinCapDiabetes:par.proteinCap);
   var protein=rw*gk,pmax=kcal*par.proteinMaxEnergyShare/4;if(protein>pmax)protein=pmax;
-  notes.push(["Protein.","About "+Math.round(protein)+" g a day: "+why+(rw<p.kg-0.5?", counted on "+Math.round(rw)+" kg (the weight at BMI 25 for your height) so the target stays realistic":"")+". Spread evenly over breakfast, lunch and dinner."]);
+  notes.push(["Protein.","About "+Math.round(protein)+" g a day: "+why+(rw<p.kg-0.5?", counted on "+Math.round(rw)+" kg (a healthy weight for your height, at BMI 25) so the target stays realistic":"")+". Spread evenly over breakfast, lunch and dinner."]);
   var fibre=p.health==="diabetes"?Math.min(par.fibreDiabetesMax,Math.max(par.fibreDiabetesMin,kcal*par.fibreDiabetesPer1000/1000)):kcal*par.fibrePer1000/1000;
   notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":", from the figure of India's national nutrition institute (ICMR-NIN): 30 g per 2000 kcal.")]);
   notes.push(["Meals.","Lunch is the largest meal and dinner a lighter one, following the sample day of India's national nutrition institute (ICMR-NIN). A missed meal is spread over the rest of the day; no single meal is asked to make up for it."]);
-  if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sulfonylurea tablets can cause low sugar; your doctor's advice comes first."]);
+  if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sugar tablets such as glimepiride or gliclazide can cause low sugar; your doctor's advice comes first."]);
   return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};
 }
 

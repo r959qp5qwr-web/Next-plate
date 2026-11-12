@@ -53,6 +53,8 @@ const PHRASES = ['So far [^.]*\\.', '[A-Z][a-z]+ carries [^.]*\\.', 'That is eve
   await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1500); await into(p, '#directive', 'start'); await settle(p, 400); await shot(p, '03-today-directive');
   await p.waitForSelector('#alc-protein:not([disabled])', { timeout: 60000 }); await settle(p, 600);
   await into(p, '#plate-card'); await settle(p, 400); await shot(p, '04-plate');
+  await p.addStyleTag({ content: '.scribble,.hero-sprig,.band{visibility:hidden!important}' }); await settle(p, 200); await shot(p, '04-plate-clean');   // for the end card's plate: no annotation or sprig at the rim
+  await p.evaluate(() => { const s = [...document.querySelectorAll('style')].pop(); s.remove(); }); await settle(p, 200);
   await into(p, '.hero h2', 'start'); await settle(p, 400); await shot(p, '05-planned-around');
   await into(p, '.serve', 'start'); await settle(p, 400); await shot(p, '05b-serve');
   await into(p, '.card.why', 'center'); await settle(p, 400); await shot(p, '06-why-today');

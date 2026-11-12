@@ -173,3 +173,14 @@
 #app .menu-box textarea{font-style:normal}
 #app .menu-in .fine{text-align:center;margin:2px 0 0}
 #app .day-h{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+/* ===== Critic round 3 ===== */
+/* Rescue: each 'after' bar in its nutrient's colour (one colour per nutrient, everywhere); a rise or fall is an arrow in words */
+#app .cmp-bars i.b1.nb-pro{background:var(--pro)}#app .cmp-bars i.b1.nb-grain{background:var(--grain)}#app .cmp-bars i.b1.nb-side{background:var(--side)}#app .cmp-bars i.b1.nb-ink{background:var(--ink2)}
+#app .cmp-row .val .dir{font-weight:600;color:var(--ink2)}
+/* Rescue error: the note holds its Try again */
+#app .note>div{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+#app .note #rescue-retry{min-height:44px}
+/* first view on the smallest phones: the date row is ornament and gives way below 340 px */
+@media (max-width:339.98px){#app .mast{display:none}}
+/* plate actions: the wider button holds 'Next plate (1/2)' on one line */
+#app .acts.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}

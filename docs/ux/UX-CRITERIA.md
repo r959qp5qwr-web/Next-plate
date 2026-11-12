@@ -10,9 +10,9 @@ the app from WhatsApp. Where a source offers a range, the stricter end is used f
 
 ## Part A. Measured on every surface and state (test/ux/review.js; thresholds in test/ux/criteria.js)
 Viewports: 320×568, 360×740, 390×844, 412×915 in the gate set; 375×667, 393×851 and 430×932 added in the full set. Light and dark scheme.
-360 px with text at 130 % (Android text scaling). 25 states: setup steps 1-3; plate loading, ready, dial open, swap open, one-tap on, logged,
+360 px with text at 130 % (Android text scaling). 34 states: setup steps 1-3; plate loading, ready, dial open, swap open, one-tap on, logged,
 skipped (on tablets), error, blocked (kidney), no body data; sheets: my food, how the numbers work, log a meal (ask and estimate);
-plate asked; toast; Builder, Builder adjusted; Rescue entry, result, menu typed, menu order.
+plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder blocked; Rescue entry, wait, result, error, blocked; menu typed, wait, unreadable, order; pregnancy referral; removal confirmation.
 
 | ID | Criterion | Threshold | Sources |
 |---|---|---|---|

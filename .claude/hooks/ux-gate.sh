@@ -15,7 +15,9 @@ block() { M="$1"; why="$2"; prev=$(cat "$N" 2>/dev/null); cnt=1; [ "${prev%% *}"
   echo "UX GATE: $why" >&2; exit 2; }
 ESBUILD=./node_modules/esbuild node build6.js >/dev/null 2>&1 || block "unbuilt" "the pages do not build (npm run build)"
 M=$(test/ux/manifest.sh)
-grep -qx "$M" test/ux/PASSED 2>/dev/null && { rm -f "$N"; exit 0; }
+critic_ok() { head -1 test/ux/CRITIC.md 2>/dev/null | grep -q "^VERDICT: PASS" && sed -n 2p test/ux/CRITIC.md | grep -q "BUILD: $M"; }
+# PASSED only spares a second review run; the Critic's PASS for this fingerprint is checked every time
+grep -qx "$M" test/ux/PASSED 2>/dev/null && critic_ok && { rm -f "$N"; exit 0; }
 node test/ux/review.js --quick --pool 6 --out test/ux/out >/dev/null 2>&1; rc=$?
 [ $rc -eq 2 ] && block "$M" "the surface review could not run or its drill failed (UNVERIFIED); see test/ux/out"
 [ $rc -ne 0 ] && block "$M" "the surface review found violations; read test/ux/out/report.md, fix them, stop again. $(sed -n '5p' test/ux/out/report.md)"

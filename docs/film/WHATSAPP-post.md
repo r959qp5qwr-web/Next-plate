@@ -5,7 +5,7 @@ Next Plate is a meal planner I built for my clients.
 • You enter your age, height, weight and goal. It works out how much you need to eat each day, using a standard formula and Indian health guidelines. For weight loss it cuts back gently, never below a safe minimum.
 • Before each meal, it gives you one plate: what to eat and how much, in grams. It takes into account what you've already eaten today.
 • It follows your health needs: diabetes, low iron, BP. For kidney problems or pregnancy, it asks you to plan with your doctor.
-• Your food log is kept on your phone, not in an account.
+• Your food log is kept on your phone, not in an account. To plan each plate, your answers and recent meals are sent to Google Gemini; no name is sent.
 
 30-second film below. Reply "plate" and I'll send your link.
 
