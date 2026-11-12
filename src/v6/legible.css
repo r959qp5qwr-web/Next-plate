@@ -1,7 +1,7 @@
 /* ===== v6 legibility layer, loaded last (docs/ux/UX-CRITERIA.md). The Raw Linen look stays; what changes is what a 45+ reader on a
    320-412 px phone needs: one text face for everything functional (EB Garamond, figures included), the handwriting face only for the
    pencilled annotation on the plate, a 15 px floor for captions, darker inks that pass WCAG AA on every paper, and 44 px touch targets.
-   Selectors start with #app so they win over the layers above without !important. ===== */
+   Selectors start with #app so they win over the layers above; !important appears only where a layer above uses it. ===== */
 :root{color-scheme:light only;
   --ink3:#6A5F51;            /* captions and hints: 5.3:1 on paper, 5.8:1 on surface (was #857967, 3.6:1) */
   --fine:#5E5446;            /* small print: 6.5:1 on paper */
@@ -135,3 +135,35 @@
 #app .curve .c-lab,#app .curve .c-ax{font-size:12px;letter-spacing:.04em}
 #app .mast em{color:var(--clay-t)}
 #app .pairs .plus{background:var(--olive-t);color:#FFFFFF}
+
+/* ===== Critic round 1 ===== */
+/* figures: the unit wraps under the number instead of running into the next tile; size follows the phone width */
+#app .read4 .v,#app .tiles .tile2 .v{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:2px;row-gap:0;min-width:0}
+#app .read4 .v{font-size:clamp(22px,6.6vw,28px);line-height:1.1}
+#app .read4 .v small,#app .tiles .tile2 .v small{white-space:nowrap}
+#app .tcard{min-width:0}
+/* Rescue entry: labels on the left, like every other caption */
+#app .entries .cap{text-align:left}
+#app .menu-in .menu-box{margin-top:6px}
+/* Pair it stays one phrase */
+#app .pairs .ph{flex-wrap:wrap;row-gap:2px}
+#app .pairs .ph b{white-space:nowrap}
+/* toast: above the ask bar and tabs, clear of the masthead */
+#app .toast{top:auto;bottom:calc(150px + env(safe-area-inset-bottom,0px))}
+/* the after-meal curve: band names at the right edge, times underneath, as text */
+#app .curvebox{position:relative}
+#app .curve .c-lab,#app .curve .c-ax{display:none}
+#app .cb-lab{position:absolute;right:6px;transform:translateY(-50%);font:600 14px/16px var(--text);color:var(--ink2);background:rgba(250,246,238,.85);padding:0 4px;border-radius:3px}
+#app .cb-ax{display:flex;justify-content:space-between;font:400 14px/18px var(--text);color:var(--ink2);padding:2px 2px 0}
+/* Your data */
+#app .qs.data{border-top:1px solid var(--line);padding-top:14px;margin-top:6px}
+#app .qs.data p{font-size:16px;line-height:23px;color:var(--ink2);margin:0 0 8px}
+#app .btn.danger-link{background:transparent;border:1px solid var(--line);color:#8C2F1C;box-shadow:none;width:100%;justify-content:center}
+#app .btn.danger{background:#8C2F1C;color:#FFFFFF;border:0}
+#app .confirm{background:#FBEDE6;border:1px solid #E3B8A6;border-radius:6px;padding:12px}
+#app .confirm p{color:var(--ink)}
+#app .confirm .pick-acts{display:flex;gap:8px}#app .confirm .btn{flex:1;min-height:48px}
+/* enlarged text: habit buttons take a row each when three no longer fit; the eaten-out figures may wrap */
+#app .habits{grid-template-columns:repeat(auto-fit,minmax(min(100%,96px),1fr))}
+#app .hab span{overflow-wrap:break-word;hyphens:auto}
+#app .cmp-row .val{white-space:normal;overflow-wrap:anywhere}

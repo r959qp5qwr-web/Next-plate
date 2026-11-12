@@ -26,7 +26,9 @@ exports.RULES = {
   'palette': 'the paper palette holds in dark mode (A8)',
   'zoom-blocked': 'pinch zoom is never blocked (A7)',
   'covered-at-end': 'the last content scrolls clear of the fixed bars (A3)',
+  'text-overflow': 'text never runs past its own box, where a neighbour can paint over it (A2)',
+  'feedback-hidden': 'what a tap produces comes into view (A3, B6)',
 };
-exports.BIGTEXT_RULES = ['overflow-x', 'off-screen', 'text-clipped', 'overlap', 'covered-at-end'];
+exports.BIGTEXT_RULES = ['overflow-x', 'off-screen', 'text-clipped', 'overlap', 'covered-at-end', 'text-overflow', 'feedback-hidden'];
 // Allowed exceptions, each with its reason. Keep this list short; every entry is read by the Critic.
 exports.ALLOW = require('./allow.json');

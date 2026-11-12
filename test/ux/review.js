@@ -48,6 +48,7 @@ const STATES = [
   ['plate-blocked-kidney', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); }],
   ['plate-no-body', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); }],
   ['sheet-my-food', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); }],
+  ['sheet-data-confirm', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#wipe'); await h.settle(); await h.inView(p, '#wipe-q', 'the remove-data question'); }],
   ['sheet-how-numbers', seed(), async (p, h) => { await h.plate(p); await p.click('#how'); await h.settle(); }],
   ['sheet-log-ask', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd and pickle'); await h.settle(200); }],
   ['sheet-log-estimate', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 20000 }); await h.settle(); }],
@@ -56,9 +57,9 @@ const STATES = [
   ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); }],
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#st-greens-p'); await p.click('#st-greens-p'); await h.settle(); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); }],
-  ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); }],
+  ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); }],
   ['rescue-menu-typed', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await h.settle(300); await p.fill('#mtext', fx.typed); await h.settle(200); }],
-  ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); }],
+  ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the menu order'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------
@@ -91,6 +92,13 @@ function audit(T) {
   all.forEach(e => { if (decorative(e)) return; const r = e.getBoundingClientRect(); if ((r.right > W + 0.5 || r.left < -0.5) && !scroller(e) && getComputedStyle(e).position !== 'fixed') add('off-screen', e, `x ${Math.round(r.left)}..${Math.round(r.right)} of ${W}`); });
   // 2 no clipped text, no clipped placeholder
   texty.forEach(e => { const cs = getComputedStyle(e); if (e.clientWidth <= 2 || e.clientHeight <= 2) return; if (/(hidden|clip)/.test(cs.overflowX + ' ' + cs.overflowY)) { if (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2) add('text-clipped', e, `${e.scrollWidth}x${e.scrollHeight} in ${e.clientWidth}x${e.clientHeight}`); } });
+  all.forEach(e => { if (decorative(e) || e.closest('#toast')) return; const cs = getComputedStyle(e); if (!/^(block|flex|grid|inline-block|inline-flex|list-item|table-cell)$/.test(cs.display) || e.clientWidth < 3) return;
+    if (/(auto|scroll)/.test(cs.overflowX)) return; if (!(e.innerText || '').trim()) return;
+    if ([...e.children].some(c => /^(block|flex|grid|list-item|table)$/.test(getComputedStyle(c).display))) return;   // a box of boxes: its children are measured themselves
+    if (e.scrollWidth > e.clientWidth + 1 && !/(hidden|clip)/.test(cs.overflowX)) add('text-overflow', e, `content ${e.scrollWidth}px in a ${e.clientWidth}px box`); });
+  document.querySelectorAll('svg text').forEach(t => { if (t.closest('.thali,.stamp,.vine,.sprig,[aria-hidden="true"]')) return; const r = t.getBoundingClientRect(); if (!r.width) return;
+    const svg = t.ownerSVGElement, vb = svg.viewBox && svg.viewBox.baseVal, k = vb && vb.width ? svg.getBoundingClientRect().width / vb.width : 1, fs = parseFloat(getComputedStyle(t).fontSize) * k;
+    if (fs < T.minText - 0.01) add('text-too-small', t, `chart text ${fs.toFixed(1)}px < ${T.minText}px`); });
   all.filter(e => e.matches('input[placeholder],textarea[placeholder]')).forEach(e => { if (e.value) return; const cs = getComputedStyle(e), ph = getComputedStyle(e, '::placeholder'), c = document.createElement('canvas').getContext('2d');
     c.font = `${ph.fontStyle} ${ph.fontWeight} ${ph.fontSize} ${ph.fontFamily}`; const room = e.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight); const need = c.measureText(e.placeholder).width;
     if (e.tagName === 'INPUT' && need > room + 1) add('placeholder-clipped', e, `needs ${Math.round(need)}px, has ${Math.round(room)}px`); });
@@ -140,10 +148,10 @@ function audit(T) {
 }
 
 // simulated Android text scaling: every font size grows by the factor, layout widths stay
-function bigText(f) { document.querySelectorAll('body *').forEach(e => { const cs = getComputedStyle(e); e.style.fontSize = parseFloat(cs.fontSize) * f + 'px'; if (cs.lineHeight !== 'normal') e.style.lineHeight = parseFloat(cs.lineHeight) * f + 'px'; }); }
+function bigText(f) { const els = [...document.querySelectorAll('body *')], sz = els.map(e => { const cs = getComputedStyle(e); return [parseFloat(cs.fontSize), cs.lineHeight]; }); els.forEach((e, i) => { e.style.fontSize = sz[i][0] * f + 'px'; if (sz[i][1] !== 'normal') e.style.lineHeight = parseFloat(sz[i][1]) * f + 'px'; }); }
 
 // A11 coverage comes from the code: every sheet, tab and setup step the app can show needs a state above (BD-93)
-const COVER = { sheet: { food: 'sheet-my-food', targets: 'sheet-how-numbers', log: 'sheet-log-ask' }, tab: { plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' } };
+const COVER = { sheet: { food: 'sheet-my-food', targets: 'sheet-how-numbers', log: 'sheet-log-ask' }, confirm: ['sheet-data-confirm'], tab: { plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' } };
 function coverage() {
   const app = fs.readFileSync(path.join(ROOT, 'src/v6/app.js'), 'utf8'), names = new Set(STATES.map(s => s[0])), miss = [];
   for (const m of new Set([...app.matchAll(/openSheet\("([a-z]+)"\)/g)].map(m => m[1]))) if (!COVER.sheet[m] || (!ONLY.length && !names.has(COVER.sheet[m]))) miss.push('sheet "' + m + '" has no review state');
@@ -168,11 +176,13 @@ async function drill(b, base) {
     mk('<div style="position:relative;height:30px"><span style="font-size:16px">planted under</span><span style="position:absolute;left:0;top:0;font-size:16px">planted over</span></div>');
     mk('<p style="font-family:Caveat;font-size:26px">planted 450 kcal</p>');
     mk('<input style="width:90px;font-size:16px" placeholder="planted hint far too long for this box">');
+    mk('<div style="width:60px;font-size:16px;white-space:nowrap">planted run-on figure 1200 kcal</div>');
+    mk('<svg viewBox="0 0 320 40" style="width:160px" role="img" aria-label="planted chart"><text x="4" y="20" style="font-size:12px">planted tiny chart label</text></svg>');
     document.body.style.background = '#0B1211';
     const m = document.querySelector('meta[name=viewport]'); m.setAttribute('content', m.getAttribute('content') + ',user-scalable=no');
   });
   const got = new Set((await p.evaluate(audit, C.T)).map(v => v.rule)); await ctx.close();
-  const want = ['text-too-small', 'overflow-x', 'off-screen', 'contrast', 'target-small', 'no-name', 'text-clipped', 'overlap', 'handwriting-figures', 'placeholder-clipped', 'palette', 'zoom-blocked'];
+  const want = ['text-too-small', 'overflow-x', 'off-screen', 'contrast', 'target-small', 'no-name', 'text-clipped', 'overlap', 'handwriting-figures', 'placeholder-clipped', 'palette', 'zoom-blocked', 'text-overflow'];
   return want.filter(r => !got.has(r));
 }
 
@@ -186,6 +196,7 @@ async function drill(b, base) {
     settle: async (ms) => { await new Promise(r => setTimeout(r, ms || 500)); },
     plate: async (p) => { await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await new Promise(r => setTimeout(r, 700)); },
     slowApi: async (p, ms) => { await p.route('**/api/meals', async r => { await new Promise(x => setTimeout(x, ms)); await r.continue(); }); },
+    inView: async (p, sel, what) => { const ok = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(), bar = document.querySelector('#sheet:not([hidden])') ? innerHeight : Math.min(...[...document.querySelectorAll('#tabs,.composer')].filter(x => x.offsetParent).map(x => x.getBoundingClientRect().top), innerHeight); return r.top < bar - 40 && r.bottom > 60; }, sel); if (!ok) (p.__late = p.__late || []).push({ rule: 'feedback-hidden', el: sel, detail: what + ' is not in view after the tap' }); },
     failApi: async (p) => { await p.route('**/api/meals', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); },
   };
   const runs = [];
@@ -203,11 +214,13 @@ async function drill(b, base) {
       await p.goto(srv.base, { waitUntil: 'domcontentloaded' }); await p.evaluate(() => document.fonts.ready); await h.settle(400);
       await go(p, h);
       if (run.big !== 1) { await p.evaluate(bigText, run.big); await h.settle(300); }
-      viol = await p.evaluate(audit, C.T);
+      viol = await p.evaluate(audit, C.T); viol = viol.concat(p.__late || []);
       if (run.big !== 1) viol = viol.filter(v => C.BIGTEXT_RULES.includes(v.rule));            // at 130 % only layout breakage counts; sizes and contrast are judged at 100 %
       const dir = path.join(OUT, 'screens', `${run.w}-${run.scheme}${run.big !== 1 ? '-big' : ''}`); fs.mkdirSync(dir, { recursive: true });
-      const stops = await p.evaluate(() => { const s = document.getElementById('scroll'); if (!s) return [0]; const sh = document.querySelector('.sheet:not([hidden])'); if (sh && getComputedStyle(sh).display !== 'none') return [0]; const n = Math.min(6, Math.ceil(s.scrollHeight / s.clientHeight)); return [...Array(n).keys()].map(i => i * s.clientHeight * 0.9); });
-      for (let i = 0; i < stops.length; i++) { await p.evaluate(y => { const s = document.getElementById('scroll'); if (s) s.scrollTop = y; }, stops[i]); await h.settle(150); await p.screenshot({ path: path.join(dir, `${name}-${i + 1}.png`) }); }
+      const sheetUp = await p.evaluate(() => !!document.querySelector('#sheet:not([hidden]) .sheet-card'));
+      const scrollSel = sheetUp ? '#sheet .sheet-card' : '#scroll';
+      const stops = await p.evaluate((sel) => { const s = document.querySelector(sel); if (!s) return [0]; if (sel === '#sheet .sheet-card' && document.activeElement && document.activeElement.id === 'wipe-keep') return [s.scrollTop]; const n = Math.min(6, Math.ceil(s.scrollHeight / s.clientHeight)); return [...Array(n).keys()].map(i => i * s.clientHeight * 0.9); }, scrollSel);
+      for (let i = 0; i < stops.length; i++) { await p.evaluate(([sel, y]) => { const s = document.querySelector(sel); if (s) s.scrollTop = y; }, [scrollSel, stops[i]]); await h.settle(150); await p.screenshot({ path: path.join(dir, `${name}-${i + 1}.png`) }); }
     } catch (e) { err = String(e.message || e).split('\n')[0]; }
     // allowed exceptions (each with its reason) in test/ux/allow.json
     viol = viol.filter(v => !C.ALLOW.some(a => a.rule === v.rule && (!a.state || a.state === name) && v.el.includes(a.el)));

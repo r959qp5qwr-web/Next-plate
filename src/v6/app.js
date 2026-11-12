@@ -155,7 +155,7 @@ function bodyQs(host,after){
 function renderSetup(){
   var v=$("v-setup");v.textContent="";
   var h=el("div","setup-hero"),st=el("div","steps");for(var i=0;i<3;i++)st.appendChild(el("i",UI.step>=i?"on":null));
-  var head=[["Your next plate, every meal","Three short steps, asked once and kept on this phone. The rest it learns from what you eat."],["Anything on the health side?","This keeps the plates safe for you."],["For your targets","Calories and protein for each meal come from these."]][UI.step];
+  var head=[["Your next plate, every meal","Three short steps, asked once and kept on this phone. The rest it learns from what you eat."],["Your health","This keeps the plates safe for you."],["Your body","Calories and protein for each meal come from these."]][UI.step];
   add(h,st,el("h1",null,head[0]),el("p",null,head[1]));v.appendChild(h);
   function again(){render();}
   if(UI.step===0){goalQs(v,again);foodQs(v,again);}else if(UI.step===1){healthQs(v,again);}else{bodyQs(v,function(soft){if(!soft)again();});}
@@ -299,7 +299,7 @@ function heroCard(m,v,r){
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". The rest of the day follows it.");});
   add(acts,hv,nx,tr);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
-  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.");});add(lg,o,sk);card.appendChild(lg);
+  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});render();$("scroll").scrollTop=0;if(PL&&PL.day.meds)toast("On insulin or sulfonylurea tablets, a skipped meal can drop your sugar. Follow your doctor's advice.",true);});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
 var PROMPTS=["Craving chaat at 6 pm","Heavy leg day: a high-protein dinner","Trek tomorrow: food to carry","What to order at a restaurant tonight","Post-workout, under 600 kcal","Only eggs, spinach and bread at home"];
@@ -393,7 +393,10 @@ function renderBuild(){
   var m=curMeal(),inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");hl.appendChild(el("p","cap","After-meal curve"));
   if(!m){hl.appendChild(el("p","tsub","Plan a plate first. Its curve shows here."));ih.appendChild(hl);inst.appendChild(ih);v.appendChild(inst);return;}
   var vw=viewOf(m),rs=riseOf(vw.n,UI.hab);hl.appendChild(el("p","tsub",vw.title));ih.appendChild(hl);ih.appendChild(el("span","risev "+bandCls(rs.band),rs.band));
-  add(inst,ih,curve("b",rs));
+  var cbox=el("div","curvebox"),cv=curve("b",rs);cbox.appendChild(cv);
+  [["Sharp",30],["Moderate",62],["Gentle",88]].forEach(function(x){var s=el("span","cb-lab",x[0]);s.style.top=(x[1]/126*100)+"%";s.setAttribute("aria-hidden","true");cbox.appendChild(s);});
+  var axl=el("div","cb-ax");axl.setAttribute("aria-hidden","true");["Meal","+1 h","+2 h","+3 h"].forEach(function(t){axl.appendChild(el("span",null,t));});
+  add(inst,ih,cbox,axl);
   var lg=el("div","inst-lg"),a1=el("span"),a2=el("span");a1.appendChild(el("i","l-act"));a1.appendChild(document.createTextNode("with your habits"));a2.appendChild(el("i","l-raw"));a2.appendChild(document.createTextNode("carbs first, sitting after"));add(lg,a1,a2);inst.appendChild(lg);
   var hb=el("div","habits");
   [["veg","Vegetables first","eat them before the rest"],["walk","15-minute walk","right after the meal"],["lemon","Lemon or vinegar","in a salad, as a starter"]].forEach(function(x){
@@ -409,10 +412,14 @@ function shrink(file,cb,max){
   var img=new Image(),url=URL.createObjectURL(file);img.onload=function(){var s=Math.min(1,(max||1024)/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
     c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);cb(c.toDataURL("image/jpeg",.82).split(",")[1]);};img.onerror=function(){cb(null);};img.src=url;
 }
+/* Rescue: after a tap, what comes back is shown where the person can see it (on small phones it starts below the fold) */
+function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(!v||v.hidden||!s)return;var kids=[].slice.call(v.children),t=null,seen=false;
+  for(var j=0;j<kids.length;j++){var k=kids[j];if(k.classList.contains("entries")){seen=true;continue;}if(!seen||k.classList.contains("sits")||k.classList.contains("menu-box"))continue;t=k;break;}
+  if(!t)return;var r=t.getBoundingClientRect(),sr=s.getBoundingClientRect();if(r.top<sr.top+8||r.top>sr.top+sr.height*0.5)s.scrollTo({top:Math.max(0,s.scrollTop+r.top-sr.top-12),behavior:RM?"auto":"smooth"});},60);}
 function rescue(text,image){
-  if(UI.rbusy||UI.mbusy)return;UI.rbusy=true;UI.rerr="";UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();
+  if(UI.rbusy||UI.mbusy)return;UI.rbusy=true;UI.rerr="";UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image,appetite:appetite()},file:fileOut()};if(image)body.image=image;
-  api("/api/rescue",body,function(s,j){UI.rbusy=false;
+  api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};(j.hacks||[]).slice(0,1).forEach(function(h,i){UI.rmoves[i]=true;});}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read};}
     else if(s===200)UI.rerr="That didn't come back as a dish that fits your food rules. Try naming it differently.";
@@ -422,9 +429,9 @@ function rescue(text,image){
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
 function readMenu(text,image){
   if(UI.mbusy||UI.rbusy)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
-  UI.mbusy=true;UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();$("scroll").scrollTop=0;
+  UI.mbusy=true;UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
-  api("/api/menu",body,function(s,j){UI.mbusy=false;
+  api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
     else{UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"I could not read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
@@ -484,20 +491,21 @@ function renderRescue(){
   var mt=btn("linkbtn","or type the menu",null,"mtype");mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
   mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
   add(me,mb,mt,mf);
-  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="e.g. chole bhature";
+  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="for example, chole bhature";
   var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)rescue(t,null);});
-  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow);add(ent,me,f);v.appendChild(ent);
+  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow);add(ent,me);v.appendChild(ent);
   if(UI.mopen&&!UI.mbusy){
     var bx=el("form","menu-box"),ta=el("textarea");ta.id="mtext";ta.maxLength=2000;ta.rows=7;ta.placeholder="Paste or type the menu. One dish per line.";ta.value=UI.mtext||"";ta.setAttribute("aria-label","The menu, typed or pasted");
     ta.addEventListener("input",function(){UI.mtext=ta.value;});
     var rdm=btn("btn primary","Read this menu for "+mn,"spark","mgo");rdm.type="submit";
     bx.addEventListener("submit",function(e){e.preventDefault();var t=ta.value.trim();if(t.length>2)readMenu(t,null);});
-    add(bx,ta,rdm);v.appendChild(bx);
+    add(bx,ta,rdm);me.appendChild(bx);
   }else{
     var ch=el("div","sits");DISHES.filter(function(d){return !crosses(d,P);}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d,null);});ch.appendChild(b);});
     v.appendChild(ch);
   }
+  ent.appendChild(f);
   if(UI.mbusy){v.appendChild(waitCard("Reading the menu for your "+mn,"The menu is being read"));return;}
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));n.appendChild(el("p",null,t));v.appendChild(n);});
@@ -534,10 +542,11 @@ function renderRescue(){
 /* ---------- sheets: my food, how targets are worked out, logging another meal ---------- */
 var SHEETFROM=null;
 function behind(on){["scroll","tabs"].forEach(function(id){var x=$(id);if(!x)return;if(on){x.setAttribute("inert","");x.setAttribute("aria-hidden","true");}else{x.removeAttribute("inert");x.removeAttribute("aria-hidden");}});var t=document.querySelector(".top");if(t){if(on)t.setAttribute("inert","");else t.removeAttribute("inert");}}
+var _toast=toast;toast=function(t,warn){var u=document.querySelector("#toast use");if(u)u.setAttribute("href",warn?"#i-info":"#i-check");_toast(t);};
 function openSheet(kind){SHEETFROM=document.activeElement;UI.sheet=kind;$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
-function closeSheet(){UI.sheet="";$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;}
+function closeSheet(){UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;}
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
-function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn("btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
+function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text,image){
   if(UI.lbusy)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
@@ -548,7 +557,7 @@ function logOther(text,image){
 function renderSheet(){
   var sh=$("sheet");sh.textContent="";var c=el("div","sheet-card");c.setAttribute("role","dialog");c.setAttribute("aria-modal","true");
   if(UI.sheet==="targets"){
-    c.setAttribute("aria-label","How your targets are worked out");sheetHead(c,"How these numbers are worked out","Done",closeSheet);
+    c.setAttribute("aria-label","How your targets are worked out");sheetHead(c,"How these numbers are worked out","Close",closeSheet);
     var d=PL?PL.day:null;if(d){var ul=el("ul","checks");d.notes.forEach(function(nn){var li=el("li","ok"),i=el("i");i.appendChild(ic("check"));var s=el("span");s.appendChild(el("b",null,nn[0]+" "));s.appendChild(document.createTextNode(nn[1]));add(li,i,s);ul.appendChild(li);});c.appendChild(ul);
       c.appendChild(el("p","fine","Every figure is an estimate from standard formulas and published guidelines, set for your age, body and goal. Your coach can change them. They are not a medical prescription."));}
     sh.appendChild(c);return;}
@@ -572,7 +581,17 @@ function renderSheet(){
   c.setAttribute("aria-label","My food");
   sheetHead(c,"My food","Done",function(){STORE.res={};STORE.shown={};UI.rres=null;UI.mres=null;save();closeSheet();render();});
   function again(soft){if(!soft)renderSheet();}
-  goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);sh.appendChild(c);
+  goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
+  var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));
+  dq.appendChild(el("p",null,"Your answers and what you eat are kept on this phone only. There is no account and no name."));
+  dq.appendChild(el("p",null,"When a plate is planned, your answers and today's meals go to Google Gemini to plan it. What you type goes too. Nothing else is shared."));
+  if(!UI.wipe){var wb=btn("btn danger-link","Remove my data from this phone",null,"wipe");wb.addEventListener("click",function(){UI.wipe=true;renderSheet();var x=$("wipe-keep");if(x)x.focus({preventScroll:true});});dq.appendChild(wb);}
+  else{var cf=el("div","confirm");cf.setAttribute("role","alertdialog");cf.setAttribute("aria-labelledby","wipe-q");var q=el("p",null,"Remove your answers, your food record and today's plates from this phone? This cannot be undone.");q.id="wipe-q";cf.appendChild(q);
+    var kr=el("div","pick-acts"),kp=btn("btn","Keep my data",null,"wipe-keep"),rm=btn("btn danger","Remove my data",null,"wipe-yes");
+    kp.addEventListener("click",function(){UI.wipe=false;renderSheet();});
+    rm.addEventListener("click",function(){try{localStorage.removeItem("np6");localStorage.removeItem("np5");sessionStorage.clear();}catch(e){}location.replace(location.pathname);});
+    add(kr,kp,rm);cf.appendChild(kr);dq.appendChild(cf);}
+  c.appendChild(dq);sh.appendChild(c);if(UI.wipe)setTimeout(function(){var q=$("wipe-q");if(q)q.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});},40);
 }
 $("sheet").addEventListener("click",function(e){if(e.target===$("sheet"))closeSheet();});
 $("myfood").addEventListener("click",function(){openSheet("food");});
