@@ -27,3 +27,9 @@ From this folder, with the motion-reel skill's scripts (`$S`):
     node $S/sfx.mjs promo && node $S/mix.mjs promo                            # -> out/promo/final.mp4
 
 The `.wav` files and `out/` are not kept in the repository; they are rebuilt by the steps above.
+
+## Re-rendering film4 (the approved 30 s film)
+`film4/audio/vo.wav` and `music.wav` are not in git, so `mix.mjs` on a fresh clone mixes only the chimes and still reports success.
+When only the screens change (timeline, `vo.js` and `beats.json` unchanged), keep the approved soundtrack:
+render with `--video-only`, then `ffmpeg -i out/film4/video_9x16.mp4 -i <approved film> -map 0:v:0 -map 1:a:0 -c copy -movflags +faststart <out>`.
+Before sending, check the level: `ffmpeg -i <film> -vn -af volumedetect -f null -` should read a mean near -16.7 dB (chimes alone read about -23 dB).
