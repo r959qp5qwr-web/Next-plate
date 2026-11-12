@@ -1,15 +1,15 @@
 # WhatsApp post to go with the film
 
-Next Plate: a meal planner that works from your numbers.
+Next Plate is a meal planner I built for my clients.
 
-• Daily targets: energy from the Mifflin-St Jeor equation and your activity level, with a set deficit for weight loss (300 to 500 kcal, never below 1200 kcal for women or 1500 for men). Protein by body weight, fibre by calories. Indian BMI cut-offs (ICMR-NIN).
-• Each meal: Gemini, Google's AI, plans one plate from what you've already eaten today. Grams, kcal, protein, carbs, fats and fibre.
-• Code checks every plate against your health rules before you see it: diabetes, low iron, BP. Kidney disease and pregnancy go to your doctor.
-• Your food log is kept on your phone. No account, no names sent.
+• You enter your age, height, weight and goal. It works out how much you need to eat each day, using a standard formula and Indian health guidelines. For weight loss it cuts back gently, never below a safe minimum.
+• Before each meal, it gives you one plate: what to eat and how much, in grams. It takes into account what you've already eaten today.
+• It follows your health needs: diabetes, low iron, BP. For kidney problems or pregnancy, it asks you to plan with your doctor.
+• Your food log is kept on your phone, not in an account.
 
 30-second film below. Reply "plate" and I'll send your link.
 
 ---
-Owner's direction (2026-11-12): "more technical, not quirky". Replaces the chole bhature version.
-Every figure is from src/v6/params.js (Mifflin-St Jeor x activity factor; deficit 300 kcal at BMI 23-27.4, 500 at 27.5+; floor 1200 f / 1500 m;
-protein g/kg; fibre 15 g per 1000 kcal; ICMR-NIN 2024 BMI lines). Grams and kcal only; no supplements; no blood-sugar numbers.
+Owner's direction (2026-11-12): technical content, in plain everyday language. Replaces the technical and chole bhature versions.
+Behind each line: Mifflin-St Jeor x activity factor and ICMR-NIN BMI lines; deficit 300-500 kcal with a floor of 1200 kcal (women) / 1500 kcal (men)
+(src/v6/params.js); plates planned from the day's food log; kidney and pregnancy referred. Grams and kcal only; no supplements; no blood-sugar numbers.
