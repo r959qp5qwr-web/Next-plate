@@ -62,9 +62,9 @@ function cards(ctx, t) {
   });
 }
 // what the phone shows. [time, shot, cross-fade seconds]
-const SCREENS = [[0, 's03', 0], [6.5, 'm1', 0.4], [10.2, 'm3', 0.45], [15.0, 'd1', 0.4], [17.2, 'd2', 0.4], [19.4, 'd3', 0.4], [22.0, 'k1', 0.4], [24.2, 'k2', 0.5],
+const SCREENS = [[0, 's03', 0], [6.5, 'm1', 0.4], [9.4, 'm2', 0.3], [10.2, 'm3', 0.45], [15.0, 'd1', 0.4], [17.2, 'd2', 0.4], [19.4, 'd3', 0.4], [22.0, 'k1', 0.4], [24.2, 'k2', 0.5],
   [29.5, 'k4', 0.4], [32.6, 'k5', 0.3], [37.0, 'v1', 0.4], [39.0, 'v2', 0.3], [42.0, 'v3', 0.45], [46.0, 't1', 0.45]].map(([a, k, f]) => [T(a), k, f]);
-const TAPS = [[16.9, 340, 745], [32.45, 278, 427], [38.4, 342, 515], [38.8, 342, 515]].map(([a, x, y]) => [T(a), x, y]);
+const TAPS = [[16.9, 166, 741], [32.45, 278, 438], [38.4, 338, 600], [38.8, 338, 600]].map(([a, x, y]) => [T(a), x, y]);
 function phone(ctx, t, IMG) {
   const c = camera(t), k = c.k, X = (x) => c.cx + (x - c.fx) * k, Y = (y) => c.cy + (y - c.fy) * k;
   const x0 = X(0), y0 = Y(0), w = 390 * k, h = 844 * k, bz = 9 * k, R = 46 * k;
@@ -85,16 +85,17 @@ function phone(ctx, t, IMG) {
 
 // a detail lifts out of the screen and comes forward. [shot, rect (CSS px), in, out, width, centre y]
 const LIFTS = [
-  ['s03', [17, 112, 356, 142], 2.4, 5.8, 980, 1130],
-  ['m3', [16, 123, 358, 452], 10.7, 14.4, 900, 1180],
-  ['d2', [0, 399, 390, 336], 17.6, 19.0, 980, 1150],
-  ['d3', [0, 262, 390, 76], 19.8, 21.6, 1000, 1100],
-  ['k2', [16, 150, 358, 284], 24.7, 28.6, 960, 1150],
-  ['k4', [32, 368, 326, 152], 30.7, 32.3, 980, 1120],
-  ['k5', [32, 394, 326, 202], 33.0, 36.6, 980, 1150],
-  ['v2', [16, 258, 358, 401], 39.4, 41.7, 900, 1160],
-  ['v3', [16, 353, 358, 340], 42.5, 45.6, 940, 1150],
-  ['t1', [16, 384, 358, 52], 47.0, 51.2, 1000, 1080],
+  ['s03', [16, 128, 358, 192], 2.4, 5.8, 980, 1130],
+  ['ph', [0, 0, 400, 533.3], 7.9, 10.1, 720, 1150],
+  ['m3', [16, 142, 358, 458], 10.7, 14.4, 880, 1180],
+  ['d2', [0, 391, 390, 340], 17.6, 19.0, 980, 1150],
+  ['d3', [0, 302, 390, 86], 19.8, 21.6, 1000, 1100],
+  ['k2', [16, 170, 358, 282], 24.7, 28.6, 960, 1150],
+  ['k4', [32, 372, 326, 158], 30.7, 32.3, 980, 1120],
+  ['k5', [32, 399, 326, 216], 33.0, 36.6, 980, 1150],
+  ['v2', [16, 327, 358, 440], 39.4, 41.7, 860, 1160],
+  ['v3', [16, 282, 358, 382], 42.5, 45.6, 900, 1150],
+  ['t1', [16, 457, 358, 58], 47.0, 51.2, 1000, 1080],
 ].map(([k, r, a, b, w, y]) => [k, r, T(a), Math.min(T(b), END - 0.5), w, y]);
 function lifts(ctx, t, IMG) {
   const c = camera(t), k = c.k; let veil = 0; const up = [];
@@ -114,7 +115,7 @@ function lifts(ctx, t, IMG) {
 
 
 // the close, as in the 30 s film: the plate settles, the name comes up as it is said, then 'Made for you.'; the reply line sits under it, on screen only
-const PLATE = { cx: 210, cy: 278, r: 119 };       // the plate illustration on the k2 capture, CSS px (same layout as the 30 s film's)
+const PLATE = { cx: 210, cy: 297.2, r: 119 };       // the plate illustration on the k2 capture, CSS px (same layout as the 30 s film's)
 function close(ctx, t, IMG) {
   const tn = END + 1.0, tm = END + 2.42; if (t < tn - 1.6) return;
   const drift = 1 + 0.025 * ease(prog(t, tn, END + 6.3));
@@ -142,11 +143,11 @@ function close(ctx, t, IMG) {
 const HITS = [...TAPS.map(([tt]) => [tt, 'tap', 'tick', { gain: 0.11 }]), ...BEATS.map(([a]) => [a + 0.1, 'card', 'bell', { pitch: 'E5', gain: 0.04, len: 1.0 }]),
   ...LIFTS.map(([, , a]) => [a + 0.15, 'detail arrives', 'bell', { pitch: 'A5', gain: 0.04, len: 1.0 }]), [END + 1.45, 'plate lands', 'bell', { pitch: 'D6', gain: 0.05, len: 1.6 }]];
 
-const shots = { s03: '03-today-directive', m1: 'M1-rescue-entry', m3: 'M3-order', d1: 'D1-log-ask', d2: 'D2-log-estimate', d3: 'D3-day-updated', k1: 'K1-ask', k2: 'K2-plate',
+const shots = { s03: '03-today-directive', m1: 'M1-rescue-entry', m2: 'M2-reading', m3: 'M3-order', d1: 'D1-log-ask', d2: 'D2-log-estimate', d3: 'D3-day-updated', k1: 'K1-ask', k2: 'K2-plate',
   k4: 'K4-taps', k5: 'K5-gentler', v1: 'V1-builder', v2: 'V2-more-veg', v3: 'V3-curve', t1: 'T1-day-done' };
 M.film({
   fonts: [fD(78), fD(78, 600), fI(78)],
-  images: Object.fromEntries(Object.entries(shots).map(([k, v]) => [k, `assets/shots/${v}.png`])),
+  images: Object.assign(Object.fromEntries(Object.entries(shots).map(([k, v]) => [k, `assets/shots/${v}.png`])), { ph: 'assets/menu-photo.jpg' }),   // ph: the photo the person takes in beat 2
   hits: HITS.map(([s, ...r]) => [s / (60 / 72), ...r]),
   samples: 10,
   init() { GRAIN = makeGrain(); },

@@ -51,7 +51,7 @@ function camera(t) {
   return { k: Math.exp(lerp(Math.log(a[1]), Math.log(b[1]), p)), fx: lerp(a[2], b[2], p), fy: lerp(a[3], b[3], p), cx: lerp(a[4], b[4], p), cy: lerp(a[5], b[5], p) };
 }
 const SCREENS = [[0, 's03', 0], [4.65, 's07', 0.4], [10.6, 's04', 0.5], [17.9, 's05', 0.45]];
-const TAPS = [[4.45, 130, 222]];
+const TAPS = [[4.45, 148, 279]];
 function phone(ctx, t, IMG) {
   const c = camera(t), k = c.k, X = (x) => c.cx + (x - c.fx) * k, Y = (y) => c.cy + (y - c.fy) * k;
   const x0 = X(0), y0 = Y(0), w = 390 * k, h = 844 * k, bz = 9 * k, R = 46 * k;
@@ -71,11 +71,11 @@ function phone(ctx, t, IMG) {
 
 // a detail lifts out of the screen and comes forward. [shot, rect, in, out, width, centre y, from rect on the phone's current screen]
 const LIFTS = [
-  ['s03', [16, 108, 358, 140], 1.3, 3.9, 960, 1150],
+  ['s03', [16, 128, 358, 192], 1.3, 3.9, 960, 1150],
   ['s07', [6, 240, 378, 356], 5.9, 10.2, 980, 1130, [6, 240]],
-  ['s05b', [16, 124, 358, 330], 13.2, 17.6, 960, 1160, [16, 600]],
-  ['s18', [20, 238, 352, 58], 18.6, 23.6, 980, 900, [20, 238]],
-  ['s05', [20, 238, 352, 58], 19.9, 23.6, 980, 1230],
+  ['s05b', [16, 128, 358, 312], 13.2, 17.6, 960, 1160, [16, 600]],
+  ['s18', [20, 266, 352, 56], 18.6, 23.6, 980, 900, [20, 266]],
+  ['s05', [20, 290, 352, 76], 19.9, 23.6, 980, 1230],
 ];
 function lifts(ctx, t, IMG) {
   const c = camera(t), k = c.k; let veil = 0; const up = [];
@@ -94,7 +94,7 @@ function lifts(ctx, t, IMG) {
 }
 
 // the close: the app's own plate settles, the name comes up under it as it is said, then "Made for you."
-const PLATE = { cx: 210, cy: 278, r: 119 };       // the plate illustration on the 04-plate capture, CSS px
+const PLATE = { cx: 210, cy: 297.2, r: 119 };       // the plate illustration on the 04-plate capture, CSS px
 function close(ctx, t, IMG) {
   const tn = at('nextplate', 22), tm = at('made', 22); if (t < tn - 1.6) return;
   const drift = 1 + 0.025 * ease(prog(t, tn, 31.5));                       // a slow push over the hold
