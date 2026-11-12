@@ -28,12 +28,13 @@ function page(ctx) {
 // ------------------------------------------------------------------ supers: one line at a time, fades up and holds. [in, out, text, y, size]
 const SUP_Y = 300;
 const SUPERS = [
-  [1.0, 3.75, 'Three times a day,', 860, 92], [2.3, 3.75, '*you decide what to eat.*', 970, 92],
-  [3.95, 5.75, 'Most days, you wing it.', 920, 88],
-  [8.2, 12.3, 'Show it the menu.', SUP_Y, 84], [12.45, 15.0, '*It picks your order.*', SUP_Y, 84],
-  [15.25, 21.3, 'One plate. *In grams.*', SUP_Y, 84],
-  [22.6, 28.9, 'Ate something else? *Tell it.*', SUP_Y, 80],
-  [29.4, 34.6, 'With diabetes, *the grain stays.*', SUP_Y, 80],
+  [1.0, 3.75, 'Three times a day,', 860, 92], [2.2, 3.75, '*you decide what to eat.*', 970, 92],
+  [3.8, 5.6, 'Most days, you wing it.', 920, 88],
+  [6.6, 10.1, 'Open it before a meal.', SUP_Y, 84],
+  [10.4, 15.7, 'One plate. *In grams.*', SUP_Y, 84],
+  [16.6, 22.4, 'Ate something else? *Type it in.*', SUP_Y, 76],
+  [23.0, 28.6, 'Eating out? *Show it the menu.*', SUP_Y, 80],
+  [28.9, 33.5, 'With diabetes, *the grain stays.*', SUP_Y, 80],
 ];
 function lineMixed(ctx, raw, x, y, size, alpha) {
   const parts = raw.split('*').map((s, i) => ({ s, it: i % 2 === 1 })).filter((p) => p.s);
@@ -53,8 +54,9 @@ function supers(ctx, t) {
 // ------------------------------------------------------------------ the phone. camera keys: [time, k, focus x, focus y (CSS), canvas x, canvas y]
 const REST = [2.05, 195, 422, 540, 1330];
 const CAM = [
-  [0, 2.05, 195, 422, 540, 3000], [6.0, 2.05, 195, 422, 540, 3000],
-  [8.1, ...REST], [21.3, ...REST], [22.3, 1.8, 195, 422, 540, 1190], [26.6, 1.8, 195, 422, 540, 1190], [27.3, ...REST], [34.6, 2.0, 195, 422, 540, 1350], [35.9, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100],
+  [0, 2.05, 195, 422, 540, 3000], [5.2, 2.05, 195, 422, 540, 3000],
+  [7.2, ...REST], [15.9, ...REST], [16.9, 1.8, 195, 422, 540, 1190], [19.3, 1.8, 195, 422, 540, 1190], [20.0, ...REST],
+  [33.4, 2.0, 195, 422, 540, 1350], [34.6, 2.0, 195, 422, 540, 3100], [99, 2.0, 195, 422, 540, 3100],
 ];
 function camera(t) {
   let i = 0; while (i + 1 < CAM.length && t >= CAM[i + 1][0]) i++;
@@ -62,9 +64,9 @@ function camera(t) {
   return { k: Math.exp(lerp(Math.log(a[1]), Math.log(b[1]), p)), fx: lerp(a[2], b[2], p), fy: lerp(a[3], b[3], p), cx: lerp(a[4], b[4], p), cy: lerp(a[5], b[5], p) };
 }
 // screens: [from, shot, crossfade seconds]; taps: [time, x, y]
-const SCREENS = [[0, 'p03', 0], [8.0, 'm01', 0.35], [9.95, 'm02', 0.3], [11.15, 'm03', 0.3], [12.2, 'm04', 0.45],
-  [15.25, 's04', 0.5], [21.4, 'sD1', 0.45], [24.55, 'sD2', 0.35], [26.95, 'sD3', 0.4], [28.95, 's05b', 0.5]];
-const TAPS = [[9.75, 91, 217], [10.98, 195, 512], [24.35, 349, 745], [26.75, 286, 802]];
+const SCREENS = [[0, 'p03', 0], [8.9, 's04', 0.5], [15.9, 'sD1', 0.45], [18.5, 'sD2', 0.35], [19.45, 'sD3', 0.4],
+  [22.6, 'm01', 0.45], [24.1, 'm02', 0.3], [25.15, 'm03', 0.3], [26.0, 'm04', 0.45], [28.7, 's05b', 0.5]];
+const TAPS = [[18.35, 349, 745], [19.3, 286, 802], [23.95, 91, 217], [25.0, 195, 512]];
 let TEXTBG = null, FIELDBG = null;
 function phone(ctx, t, IMG) {
   const c = camera(t), k = c.k, X = (x) => c.cx + (x - c.fx) * k, Y = (y) => c.cy + (y - c.fy) * k;
@@ -84,21 +86,20 @@ function phone(ctx, t, IMG) {
 }
 // things that happen inside a screen: the menu typed in line by line; the meal typed into the field
 function live(ctx, s, t, X, Y, k, dy) {
-  if (s === 'm02') { const a = prog(t, 10.1, 10.85), lines = 8, shown = Math.floor(a * lines + 0.001); if (a < 1) { ctx.fillStyle = TEXTBG; for (let l = shown; l < lines; l++) ctx.fillRect(X(20), Y(297 + l * 24) + dy, 350 * k, 24 * k); } }
-  if (s === 'sD1') { const a = prog(t, 23.2, 24.15), tx = 30 + Math.floor(a * 22) / 22 * 174; ctx.fillStyle = FIELDBG; ctx.fillRect(X(tx), Y(727) + dy, (206 - tx) * k, 36 * k);
+  if (s === 'm02') { const a = prog(t, 24.25, 24.9), lines = 8, shown = Math.floor(a * lines + 0.001); if (a < 1) { ctx.fillStyle = TEXTBG; for (let l = shown; l < lines; l++) ctx.fillRect(X(20), Y(297 + l * 24) + dy, 350 * k, 24 * k); } }
+  if (s === 'sD1') { const a = prog(t, 17.6, 18.25), tx = 30 + Math.floor(a * 22) / 22 * 174; ctx.fillStyle = FIELDBG; ctx.fillRect(X(tx), Y(727) + dy, (206 - tx) * k, 36 * k);
     if (a > 0 && a < 1 || (a === 0 && Math.floor(t * 2.4) % 2 === 0)) { ctx.fillStyle = C.ink; ctx.fillRect(X(tx + 2), Y(733) + dy, 1.4 * k, 24 * k); } }
 }
 
 // ------------------------------------------------------------------ the detail: a part of the screen lifts out and comes forward
 // [shot, rect, in, out, width, centre y]; the phone recedes under a veil of paper while a lift is up
 const LIFTS = [
-  ['m04', [16, 268, 358, 426], 12.85, 14.95, 940, 1180],
-  ['s05b', [16, 124, 358, 330], 17.35, 19.2, 940, 1170],
-  ['s04', [16, 396, 358, 192], 19.35, 21.3, 960, 1080],
-  ['sD2', [2, 470, 386, 238], 25.0, 26.45, 960, 1100],
-  ['sD3', [16, 52, 358, 172], 27.4, 28.9, 960, 1060],
-  ['s06', [15.5, 180, 359, 105], 30.6, 34.5, 960, 860, [16, 643]],
-  ['s05b', [16, 222, 358, 64], 32.75, 34.5, 960, 1290],
+  ['s05b', [16, 124, 358, 330], 11.2, 13.0, 940, 1170],
+  ['s04', [16, 396, 358, 192], 13.1, 15.5, 960, 1080],
+  ['sD3', [16, 52, 358, 172], 19.8, 22.2, 960, 1060],
+  ['m04', [16, 268, 358, 426], 26.3, 28.4, 940, 1180],
+  ['s06', [15.5, 180, 359, 105], 29.6, 33.3, 960, 860, [16, 643]],
+  ['s05b', [16, 222, 358, 64], 31.4, 33.3, 960, 1290],
 ];
 function lifts(ctx, t, IMG) {
   const c = camera(t), k = c.k; let veil = 0; const up = [];
@@ -131,7 +132,7 @@ function close(ctx, t) {
 
 // ------------------------------------------------------------------ sound: soft taps and two quiet chimes; the music carries the rest
 const HITS = [...TAPS.map(([s]) => [s, 'tap', 'tick', { gain: 0.11 }]),
-  [12.2, 'order arrives', 'bell', { pitch: 'A5', gain: 0.05, len: 1.2 }], [26.95, 'counted', 'bell', { pitch: 'D6', gain: 0.05, len: 1.0 }]];
+  [26.0, 'order arrives', 'bell', { pitch: 'A5', gain: 0.05, len: 1.2 }], [19.45, 'counted', 'bell', { pitch: 'D6', gain: 0.05, len: 1.0 }]];
 
 const shots = { p03: '03-today-directive', m01: 'menu-01-entry', m02: 'menu-02-typed-menu', m03: 'menu-03-reading', m04: 'menu-04-result',
   s04: '04-plate', s05b: '05b-serve', s06: '06-why-today', sD1: 'D1-log-ask', sD2: 'D2-log-estimate', sD3: 'D3-day-updated' };
