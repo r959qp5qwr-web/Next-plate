@@ -8,3 +8,4 @@ demo/reel/promo3/audio/*.wav
 demo/reel/promo3/audio/**/*.wav
 demo/reel/film4/audio/*.wav
 demo/reel/film4/audio/**/*.wav
+mock/look/index.html
