@@ -1,0 +1,581 @@
+[
+ {
+  "id": "diabetes-sweet-craving",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 24484,
+  "dropped": {
+   "diet": 2
+  },
+  "issues": [
+   "meals 1/3"
+  ],
+  "reply": {
+   "status": "ok",
+   "read": "",
+   "meals": [
+    {
+     "title": "Roasted Chana Chaat Cup",
+     "subtitle": "Crisp dry roasted Bengal gram tossed with cucumber cubes, fresh lemon, and chaat spices",
+     "cuisine": "North Indian",
+     "minutes": 5,
+     "items": [
+      {
+       "food": "Roasted chana without husk",
+       "grams": 18,
+       "group": "protein"
+      },
+      {
+       "food": "Diced cucumber",
+       "grams": 50,
+       "group": "greens"
+      },
+      {
+       "food": "Lemon juice and cumin salt",
+       "grams": 5,
+       "group": "other"
+      }
+     ],
+     "kcal": 78,
+     "protein": 4,
+     "carbs": 11,
+     "fats": 2,
+     "fiber": 3,
+     "why": [
+      {
+       "pair": "Roasted chana + fresh lemon juice",
+       "effect": "The lemon helps your body take up plant iron found naturally in roasted chana."
+      }
+     ],
+     "swaps": {
+      "protein": [
+       {
+        "food": "Roasted chana without husk",
+        "grams": 18,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Boiled kabuli chana",
+        "grams": 45,
+        "deltaKcal": -3,
+        "deltaProtein": 0,
+        "deltaCarbs": -1,
+        "deltaFats": -1,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Sprouted moong beans",
+        "grams": 50,
+        "deltaKcal": -5,
+        "deltaProtein": 1,
+        "deltaCarbs": -2,
+        "deltaFats": -1,
+        "deltaFiber": 0
+       }
+      ],
+      "base": [
+       {
+        "food": "Diced cucumber",
+        "grams": 50,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Finely diced tomatoes",
+        "grams": 50,
+        "deltaKcal": 2,
+        "deltaProtein": 0,
+        "deltaCarbs": 1,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "suffix": "+ Paneer Tidbits",
+       "note": "Fold in cubed low fat paneer to raise total protein significantly.",
+       "deltaKcal": 78,
+       "deltaProtein": 14,
+       "deltaCarbs": 1,
+       "deltaFats": 1,
+       "deltaFiber": 0,
+       "minutes": 6
+      },
+      "glucose": {
+       "suffix": "+ Shredded Radish",
+       "note": "Add crisp mooli shreds to expand volume and digestive fibre.",
+       "deltaKcal": 8,
+       "deltaProtein": 0,
+       "deltaCarbs": 2,
+       "deltaFats": 0,
+       "deltaFiber": 1,
+       "minutes": 6
+      },
+      "express": {
+       "suffix": "(Plain Roasted Chana)",
+       "note": "Enjoy plain roasted chana directly with a squeeze of fresh lemon.",
+       "deltaKcal": -7,
+       "deltaProtein": 0,
+       "deltaCarbs": -1,
+       "deltaFats": 0,
+       "deltaFiber": -1,
+       "minutes": 1
+      },
+      "gut": {
+       "suffix": "(Jeera Gentle Mix)",
+       "note": "Use only toasted cumin powder and pink rock salt for comfortable digestion.",
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0,
+       "minutes": 5
+      }
+     },
+     "planned": [
+      "steady_carbs"
+     ],
+     "forYou": "Crunchy whole roasted grain and legumes provide long-lasting satiety to gently shift your focus away from sweet cravings.",
+     "taste": [
+      "crunchy",
+      "tangy",
+      "spiced"
+     ],
+     "tuned": true
+    }
+   ],
+   "dropped": {
+    "diet": 2
+   },
+   "hooks": {
+    "steady_carbs": "steady grain (diabetes medicine)",
+    "diabetes_grain": "the grain stays (diabetes)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "A gentle afternoon snack satisfies your sweet craving using warm spices and dairy protein without upsetting your blood sugar balance on a quiet desk day.",
+    "meals": [
+     {
+      "title": "Spiced Paneer Gulab Jamun Bite",
+      "subtitle": "Warm cardamom and saffron infused paneer balls pan-toasted with crushed pistachio",
+      "cuisine": "North Indian",
+      "prepMinutes": 10,
+      "items": [
+       {
+        "food": "Low fat paneer kneaded with cardamom",
+        "grams": 45,
+        "group": "protein"
+       },
+       {
+        "food": "Crushed pistachios",
+        "grams": 4,
+        "group": "fats"
+       },
+       {
+        "food": "Warm saffron rose water soak",
+        "grams": 30,
+        "group": "other"
+       }
+      ],
+      "kcal": 82,
+      "protein": 8,
+      "carbs": 3,
+      "fats": 4,
+      "fiber": 1,
+      "why": [
+       {
+        "pair": "Paneer + cardamom infusion",
+        "effect": "Cardamom enhances aromatic sweetness while paneer provides steady dairy protein."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Low fat paneer kneaded with cardamom",
+         "grams": 45,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Firm tofu with cardamom",
+         "grams": 55,
+         "deltaKcal": -3,
+         "deltaProtein": 0,
+         "deltaCarbs": -1,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Hung curd spiced ball",
+         "grams": 60,
+         "deltaKcal": 2,
+         "deltaProtein": -1,
+         "deltaCarbs": 1,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Crushed pistachios",
+         "grams": 4,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Crushed almonds",
+         "grams": 4,
+         "deltaKcal": 1,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ Extra Paneer Cubes",
+        "note": "Add more low fat paneer to lift protein significantly.",
+        "minutes": 10,
+        "deltaKcal": 76,
+        "deltaProtein": 14,
+        "deltaCarbs": 2,
+        "deltaFats": 1,
+        "deltaFiber": 0
+       },
+       "glucose": {
+        "titleSuffix": "+ Roasted Chia Dust",
+        "note": "Dust with roasted chia seeds for added soluble fibre.",
+        "minutes": 10,
+        "deltaKcal": 20,
+        "deltaProtein": 1,
+        "deltaCarbs": 1,
+        "deltaFats": 1,
+        "deltaFiber": 2
+       },
+       "express": {
+        "titleSuffix": "(Quick Toss)",
+        "note": "Crumble paneer cold with cardamom and nuts without pan-toasting.",
+        "minutes": 3,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       "gut": {
+        "titleSuffix": "+ Fennel Water",
+        "note": "Pair with warm fennel seed infusion to soothe digestion.",
+        "minutes": 10,
+        "deltaKcal": 4,
+        "deltaProtein": 0,
+        "deltaCarbs": 1,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs"
+      ],
+      "for_you": "You get the beloved cardamom and saffron profile of gulab jamun wrapped in slow-digesting paneer to protect your energy.",
+      "taste": [
+       "aromatic",
+       "soft",
+       "nutty"
+      ]
+     },
+     {
+      "title": "Spiced Hung Curd Shrikhand Bowl",
+      "subtitle": "Creamy strained dahi flavored with green cardamom, saffron threads, and slivered almonds",
+      "cuisine": "Western Indian",
+      "prepMinutes": 5,
+      "items": [
+       {
+        "food": "Strained curd from cow milk",
+        "grams": 90,
+        "group": "protein"
+       },
+       {
+        "food": "Slivered almonds",
+        "grams": 3,
+        "group": "fats"
+       },
+       {
+        "food": "Ground green cardamom and saffron",
+        "grams": 1,
+        "group": "other"
+       }
+      ],
+      "kcal": 74,
+      "protein": 7,
+      "carbs": 4,
+      "fats": 3,
+      "fiber": 0,
+      "why": [
+       {
+        "pair": "Curd + ground cardamom",
+        "effect": "Cardamom imparts natural sweetness to cultured curd without adding simple sugars."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Strained curd from cow milk",
+         "grams": 90,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Plain soy yogurt strained",
+         "grams": 90,
+         "deltaKcal": -8,
+         "deltaProtein": -2,
+         "deltaCarbs": -1,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Low fat ricotta",
+         "grams": 60,
+         "deltaKcal": 5,
+         "deltaProtein": 1,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Slivered almonds",
+         "grams": 3,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Crushed walnut kernels",
+         "grams": 3,
+         "deltaKcal": 2,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ Roasted Edamame Crunch",
+        "note": "Serve roasted green edamame on the side for major protein.",
+        "minutes": 5,
+        "deltaKcal": 80,
+        "deltaProtein": 13,
+        "deltaCarbs": 5,
+        "deltaFats": 2,
+        "deltaFiber": 3
+       },
+       "glucose": {
+        "titleSuffix": "+ Flax Dust",
+        "note": "Stir in ground roasted flaxseed for soluble viscous fibre.",
+        "minutes": 5,
+        "deltaKcal": 25,
+        "deltaProtein": 1,
+        "deltaCarbs": 1,
+        "deltaFats": 2,
+        "deltaFiber": 1
+       },
+       "express": {
+        "titleSuffix": "(Instant Mix)",
+        "note": "Use ready thick curd straight from the tub without pressing.",
+        "minutes": 2,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       "gut": {
+        "titleSuffix": "+ Cooling Mint",
+        "note": "Garnish with fresh bruised mint for a soothing stomach feel.",
+        "minutes": 5,
+        "deltaKcal": 2,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs"
+      ],
+      "for_you": "A cool, dessert-like cousin to sweet mithai that keeps your desk afternoon light, refreshing, and entirely free of sugar.",
+      "taste": [
+       "creamy",
+       "floral",
+       "mild"
+      ]
+     },
+     {
+      "title": "Roasted Chana Chaat Cup",
+      "subtitle": "Crisp dry roasted Bengal gram tossed with cucumber cubes, fresh lemon, and chaat spices",
+      "cuisine": "North Indian",
+      "prepMinutes": 5,
+      "items": [
+       {
+        "food": "Roasted chana without husk",
+        "grams": 18,
+        "group": "protein"
+       },
+       {
+        "food": "Diced cucumber",
+        "grams": 50,
+        "group": "greens"
+       },
+       {
+        "food": "Lemon juice and cumin salt",
+        "grams": 5,
+        "group": "other"
+       }
+      ],
+      "kcal": 78,
+      "protein": 4,
+      "carbs": 11,
+      "fats": 2,
+      "fiber": 3,
+      "why": [
+       {
+        "pair": "Roasted chana + fresh lemon juice",
+        "effect": "The lemon helps your body take up plant iron found naturally in roasted chana."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Roasted chana without husk",
+         "grams": 18,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Boiled kabuli chana",
+         "grams": 45,
+         "deltaKcal": -3,
+         "deltaProtein": 0,
+         "deltaCarbs": -1,
+         "deltaFats": -1,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Sprouted moong beans",
+         "grams": 50,
+         "deltaKcal": -5,
+         "deltaProtein": 1,
+         "deltaCarbs": -2,
+         "deltaFats": -1,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Diced cucumber",
+         "grams": 50,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Finely diced tomatoes",
+         "grams": 50,
+         "deltaKcal": 2,
+         "deltaProtein": 0,
+         "deltaCarbs": 1,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ Paneer Tidbits",
+        "note": "Fold in cubed low fat paneer to raise total protein significantly.",
+        "minutes": 6,
+        "deltaKcal": 78,
+        "deltaProtein": 14,
+        "deltaCarbs": 1,
+        "deltaFats": 1,
+        "deltaFiber": 0
+       },
+       "glucose": {
+        "titleSuffix": "+ Shredded Radish",
+        "note": "Add crisp mooli shreds to expand volume and digestive fibre.",
+        "minutes": 6,
+        "deltaKcal": 8,
+        "deltaProtein": 0,
+        "deltaCarbs": 2,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       "express": {
+        "titleSuffix": "(Plain Roasted Chana)",
+        "note": "Enjoy plain roasted chana directly with a squeeze of fresh lemon.",
+        "minutes": 1,
+        "deltaKcal": -7,
+        "deltaProtein": 0,
+        "deltaCarbs": -1,
+        "deltaFats": 0,
+        "deltaFiber": -1
+       },
+       "gut": {
+        "titleSuffix": "(Jeera Gentle Mix)",
+        "note": "Use only toasted cumin powder and pink rock salt for comfortable digestion.",
+        "minutes": 5,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs"
+      ],
+      "for_you": "Crunchy whole roasted grain and legumes provide long-lasting satiety to gently shift your focus away from sweet cravings.",
+      "taste": [
+       "crunchy",
+       "tangy",
+       "spiced"
+      ]
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Snack (their local time 1:10 pm)\n- Target for this meal: about 80 kcal and at least 4 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n- They wrote: \"craving gulab jamun\". Answer that with the meals. If it is a craving or a named dish, meal 1 is that food made to fit; meal 2 is a lighter cousin.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 548 kcal, 23 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [steady_carbs] They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.\n- [diabetes_grain] Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.\n\nVARIETY\n- Vary the cooking style across the three plates (not three bhurjis or three curries).\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.\n- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch, but keep the grain portion); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+   "ms": 24137
+  }
+ }
+]

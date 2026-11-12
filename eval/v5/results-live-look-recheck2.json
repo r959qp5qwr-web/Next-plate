@@ -1,0 +1,749 @@
+[
+ {
+  "id": "diabetes-sweet-craving",
+  "expect": "ok",
+  "got": "ok",
+  "ok": false,
+  "ms": 23105,
+  "dropped": {
+   "diet": 1
+  },
+  "issues": [
+   "claim: Spiced Paneer and Cardamom Treat",
+   "meals 2/3"
+  ],
+  "reply": {
+   "status": "ok",
+   "read": "A gentle afternoon snack satisfying a sweet craving without added sugar, pairing protein and slow carbohydrates to support steady energy at your desk.",
+   "meals": [
+    {
+     "title": "Spiced Paneer and Cardamom Treat",
+     "subtitle": "Warm lightly toasted paneer dusted with green cardamom and cinnamon beside soaked chia seeds",
+     "cuisine": "North Indian home style",
+     "minutes": 8,
+     "items": [
+      {
+       "food": "Low fat paneer cubes",
+       "grams": 35,
+       "group": "protein"
+      },
+      {
+       "food": "Chia seeds soaked in water",
+       "grams": 5,
+       "group": "carbs"
+      },
+      {
+       "food": "Roasted barley flour dust",
+       "grams": 5,
+       "group": "carbs"
+      },
+      {
+       "food": "Ground green cardamom and cinnamon",
+       "grams": 2,
+       "group": "other"
+      }
+     ],
+     "kcal": 82,
+     "protein": 7,
+     "carbs": 4,
+     "fats": 4,
+     "fiber": 2,
+     "why": [
+      {
+       "pair": "Cinnamon + barley",
+       "effect": "Cinnamon and soluble barley fibre together support a smooth release of energy."
+      }
+     ],
+     "swaps": {
+      "protein": [
+       {
+        "food": "Low fat paneer cubes",
+        "grams": 35,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Tofu cubes",
+        "grams": 45,
+        "deltaKcal": -4,
+        "deltaProtein": 0,
+        "deltaCarbs": -1,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Hung low fat curd",
+        "grams": 60,
+        "deltaKcal": -8,
+        "deltaProtein": -1,
+        "deltaCarbs": 1,
+        "deltaFats": -1,
+        "deltaFiber": 0
+       }
+      ],
+      "base": [
+       {
+        "food": "Roasted barley flour dust",
+        "grams": 5,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Roasted oats flour dust",
+        "grams": 5,
+        "deltaKcal": 1,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "suffix": "+ extra paneer",
+       "note": "Increase low fat paneer to eighty grams to raise the protein content naturally.",
+       "deltaKcal": 88,
+       "deltaProtein": 12,
+       "deltaCarbs": 1,
+       "deltaFats": 4,
+       "deltaFiber": 0,
+       "minutes": 8
+      },
+      "glucose": {
+       "suffix": "+ cucumber crunch",
+       "note": "Add sliced cucumber seasoned with roasted cumin to build more volume and fibre.",
+       "deltaKcal": 10,
+       "deltaProtein": 0,
+       "deltaCarbs": 2,
+       "deltaFats": 0,
+       "deltaFiber": 1,
+       "minutes": 9
+      },
+      "express": {
+       "suffix": "(no heat)",
+       "note": "Skip the pan toasting and simply mix cold fresh paneer with cardamom and barley dust.",
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0,
+       "minutes": 3
+      },
+      "gut": {
+       "suffix": "+ fennel water sip",
+       "note": "Serve alongside a cup of warm steeped whole fennel seed water to soothe digestion.",
+       "deltaKcal": 4,
+       "deltaProtein": 0,
+       "deltaCarbs": 1,
+       "deltaFats": 0,
+       "deltaFiber": 0,
+       "minutes": 8
+      }
+     },
+     "planned": [
+      "steady_carbs",
+      "diabetes_grain"
+     ],
+     "forYou": "You get the aromatic sweetness of cardamom and paneer while keeping slow grains intact for your afternoon.",
+     "taste": [
+      "aromatic",
+      "warm",
+      "soft"
+     ],
+     "tuned": true
+    },
+    {
+     "title": "Roasted Chana and Spiced Poha",
+     "subtitle": "Dry roasted brown chickpeas tossed with crisp red poha, curry leaves and roasted cumin",
+     "cuisine": "Central Indian style",
+     "minutes": 5,
+     "items": [
+      {
+       "food": "Roasted Bengal gram (bhuna chana)",
+       "grams": 15,
+       "group": "protein"
+      },
+      {
+       "food": "Dry roasted red rice poha",
+       "grams": 8,
+       "group": "carbs"
+      },
+      {
+       "food": "Curry leaves and cumin powder",
+       "grams": 2,
+       "group": "greens"
+      },
+      {
+       "food": "Cold pressed peanut oil drop",
+       "grams": 1,
+       "group": "fats"
+      }
+     ],
+     "kcal": 88,
+     "protein": 4,
+     "carbs": 13,
+     "fats": 2,
+     "fiber": 3,
+     "why": [
+      {
+       "pair": "Bhuna chana + curry leaves",
+       "effect": "The mineral-rich curry leaves pair with plant protein in roasted gram for easy midday nourishment."
+      }
+     ],
+     "swaps": {
+      "protein": [
+       {
+        "food": "Roasted Bengal gram (bhuna chana)",
+        "grams": 15,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Roasted soya chunks crushed",
+        "grams": 12,
+        "deltaKcal": -2,
+        "deltaProtein": 2,
+        "deltaCarbs": -2,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Sprouted moong dry roasted",
+        "grams": 25,
+        "deltaKcal": -4,
+        "deltaProtein": 1,
+        "deltaCarbs": -1,
+        "deltaFats": -1,
+        "deltaFiber": 0
+       }
+      ],
+      "base": [
+       {
+        "food": "Dry roasted red rice poha",
+        "grams": 8,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Puffed jowar (sorghum)",
+        "grams": 8,
+        "deltaKcal": -1,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "suffix": "+ roasted edamame",
+       "note": "Add dry toasted green soybeans to easily raise the overall protein.",
+       "deltaKcal": 60,
+       "deltaProtein": 13,
+       "deltaCarbs": 4,
+       "deltaFats": 3,
+       "deltaFiber": 3,
+       "minutes": 6
+      },
+      "glucose": {
+       "suffix": "+ fresh coriander salad",
+       "note": "Toss with finely chopped fresh coriander and grated radish to build extra vegetable fibre.",
+       "deltaKcal": 6,
+       "deltaProtein": 0,
+       "deltaCarbs": 1,
+       "deltaFats": 0,
+       "deltaFiber": 1,
+       "minutes": 7
+      },
+      "express": {
+       "suffix": "(ready crunch)",
+       "note": "Toss pre-roasted dry chana and puffed poha directly together without warm tempering.",
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0,
+       "minutes": 1
+      },
+      "gut": {
+       "suffix": "+ roasted ajwain pinch",
+       "note": "Add a pinch of gently toasted carom seeds to support comfortable afternoon digestion.",
+       "deltaKcal": 2,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0,
+       "minutes": 5
+      }
+     },
+     "planned": [
+      "steady_carbs",
+      "diabetes_grain"
+     ],
+     "forYou": "You get an earthy savoury crunch from whole legumes and grains that keeps energy level while you work.",
+     "taste": [
+      "crunchy",
+      "nutty",
+      "earthy"
+     ],
+     "tuned": true
+    }
+   ],
+   "dropped": {
+    "diet": 1
+   },
+   "hooks": {
+    "steady_carbs": "steady grain (diabetes medicine)",
+    "diabetes_grain": "the grain stays (diabetes)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "A gentle afternoon snack satisfying a sweet craving without added sugar, pairing protein and slow carbohydrates to support steady energy at your desk.",
+    "meals": [
+     {
+      "title": "Spiced Paneer and Cardamom Treat",
+      "subtitle": "Warm lightly toasted paneer dusted with green cardamom and cinnamon beside soaked chia seeds",
+      "cuisine": "North Indian home style",
+      "prepMinutes": 8,
+      "items": [
+       {
+        "food": "Low fat paneer cubes",
+        "grams": 35,
+        "group": "protein"
+       },
+       {
+        "food": "Chia seeds soaked in water",
+        "grams": 5,
+        "group": "carbs"
+       },
+       {
+        "food": "Roasted barley flour dust",
+        "grams": 5,
+        "group": "carbs"
+       },
+       {
+        "food": "Ground green cardamom and cinnamon",
+        "grams": 2,
+        "group": "other"
+       }
+      ],
+      "kcal": 82,
+      "protein": 7,
+      "carbs": 4,
+      "fats": 4,
+      "fiber": 2,
+      "why": [
+       {
+        "pair": "Cinnamon + barley",
+        "effect": "Cinnamon and soluble barley fibre together support a smooth release of energy."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Low fat paneer cubes",
+         "grams": 35,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Tofu cubes",
+         "grams": 45,
+         "deltaKcal": -4,
+         "deltaProtein": 0,
+         "deltaCarbs": -1,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Hung low fat curd",
+         "grams": 60,
+         "deltaKcal": -8,
+         "deltaProtein": -1,
+         "deltaCarbs": 1,
+         "deltaFats": -1,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Roasted barley flour dust",
+         "grams": 5,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Roasted oats flour dust",
+         "grams": 5,
+         "deltaKcal": 1,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ extra paneer",
+        "note": "Increase low fat paneer to eighty grams to raise the protein content naturally.",
+        "minutes": 8,
+        "deltaKcal": 88,
+        "deltaProtein": 12,
+        "deltaCarbs": 1,
+        "deltaFats": 4,
+        "deltaFiber": 0
+       },
+       "glucose": {
+        "titleSuffix": "+ cucumber crunch",
+        "note": "Add sliced cucumber seasoned with roasted cumin to build more volume and fibre.",
+        "minutes": 9,
+        "deltaKcal": 10,
+        "deltaProtein": 0,
+        "deltaCarbs": 2,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       "express": {
+        "titleSuffix": "(no heat)",
+        "note": "Skip the pan toasting and simply mix cold fresh paneer with cardamom and barley dust.",
+        "minutes": 3,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       "gut": {
+        "titleSuffix": "+ fennel water sip",
+        "note": "Serve alongside a cup of warm steeped whole fennel seed water to soothe digestion.",
+        "minutes": 8,
+        "deltaKcal": 4,
+        "deltaProtein": 0,
+        "deltaCarbs": 1,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "You get the aromatic sweetness of cardamom and paneer while keeping slow grains intact for your afternoon.",
+      "taste": [
+       "aromatic",
+       "warm",
+       "soft"
+      ]
+     },
+     {
+      "title": "Cardamom Spiced Shrikhand Bowl",
+      "subtitle": "Thick curd whipped with cardamom and nutmeg over toasted whole wheat flakes",
+      "cuisine": "Western Indian regional",
+      "prepMinutes": 5,
+      "items": [
+       {
+        "food": "Hung low fat dahi",
+        "grams": 70,
+        "group": "protein"
+       },
+       {
+        "food": "Toasted whole wheat flakes",
+        "grams": 6,
+        "group": "carbs"
+       },
+       {
+        "food": "Ground cardamom and saffron strand",
+        "grams": 1,
+        "group": "other"
+       },
+       {
+        "food": "Crushed slivered almond",
+        "grams": 3,
+        "group": "fats"
+       }
+      ],
+      "kcal": 85,
+      "protein": 6,
+      "carbs": 7,
+      "fats": 3,
+      "fiber": 1,
+      "why": [
+       {
+        "pair": "Fermented curd + toasted grain",
+        "effect": "The cultured curd helps slow digestion when eaten alongside the whole grain flakes."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Hung low fat dahi",
+         "grams": 70,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Low fat paneer mash",
+         "grams": 35,
+         "deltaKcal": 3,
+         "deltaProtein": 1,
+         "deltaCarbs": -3,
+         "deltaFats": 2,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Silken tofu puree",
+         "grams": 80,
+         "deltaKcal": -10,
+         "deltaProtein": 0,
+         "deltaCarbs": -2,
+         "deltaFats": -1,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Toasted whole wheat flakes",
+         "grams": 6,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Rolled oats toasted",
+         "grams": 6,
+         "deltaKcal": 1,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ extra hung curd",
+        "note": "Double the hung low fat dahi to provide a larger protein portion.",
+        "minutes": 5,
+        "deltaKcal": 56,
+        "deltaProtein": 12,
+        "deltaCarbs": 4,
+        "deltaFats": 1,
+        "deltaFiber": 0
+       },
+       "glucose": {
+        "titleSuffix": "+ chia gel layer",
+        "note": "Stir in hydrated chia seeds to add gentle soluble fibre ahead of the curd.",
+        "minutes": 6,
+        "deltaKcal": 15,
+        "deltaProtein": 1,
+        "deltaCarbs": 1,
+        "deltaFats": 1,
+        "deltaFiber": 2
+       },
+       "express": {
+        "titleSuffix": "(instant bowl)",
+        "note": "Use straight Greek style plain yogurt without hanging the curd yourself.",
+        "minutes": 2,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       "gut": {
+        "titleSuffix": "+ cooling mint leaf",
+        "note": "Garnish with finely chopped fresh mint leaves for a calming after-meal finish.",
+        "minutes": 5,
+        "deltaKcal": 1,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "You enjoy the chilled creamy texture of traditional Indian sweets while staying balanced with slow grains.",
+      "taste": [
+       "creamy",
+       "fragrant",
+       "cooling"
+      ]
+     },
+     {
+      "title": "Roasted Chana and Spiced Poha",
+      "subtitle": "Dry roasted brown chickpeas tossed with crisp red poha, curry leaves and roasted cumin",
+      "cuisine": "Central Indian style",
+      "prepMinutes": 5,
+      "items": [
+       {
+        "food": "Roasted Bengal gram (bhuna chana)",
+        "grams": 15,
+        "group": "protein"
+       },
+       {
+        "food": "Dry roasted red rice poha",
+        "grams": 8,
+        "group": "carbs"
+       },
+       {
+        "food": "Curry leaves and cumin powder",
+        "grams": 2,
+        "group": "greens"
+       },
+       {
+        "food": "Cold pressed peanut oil drop",
+        "grams": 1,
+        "group": "fats"
+       }
+      ],
+      "kcal": 88,
+      "protein": 4,
+      "carbs": 13,
+      "fats": 2,
+      "fiber": 3,
+      "why": [
+       {
+        "pair": "Bhuna chana + curry leaves",
+        "effect": "The mineral-rich curry leaves pair with plant protein in roasted gram for easy midday nourishment."
+       }
+      ],
+      "swaps": {
+       "protein": [
+        {
+         "food": "Roasted Bengal gram (bhuna chana)",
+         "grams": 15,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Roasted soya chunks crushed",
+         "grams": 12,
+         "deltaKcal": -2,
+         "deltaProtein": 2,
+         "deltaCarbs": -2,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Sprouted moong dry roasted",
+         "grams": 25,
+         "deltaKcal": -4,
+         "deltaProtein": 1,
+         "deltaCarbs": -1,
+         "deltaFats": -1,
+         "deltaFiber": 0
+        }
+       ],
+       "base": [
+        {
+         "food": "Dry roasted red rice poha",
+         "grams": 8,
+         "deltaKcal": 0,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        },
+        {
+         "food": "Puffed jowar (sorghum)",
+         "grams": 8,
+         "deltaKcal": -1,
+         "deltaProtein": 0,
+         "deltaCarbs": 0,
+         "deltaFats": 0,
+         "deltaFiber": 0
+        }
+       ]
+      },
+      "alchemy": {
+       "protein": {
+        "titleSuffix": "+ roasted edamame",
+        "note": "Add dry toasted green soybeans to easily raise the overall protein.",
+        "minutes": 6,
+        "deltaKcal": 60,
+        "deltaProtein": 13,
+        "deltaCarbs": 4,
+        "deltaFats": 3,
+        "deltaFiber": 3
+       },
+       "glucose": {
+        "titleSuffix": "+ fresh coriander salad",
+        "note": "Toss with finely chopped fresh coriander and grated radish to build extra vegetable fibre.",
+        "minutes": 7,
+        "deltaKcal": 6,
+        "deltaProtein": 0,
+        "deltaCarbs": 1,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       "express": {
+        "titleSuffix": "(ready crunch)",
+        "note": "Toss pre-roasted dry chana and puffed poha directly together without warm tempering.",
+        "minutes": 1,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       "gut": {
+        "titleSuffix": "+ roasted ajwain pinch",
+        "note": "Add a pinch of gently toasted carom seeds to support comfortable afternoon digestion.",
+        "minutes": 5,
+        "deltaKcal": 2,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       }
+      },
+      "planned_around": [
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "You get an earthy savoury crunch from whole legumes and grains that keeps energy level while you work.",
+      "taste": [
+       "crunchy",
+       "nutty",
+       "earthy"
+      ]
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Snack (their local time 1:10 pm)\n- Target for this meal: about 80 kcal and at least 4 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n- They wrote: \"craving gulab jamun\". Answer that with the meals. If it is a craving or a named dish, meal 1 is that food made to fit; meal 2 is a lighter cousin.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 548 kcal, 23 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [steady_carbs] They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.\n- [diabetes_grain] Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.\n\nVARIETY\n- Vary the cooking style across the three plates (not three bhurjis or three curries).\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.\n- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch, but keep the grain portion); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+   "ms": 22930
+  }
+ }
+]

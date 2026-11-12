@@ -19,7 +19,7 @@ const GRAIN = /roti|phulka|rice|millet|jowar|bajra|ragi|dalia|oats|poha|upma|idl
     catch (e) { j = { code: 'fetch ' + e }; }
     const ms = Date.now() - t0, got = status === 200 ? j.status : 'http-' + status + ':' + (j.code || ''), expect = s.expect || 'ok', issues = [];
     if (got === 'ok') {
-      const orders = j.orders || [], menu = words(c.text), offered = Object.keys(j.hooks || {}), shown = JSON.stringify([orders.map(o => [o.name, o.portion, o.ask, o.with]), j.leave, j.tip, j.place]);
+      const orders = j.orders || [], menu = words(c.text), offered = Object.keys(j.hooks || {}), shown = JSON.stringify([orders.map(o => [o.name, o.portion, o.ask, o.with]), j.tip, j.place]);   // the leave list names dishes to skip, so a barred dish there is correct, not offered
       const floor = /must not come in under about (\d+) kcal/.exec(j.prompt || '');
       if (!orders.length || orders.length > 3) issues.push('orders ' + orders.length);
       if (orders.length < 2 && !j.note) issues.push('only one order on a menu that fits');   // dishes removed by a check are the checks doing their job; a single survivor is not a choice

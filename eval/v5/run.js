@@ -22,7 +22,8 @@ const baseC = { meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cui
     texts.forEach(t => { if (t && core.crosses(t, p)) issues.push('crosses: ' + t); if (t && core.supp(t)) issues.push('supplement: ' + t); if (t && core.CLAIM.test(t)) issues.push('claim: ' + t); if (/!/.test(t || '')) issues.push('exclamation: ' + t); });
     whys.forEach(t => { if (core.supp(t)) issues.push('supplement: ' + t); if (core.CLAIM.test(t)) issues.push('claim: ' + t); });   // explanations may name a food to avoid; items may not
     (j.meals || []).forEach(m => { const e = 4 * m.protein + 4 * m.carbs + 9 * m.fats; if (Math.abs(e - m.kcal) / m.kcal > .15) issues.push('energy: ' + m.title);
-      if (p.health === 'diabetes' && !m.items.some(i => i.group === 'carbs')) issues.push('diabetes grain missing: ' + m.title);
+      if (p.health === 'diabetes' && c.meal !== 'snack' && !m.items.some(i => i.group === 'carbs'))   // the grain rule covers breakfast, lunch and dinner (core.js, prompt); snacks are exempt
+        issues.push('diabetes grain missing: ' + m.title);
       if (Object.keys(m.alchemy).length < 4) issues.push('alchemy ' + Object.keys(m.alchemy).length + '/4: ' + m.title); });
     if (s.kind === 'meals' && j.status === 'ok' && (j.meals || []).length < 3) issues.push('meals ' + (j.meals || []).length + '/3');
     const ok = (s.expect === 'ok' ? got === 'ok' : s.expect === 'refer' ? got === 'refer' : s.expect === 'ok-or-refer' ? ['ok', 'refer'].includes(got) : ['refer', 'empty'].includes(got)) && !issues.filter(x => !/^alchemy|^meals/.test(x)).length;

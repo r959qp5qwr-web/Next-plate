@@ -25,6 +25,7 @@ for (const page of pages) {
   check('a pairing with a figure is dropped', () => eq(run([], [lemon, { pair: 'Dal + amla', effect: 'Amla adds 40 g of vitamin C to the meal.' }]).why, [lemon]));
   check('a supplement pairing is dropped', () => eq(run([], [{ pair: 'Palak + iron tablet', effect: 'The tablet tops up your iron.' }]).why, []));
   check('a claim is dropped', () => eq(run([], [{ pair: 'Turmeric + pepper', effect: 'Together they heal inflammation.' }]).why, []));
+  check('a sweet treat is not a claim; treating a condition is', () => { const C = vm.runInContext('CLAIM', E); return [!C.test('Spiced Paneer and Cardamom Treat'), !C.test('A small treat after dinner'), C.test('This treats diabetes'), C.test('Treat your anaemia with palak'), C.test('the treatment for low iron'), C.test('Cures thyroid')].every(Boolean) ? '' : 'claim words wrong'; });
   check('a food the person leaves out is dropped', () => eq(run([], [{ pair: 'Palak + egg', effect: 'Egg helps the body use the iron.' }], Object.assign({}, P, { diet: 'veg' })).why, []));
 }
 console.log(failed ? `\n${failed} failed` : '\nall checks passed'); process.exit(failed ? 1 : 0);
