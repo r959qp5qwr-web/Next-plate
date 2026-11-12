@@ -1,6 +1,8 @@
 // Phone screenshots of v6 Phase 1 against a local server.  node test/v6/shots.js [scale] [base]
 const { chromium } = require('playwright');
 const DSF = Number(process.argv[2] || 2), BASE = process.argv[3] || 'http://localhost:3006/', OUT = 'screens/v6-phase1/';
+// LIVE=<url> CODE=<eval code>: the page is served locally, but every /api call goes to the live engine, so the screens show real Gemini output
+const LIVE = process.env.LIVE || '', CODE = process.env.CODE || '';
 const NOW = new Date('2026-11-12T20:40:00+05:30').getTime(), H = 36e5, D = 864e5;
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 const week = []; for (let i = 1; i <= 6; i++) { week.push({ t: NOW - i * D - 12 * H, type: i % 2 ? 'skipped' : 'had', meal: 'breakfast', title: 'Vegetable poha', kcal: 300, protein: 8, carbs: 50, fats: 8, fiber: 4 });
@@ -10,7 +12,10 @@ const today = [{ t: NOW - 11.5 * H, type: 'skipped', meal: 'breakfast' }, { t: N
   const b = await chromium.launch(), errs = [];
   async function ctx(seed) {
     const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: DSF, timezoneId: 'Asia/Kolkata', locale: 'en-IN' });
-    await c.clock.install({ time: new Date(NOW) }); 
+    await c.clock.install({ time: new Date(NOW) });
+    if (LIVE) await c.route('**/api/**', async route => { const rq = route.request(), body = JSON.parse(rq.postData() || '{}'); body.key = CODE;
+      try { const r = await fetch(LIVE + new URL(rq.url()).pathname, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); const j = await r.json(); delete j.raw; delete j.prompt; delete j.ms;
+        await route.fulfill({ status: r.status, contentType: 'application/json', body: JSON.stringify(j) }); } catch (e) { await route.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' }); } });
     if (seed) await c.addInitScript(s => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('np6', s); sessionStorage.setItem('seeded', '1'); } }, JSON.stringify(seed));
     const p = await c.newPage(); p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
     return p;
@@ -23,6 +28,7 @@ const today = [{ t: NOW - 11.5 * H, type: 'skipped', meal: 'breakfast' }, { t: N
   // 2 a day in progress: skipped breakfast, heavy lunch out of plan, late dinner pattern
   p = await ctx({ p: P, c: {}, ev: week.concat(today) }); await p.goto(BASE); await p.evaluate(() => document.fonts.ready); await settle(p, 300); await shot(p, '02-planning');
   await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1500); await shot(p, '03-today-directive');
+  await p.waitForSelector('#alc-protein:not([disabled])', { timeout: 60000 }); await settle(p, 600);
   await into(p, '#plate-card'); await settle(p, 400); await shot(p, '04-plate');
   await into(p, '.hero h2', 'start'); await settle(p, 400); await shot(p, '05-planned-around');
   await into(p, '.card.why', 'center'); await settle(p, 400); await shot(p, '06-why-today');
@@ -37,5 +43,11 @@ const today = [{ t: NOW - 11.5 * H, type: 'skipped', meal: 'breakfast' }, { t: N
   await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 800);
   await p.click('#meal-breakfast'); await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 800); await into(p, '.acts', 'center'); await settle(p, 300); await shot(p, '12-actions');
   await p.click('#have'); await settle(p, 900); await shot(p, '13-logged');
+  // 5 lunch is eaten out: rescue it, count it, and the day follows
+  await p.click('#meal-lunch'); await settle(p, 300); await p.click('#tab-rescue'); await settle(p, 400); await p.fill('#rin', 'Chole bhature, 2 bhature'); await p.press('#rin', 'Enter');
+  await p.waitForSelector('.cmp', { timeout: 60000 }); await settle(p, 900); await shot(p, '14-rescue-fits-day');
+  await into(p, '#rescue-had', 'center'); await settle(p, 300); await shot(p, '15-rescue-moves'); await p.click('#rescue-had'); await settle(p, 1200); await shot(p, '16-day-after-eating-out');
+  await p.click('#meal-dinner'); await p.waitForSelector('#plate-card', { timeout: 60000 }); await settle(p, 1200); await shot(p, '17-dinner-after-eating-out');
+  await into(p, '.hero h2', 'start'); await settle(p, 400); await shot(p, '18-dinner-planned-around');
   console.log('errors:', errs.length ? errs : 'none'); await b.close();
 })();
