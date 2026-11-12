@@ -6,12 +6,13 @@
 
 - **Product:** Next Plate is a **context engine** for one person's eating (owner's framing, approved). Architecture: `docs/ARCHITECTURE-v6.md`. Foundation: the owner's two Gemini files in `docs/foundation/`. The old "coach's food rules / household measures" framing is rejected.
 - **Owner decisions:** AI plans every meal; grams and kcal (no katori/phulka units); no supplements; asking happens on the main screen; look stays Raw Linen (never copy Gemini's look); after-meal curve is a band, never mg/dL; food file lives on the phone first (Supabase later).
-- **Live now** (https://next-plate-production.up.railway.app/): the **v5 screens with the v6 engine underneath**. Railway function source = `hosted/v5/server.ts`; variables `PAGE_REF=e6884382385b8c8ee2d80abe1c8ed22ac0bc6f83`, `THINKING=low`; page file `hosted/v5/index.min.html`.
+- **Live now** (https://next-plate-production.up.railway.app/): the **v5 screens with the v6 engine underneath**. Railway function source = `hosted/v5/server.ts`; variables `PAGE_REF=5f1d63fb9df7e9f4f44a51df34aa2cfcf1e171b0`, `THINKING=low`; page file `hosted/v5/index.min.html`.
 - **Built, waiting for the owner's "Deploy.":** v6 Phase 1 screens (`hosted/v6/index.min.html`): day line, planned-around tags, goal, nutrient focus, had / something else / skipped, typed meal logging, researched personal targets, faster two-step loading. To go live: set `PAGE_PATH=hosted/v6/index.min.html` (see `hosted/v6/README.md`).
 - **Checked on real Gemini:** v6 engine 18/18 (`eval/v6/results-live4.json`); v5 path results in `eval/v5/`. Screens with real output: `screens/v6-phase1/`.
 - **Targets research (section 13):** `docs/RESEARCH-parameters.md`; values with sources in `src/v6/params.js`. Five owner choices listed there (1200 kcal floor, obesity line 27.5 vs 25, activity factor 1.3, protein on BMI-25 weight, assumed bedtime).
 - **Next phases:** 2 learning likes/portions + family pot + photo logging; 3 rhythm strip, voice, WhatsApp; 4 Week review + My food file + weight-trend correction; 5 calendar (treks, fasts); 6 Supabase + coach view.
-- **Still open from before:** nextplate.in domain (owner adds it in Railway + GoDaddy); Railway trial ends about 2026-11-18; the 66 s demo video shows the old app.
+- **Promo video (2026-11-12):** `demo/next-plate-promo.mp4` (80 s, 9:16, owner's voice "Mine"; says what the app does for the user, not a feature tour) and `demo/next-plate-promo-whatsapp.mp4` (small copy). It shows the v6 Phase 1 screens, which are not live until "Deploy.". Source and rebuild steps: `demo/reel/README.md`. Any narration line can be re-worded and re-voiced on its own (`demo/reel/promo/audio/place.py`).
+- **Still open from before:** nextplate.in domain (owner adds it in Railway + GoDaddy); Railway trial ends about 2026-11-18; `demo/next-plate-demo.mp4` (66 s) shows the old app.
 - **Process rule learned the hard way:** before building, trace every feature to the owner's source files and list every departure; never subtract a feature without saying what it becomes.
 
 ## 0. Instructions for Claude (read first)
