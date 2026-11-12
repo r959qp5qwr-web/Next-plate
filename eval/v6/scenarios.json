@@ -7,10 +7,32 @@
   },
   "c": {
    "meal": "lunch",
-   "hour": 13.2
+   "hour": 13.2,
+   "dayNo": 310
   },
   "file": {},
   "want": []
+ },
+ {
+  "id": "variety-after-paneer",
+  "kind": "meals",
+  "p": {
+   "goal": "hold"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.0,
+   "dayNo": 317
+  },
+  "file": {
+   "recent": [
+    "Paneer Bhurji with Methi Roti and Kachumber",
+    "Rajma Masala with Brown Rice",
+    "Moong Dal Khichdi with Curd"
+   ]
+  },
+  "want": [],
+  "avoid": "paneer bhurji|rajma masala"
  },
  {
   "id": "lose-diabetes-dinner",
@@ -22,7 +44,8 @@
   },
   "c": {
    "meal": "dinner",
-   "hour": 20.2
+   "hour": 20.2,
+   "dayNo": 311
   },
   "file": {},
   "want": [
@@ -42,7 +65,8 @@
   },
   "c": {
    "meal": "lunch",
-   "hour": 13.1
+   "hour": 13.1,
+   "dayNo": 312
   },
   "file": {},
   "want": [
@@ -58,7 +82,8 @@
   },
   "c": {
    "meal": "dinner",
-   "hour": 20.3
+   "hour": 20.3,
+   "dayNo": 313
   },
   "file": {
    "today": {
@@ -108,7 +133,8 @@
   },
   "c": {
    "meal": "dinner",
-   "hour": 20.0
+   "hour": 20.0,
+   "dayNo": 314
   },
   "file": {
    "today": {
@@ -151,7 +177,8 @@
   },
   "c": {
    "meal": "lunch",
-   "hour": 13.5
+   "hour": 13.5,
+   "dayNo": 315
   },
   "file": {
    "today": {
@@ -178,7 +205,8 @@
   "c": {
    "meal": "dinner",
    "hour": 22.4,
-   "time": "10:24 pm"
+   "time": "10:24 pm",
+   "dayNo": 316
   },
   "file": {},
   "want": [
@@ -193,7 +221,8 @@
   },
   "c": {
    "meal": "dinner",
-   "hour": 20.0
+   "hour": 20.0,
+   "dayNo": 317
   },
   "file": {
    "patterns": [
@@ -220,7 +249,8 @@
   "c": {
    "meal": "breakfast",
    "hour": 8.2,
-   "mood": "quick"
+   "mood": "quick",
+   "dayNo": 318
   },
   "file": {
    "patterns": [
@@ -246,7 +276,8 @@
   },
   "c": {
    "meal": "lunch",
-   "hour": 13.0
+   "hour": 13.0,
+   "dayNo": 319
   },
   "file": {},
   "want": [
@@ -267,7 +298,8 @@
   "c": {
    "meal": "dinner",
    "hour": 20.0,
-   "mode": "strength"
+   "mode": "strength",
+   "dayNo": 320
   },
   "file": {},
   "want": [
@@ -286,7 +318,8 @@
   },
   "c": {
    "meal": "dinner",
-   "hour": 20.5
+   "hour": 20.5,
+   "dayNo": 321
   },
   "file": {
    "today": {

@@ -1,0 +1,5223 @@
+[
+ {
+  "id": "plain-day-lunch",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 13077,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "A desk day calls for a steady home-cooked lunch rich in protein and fiber to keep energy even through the afternoon.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Methi Roti and Kachumber",
+     "subtitle": "Spiced crumbled paneer, fresh fenugreek whole-wheat flatbread, cucumber tomato salad, and plain curd.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Paneer bhurji with onion and tomato",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Methi whole wheat roti",
+       "grams": 80,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato kachumber",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Plain low-fat curd",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Ghee on roti",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 645,
+     "protein": 28,
+     "carbs": 58,
+     "fats": 33,
+     "fiber": 10,
+     "why": [
+      {
+       "pair": "Paneer + methi greens",
+       "effect": "Protein combined with leafy greens helps maintain steady energy while you work at your desk."
+      },
+      {
+       "pair": "Curd + raw salad",
+       "effect": "Cooling yogurt balances fresh vegetable fiber for smooth, comfortable digestion."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [],
+     "forYou": "This balanced North Indian plate gives you satisfying protein and fiber to stay comfortable while sitting.",
+     "tuned": false
+    },
+    {
+     "title": "Rajma Masala with Brown Rice and Palak",
+     "subtitle": "Slow-cooked red kidney beans, steamed brown rice, lightly spiced spinach subzi, and fresh radish slices.",
+     "cuisine": "North Indian Regional",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Cooked rajma curry",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Cooked brown rice",
+       "grams": 140,
+       "group": "carbs"
+      },
+      {
+       "food": "Palak subzi",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Sliced mooli and lemon",
+       "grams": 60,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil in cooking",
+       "grams": 8,
+       "group": "fats"
+      }
+     ],
+     "kcal": 625,
+     "protein": 22,
+     "carbs": 95,
+     "fats": 17,
+     "fiber": 16,
+     "why": [
+      {
+       "pair": "Rajma + brown rice",
+       "effect": "Combining pulses with whole grains provides a complete protein profile alongside slow-digesting carbohydrates."
+      },
+      {
+       "pair": "Spinach + lemon juice",
+       "effect": "Citrus helps make the plant iron in dark leafy greens easier for your body to absorb."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [],
+     "forYou": "Wholesome kidney beans and spinach offer plenty of steady fiber to keep you focused without heaviness.",
+     "tuned": false
+    },
+    {
+     "title": "Kala Chana Chaat Bowl with Dahi",
+     "subtitle": "Warm spiced black chickpeas tossed with chopped vegetables, fresh mint chutney, and thick curd.",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Boiled kala chana tossed with spices",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Boiled potato cubes",
+       "grams": 70,
+       "group": "carbs"
+      },
+      {
+       "food": "Chopped onion, tomato, and cucumber",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Plain whole milk curd",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Roasted cumin and mustard oil tempering",
+       "grams": 8,
+       "group": "fats"
+      }
+     ],
+     "kcal": 618,
+     "protein": 24,
+     "carbs": 80,
+     "fats": 22,
+     "fiber": 15,
+     "why": [
+      {
+       "pair": "Kala chana + fresh curd",
+       "effect": "Legume fiber paired with creamy curd provides sustained fullness through a quiet afternoon."
+      },
+      {
+       "pair": "Cucumber + roasted cumin",
+       "effect": "Crisp vegetables and warm spices offer light hydration and comfortable digestive ease."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [],
+     "forYou": "This warm chickpea bowl provides ample plant protein and keeps preparation straightforward for lunch at home.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {},
+   "raw": {
+    "status": "ok",
+    "read": "A desk day calls for a steady home-cooked lunch rich in protein and fiber to keep energy even through the afternoon.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Methi Roti and Kachumber",
+      "subtitle": "Spiced crumbled paneer, fresh fenugreek whole-wheat flatbread, cucumber tomato salad, and plain curd.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Paneer bhurji with onion and tomato",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Methi whole wheat roti",
+        "grams": 80,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato kachumber",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Plain low-fat curd",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Ghee on roti",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 645,
+      "protein": 28,
+      "carbs": 58,
+      "fats": 33,
+      "fiber": 10,
+      "why": [
+       {
+        "pair": "Paneer + methi greens",
+        "effect": "Protein combined with leafy greens helps maintain steady energy while you work at your desk."
+       },
+       {
+        "pair": "Curd + raw salad",
+        "effect": "Cooling yogurt balances fresh vegetable fiber for smooth, comfortable digestion."
+       }
+      ],
+      "planned_around": [
+       "plain_day"
+      ],
+      "for_you": "This balanced North Indian plate gives you satisfying protein and fiber to stay comfortable while sitting."
+     },
+     {
+      "title": "Rajma Masala with Brown Rice and Palak",
+      "subtitle": "Slow-cooked red kidney beans, steamed brown rice, lightly spiced spinach subzi, and fresh radish slices.",
+      "cuisine": "North Indian Regional",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Cooked rajma curry",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Cooked brown rice",
+        "grams": 140,
+        "group": "carbs"
+       },
+       {
+        "food": "Palak subzi",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Sliced mooli and lemon",
+        "grams": 60,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil in cooking",
+        "grams": 8,
+        "group": "fats"
+       }
+      ],
+      "kcal": 625,
+      "protein": 22,
+      "carbs": 95,
+      "fats": 17,
+      "fiber": 16,
+      "why": [
+       {
+        "pair": "Rajma + brown rice",
+        "effect": "Combining pulses with whole grains provides a complete protein profile alongside slow-digesting carbohydrates."
+       },
+       {
+        "pair": "Spinach + lemon juice",
+        "effect": "Citrus helps make the plant iron in dark leafy greens easier for your body to absorb."
+       }
+      ],
+      "planned_around": [
+       "plain_day"
+      ],
+      "for_you": "Wholesome kidney beans and spinach offer plenty of steady fiber to keep you focused without heaviness."
+     },
+     {
+      "title": "Kala Chana Chaat Bowl with Dahi",
+      "subtitle": "Warm spiced black chickpeas tossed with chopped vegetables, fresh mint chutney, and thick curd.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Boiled kala chana tossed with spices",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Boiled potato cubes",
+        "grams": 70,
+        "group": "carbs"
+       },
+       {
+        "food": "Chopped onion, tomato, and cucumber",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Plain whole milk curd",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Roasted cumin and mustard oil tempering",
+        "grams": 8,
+        "group": "fats"
+       }
+      ],
+      "kcal": 618,
+      "protein": 24,
+      "carbs": 80,
+      "fats": 22,
+      "fiber": 15,
+      "why": [
+       {
+        "pair": "Kala chana + fresh curd",
+        "effect": "Legume fiber paired with creamy curd provides sustained fullness through a quiet afternoon."
+       },
+       {
+        "pair": "Cucumber + roasted cumin",
+        "effect": "Crisp vegetables and warm spices offer light hydration and comfortable digestive ease."
+       }
+      ],
+      "planned_around": [
+       "plain_day"
+      ],
+      "for_you": "This warm chickpea bowl provides ample plant protein and keeps preparation straightforward for lunch at home."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Lunch (their local time 1:10 pm)\n- Target for this meal: about 660 kcal and at least 20 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 1212 kcal, 43 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [plain_day] Nothing unusual today: a balanced plate at the target.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 12561
+  }
+ },
+ {
+  "id": "lose-diabetes-dinner",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 13590,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "You have a light appetite after a desk day, so we are keeping dinner light, vegetable-rich, and built with steady protein and measured whole grain.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Methi Phulka and Kachumber",
+     "subtitle": "Spiced low-fat paneer scramble paired with a whole wheat fenugreek roti and fresh cucumber tomato salad",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Low-fat paneer crumbled and lightly sauteed",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat and fresh methi phulka",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato kachumber with lemon",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil for cooking",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 381,
+     "protein": 26,
+     "carbs": 33,
+     "fats": 16,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Paneer + methi phulka",
+       "effect": "Protein from paneer works alongside whole grain fibre to slow digestion through a restful evening."
+      },
+      {
+       "pair": "Lemon + kachumber",
+       "effect": "Raw salad adds crisp bulk and moisture before the warm grain and protein."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "This plate keeps your grain measured while giving you plenty of protein and fresh salad to settle your evening quietly.",
+     "tuned": false
+    },
+    {
+     "title": "Moong Dal Tadka with Steamed Spinach and Jowar Roti",
+     "subtitle": "Thick yellow moong dal over wilted garlic spinach alongside a warm sorghum flatbread",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Cooked thick yellow moong dal",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 50,
+       "group": "carbs"
+      },
+      {
+       "food": "Steamed spinach with cumin and garlic",
+       "grams": 140,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee for tadka",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 377,
+     "protein": 24,
+     "carbs": 52,
+     "fats": 8,
+     "fiber": 11,
+     "why": [
+      {
+       "pair": "Moong dal + jowar roti",
+       "effect": "Combining lentils and millet delivers complete plant nutrition with steady, slow energy release."
+      },
+      {
+       "pair": "Spinach + moong dal",
+       "effect": "Abundant leafy greens add volume and slow gastric emptying alongside warm dal."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "A comforting lentil and millet dinner that keeps carbs unhurried with generous garlic greens.",
+     "tuned": false
+    },
+    {
+     "title": "Tofu Matar Curry with Brown Rice and Lauki",
+     "subtitle": "Firm tofu and green peas in light onion gravy with steamed lauki sabzi and brown rice",
+     "cuisine": "North Indian Home",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Firm tofu cubes",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Green peas cooked in gravy",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Cooked brown basmati rice",
+       "grams": 60,
+       "group": "carbs"
+      },
+      {
+       "food": "Steamed bottle gourd sabzi",
+       "grams": 130,
+       "group": "greens"
+      },
+      {
+       "food": "Cold pressed groundnut oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 384,
+     "protein": 25,
+     "carbs": 39,
+     "fats": 14,
+     "fiber": 8,
+     "why": [
+      {
+       "pair": "Tofu + brown rice",
+       "effect": "Dense soy protein tempers the uptake of the cooked whole grain."
+      },
+      {
+       "pair": "Lauki + green peas",
+       "effect": "Water-rich gourd supplies bulk so a smaller measure of rice and peas fully satisfies."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "You get the comfort of rice and curry with tofu and bottle gourd keeping the plate balanced and light.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "goal_lose": "gentle weight loss",
+    "diabetes_grain": "the grain stays (diabetes)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "You have a light appetite after a desk day, so we are keeping dinner light, vegetable-rich, and built with steady protein and measured whole grain.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Methi Phulka and Kachumber",
+      "subtitle": "Spiced low-fat paneer scramble paired with a whole wheat fenugreek roti and fresh cucumber tomato salad",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Low-fat paneer crumbled and lightly sauteed",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat and fresh methi phulka",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato kachumber with lemon",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil for cooking",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 381,
+      "protein": 26,
+      "carbs": 33,
+      "fats": 16,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Paneer + methi phulka",
+        "effect": "Protein from paneer works alongside whole grain fibre to slow digestion through a restful evening."
+       },
+       {
+        "pair": "Lemon + kachumber",
+        "effect": "Raw salad adds crisp bulk and moisture before the warm grain and protein."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "This plate keeps your grain measured while giving you plenty of protein and fresh salad to settle your evening quietly."
+     },
+     {
+      "title": "Moong Dal Tadka with Steamed Spinach and Jowar Roti",
+      "subtitle": "Thick yellow moong dal over wilted garlic spinach alongside a warm sorghum flatbread",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Cooked thick yellow moong dal",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 50,
+        "group": "carbs"
+       },
+       {
+        "food": "Steamed spinach with cumin and garlic",
+        "grams": 140,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee for tadka",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 377,
+      "protein": 24,
+      "carbs": 52,
+      "fats": 8,
+      "fiber": 11,
+      "why": [
+       {
+        "pair": "Moong dal + jowar roti",
+        "effect": "Combining lentils and millet delivers complete plant nutrition with steady, slow energy release."
+       },
+       {
+        "pair": "Spinach + moong dal",
+        "effect": "Abundant leafy greens add volume and slow gastric emptying alongside warm dal."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "A comforting lentil and millet dinner that keeps carbs unhurried with generous garlic greens."
+     },
+     {
+      "title": "Tofu Matar Curry with Brown Rice and Lauki",
+      "subtitle": "Firm tofu and green peas in light onion gravy with steamed lauki sabzi and brown rice",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Firm tofu cubes",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Green peas cooked in gravy",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Cooked brown basmati rice",
+        "grams": 60,
+        "group": "carbs"
+       },
+       {
+        "food": "Steamed bottle gourd sabzi",
+        "grams": 130,
+        "group": "greens"
+       },
+       {
+        "food": "Cold pressed groundnut oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 384,
+      "protein": 25,
+      "carbs": 39,
+      "fats": 14,
+      "fiber": 8,
+      "why": [
+       {
+        "pair": "Tofu + brown rice",
+        "effect": "Dense soy protein tempers the uptake of the cooked whole grain."
+       },
+       {
+        "pair": "Lauki + green peas",
+        "effect": "Water-rich gourd supplies bulk so a smaller measure of rice and peas fully satisfies."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "You get the comfort of rice and curry with tofu and bottle gourd keeping the plate balanced and light."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 380 kcal and at least 23 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1360 kcal and 75 g protein. Left to plan from this meal on: about 381 kcal, 23 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [goal_lose] Goal: lose weight gently. Vegetables fill about half the plate, the grain is measured, nothing fried, no sugary drinks.\n- [diabetes_grain] Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: keep a whole-grain or millet portion on every meal, paired with protein and fibre. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 13546,
+   "tune": {
+    "status": "ok",
+    "swaps": {
+     "protein": [
+      {
+       "food": "Low-fat paneer, crumbled and lightly sauteed",
+       "grams": 130,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Tofu, crumbled and spiced as bhurji",
+       "grams": 150,
+       "deltaKcal": -35,
+       "deltaProtein": -2,
+       "deltaCarbs": -1,
+       "deltaFats": -3,
+       "deltaFiber": 2
+      },
+      {
+       "food": "Boiled kala chana, tossed with onion and spices",
+       "grams": 140,
+       "deltaKcal": 28,
+       "deltaProtein": -15,
+       "deltaCarbs": 26,
+       "deltaFats": -2,
+       "deltaFiber": 4
+      }
+     ],
+     "base": [
+      {
+       "food": "Whole wheat and fresh methi phulka",
+       "grams": 40,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 45,
+       "deltaKcal": 6,
+       "deltaProtein": -1,
+       "deltaCarbs": 2,
+       "deltaFats": 0,
+       "deltaFiber": 1
+      },
+      {
+       "food": "Cooked brown basmati rice",
+       "grams": 90,
+       "deltaKcal": 3,
+       "deltaProtein": -1,
+       "deltaCarbs": 1,
+       "deltaFats": 0,
+       "deltaFiber": -1
+      }
+     ]
+    },
+    "alchemy": {
+     "protein": {
+      "suffix": "+ Roasted Chana Side",
+      "note": "Add 50 g roasted chana to boost protein naturally alongside the bhurji.",
+      "deltaKcal": 185,
+      "deltaProtein": 13,
+      "deltaCarbs": 23,
+      "deltaFats": 4,
+      "deltaFiber": 8,
+      "minutes": 25
+     },
+     "glucose": {
+      "suffix": "+ Extra Kachumber & Flaxseeds",
+      "note": "Double the kachumber salad and sprinkle 10 g roasted ground flaxseeds for extra viscous fibre.",
+      "deltaKcal": 75,
+      "deltaProtein": 3,
+      "deltaCarbs": 5,
+      "deltaFats": 4,
+      "deltaFiber": 5,
+      "minutes": 27
+     },
+     "express": {
+      "suffix": "(10-Minute Raw Bhurji Wrap)",
+      "note": "Toss raw crumbled paneer with pre-cut salad into a ready whole wheat roti without cooking.",
+      "deltaKcal": -45,
+      "deltaProtein": 0,
+      "deltaCarbs": 0,
+      "deltaFats": -5,
+      "deltaFiber": 0,
+      "minutes": 10
+     },
+     "gut": {
+      "suffix": "+ Set Curd, Mild Spicing",
+      "note": "Omit green chillies, cook with cumin and turmeric only, and add 100 g plain set curd.",
+      "deltaKcal": 60,
+      "deltaProtein": 4,
+      "deltaCarbs": 5,
+      "deltaFats": 3,
+      "deltaFiber": 0,
+      "minutes": 25
+     }
+    },
+    "raw": {
+     "swaps": {
+      "protein": [
+       {
+        "food": "Low-fat paneer, crumbled and lightly sauteed",
+        "grams": 130,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Tofu, crumbled and spiced as bhurji",
+        "grams": 150,
+        "deltaKcal": -35,
+        "deltaProtein": -2,
+        "deltaCarbs": -1,
+        "deltaFats": -3,
+        "deltaFiber": 2
+       },
+       {
+        "food": "Boiled kala chana, tossed with onion and spices",
+        "grams": 140,
+        "deltaKcal": 28,
+        "deltaProtein": -15,
+        "deltaCarbs": 26,
+        "deltaFats": -2,
+        "deltaFiber": 4
+       }
+      ],
+      "base": [
+       {
+        "food": "Whole wheat and fresh methi phulka",
+        "grams": 40,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 45,
+        "deltaKcal": 6,
+        "deltaProtein": -1,
+        "deltaCarbs": 2,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       {
+        "food": "Cooked brown basmati rice",
+        "grams": 90,
+        "deltaKcal": 3,
+        "deltaProtein": -1,
+        "deltaCarbs": 1,
+        "deltaFats": 0,
+        "deltaFiber": -1
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "titleSuffix": "+ Roasted Chana Side",
+       "note": "Add 50 g roasted chana to boost protein naturally alongside the bhurji.",
+       "minutes": 25,
+       "deltaKcal": 185,
+       "deltaProtein": 13,
+       "deltaCarbs": 23,
+       "deltaFats": 4,
+       "deltaFiber": 8
+      },
+      "glucose": {
+       "titleSuffix": "+ Extra Kachumber & Flaxseeds",
+       "note": "Double the kachumber salad and sprinkle 10 g roasted ground flaxseeds for extra viscous fibre.",
+       "minutes": 27,
+       "deltaKcal": 75,
+       "deltaProtein": 3,
+       "deltaCarbs": 5,
+       "deltaFats": 4,
+       "deltaFiber": 5
+      },
+      "express": {
+       "titleSuffix": "(10-Minute Raw Bhurji Wrap)",
+       "note": "Toss raw crumbled paneer with pre-cut salad into a ready whole wheat roti without cooking.",
+       "minutes": 10,
+       "deltaKcal": -45,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": -5,
+       "deltaFiber": 0
+      },
+      "gut": {
+       "titleSuffix": "+ Set Curd, Mild Spicing",
+       "note": "Omit green chillies, cook with cumin and turmeric only, and add 100 g plain set curd.",
+       "minutes": 25,
+       "deltaKcal": 60,
+       "deltaProtein": 4,
+       "deltaCarbs": 5,
+       "deltaFats": 3,
+       "deltaFiber": 0
+      }
+     }
+    },
+    "prompt": "You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n\nTHE PLATE: Paneer Bhurji with Methi Phulka and Kachumber (Spiced low-fat paneer scramble paired with a whole wheat fenugreek roti and fresh cucumber tomato salad)\n- 130 g Low-fat paneer crumbled and lightly sauteed [protein]; 40 g Whole wheat and fresh methi phulka [carbs]; 120 g Cucumber and tomato kachumber with lemon [greens]; 5 g Mustard oil for cooking [fats]\n- As written: 381 kcal, 26 g protein, 33 g carbs, 16 g fats, 7 g fibre. Prep 25 minutes.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: keep a whole-grain or millet portion on every meal, paired with protein and fibre. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n\nWHAT TO RETURN\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch, but keep the grain portion); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+    "ms": 6945
+   },
+   "tuneMs": 6987
+  }
+ },
+ {
+  "id": "diabetes-on-sulfonylurea",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 10180,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "A desk day calls for generous vegetables, steady legumes, and a measured grain portion to keep you comfortably fueled without an afternoon slump.",
+   "meals": [
+    {
+     "title": "Rajma Masala with Brown Rice and Kachumber",
+     "subtitle": "Spiced kidney bean curry served with measured brown basmati rice, cucumber salad, and plain curd.",
+     "cuisine": "North Indian Home",
+     "minutes": 35,
+     "items": [
+      {
+       "food": "Cooked rajma masala",
+       "grams": 240,
+       "group": "protein"
+      },
+      {
+       "food": "Cooked brown basmati rice",
+       "grams": 150,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato kachumber",
+       "grams": 160,
+       "group": "greens"
+      },
+      {
+       "food": "Plain low-fat curd",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Mustard oil for tempering",
+       "grams": 8,
+       "group": "fats"
+      }
+     ],
+     "kcal": 694,
+     "protein": 28,
+     "carbs": 105,
+     "fats": 18,
+     "fiber": 19,
+     "why": [
+      {
+       "pair": "Rajma + brown rice",
+       "effect": "Combining legumes with a whole grain provides a complete plant protein while slowing carbohydrate digestion."
+      },
+      {
+       "pair": "Cucumber salad + curd",
+       "effect": "Raw vegetables and protein-rich curd add volume and help smooth the post-meal energy release."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "steady_carbs",
+      "diabetes_grain"
+     ],
+     "forYou": "This balanced North Indian thali gives you ample protein and fibre to stay alert and satisfied during an afternoon at your desk.",
+     "tuned": false
+    },
+    {
+     "title": "Paneer Bhurji with Multigrain Roti and Dal",
+     "subtitle": "Crumbled paneer stir-fry with spinach, whole-wheat rotis, yellow dal, and crunchy sliced radish.",
+     "cuisine": "North Indian Home",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Paneer bhurji with onions and peppers",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Cooked yellow moong dal",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Whole-wheat phulkas without ghee",
+       "grams": 90,
+       "group": "carbs"
+      },
+      {
+       "food": "Steamed spinach and radish salad",
+       "grams": 140,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee for cooking",
+       "grams": 10,
+       "group": "fats"
+      }
+     ],
+     "kcal": 686,
+     "protein": 33,
+     "carbs": 76,
+     "fats": 28,
+     "fiber": 14,
+     "why": [
+      {
+       "pair": "Paneer + whole-wheat phulka",
+       "effect": "Dense dairy protein slows the absorption of the carbohydrates from the whole-grain bread."
+      },
+      {
+       "pair": "Spinach + moong dal",
+       "effect": "Fibre-dense greens paired with light lentils encourage gentle digestion and steady fullness."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "steady_carbs",
+      "diabetes_grain"
+     ],
+     "forYou": "You get a hearty dose of protein from fresh paneer paired with modest whole grains to prevent sluggishness.",
+     "tuned": false
+    },
+    {
+     "title": "Chole Palak with Jowar Roti and Raita",
+     "subtitle": "Chickpeas simmered with pureed spinach, accompanied by a sorghum roti and vegetable raita.",
+     "cuisine": "North Indian Home",
+     "minutes": 40,
+     "items": [
+      {
+       "food": "Cooked chole palak curry",
+       "grams": 260,
+       "group": "protein"
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 100,
+       "group": "carbs"
+      },
+      {
+       "food": "Grated cucumber and mint raita",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Fresh carrot and cabbage slaw",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Sunflower oil for cooking",
+       "grams": 10,
+       "group": "fats"
+      }
+     ],
+     "kcal": 676,
+     "protein": 26,
+     "carbs": 97,
+     "fats": 20,
+     "fiber": 21,
+     "why": [
+      {
+       "pair": "Chickpeas + spinach",
+       "effect": "Abundant soluble and insoluble fibre work together to create sustained satiety through quiet afternoons."
+      },
+      {
+       "pair": "Jowar + raita",
+       "effect": "Millet carbs digest gradually when anchored by the natural fats and protein in curd."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_lose",
+      "steady_carbs",
+      "diabetes_grain"
+     ],
+     "forYou": "A wholesome millet flatbread and fibre-rich chickpea spinach curry provide steady stamina while you work at your desk.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "goal_lose": "gentle weight loss",
+    "steady_carbs": "steady grain (diabetes medicine)",
+    "diabetes_grain": "the grain stays (diabetes)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "A desk day calls for generous vegetables, steady legumes, and a measured grain portion to keep you comfortably fueled without an afternoon slump.",
+    "meals": [
+     {
+      "title": "Rajma Masala with Brown Rice and Kachumber",
+      "subtitle": "Spiced kidney bean curry served with measured brown basmati rice, cucumber salad, and plain curd.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 35,
+      "items": [
+       {
+        "food": "Cooked rajma masala",
+        "grams": 240,
+        "group": "protein"
+       },
+       {
+        "food": "Cooked brown basmati rice",
+        "grams": 150,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato kachumber",
+        "grams": 160,
+        "group": "greens"
+       },
+       {
+        "food": "Plain low-fat curd",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Mustard oil for tempering",
+        "grams": 8,
+        "group": "fats"
+       }
+      ],
+      "kcal": 694,
+      "protein": 28,
+      "carbs": 105,
+      "fats": 18,
+      "fiber": 19,
+      "why": [
+       {
+        "pair": "Rajma + brown rice",
+        "effect": "Combining legumes with a whole grain provides a complete plant protein while slowing carbohydrate digestion."
+       },
+       {
+        "pair": "Cucumber salad + curd",
+        "effect": "Raw vegetables and protein-rich curd add volume and help smooth the post-meal energy release."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "This balanced North Indian thali gives you ample protein and fibre to stay alert and satisfied during an afternoon at your desk."
+     },
+     {
+      "title": "Paneer Bhurji with Multigrain Roti and Dal",
+      "subtitle": "Crumbled paneer stir-fry with spinach, whole-wheat rotis, yellow dal, and crunchy sliced radish.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Paneer bhurji with onions and peppers",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Cooked yellow moong dal",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Whole-wheat phulkas without ghee",
+        "grams": 90,
+        "group": "carbs"
+       },
+       {
+        "food": "Steamed spinach and radish salad",
+        "grams": 140,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee for cooking",
+        "grams": 10,
+        "group": "fats"
+       }
+      ],
+      "kcal": 686,
+      "protein": 33,
+      "carbs": 76,
+      "fats": 28,
+      "fiber": 14,
+      "why": [
+       {
+        "pair": "Paneer + whole-wheat phulka",
+        "effect": "Dense dairy protein slows the absorption of the carbohydrates from the whole-grain bread."
+       },
+       {
+        "pair": "Spinach + moong dal",
+        "effect": "Fibre-dense greens paired with light lentils encourage gentle digestion and steady fullness."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "You get a hearty dose of protein from fresh paneer paired with modest whole grains to prevent sluggishness."
+     },
+     {
+      "title": "Chole Palak with Jowar Roti and Raita",
+      "subtitle": "Chickpeas simmered with pureed spinach, accompanied by a sorghum roti and vegetable raita.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 40,
+      "items": [
+       {
+        "food": "Cooked chole palak curry",
+        "grams": 260,
+        "group": "protein"
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 100,
+        "group": "carbs"
+       },
+       {
+        "food": "Grated cucumber and mint raita",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Fresh carrot and cabbage slaw",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Sunflower oil for cooking",
+        "grams": 10,
+        "group": "fats"
+       }
+      ],
+      "kcal": 676,
+      "protein": 26,
+      "carbs": 97,
+      "fats": 20,
+      "fiber": 21,
+      "why": [
+       {
+        "pair": "Chickpeas + spinach",
+        "effect": "Abundant soluble and insoluble fibre work together to create sustained satiety through quiet afternoons."
+       },
+       {
+        "pair": "Jowar + raita",
+        "effect": "Millet carbs digest gradually when anchored by the natural fats and protein in curd."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "steady_carbs",
+       "diabetes_grain"
+      ],
+      "for_you": "A wholesome millet flatbread and fibre-rich chickpea spinach curry provide steady stamina while you work at your desk."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 78 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Lunch (their local time 1:10 pm)\n- Target for this meal: about 720 kcal and at least 20 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1790 kcal and 62 g protein. Left to plan from this meal on: about 1307 kcal, 43 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [goal_lose] Goal: lose weight gently. Vegetables fill about half the plate, the grain is measured, nothing fried, no sugary drinks.\n- [steady_carbs] They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.\n- [diabetes_grain] Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: keep a whole-grain or millet portion on every meal, paired with protein and fibre. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 10137
+  }
+ },
+ {
+  "id": "protein-gap-dinner",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 14257,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "With only one meal left to close a large protein gap, dinner focuses on protein-rich vegetarian staples paired with generous vegetables.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Palak and Missi Roti",
+     "subtitle": "Spiced crumbled paneer tossed with spinach, served with a protein-rich besan roti and cucumber salad.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Paneer bhurji cooked with onions and tomatoes",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed spinach tossed with cumin",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Missi roti made with besan and whole wheat",
+       "grams": 80,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato salad with lemon",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil for tempering",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 575,
+     "protein": 31,
+     "carbs": 42,
+     "fats": 31,
+     "fiber": 9,
+     "why": [
+      {
+       "pair": "Lemon juice + spinach",
+       "effect": "Acidity brings out the gentle sweetness of greens while keeping the dish light after a desk day."
+      },
+      {
+       "pair": "Besan + paneer",
+       "effect": "Combining dairy and legume proteins provides a balanced, satisfying texture without heavy sauces."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "had_lunch",
+      "had_snack"
+     ],
+     "forYou": "You get a substantial dose of protein from fresh paneer and besan to help bridge today's shortfall comfortably.",
+     "tuned": false
+    },
+    {
+     "title": "Soya Chunks Curry with Bhindi and Phulka",
+     "subtitle": "Tender soya nuggets in tomato gravy with spiced okra and a light whole-wheat phulka.",
+     "cuisine": "North Indian Home",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Cooked soya chunks in light onion-tomato gravy",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Bhindi sabzi cooked dry",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 60,
+       "group": "carbs"
+      },
+      {
+       "food": "Plain skimmed milk curd",
+       "grams": 100,
+       "group": "other"
+      },
+      {
+       "food": "Ghee applied lightly on phulka",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 560,
+     "protein": 34,
+     "carbs": 62,
+     "fats": 16,
+     "fiber": 14,
+     "why": [
+      {
+       "pair": "Spiced bhindi + phulka",
+       "effect": "Soluble vegetable fiber slows down digestion when paired with whole wheat flatbread."
+      },
+      {
+       "pair": "Soya curry + plain curd",
+       "effect": "Cool yogurt balances warming curry spices and rounds out the meal's protein profile."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "had_breakfast",
+      "had_lunch"
+     ],
+     "forYou": "Soya chunks deliver the concentrated protein you need tonight while keeping the overall meal light and home-style.",
+     "tuned": false
+    },
+    {
+     "title": "Thick Kala Chana Masala with Methi Subzi",
+     "subtitle": "Slow-cooked brown chickpeas, stir-fried fresh fenugreek greens, and a bowl of set Greek curd.",
+     "cuisine": "North Indian Home",
+     "minutes": 35,
+     "items": [
+      {
+       "food": "Cooked kala chana masala",
+       "grams": 240,
+       "group": "protein"
+      },
+      {
+       "food": "Methi and radish leaves stir-fry",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Plain unsweetened Greek style curd",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Sliced carrot and green chilli salad",
+       "grams": 70,
+       "group": "other"
+      },
+      {
+       "food": "Cumin tempering oil",
+       "grams": 6,
+       "group": "fats"
+      }
+     ],
+     "kcal": 590,
+     "protein": 30,
+     "carbs": 69,
+     "fats": 18,
+     "fiber": 17,
+     "why": [
+      {
+       "pair": "Kala chana + Greek curd",
+       "effect": "Pairing legume and dairy protein sources creates deep satiety without requiring extra grain portions."
+      },
+      {
+       "pair": "Fenugreek greens + whole chickpeas",
+       "effect": "Bitter fresh greens complement earthy legumes and provide substantial roughage for gentle evening digestion."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "had_breakfast",
+      "had_snack"
+     ],
+     "forYou": "You reach your evening protein target through hearty black chickpeas and thick curd, keeping post-meal energy completely steady.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "protein_gap": "protein to catch up",
+    "had_breakfast": "different from breakfast",
+    "had_lunch": "different from lunch",
+    "had_snack": "different from snack"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "With only one meal left to close a large protein gap, dinner focuses on protein-rich vegetarian staples paired with generous vegetables.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Palak and Missi Roti",
+      "subtitle": "Spiced crumbled paneer tossed with spinach, served with a protein-rich besan roti and cucumber salad.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Paneer bhurji cooked with onions and tomatoes",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed spinach tossed with cumin",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Missi roti made with besan and whole wheat",
+        "grams": 80,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato salad with lemon",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil for tempering",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 575,
+      "protein": 31,
+      "carbs": 42,
+      "fats": 31,
+      "fiber": 9,
+      "why": [
+       {
+        "pair": "Lemon juice + spinach",
+        "effect": "Acidity brings out the gentle sweetness of greens while keeping the dish light after a desk day."
+       },
+       {
+        "pair": "Besan + paneer",
+        "effect": "Combining dairy and legume proteins provides a balanced, satisfying texture without heavy sauces."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "had_lunch",
+       "had_snack"
+      ],
+      "for_you": "You get a substantial dose of protein from fresh paneer and besan to help bridge today's shortfall comfortably."
+     },
+     {
+      "title": "Soya Chunks Curry with Bhindi and Phulka",
+      "subtitle": "Tender soya nuggets in tomato gravy with spiced okra and a light whole-wheat phulka.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Cooked soya chunks in light onion-tomato gravy",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Bhindi sabzi cooked dry",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 60,
+        "group": "carbs"
+       },
+       {
+        "food": "Plain skimmed milk curd",
+        "grams": 100,
+        "group": "other"
+       },
+       {
+        "food": "Ghee applied lightly on phulka",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 560,
+      "protein": 34,
+      "carbs": 62,
+      "fats": 16,
+      "fiber": 14,
+      "why": [
+       {
+        "pair": "Spiced bhindi + phulka",
+        "effect": "Soluble vegetable fiber slows down digestion when paired with whole wheat flatbread."
+       },
+       {
+        "pair": "Soya curry + plain curd",
+        "effect": "Cool yogurt balances warming curry spices and rounds out the meal's protein profile."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "had_breakfast",
+       "had_lunch"
+      ],
+      "for_you": "Soya chunks deliver the concentrated protein you need tonight while keeping the overall meal light and home-style."
+     },
+     {
+      "title": "Thick Kala Chana Masala with Methi Subzi",
+      "subtitle": "Slow-cooked brown chickpeas, stir-fried fresh fenugreek greens, and a bowl of set Greek curd.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 35,
+      "items": [
+       {
+        "food": "Cooked kala chana masala",
+        "grams": 240,
+        "group": "protein"
+       },
+       {
+        "food": "Methi and radish leaves stir-fry",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Plain unsweetened Greek style curd",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Sliced carrot and green chilli salad",
+        "grams": 70,
+        "group": "other"
+       },
+       {
+        "food": "Cumin tempering oil",
+        "grams": 6,
+        "group": "fats"
+       }
+      ],
+      "kcal": 590,
+      "protein": 30,
+      "carbs": 69,
+      "fats": 18,
+      "fiber": 17,
+      "why": [
+       {
+        "pair": "Kala chana + Greek curd",
+        "effect": "Pairing legume and dairy protein sources creates deep satiety without requiring extra grain portions."
+       },
+       {
+        "pair": "Fenugreek greens + whole chickpeas",
+        "effect": "Bitter fresh greens complement earthy legumes and provide substantial roughage for gentle evening digestion."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "had_breakfast",
+       "had_snack"
+      ],
+      "for_you": "You reach your evening protein target through hearty black chickpeas and thick curd, keeping post-meal energy completely steady."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 580 kcal and at least 29 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Logged so far: 900 kcal, 20 g protein. Left to plan from this meal on: about 760 kcal, 42 g protein.\n- Logged today: Breakfast: Vegetable poha; Lunch: Curd rice with pickle; Snack: Tea and 2 biscuits.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [protein_gap] They are behind on protein today: 42 g still to go with 1 meal left. This meal should carry about 29 g.\n- [had_breakfast] For breakfast they had Vegetable poha. Lead with a different main ingredient now.\n- [had_lunch] For lunch they had Curd rice with pickle. Lead with a different main ingredient now.\n- [had_snack] For snack they had Tea and 2 biscuits. Lead with a different main ingredient now.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 14211,
+   "tune": {
+    "status": "ok",
+    "swaps": {
+     "protein": [
+      {
+       "food": "Paneer bhurji cooked with onions and tomatoes",
+       "grams": 160,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Spiced crumbled firm tofu bhurji",
+       "grams": 180,
+       "deltaKcal": -110,
+       "deltaProtein": -2,
+       "deltaCarbs": 1,
+       "deltaFats": -11,
+       "deltaFiber": 2
+      },
+      {
+       "food": "Thick dry kala chana masala",
+       "grams": 200,
+       "deltaKcal": -45,
+       "deltaProtein": -7,
+       "deltaCarbs": 18,
+       "deltaFats": -14,
+       "deltaFiber": 7
+      }
+     ],
+     "base": [
+      {
+       "food": "Missi roti made with besan and whole wheat",
+       "grams": 80,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Plain whole wheat phulka",
+       "grams": 60,
+       "deltaKcal": -50,
+       "deltaProtein": -3,
+       "deltaCarbs": -3,
+       "deltaFats": -3,
+       "deltaFiber": -1
+      },
+      {
+       "food": "Cooked bajra khichdi with moong dal",
+       "grams": 150,
+       "deltaKcal": -10,
+       "deltaProtein": -1,
+       "deltaCarbs": 5,
+       "deltaFats": -3,
+       "deltaFiber": 1
+      }
+     ]
+    },
+    "alchemy": {
+     "protein": {
+      "suffix": "+ Roasted Chana & Curd",
+      "note": "Add roasted bengal gram and a cup of set low-fat curd to boost protein without much added oil.",
+      "deltaKcal": 150,
+      "deltaProtein": 14,
+      "deltaCarbs": 16,
+      "deltaFats": 3,
+      "deltaFiber": 4,
+      "minutes": 25
+     },
+     "glucose": {
+      "suffix": "+ Extra Greens, Half Roti",
+      "note": "Double the cumin palak, add raw radishes, and reduce missi roti to one small piece.",
+      "deltaKcal": -75,
+      "deltaProtein": 0,
+      "deltaCarbs": -14,
+      "deltaFats": -2,
+      "deltaFiber": 3,
+      "minutes": 25
+     },
+     "express": {
+      "suffix": "(10-min Raw Toss & Roti)",
+      "note": "Use crumbled raw paneer tossed cold with chopped spinach, tomato, and warmed readymade roti.",
+      "deltaKcal": -45,
+      "deltaProtein": 0,
+      "deltaCarbs": 0,
+      "deltaFats": -5,
+      "deltaFiber": 0,
+      "minutes": 10
+     },
+     "gut": {
+      "suffix": "+ Jeera Chaas & Milder Spices",
+      "note": "Omit green chillies, steam the spinach soft, and add a glass of light cumin-spiced buttermilk.",
+      "deltaKcal": 40,
+      "deltaProtein": 3,
+      "deltaCarbs": 4,
+      "deltaFats": 1,
+      "deltaFiber": 0,
+      "minutes": 20
+     }
+    },
+    "raw": {
+     "swaps": {
+      "protein": [
+       {
+        "food": "Paneer bhurji cooked with onions and tomatoes",
+        "grams": 160,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Spiced crumbled firm tofu bhurji",
+        "grams": 180,
+        "deltaKcal": -110,
+        "deltaProtein": -2,
+        "deltaCarbs": 1,
+        "deltaFats": -11,
+        "deltaFiber": 2
+       },
+       {
+        "food": "Thick dry kala chana masala",
+        "grams": 200,
+        "deltaKcal": -45,
+        "deltaProtein": -7,
+        "deltaCarbs": 18,
+        "deltaFats": -14,
+        "deltaFiber": 7
+       }
+      ],
+      "base": [
+       {
+        "food": "Missi roti made with besan and whole wheat",
+        "grams": 80,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Plain whole wheat phulka",
+        "grams": 60,
+        "deltaKcal": -50,
+        "deltaProtein": -3,
+        "deltaCarbs": -3,
+        "deltaFats": -3,
+        "deltaFiber": -1
+       },
+       {
+        "food": "Cooked bajra khichdi with moong dal",
+        "grams": 150,
+        "deltaKcal": -10,
+        "deltaProtein": -1,
+        "deltaCarbs": 5,
+        "deltaFats": -3,
+        "deltaFiber": 1
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "titleSuffix": "+ Roasted Chana & Curd",
+       "note": "Add roasted bengal gram and a cup of set low-fat curd to boost protein without much added oil.",
+       "minutes": 25,
+       "deltaKcal": 150,
+       "deltaProtein": 14,
+       "deltaCarbs": 16,
+       "deltaFats": 3,
+       "deltaFiber": 4
+      },
+      "glucose": {
+       "titleSuffix": "+ Extra Greens, Half Roti",
+       "note": "Double the cumin palak, add raw radishes, and reduce missi roti to one small piece.",
+       "minutes": 25,
+       "deltaKcal": -75,
+       "deltaProtein": 0,
+       "deltaCarbs": -14,
+       "deltaFats": -2,
+       "deltaFiber": 3
+      },
+      "express": {
+       "titleSuffix": "(10-min Raw Toss & Roti)",
+       "note": "Use crumbled raw paneer tossed cold with chopped spinach, tomato, and warmed readymade roti.",
+       "minutes": 10,
+       "deltaKcal": -45,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": -5,
+       "deltaFiber": 0
+      },
+      "gut": {
+       "titleSuffix": "+ Jeera Chaas & Milder Spices",
+       "note": "Omit green chillies, steam the spinach soft, and add a glass of light cumin-spiced buttermilk.",
+       "minutes": 20,
+       "deltaKcal": 40,
+       "deltaProtein": 3,
+       "deltaCarbs": 4,
+       "deltaFats": 1,
+       "deltaFiber": 0
+      }
+     }
+    },
+    "prompt": "You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n\nTHE PLATE: Paneer Bhurji with Palak and Missi Roti (Spiced crumbled paneer tossed with spinach, served with a protein-rich besan roti and cucumber salad.)\n- 160 g Paneer bhurji cooked with onions and tomatoes [protein]; 100 g Steamed spinach tossed with cumin [greens]; 80 g Missi roti made with besan and whole wheat [carbs]; 120 g Cucumber and tomato salad with lemon [greens]; 5 g Mustard oil for tempering [fats]\n- As written: 575 kcal, 31 g protein, 42 g carbs, 31 g fats, 9 g fibre. Prep 25 minutes.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n\nWHAT TO RETURN\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+    "ms": 7124
+   },
+   "tuneMs": 7169
+  }
+ },
+ {
+  "id": "heavy-lunch-lighter-dinner",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 14803,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "A lighter, high-protein vegetarian dinner to balance your rich lunch out while keeping evening fullness steady.",
+   "meals": [
+    {
+     "title": "Low Fat Paneer Bhurji with Palak",
+     "subtitle": "Spiced crumbled skim milk paneer tossed with tender spinach and mild aromatics",
+     "cuisine": "North Indian Home",
+     "minutes": 15,
+     "items": [
+      {
+       "food": "Low fat paneer crumbled",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Chopped spinach",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Tomato and onion mix",
+       "grams": 60,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 3,
+       "group": "fats"
+      }
+     ],
+     "kcal": 233,
+     "protein": 33,
+     "carbs": 8,
+     "fats": 7,
+     "fiber": 4,
+     "why": [
+      {
+       "pair": "Spinach + low fat paneer",
+       "effect": "Vegetable volume cushions the concentrated protein to provide lasting evening satiety."
+      },
+      {
+       "pair": "Tomato + warm spices",
+       "effect": "Builds traditional gravy flavor without adding heavy cream or excess cooking oil."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "lighter_now",
+      "ate_out",
+      "long_gap"
+     ],
+     "forYou": "You get the protein you need in a light, comforting home bowl after a rich afternoon meal.",
+     "tuned": false
+    },
+    {
+     "title": "Warm Soya Granules and Gobi Matar",
+     "subtitle": "Tender soya mince cooked dry with cauliflower florets and crushed green peas",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Cooked soya granules",
+       "grams": 170,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed cauliflower florets",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Green peas",
+       "grams": 30,
+       "group": "carbs"
+      },
+      {
+       "food": "Ghee",
+       "grams": 3,
+       "group": "fats"
+      }
+     ],
+     "kcal": 237,
+     "protein": 32,
+     "carbs": 16,
+     "fats": 5,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Soya granules + cauliflower",
+       "effect": "Expands plate bulk significantly to soothe your appetite after the long afternoon gap."
+      },
+      {
+       "pair": "Green peas + cumin seeds",
+       "effect": "Adds mild natural sweetness and aroma without requiring calorie-heavy gravies."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "lighter_now",
+      "ate_out",
+      "goal_lose"
+     ],
+     "forYou": "This plate brings plenty of chewing volume and plant protein while keeping your overall energy intake controlled.",
+     "tuned": false
+    },
+    {
+     "title": "Tofu Matar Sukha with Cucumber Salad",
+     "subtitle": "Firm tofu cubes lightly sauteed with garden peas alongside crisp sliced cucumber",
+     "cuisine": "Indian Regional",
+     "minutes": 15,
+     "items": [
+      {
+       "food": "Firm tofu cubed",
+       "grams": 180,
+       "group": "protein"
+      },
+      {
+       "food": "Green peas",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Sliced cucumber",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 3,
+       "group": "fats"
+      }
+     ],
+     "kcal": 239,
+     "protein": 31,
+     "carbs": 11,
+     "fats": 7,
+     "fiber": 4,
+     "why": [
+      {
+       "pair": "Cucumber + spiced tofu",
+       "effect": "Crisp watery crunch offsets the dense pan-seared protein for an easy evening digestion."
+      },
+      {
+       "pair": "Lemon juice + green peas",
+       "effect": "Brightens the dry curry without needing butter, rich stocks, or extra salt."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "lighter_now",
+      "had_breakfast",
+      "ate_out"
+     ],
+     "forYou": "A fresh, light dinner that covers your protein target cleanly after eating out earlier.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "goal_lose": "gentle weight loss",
+    "protein_gap": "protein to catch up",
+    "lighter_now": "lighter after earlier meals",
+    "had_breakfast": "different from breakfast",
+    "ate_out": "after eating out",
+    "long_gap": "6 h since the last meal"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "A lighter, high-protein vegetarian dinner to balance your rich lunch out while keeping evening fullness steady.",
+    "meals": [
+     {
+      "title": "Low Fat Paneer Bhurji with Palak",
+      "subtitle": "Spiced crumbled skim milk paneer tossed with tender spinach and mild aromatics",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 15,
+      "items": [
+       {
+        "food": "Low fat paneer crumbled",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Chopped spinach",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Tomato and onion mix",
+        "grams": 60,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 3,
+        "group": "fats"
+       }
+      ],
+      "kcal": 233,
+      "protein": 33,
+      "carbs": 8,
+      "fats": 7,
+      "fiber": 4,
+      "why": [
+       {
+        "pair": "Spinach + low fat paneer",
+        "effect": "Vegetable volume cushions the concentrated protein to provide lasting evening satiety."
+       },
+       {
+        "pair": "Tomato + warm spices",
+        "effect": "Builds traditional gravy flavor without adding heavy cream or excess cooking oil."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "lighter_now",
+       "ate_out",
+       "long_gap"
+      ],
+      "for_you": "You get the protein you need in a light, comforting home bowl after a rich afternoon meal."
+     },
+     {
+      "title": "Warm Soya Granules and Gobi Matar",
+      "subtitle": "Tender soya mince cooked dry with cauliflower florets and crushed green peas",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Cooked soya granules",
+        "grams": 170,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed cauliflower florets",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Green peas",
+        "grams": 30,
+        "group": "carbs"
+       },
+       {
+        "food": "Ghee",
+        "grams": 3,
+        "group": "fats"
+       }
+      ],
+      "kcal": 237,
+      "protein": 32,
+      "carbs": 16,
+      "fats": 5,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Soya granules + cauliflower",
+        "effect": "Expands plate bulk significantly to soothe your appetite after the long afternoon gap."
+       },
+       {
+        "pair": "Green peas + cumin seeds",
+        "effect": "Adds mild natural sweetness and aroma without requiring calorie-heavy gravies."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "lighter_now",
+       "ate_out",
+       "goal_lose"
+      ],
+      "for_you": "This plate brings plenty of chewing volume and plant protein while keeping your overall energy intake controlled."
+     },
+     {
+      "title": "Tofu Matar Sukha with Cucumber Salad",
+      "subtitle": "Firm tofu cubes lightly sauteed with garden peas alongside crisp sliced cucumber",
+      "cuisine": "Indian Regional",
+      "prepMinutes": 15,
+      "items": [
+       {
+        "food": "Firm tofu cubed",
+        "grams": 180,
+        "group": "protein"
+       },
+       {
+        "food": "Green peas",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Sliced cucumber",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 3,
+        "group": "fats"
+       }
+      ],
+      "kcal": 239,
+      "protein": 31,
+      "carbs": 11,
+      "fats": 7,
+      "fiber": 4,
+      "why": [
+       {
+        "pair": "Cucumber + spiced tofu",
+        "effect": "Crisp watery crunch offsets the dense pan-seared protein for an easy evening digestion."
+       },
+       {
+        "pair": "Lemon juice + green peas",
+        "effect": "Brightens the dry curry without needing butter, rich stocks, or extra salt."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "lighter_now",
+       "had_breakfast",
+       "ate_out"
+      ],
+      "for_you": "A fresh, light dinner that covers your protein target cleanly after eating out earlier."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 230 kcal and at least 31 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1360 kcal and 75 g protein. Logged so far: 1250 kcal, 40 g protein. Left to plan from this meal on: about 42 kcal, 31 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Logged today: Breakfast: Besan chilla with curd; Lunch: Chole bhature (eaten out).\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [goal_lose] Goal: lose weight gently. Vegetables fill about half the plate, the grain is measured, nothing fried, no sugary drinks.\n- [protein_gap] They are behind on protein today: 31 g still to go with 1 meal left. This meal should carry about 31 g.\n- [lighter_now] They have eaten more than planned so far today, so this meal is lighter than usual: about 230 kcal. Keep volume with vegetables.\n- [had_breakfast] For breakfast they had Besan chilla with curd. Lead with a different main ingredient now.\n- [ate_out] They ate out earlier today (Chole bhature). Balance it: a simple home plate, more vegetables, less oil and salt.\n- [long_gap] It is 6 hours since they last ate. Expect real hunger: give volume from vegetables and protein, not extra grain.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 14723
+  }
+ },
+ {
+  "id": "skipped-breakfast-lunch",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 13397,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "Having skipped breakfast, this lunch delivers steady energy and substantial protein through balanced North Indian home staples without feeling overly heavy.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Methi Roti and Dahi",
+     "subtitle": "Spiced crumbled cottage cheese, whole wheat fenugreek flatbread, thick curd, and fresh cucumber salad.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Low-fat paneer bhurji with onions and tomatoes",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Plain low-fat curd",
+       "grams": 200,
+       "group": "protein"
+      },
+      {
+       "food": "Methi whole wheat roti",
+       "grams": 90,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato kachumber",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil used for cooking",
+       "grams": 10,
+       "group": "fats"
+      }
+     ],
+     "kcal": 804,
+     "protein": 42,
+     "carbs": 81,
+     "fats": 34,
+     "fiber": 12,
+     "why": [
+      {
+       "pair": "Fenugreek + whole wheat",
+       "effect": "Soluble greens fiber slows carbohydrate breakdown for steady afternoon focus at your desk."
+      },
+      {
+       "pair": "Curd + fresh cucumber",
+       "effect": "Cooling fermented dairy provides digestible protein while vegetables add crunch and gentle volume."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "skipped_breakfast"
+     ],
+     "forYou": "This plate restores your daily protein pace smoothly after skipping breakfast, keeping afternoon digestion light while sitting.",
+     "tuned": false
+    },
+    {
+     "title": "Punjabi Kala Chana with Brown Rice",
+     "subtitle": "Slow-simmered black chickpea curry, steamed brown rice, spiced roasted tofu cubes, and cabbage salad.",
+     "cuisine": "North Indian Home",
+     "minutes": 35,
+     "items": [
+      {
+       "food": "Cooked kala chana curry",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Pan-seared firm tofu cubes",
+       "grams": 120,
+       "group": "protein"
+      },
+      {
+       "food": "Cooked brown basmati rice",
+       "grams": 150,
+       "group": "carbs"
+      },
+      {
+       "food": "Shredded cabbage and carrot salad with lemon",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee for tadka",
+       "grams": 8,
+       "group": "fats"
+      }
+     ],
+     "kcal": 792,
+     "protein": 36,
+     "carbs": 98,
+     "fats": 28,
+     "fiber": 16,
+     "why": [
+      {
+       "pair": "Kala chana + brown rice",
+       "effect": "Combining legumes with grain completes the essential amino acid mix naturally."
+      },
+      {
+       "pair": "Lemon juice + cooked legumes",
+       "effect": "Fresh citrus acidity enhances non-heme iron absorption from the dark chickpeas."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "skipped_breakfast"
+     ],
+     "forYou": "Black chickpeas and tofu build strong satiety to offset the missed morning meal without overwhelming your appetite.",
+     "tuned": false
+    },
+    {
+     "title": "Soya Chunks Masala with Jowar Roti",
+     "subtitle": "Tender soya nuggets in onion-tomato gravy, sorghum flatbread, yellow dal, and tossed greens.",
+     "cuisine": "North Indian Home",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Cooked soya chunks curry",
+       "grams": 180,
+       "group": "protein"
+      },
+      {
+       "food": "Cooked yellow moong dal",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 80,
+       "group": "carbs"
+      },
+      {
+       "food": "Spinach and radish salad",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee on roti",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 765,
+     "protein": 44,
+     "carbs": 95,
+     "fats": 21,
+     "fiber": 15,
+     "why": [
+      {
+       "pair": "Soya chunks + moong dal",
+       "effect": "Dual plant sources deliver dense protein to help recover your daily intake targets."
+      },
+      {
+       "pair": "Jowar + fresh spinach",
+       "effect": "Coarse millet fiber paired with leafy greens ensures slow, sustained gastric transit."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "protein_gap",
+      "skipped_breakfast"
+     ],
+     "forYou": "Soya and millet give you high protein efficiency on a desk day, preventing midday sluggishness after fasting.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "protein_gap": "protein to catch up",
+    "skipped_breakfast": "skipped breakfast"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "Having skipped breakfast, this lunch delivers steady energy and substantial protein through balanced North Indian home staples without feeling overly heavy.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Methi Roti and Dahi",
+      "subtitle": "Spiced crumbled cottage cheese, whole wheat fenugreek flatbread, thick curd, and fresh cucumber salad.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Low-fat paneer bhurji with onions and tomatoes",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Plain low-fat curd",
+        "grams": 200,
+        "group": "protein"
+       },
+       {
+        "food": "Methi whole wheat roti",
+        "grams": 90,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato kachumber",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil used for cooking",
+        "grams": 10,
+        "group": "fats"
+       }
+      ],
+      "kcal": 804,
+      "protein": 42,
+      "carbs": 81,
+      "fats": 34,
+      "fiber": 12,
+      "why": [
+       {
+        "pair": "Fenugreek + whole wheat",
+        "effect": "Soluble greens fiber slows carbohydrate breakdown for steady afternoon focus at your desk."
+       },
+       {
+        "pair": "Curd + fresh cucumber",
+        "effect": "Cooling fermented dairy provides digestible protein while vegetables add crunch and gentle volume."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "skipped_breakfast"
+      ],
+      "for_you": "This plate restores your daily protein pace smoothly after skipping breakfast, keeping afternoon digestion light while sitting."
+     },
+     {
+      "title": "Punjabi Kala Chana with Brown Rice",
+      "subtitle": "Slow-simmered black chickpea curry, steamed brown rice, spiced roasted tofu cubes, and cabbage salad.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 35,
+      "items": [
+       {
+        "food": "Cooked kala chana curry",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Pan-seared firm tofu cubes",
+        "grams": 120,
+        "group": "protein"
+       },
+       {
+        "food": "Cooked brown basmati rice",
+        "grams": 150,
+        "group": "carbs"
+       },
+       {
+        "food": "Shredded cabbage and carrot salad with lemon",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee for tadka",
+        "grams": 8,
+        "group": "fats"
+       }
+      ],
+      "kcal": 792,
+      "protein": 36,
+      "carbs": 98,
+      "fats": 28,
+      "fiber": 16,
+      "why": [
+       {
+        "pair": "Kala chana + brown rice",
+        "effect": "Combining legumes with grain completes the essential amino acid mix naturally."
+       },
+       {
+        "pair": "Lemon juice + cooked legumes",
+        "effect": "Fresh citrus acidity enhances non-heme iron absorption from the dark chickpeas."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "skipped_breakfast"
+      ],
+      "for_you": "Black chickpeas and tofu build strong satiety to offset the missed morning meal without overwhelming your appetite."
+     },
+     {
+      "title": "Soya Chunks Masala with Jowar Roti",
+      "subtitle": "Tender soya nuggets in onion-tomato gravy, sorghum flatbread, yellow dal, and tossed greens.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Cooked soya chunks curry",
+        "grams": 180,
+        "group": "protein"
+       },
+       {
+        "food": "Cooked yellow moong dal",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 80,
+        "group": "carbs"
+       },
+       {
+        "food": "Spinach and radish salad",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee on roti",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 765,
+      "protein": 44,
+      "carbs": 95,
+      "fats": 21,
+      "fiber": 15,
+      "why": [
+       {
+        "pair": "Soya chunks + moong dal",
+        "effect": "Dual plant sources deliver dense protein to help recover your daily intake targets."
+       },
+       {
+        "pair": "Jowar + fresh spinach",
+        "effect": "Coarse millet fiber paired with leafy greens ensures slow, sustained gastric transit."
+       }
+      ],
+      "planned_around": [
+       "protein_gap",
+       "skipped_breakfast"
+      ],
+      "for_you": "Soya and millet give you high protein efficiency on a desk day, preventing midday sluggishness after fasting."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Lunch (their local time 1:10 pm)\n- Target for this meal: about 830 kcal and at least 29 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Logged so far: 0 kcal, 0 g protein. Left to plan from this meal on: about 1660 kcal, 62 g protein.\n- Logged today: Breakfast: skipped.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [protein_gap] They are behind on protein today: 62 g still to go with 3 meals left. This meal should carry about 29 g.\n- [skipped_breakfast] They skipped breakfast today. Do not make up for it with an oversized plate; a normal, protein-led meal.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 13355
+  }
+ },
+ {
+  "id": "late-dinner-now",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 9994,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "Since it is past ten at night, we will keep dinner light and simple to digest while still reaching your protein target comfortably.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Phulka and Cucumber",
+     "subtitle": "Spiced crumbled paneer with tomatoes, a warm whole wheat phulka, and fresh cooling cucumber slices.",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Paneer bhurji",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Sliced cucumber",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee",
+       "grams": 4,
+       "group": "fats"
+      }
+     ],
+     "kcal": 444,
+     "protein": 24,
+     "carbs": 31,
+     "fats": 24,
+     "fiber": 5,
+     "why": [
+      {
+       "pair": "Paneer + cucumber",
+       "effect": "Keeps the meal filling while adding crisp freshness that is gentle on your stomach late at night."
+      },
+      {
+       "pair": "Phulka + ghee",
+       "effect": "Provides sustained evening energy without feeling heavy before sleep."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "late_now"
+     ],
+     "forYou": "This plate gives you plenty of protein with minimal grains so you can wind down comfortably tonight.",
+     "tuned": false
+    },
+    {
+     "title": "Moong Dal Khichdi with Spiced Dahi",
+     "subtitle": "Comforting yellow moong and rice pot served with curd and a side of sautéed beans.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Moong dal khichdi",
+       "grams": 220,
+       "group": "carbs"
+      },
+      {
+       "food": "Plain curd",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed French beans",
+       "grams": 90,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee for tempering",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 439,
+     "protein": 20,
+     "carbs": 58,
+     "fats": 14,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Moong dal + curd",
+       "effect": "Supplies an easy-to-digest protein blend that settles nicely at the end of a desk day."
+      },
+      {
+       "pair": "Green beans + khichdi",
+       "effect": "Adds soft fibre to slow digestion without creating late-evening heaviness."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "late_now"
+     ],
+     "forYou": "A warm, soothing combination designed to digest smoothly so you rest easily after a quiet day.",
+     "tuned": false
+    },
+    {
+     "title": "Soya Chunks Matar Curry with Phulka",
+     "subtitle": "Tender soya nuggets and green peas in light tomato gravy paired with a single phulka.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Cooked soya chunks",
+       "grams": 110,
+       "group": "protein"
+      },
+      {
+       "food": "Tomato and pea gravy",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 417,
+     "protein": 28,
+     "carbs": 44,
+     "fats": 13,
+     "fiber": 9,
+     "why": [
+      {
+       "pair": "Soya chunks + tomato gravy",
+       "effect": "Delivers substantial lean protein in a light sauce that will not weigh you down."
+      },
+      {
+       "pair": "Peas + phulka",
+       "effect": "Balances slow-release carbohydrates in a modest evening portion."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "late_now"
+     ],
+     "forYou": "You meet your evening protein needs easily while keeping the bread portion modest for this late hour.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "late_now": "a late dinner"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "Since it is past ten at night, we will keep dinner light and simple to digest while still reaching your protein target comfortably.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Phulka and Cucumber",
+      "subtitle": "Spiced crumbled paneer with tomatoes, a warm whole wheat phulka, and fresh cooling cucumber slices.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Paneer bhurji",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Sliced cucumber",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee",
+        "grams": 4,
+        "group": "fats"
+       }
+      ],
+      "kcal": 444,
+      "protein": 24,
+      "carbs": 31,
+      "fats": 24,
+      "fiber": 5,
+      "why": [
+       {
+        "pair": "Paneer + cucumber",
+        "effect": "Keeps the meal filling while adding crisp freshness that is gentle on your stomach late at night."
+       },
+       {
+        "pair": "Phulka + ghee",
+        "effect": "Provides sustained evening energy without feeling heavy before sleep."
+       }
+      ],
+      "planned_around": [
+       "late_now"
+      ],
+      "for_you": "This plate gives you plenty of protein with minimal grains so you can wind down comfortably tonight."
+     },
+     {
+      "title": "Moong Dal Khichdi with Spiced Dahi",
+      "subtitle": "Comforting yellow moong and rice pot served with curd and a side of sautéed beans.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Moong dal khichdi",
+        "grams": 220,
+        "group": "carbs"
+       },
+       {
+        "food": "Plain curd",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed French beans",
+        "grams": 90,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee for tempering",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 439,
+      "protein": 20,
+      "carbs": 58,
+      "fats": 14,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Moong dal + curd",
+        "effect": "Supplies an easy-to-digest protein blend that settles nicely at the end of a desk day."
+       },
+       {
+        "pair": "Green beans + khichdi",
+        "effect": "Adds soft fibre to slow digestion without creating late-evening heaviness."
+       }
+      ],
+      "planned_around": [
+       "late_now"
+      ],
+      "for_you": "A warm, soothing combination designed to digest smoothly so you rest easily after a quiet day."
+     },
+     {
+      "title": "Soya Chunks Matar Curry with Phulka",
+      "subtitle": "Tender soya nuggets and green peas in light tomato gravy paired with a single phulka.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Cooked soya chunks",
+        "grams": 110,
+        "group": "protein"
+       },
+       {
+        "food": "Tomato and pea gravy",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 417,
+      "protein": 28,
+      "carbs": 44,
+      "fats": 13,
+      "fiber": 9,
+      "why": [
+       {
+        "pair": "Soya chunks + tomato gravy",
+        "effect": "Delivers substantial lean protein in a light sauce that will not weigh you down."
+       },
+       {
+        "pair": "Peas + phulka",
+        "effect": "Balances slow-release carbohydrates in a modest evening portion."
+       }
+      ],
+      "planned_around": [
+       "late_now"
+      ],
+      "for_you": "You meet your evening protein needs easily while keeping the bread portion modest for this late hour."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 10:24 pm)\n- Target for this meal: about 460 kcal and at least 19 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 465 kcal, 19 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [late_now] It is late for dinner. Keep it light and easy to digest, with a smaller grain portion.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 9947
+  }
+ },
+ {
+  "id": "repeat-rajma-dinner",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 10114,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "For a quiet evening after sitting most of the day, we skip rajma and focus on light, protein-rich home curries with vegetables.",
+   "meals": [
+    {
+     "title": "Paneer Bhurji with Phulka and Cucumber Salad",
+     "subtitle": "Spiced crumbled paneer tossed with tomatoes and peppers, paired with one wholewheat phulka and crisp cucumber slices.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Low fat paneer, crumbled",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Tomato, onion, and bell pepper mix",
+       "grams": 110,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 6,
+       "group": "fats"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Sliced cucumber with lemon",
+       "grams": 100,
+       "group": "greens"
+      }
+     ],
+     "kcal": 454,
+     "protein": 26,
+     "carbs": 38,
+     "fats": 22,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Paneer + bell pepper",
+       "effect": "Vegetables add volume and crunch alongside soft protein for balanced satiety."
+      },
+      {
+       "pair": "Lemon + cucumber",
+       "effect": "Fresh acidity keeps the palate light and helps digestion before bed."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "repeat_rajma"
+     ],
+     "forYou": "This gives you a break from rajma with fresh paneer and crisp vegetables that keep dinner light for a desk day.",
+     "tuned": false
+    },
+    {
+     "title": "Moong Dal Tadka with Methi Roti",
+     "subtitle": "Warm yellow moong dal tempered with cumin, served with a fresh fenugreek roti and tomato salad.",
+     "cuisine": "North Indian Home",
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Cooked yellow moong dal",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Ghee for tempering",
+       "grams": 7,
+       "group": "fats"
+      },
+      {
+       "food": "Methi whole wheat roti",
+       "grams": 55,
+       "group": "carbs"
+      },
+      {
+       "food": "Plain curd",
+       "grams": 80,
+       "group": "protein"
+      },
+      {
+       "food": "Tomato and onion kachumber",
+       "grams": 90,
+       "group": "greens"
+      }
+     ],
+     "kcal": 448,
+     "protein": 21,
+     "carbs": 59,
+     "fats": 14,
+     "fiber": 9,
+     "why": [
+      {
+       "pair": "Moong dal + curd",
+       "effect": "Combining split lentils and dairy meets your protein goal gently without heavy spices."
+      },
+      {
+       "pair": "Fenugreek + whole wheat",
+       "effect": "Fresh greens folded into the roti slow down carbohydrate absorption."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "repeat_rajma"
+     ],
+     "forYou": "Moong dal provides an easy-to-digest lentil alternative to rajma, paired with curd and greens for evening comfort.",
+     "tuned": false
+    },
+    {
+     "title": "Tofu Matar Curry with Steamed Rice",
+     "subtitle": "Firm tofu and green peas simmered in mild tomato gravy with a small portion of rice.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Firm tofu, cubed",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Green peas, cooked",
+       "grams": 60,
+       "group": "carbs"
+      },
+      {
+       "food": "Tomato onion gravy",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Groundnut oil",
+       "grams": 6,
+       "group": "fats"
+      },
+      {
+       "food": "Steamed basmati rice",
+       "grams": 100,
+       "group": "carbs"
+      },
+      {
+       "food": "Cabbage and carrot slaw",
+       "grams": 80,
+       "group": "greens"
+      }
+     ],
+     "kcal": 464,
+     "protein": 23,
+     "carbs": 49,
+     "fats": 20,
+     "fiber": 8,
+     "why": [
+      {
+       "pair": "Tofu + peas",
+       "effect": "Plant proteins combined provide a complete and satisfying main without heaviness."
+      },
+      {
+       "pair": "Cabbage + rice",
+       "effect": "Raw crunchy vegetables eaten before warm rice steady the pace of the meal."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "repeat_rajma"
+     ],
+     "forYou": "Firm tofu offers a fresh, protein-rich change of pace from beans while keeping dinner moderate and satisfying.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "repeat_rajma": "less rajma this week"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "For a quiet evening after sitting most of the day, we skip rajma and focus on light, protein-rich home curries with vegetables.",
+    "meals": [
+     {
+      "title": "Paneer Bhurji with Phulka and Cucumber Salad",
+      "subtitle": "Spiced crumbled paneer tossed with tomatoes and peppers, paired with one wholewheat phulka and crisp cucumber slices.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Low fat paneer, crumbled",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Tomato, onion, and bell pepper mix",
+        "grams": 110,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 6,
+        "group": "fats"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Sliced cucumber with lemon",
+        "grams": 100,
+        "group": "greens"
+       }
+      ],
+      "kcal": 454,
+      "protein": 26,
+      "carbs": 38,
+      "fats": 22,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Paneer + bell pepper",
+        "effect": "Vegetables add volume and crunch alongside soft protein for balanced satiety."
+       },
+       {
+        "pair": "Lemon + cucumber",
+        "effect": "Fresh acidity keeps the palate light and helps digestion before bed."
+       }
+      ],
+      "planned_around": [
+       "repeat_rajma"
+      ],
+      "for_you": "This gives you a break from rajma with fresh paneer and crisp vegetables that keep dinner light for a desk day."
+     },
+     {
+      "title": "Moong Dal Tadka with Methi Roti",
+      "subtitle": "Warm yellow moong dal tempered with cumin, served with a fresh fenugreek roti and tomato salad.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 30,
+      "items": [
+       {
+        "food": "Cooked yellow moong dal",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Ghee for tempering",
+        "grams": 7,
+        "group": "fats"
+       },
+       {
+        "food": "Methi whole wheat roti",
+        "grams": 55,
+        "group": "carbs"
+       },
+       {
+        "food": "Plain curd",
+        "grams": 80,
+        "group": "protein"
+       },
+       {
+        "food": "Tomato and onion kachumber",
+        "grams": 90,
+        "group": "greens"
+       }
+      ],
+      "kcal": 448,
+      "protein": 21,
+      "carbs": 59,
+      "fats": 14,
+      "fiber": 9,
+      "why": [
+       {
+        "pair": "Moong dal + curd",
+        "effect": "Combining split lentils and dairy meets your protein goal gently without heavy spices."
+       },
+       {
+        "pair": "Fenugreek + whole wheat",
+        "effect": "Fresh greens folded into the roti slow down carbohydrate absorption."
+       }
+      ],
+      "planned_around": [
+       "repeat_rajma"
+      ],
+      "for_you": "Moong dal provides an easy-to-digest lentil alternative to rajma, paired with curd and greens for evening comfort."
+     },
+     {
+      "title": "Tofu Matar Curry with Steamed Rice",
+      "subtitle": "Firm tofu and green peas simmered in mild tomato gravy with a small portion of rice.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Firm tofu, cubed",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Green peas, cooked",
+        "grams": 60,
+        "group": "carbs"
+       },
+       {
+        "food": "Tomato onion gravy",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Groundnut oil",
+        "grams": 6,
+        "group": "fats"
+       },
+       {
+        "food": "Steamed basmati rice",
+        "grams": 100,
+        "group": "carbs"
+       },
+       {
+        "food": "Cabbage and carrot slaw",
+        "grams": 80,
+        "group": "greens"
+       }
+      ],
+      "kcal": 464,
+      "protein": 23,
+      "carbs": 49,
+      "fats": 20,
+      "fiber": 8,
+      "why": [
+       {
+        "pair": "Tofu + peas",
+        "effect": "Plant proteins combined provide a complete and satisfying main without heaviness."
+       },
+       {
+        "pair": "Cabbage + rice",
+        "effect": "Raw crunchy vegetables eaten before warm rice steady the pace of the meal."
+       }
+      ],
+      "planned_around": [
+       "repeat_rajma"
+      ],
+      "for_you": "Firm tofu offers a fresh, protein-rich change of pace from beans while keeping dinner moderate and satisfying."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 460 kcal and at least 19 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 465 kcal, 19 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [repeat_rajma] rajma was the main food 4 times in the last week. Choose a different main.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 10073
+  }
+ },
+ {
+  "id": "often-skips-breakfast",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 10232,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "Since it is past midday and you have not eaten yet, here are quick, high-protein plates ready in fifteen minutes to keep energy steady.",
+   "meals": [
+    {
+     "title": "Quick Paneer Bhurji with Roti",
+     "subtitle": "Spiced crumbled cottage cheese with tomatoes, onions, spinach, and a warm whole wheat roti",
+     "cuisine": "North Indian Home",
+     "minutes": 15,
+     "items": [
+      {
+       "food": "Low-fat paneer, crumbled",
+       "grams": 130,
+       "group": "protein"
+      },
+      {
+       "food": "Spinach, tomato, and onion saute",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 5,
+       "group": "fats"
+      },
+      {
+       "food": "Whole wheat roti",
+       "grams": 45,
+       "group": "carbs"
+      }
+     ],
+     "kcal": 441,
+     "protein": 26,
+     "carbs": 33,
+     "fats": 23,
+     "fiber": 6,
+     "why": [
+      {
+       "pair": "Paneer + spinach",
+       "effect": "Cottage cheese protein slows digestion while spinach adds volume and gentle fiber."
+      },
+      {
+       "pair": "Mustard oil + warm roti",
+       "effect": "A light touch of oil slows carbohydrate uptake from the wheat roti."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "easy_breakfast"
+     ],
+     "forYou": "This pan scramble comes together in minutes, giving you solid protein to break your fast without a heavy post-meal slump.",
+     "tuned": false
+    },
+    {
+     "title": "Spiced Moong Dal Chilla with Curd",
+     "subtitle": "Savory yellow lentil pancakes filled with grated carrots and served with fresh plain yogurt",
+     "cuisine": "North Indian Home",
+     "minutes": 15,
+     "items": [
+      {
+       "food": "Moong dal batter (cooked as pancakes)",
+       "grams": 180,
+       "group": "protein"
+      },
+      {
+       "food": "Grated carrots and coriander",
+       "grams": 70,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee",
+       "grams": 5,
+       "group": "fats"
+      },
+      {
+       "food": "Plain curd",
+       "grams": 150,
+       "group": "protein"
+      }
+     ],
+     "kcal": 435,
+     "protein": 22,
+     "carbs": 51,
+     "fats": 16,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Moong dal + curd",
+       "effect": "Combining lentils with dairy delivers a balanced amino acid spread and long-lasting satiety."
+      },
+      {
+       "pair": "Lentils + grated carrot",
+       "effect": "Carrot fiber helps steady the absorption of lentil carbohydrates across your desk afternoon."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "easy_breakfast"
+     ],
+     "forYou": "Quick to pour and flip, these savory pancakes provide light nourishment that will not weigh you down at your desk.",
+     "tuned": false
+    },
+    {
+     "title": "Tofu Matar Bhurji with Toast",
+     "subtitle": "Crumbled firm tofu tossed with sweet green peas, turmeric, and whole grain toast",
+     "cuisine": "North Indian Fusion",
+     "minutes": 12,
+     "items": [
+      {
+       "food": "Firm tofu, crumbled",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Green peas, steamed",
+       "grams": 60,
+       "group": "carbs"
+      },
+      {
+       "food": "Diced tomatoes and green chilies",
+       "grams": 80,
+       "group": "greens"
+      },
+      {
+       "food": "Whole grain bread, toasted",
+       "grams": 50,
+       "group": "carbs"
+      },
+      {
+       "food": "Vegetable oil",
+       "grams": 6,
+       "group": "fats"
+      }
+     ],
+     "kcal": 427,
+     "protein": 24,
+     "carbs": 44,
+     "fats": 17,
+     "fiber": 8,
+     "why": [
+      {
+       "pair": "Tofu + green peas",
+       "effect": "Plant protein and pea fiber work together to provide steady, even energy release."
+      },
+      {
+       "pair": "Tomato + turmeric",
+       "effect": "Light cooking releases carotenoids and softens spices for gentle midday digestion."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "easy_breakfast"
+     ],
+     "forYou": "Ready in twelve minutes, this scramble is practically effortless when you need a fast, energizing plate.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "easy_breakfast": "an easy breakfast"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "Since it is past midday and you have not eaten yet, here are quick, high-protein plates ready in fifteen minutes to keep energy steady.",
+    "meals": [
+     {
+      "title": "Quick Paneer Bhurji with Roti",
+      "subtitle": "Spiced crumbled cottage cheese with tomatoes, onions, spinach, and a warm whole wheat roti",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 15,
+      "items": [
+       {
+        "food": "Low-fat paneer, crumbled",
+        "grams": 130,
+        "group": "protein"
+       },
+       {
+        "food": "Spinach, tomato, and onion saute",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 5,
+        "group": "fats"
+       },
+       {
+        "food": "Whole wheat roti",
+        "grams": 45,
+        "group": "carbs"
+       }
+      ],
+      "kcal": 441,
+      "protein": 26,
+      "carbs": 33,
+      "fats": 23,
+      "fiber": 6,
+      "why": [
+       {
+        "pair": "Paneer + spinach",
+        "effect": "Cottage cheese protein slows digestion while spinach adds volume and gentle fiber."
+       },
+       {
+        "pair": "Mustard oil + warm roti",
+        "effect": "A light touch of oil slows carbohydrate uptake from the wheat roti."
+       }
+      ],
+      "planned_around": [
+       "easy_breakfast"
+      ],
+      "for_you": "This pan scramble comes together in minutes, giving you solid protein to break your fast without a heavy post-meal slump."
+     },
+     {
+      "title": "Spiced Moong Dal Chilla with Curd",
+      "subtitle": "Savory yellow lentil pancakes filled with grated carrots and served with fresh plain yogurt",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 15,
+      "items": [
+       {
+        "food": "Moong dal batter (cooked as pancakes)",
+        "grams": 180,
+        "group": "protein"
+       },
+       {
+        "food": "Grated carrots and coriander",
+        "grams": 70,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee",
+        "grams": 5,
+        "group": "fats"
+       },
+       {
+        "food": "Plain curd",
+        "grams": 150,
+        "group": "protein"
+       }
+      ],
+      "kcal": 435,
+      "protein": 22,
+      "carbs": 51,
+      "fats": 16,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Moong dal + curd",
+        "effect": "Combining lentils with dairy delivers a balanced amino acid spread and long-lasting satiety."
+       },
+       {
+        "pair": "Lentils + grated carrot",
+        "effect": "Carrot fiber helps steady the absorption of lentil carbohydrates across your desk afternoon."
+       }
+      ],
+      "planned_around": [
+       "easy_breakfast"
+      ],
+      "for_you": "Quick to pour and flip, these savory pancakes provide light nourishment that will not weigh you down at your desk."
+     },
+     {
+      "title": "Tofu Matar Bhurji with Toast",
+      "subtitle": "Crumbled firm tofu tossed with sweet green peas, turmeric, and whole grain toast",
+      "cuisine": "North Indian Fusion",
+      "prepMinutes": 12,
+      "items": [
+       {
+        "food": "Firm tofu, crumbled",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Green peas, steamed",
+        "grams": 60,
+        "group": "carbs"
+       },
+       {
+        "food": "Diced tomatoes and green chilies",
+        "grams": 80,
+        "group": "greens"
+       },
+       {
+        "food": "Whole grain bread, toasted",
+        "grams": 50,
+        "group": "carbs"
+       },
+       {
+        "food": "Vegetable oil",
+        "grams": 6,
+        "group": "fats"
+       }
+      ],
+      "kcal": 427,
+      "protein": 24,
+      "carbs": 44,
+      "fats": 17,
+      "fiber": 8,
+      "why": [
+       {
+        "pair": "Tofu + green peas",
+        "effect": "Plant protein and pea fiber work together to provide steady, even energy release."
+       },
+       {
+        "pair": "Tomato + turmeric",
+        "effect": "Light cooking releases carotenoids and softens spices for gentle midday digestion."
+       }
+      ],
+      "planned_around": [
+       "easy_breakfast"
+      ],
+      "for_you": "Ready in twelve minutes, this scramble is practically effortless when you need a fast, energizing plate."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Breakfast (their local time 1:10 pm)\n- Target for this meal: about 450 kcal and at least 19 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Quick 15-min. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 1660 kcal, 62 g protein.\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [easy_breakfast] They often skip breakfast (4 of the last 6 days). Make it quick and simple enough to actually happen.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 10190
+  }
+ },
+ {
+  "id": "iron-focus-lunch",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 9645,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "For a quiet desk afternoon, here is a balanced North Indian lunch prioritizing protein and iron with steady, unhurried energy.",
+   "meals": [
+    {
+     "title": "Rajma Bowl with Palak and Lemon",
+     "subtitle": "Spiced kidney bean curry served with sautéed spinach, fresh lemon juice, and warm phulkas",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Cooked rajma curry",
+       "grams": 220,
+       "group": "protein"
+      },
+      {
+       "food": "Sautéed palak with garlic",
+       "grams": 150,
+       "group": "greens"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 70,
+       "group": "carbs"
+      },
+      {
+       "food": "Fresh lemon juice",
+       "grams": 15,
+       "group": "other"
+      },
+      {
+       "food": "Ghee for phulkas",
+       "grams": 8,
+       "group": "fats"
+      },
+      {
+       "food": "Sliced cucumber and radish",
+       "grams": 80,
+       "group": "greens"
+      }
+     ],
+     "kcal": 638,
+     "protein": 24,
+     "carbs": 95,
+     "fats": 18,
+     "fiber": 19,
+     "why": [
+      {
+       "pair": "Lemon juice + rajma",
+       "effect": "Vitamin C in lemon juice assists the body in absorbing the non-heme iron from kidney beans."
+      },
+      {
+       "pair": "Spinach + kidney beans",
+       "effect": "Layering leafy greens with pulses adds dietary fiber to keep daytime digestion slow and comfortable."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "focus_iron"
+     ],
+     "forYou": "This bowl pairs iron-dense kidney beans and spinach with fresh lemon to keep you nourished without heaviness at your desk.",
+     "tuned": false
+    },
+    {
+     "title": "Paneer Methi Bhurji with Curd",
+     "subtitle": "Crumbled paneer cooked with fresh fenugreek leaves, accompanied by set curd and rotis",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Paneer bhurji with methi",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat roti",
+       "grams": 70,
+       "group": "carbs"
+      },
+      {
+       "food": "Plain cow curd",
+       "grams": 120,
+       "group": "protein"
+      },
+      {
+       "food": "Tomato onion salad with lime",
+       "grams": 90,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil used for cooking",
+       "grams": 6,
+       "group": "fats"
+      }
+     ],
+     "kcal": 612,
+     "protein": 26,
+     "carbs": 58,
+     "fats": 32,
+     "fiber": 10,
+     "why": [
+      {
+       "pair": "Tomato lime salad + methi",
+       "effect": "The citric acid and vitamin C from tomatoes and lime enhance plant iron uptake from fenugreek leaves."
+      },
+      {
+       "pair": "Paneer + fenugreek",
+       "effect": "Combining paneer fats and protein with bitter greens rounds out satiety for an uninterrupted work afternoon."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "focus_iron"
+     ],
+     "forYou": "Paneer and fresh methi provide rich daytime protein alongside iron, paired with lime to make the most of every bite.",
+     "tuned": false
+    },
+    {
+     "title": "Kala Chana Chaat Style Meal",
+     "subtitle": "Tempered black chickpeas tossed with amla, tomatoes, fresh greens, and steamed rice",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Cooked spiced kala chana",
+       "grams": 200,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed brown rice",
+       "grams": 130,
+       "group": "carbs"
+      },
+      {
+       "food": "Grated fresh amla and coriander garnish",
+       "grams": 25,
+       "group": "other"
+      },
+      {
+       "food": "Kachumber with tomato and capsicum",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Cold-pressed groundnut oil for tadka",
+       "grams": 8,
+       "group": "fats"
+      }
+     ],
+     "kcal": 598,
+     "protein": 21,
+     "carbs": 94,
+     "fats": 15,
+     "fiber": 18,
+     "why": [
+      {
+       "pair": "Amla + black chickpeas",
+       "effect": "Potent vitamin C from grated amla pairs directly with iron-packed black chana for superior absorption."
+      },
+      {
+       "pair": "Capsicum + chana",
+       "effect": "Crunchy raw peppers supply extra ascorbic acid alongside the dense legumes to support overall nutrition."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "focus_iron"
+     ],
+     "forYou": "Black chickpeas offer abundant iron and fiber, teamed with vitamin-C-dense fresh amla to support steady, seated work hours.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "focus_iron": "minding iron"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "For a quiet desk afternoon, here is a balanced North Indian lunch prioritizing protein and iron with steady, unhurried energy.",
+    "meals": [
+     {
+      "title": "Rajma Bowl with Palak and Lemon",
+      "subtitle": "Spiced kidney bean curry served with sautéed spinach, fresh lemon juice, and warm phulkas",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Cooked rajma curry",
+        "grams": 220,
+        "group": "protein"
+       },
+       {
+        "food": "Sautéed palak with garlic",
+        "grams": 150,
+        "group": "greens"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 70,
+        "group": "carbs"
+       },
+       {
+        "food": "Fresh lemon juice",
+        "grams": 15,
+        "group": "other"
+       },
+       {
+        "food": "Ghee for phulkas",
+        "grams": 8,
+        "group": "fats"
+       },
+       {
+        "food": "Sliced cucumber and radish",
+        "grams": 80,
+        "group": "greens"
+       }
+      ],
+      "kcal": 638,
+      "protein": 24,
+      "carbs": 95,
+      "fats": 18,
+      "fiber": 19,
+      "why": [
+       {
+        "pair": "Lemon juice + rajma",
+        "effect": "Vitamin C in lemon juice assists the body in absorbing the non-heme iron from kidney beans."
+       },
+       {
+        "pair": "Spinach + kidney beans",
+        "effect": "Layering leafy greens with pulses adds dietary fiber to keep daytime digestion slow and comfortable."
+       }
+      ],
+      "planned_around": [
+       "focus_iron"
+      ],
+      "for_you": "This bowl pairs iron-dense kidney beans and spinach with fresh lemon to keep you nourished without heaviness at your desk."
+     },
+     {
+      "title": "Paneer Methi Bhurji with Curd",
+      "subtitle": "Crumbled paneer cooked with fresh fenugreek leaves, accompanied by set curd and rotis",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Paneer bhurji with methi",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat roti",
+        "grams": 70,
+        "group": "carbs"
+       },
+       {
+        "food": "Plain cow curd",
+        "grams": 120,
+        "group": "protein"
+       },
+       {
+        "food": "Tomato onion salad with lime",
+        "grams": 90,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil used for cooking",
+        "grams": 6,
+        "group": "fats"
+       }
+      ],
+      "kcal": 612,
+      "protein": 26,
+      "carbs": 58,
+      "fats": 32,
+      "fiber": 10,
+      "why": [
+       {
+        "pair": "Tomato lime salad + methi",
+        "effect": "The citric acid and vitamin C from tomatoes and lime enhance plant iron uptake from fenugreek leaves."
+       },
+       {
+        "pair": "Paneer + fenugreek",
+        "effect": "Combining paneer fats and protein with bitter greens rounds out satiety for an uninterrupted work afternoon."
+       }
+      ],
+      "planned_around": [
+       "focus_iron"
+      ],
+      "for_you": "Paneer and fresh methi provide rich daytime protein alongside iron, paired with lime to make the most of every bite."
+     },
+     {
+      "title": "Kala Chana Chaat Style Meal",
+      "subtitle": "Tempered black chickpeas tossed with amla, tomatoes, fresh greens, and steamed rice",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Cooked spiced kala chana",
+        "grams": 200,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed brown rice",
+        "grams": 130,
+        "group": "carbs"
+       },
+       {
+        "food": "Grated fresh amla and coriander garnish",
+        "grams": 25,
+        "group": "other"
+       },
+       {
+        "food": "Kachumber with tomato and capsicum",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Cold-pressed groundnut oil for tadka",
+        "grams": 8,
+        "group": "fats"
+       }
+      ],
+      "kcal": 598,
+      "protein": 21,
+      "carbs": 94,
+      "fats": 15,
+      "fiber": 18,
+      "why": [
+       {
+        "pair": "Amla + black chickpeas",
+        "effect": "Potent vitamin C from grated amla pairs directly with iron-packed black chana for superior absorption."
+       },
+       {
+        "pair": "Capsicum + chana",
+        "effect": "Crunchy raw peppers supply extra ascorbic acid alongside the dense legumes to support overall nutrition."
+       }
+      ],
+      "planned_around": [
+       "focus_iron"
+      ],
+      "for_you": "Black chickpeas offer abundant iron and fiber, teamed with vitamin-C-dense fresh amla to support steady, seated work hours."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Lunch (their local time 1:10 pm)\n- Target for this meal: about 660 kcal and at least 20 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Left to plan from this meal on: about 1212 kcal, 43 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [focus_iron] They are minding iron: include an iron-rich food together with a vitamin C food (lemon, amla, tomato, guava).\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 9547
+  }
+ },
+ {
+  "id": "strength-day-build",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 10547,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "Here are three North Indian dinners focused on solid protein to refuel your muscles after today's strength session.",
+   "meals": [
+    {
+     "title": "Egg Bhurji with Whole Wheat Rotis",
+     "subtitle": "Spiced three-egg scramble with onions, tomatoes, warm rotis, and cooling cucumber raita.",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Whole eggs scrambled with onion and tomato",
+       "grams": 200,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat roti",
+       "grams": 90,
+       "group": "carbs"
+      },
+      {
+       "food": "Low-fat curd raita with cucumber",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Mustard oil for cooking",
+       "grams": 6,
+       "group": "fats"
+      }
+     ],
+     "kcal": 574,
+     "protein": 34,
+     "carbs": 53,
+     "fats": 25,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Eggs + whole wheat roti",
+       "effect": "Carbohydrates from roti pair with complete egg protein to support steady post-workout recovery."
+      },
+      {
+       "pair": "Cucumber + curd",
+       "effect": "Cooling cucumber balances warm spices while the curd provides additional slow-digesting protein."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_build",
+      "mode_strength"
+     ],
+     "forYou": "This plate gives you complete egg protein and wholesome wheat carbs to replenish your energy after strength training.",
+     "tuned": false
+    },
+    {
+     "title": "Paneer and Green Pea Curry with Phulkas",
+     "subtitle": "Light home-style matar paneer served with soft phulkas and a fresh kachumber salad.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Low-fat paneer cubes",
+       "grams": 150,
+       "group": "protein"
+      },
+      {
+       "food": "Green peas cooked in tomato gravy",
+       "grams": 120,
+       "group": "carbs"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 90,
+       "group": "carbs"
+      },
+      {
+       "food": "Kachumber salad with onion, tomato, and lemon",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee for finishing",
+       "grams": 6,
+       "group": "fats"
+      }
+     ],
+     "kcal": 594,
+     "protein": 37,
+     "carbs": 58,
+     "fats": 22,
+     "fiber": 10,
+     "why": [
+      {
+       "pair": "Paneer + green peas",
+       "effect": "Dairy and legumes combine to provide a broad amino acid spread and lasting satiety."
+      },
+      {
+       "pair": "Lemon + raw salad",
+       "effect": "Lemon juice enhances the natural flavors of raw vegetables without adding excess fat."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_build",
+      "mode_strength"
+     ],
+     "forYou": "High-protein paneer combined with green peas delivers substantial recovery nutrition to build strength tonight.",
+     "tuned": false
+    },
+    {
+     "title": "Soya Matar Bhurji with Jeera Rice",
+     "subtitle": "Minced soya granules sauteed with green peas, served alongside jeera rice and spiced curd.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Cooked soya granules bhurji",
+       "grams": 180,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed jeera basmati rice",
+       "grams": 150,
+       "group": "carbs"
+      },
+      {
+       "food": "Plain curd",
+       "grams": 120,
+       "group": "protein"
+      },
+      {
+       "food": "Sauteed spinach with garlic",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Cooking oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 586,
+     "protein": 36,
+     "carbs": 69,
+     "fats": 16,
+     "fiber": 9,
+     "why": [
+      {
+       "pair": "Soya + jeera rice",
+       "effect": "Dense plant protein pairs with fast-digesting rice to swiftly restore glycogen after lifting."
+      },
+      {
+       "pair": "Garlic + spinach",
+       "effect": "Aromatic garlic complements cooked greens to provide essential micronutrients easily."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "goal_build",
+      "mode_strength"
+     ],
+     "forYou": "Soya granules lead this meal with high-density protein while rice provides the clean carbs you need after training.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "goal_build": "building strength",
+    "mode_strength": "strength day"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "Here are three North Indian dinners focused on solid protein to refuel your muscles after today's strength session.",
+    "meals": [
+     {
+      "title": "Egg Bhurji with Whole Wheat Rotis",
+      "subtitle": "Spiced three-egg scramble with onions, tomatoes, warm rotis, and cooling cucumber raita.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Whole eggs scrambled with onion and tomato",
+        "grams": 200,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat roti",
+        "grams": 90,
+        "group": "carbs"
+       },
+       {
+        "food": "Low-fat curd raita with cucumber",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Mustard oil for cooking",
+        "grams": 6,
+        "group": "fats"
+       }
+      ],
+      "kcal": 574,
+      "protein": 34,
+      "carbs": 53,
+      "fats": 25,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Eggs + whole wheat roti",
+        "effect": "Carbohydrates from roti pair with complete egg protein to support steady post-workout recovery."
+       },
+       {
+        "pair": "Cucumber + curd",
+        "effect": "Cooling cucumber balances warm spices while the curd provides additional slow-digesting protein."
+       }
+      ],
+      "planned_around": [
+       "goal_build",
+       "mode_strength"
+      ],
+      "for_you": "This plate gives you complete egg protein and wholesome wheat carbs to replenish your energy after strength training."
+     },
+     {
+      "title": "Paneer and Green Pea Curry with Phulkas",
+      "subtitle": "Light home-style matar paneer served with soft phulkas and a fresh kachumber salad.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Low-fat paneer cubes",
+        "grams": 150,
+        "group": "protein"
+       },
+       {
+        "food": "Green peas cooked in tomato gravy",
+        "grams": 120,
+        "group": "carbs"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 90,
+        "group": "carbs"
+       },
+       {
+        "food": "Kachumber salad with onion, tomato, and lemon",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee for finishing",
+        "grams": 6,
+        "group": "fats"
+       }
+      ],
+      "kcal": 594,
+      "protein": 37,
+      "carbs": 58,
+      "fats": 22,
+      "fiber": 10,
+      "why": [
+       {
+        "pair": "Paneer + green peas",
+        "effect": "Dairy and legumes combine to provide a broad amino acid spread and lasting satiety."
+       },
+       {
+        "pair": "Lemon + raw salad",
+        "effect": "Lemon juice enhances the natural flavors of raw vegetables without adding excess fat."
+       }
+      ],
+      "planned_around": [
+       "goal_build",
+       "mode_strength"
+      ],
+      "for_you": "High-protein paneer combined with green peas delivers substantial recovery nutrition to build strength tonight."
+     },
+     {
+      "title": "Soya Matar Bhurji with Jeera Rice",
+      "subtitle": "Minced soya granules sauteed with green peas, served alongside jeera rice and spiced curd.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Cooked soya granules bhurji",
+        "grams": 180,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed jeera basmati rice",
+        "grams": 150,
+        "group": "carbs"
+       },
+       {
+        "food": "Plain curd",
+        "grams": 120,
+        "group": "protein"
+       },
+       {
+        "food": "Sauteed spinach with garlic",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Cooking oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 586,
+      "protein": 36,
+      "carbs": 69,
+      "fats": 16,
+      "fiber": 9,
+      "why": [
+       {
+        "pair": "Soya + jeera rice",
+        "effect": "Dense plant protein pairs with fast-digesting rice to swiftly restore glycogen after lifting."
+       },
+       {
+        "pair": "Garlic + spinach",
+        "effect": "Aromatic garlic complements cooked greens to provide essential micronutrients easily."
+       }
+      ],
+      "planned_around": [
+       "goal_build",
+       "mode_strength"
+      ],
+      "for_you": "Soya granules lead this meal with high-density protein while rice provides the clean carbs you need after training."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 41 years, male, 74 kg, mostly sitting\n- Eats: Veg and egg. Home food: North Indian.\n- Health flag: none\n- Today is after strength training: protein leads the plate, with enough carbohydrate to refuel.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 590 kcal and at least 32 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 2100 kcal and 104 g protein. Left to plan from this meal on: about 588 kcal, 32 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [goal_build] Goal: build strength. Protein leads the plate and the meal is not undersized.\n- [mode_strength] Today is a strength-training day: protein leads, with enough carbohydrate to refuel.\n\nHARD RULES\n- Diet is absolute: Veg and egg (eggs allowed; no meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 10499,
+   "tune": {
+    "status": "ok",
+    "swaps": {
+     "protein": [
+      {
+       "food": "Whole eggs scrambled with onion and tomato",
+       "grams": 200,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Paneer bhurji with onion and tomato",
+       "grams": 160,
+       "deltaKcal": 56,
+       "deltaProtein": 3,
+       "deltaCarbs": 1,
+       "deltaFats": 4,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Tofu bhurji with onion and tomato",
+       "grams": 220,
+       "deltaKcal": -42,
+       "deltaProtein": 2,
+       "deltaCarbs": 1,
+       "deltaFats": -6,
+       "deltaFiber": 2
+      }
+     ],
+     "base": [
+      {
+       "food": "Whole wheat roti",
+       "grams": 90,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 90,
+       "deltaKcal": -18,
+       "deltaProtein": -2,
+       "deltaCarbs": -3,
+       "deltaFats": 0,
+       "deltaFiber": 1
+      },
+      {
+       "food": "Steamed brown rice",
+       "grams": 160,
+       "deltaKcal": -12,
+       "deltaProtein": -3,
+       "deltaCarbs": -2,
+       "deltaFats": 1,
+       "deltaFiber": -1
+      }
+     ]
+    },
+    "alchemy": {
+     "protein": {
+      "suffix": "+ extra egg whites and paneer",
+      "note": "Scramble two additional egg whites and thirty grams of crumbled low-fat paneer directly into the bhurji.",
+      "deltaKcal": 86,
+      "deltaProtein": 15,
+      "deltaCarbs": 1,
+      "deltaFats": 2,
+      "deltaFiber": 0,
+      "minutes": 22
+     },
+     "glucose": {
+      "suffix": "(half roti, extra cucumber salad)",
+      "note": "Drop one roti and add a large bowl of sliced cucumbers and radishes tossed with lemon juice.",
+      "deltaKcal": -95,
+      "deltaProtein": -2,
+      "deltaCarbs": -20,
+      "deltaFats": -1,
+      "deltaFiber": 2,
+      "minutes": 20
+     },
+     "express": {
+      "suffix": "(boiled eggs and plain toast)",
+      "note": "Use pre-boiled eggs sliced over whole wheat toast with a cup of plain set curd instead of cooking bhurji.",
+      "deltaKcal": -24,
+      "deltaProtein": -1,
+      "deltaCarbs": -2,
+      "deltaFats": -1,
+      "deltaFiber": -1,
+      "minutes": 8
+     },
+     "gut": {
+      "suffix": "(mild spices, extra cumin raita)",
+      "note": "Omit green chillies, halve the cooking oil, and double the cooling raita seasoned with roasted cumin powder.",
+      "deltaKcal": 22,
+      "deltaProtein": 5,
+      "deltaCarbs": 6,
+      "deltaFats": -3,
+      "deltaFiber": 1,
+      "minutes": 18
+     }
+    },
+    "raw": {
+     "swaps": {
+      "protein": [
+       {
+        "food": "Whole eggs scrambled with onion and tomato",
+        "grams": 200,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Paneer bhurji with onion and tomato",
+        "grams": 160,
+        "deltaKcal": 56,
+        "deltaProtein": 3,
+        "deltaCarbs": 1,
+        "deltaFats": 4,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Tofu bhurji with onion and tomato",
+        "grams": 220,
+        "deltaKcal": -42,
+        "deltaProtein": 2,
+        "deltaCarbs": 1,
+        "deltaFats": -6,
+        "deltaFiber": 2
+       }
+      ],
+      "base": [
+       {
+        "food": "Whole wheat roti",
+        "grams": 90,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 90,
+        "deltaKcal": -18,
+        "deltaProtein": -2,
+        "deltaCarbs": -3,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       {
+        "food": "Steamed brown rice",
+        "grams": 160,
+        "deltaKcal": -12,
+        "deltaProtein": -3,
+        "deltaCarbs": -2,
+        "deltaFats": 1,
+        "deltaFiber": -1
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "titleSuffix": "+ extra egg whites and paneer",
+       "note": "Scramble two additional egg whites and thirty grams of crumbled low-fat paneer directly into the bhurji.",
+       "minutes": 22,
+       "deltaKcal": 86,
+       "deltaProtein": 15,
+       "deltaCarbs": 1,
+       "deltaFats": 2,
+       "deltaFiber": 0
+      },
+      "glucose": {
+       "titleSuffix": "(half roti, extra cucumber salad)",
+       "note": "Drop one roti and add a large bowl of sliced cucumbers and radishes tossed with lemon juice.",
+       "minutes": 20,
+       "deltaKcal": -95,
+       "deltaProtein": -2,
+       "deltaCarbs": -20,
+       "deltaFats": -1,
+       "deltaFiber": 2
+      },
+      "express": {
+       "titleSuffix": "(boiled eggs and plain toast)",
+       "note": "Use pre-boiled eggs sliced over whole wheat toast with a cup of plain set curd instead of cooking bhurji.",
+       "minutes": 8,
+       "deltaKcal": -24,
+       "deltaProtein": -1,
+       "deltaCarbs": -2,
+       "deltaFats": -1,
+       "deltaFiber": -1
+      },
+      "gut": {
+       "titleSuffix": "(mild spices, extra cumin raita)",
+       "note": "Omit green chillies, halve the cooking oil, and double the cooling raita seasoned with roasted cumin powder.",
+       "minutes": 18,
+       "deltaKcal": 22,
+       "deltaProtein": 5,
+       "deltaCarbs": 6,
+       "deltaFats": -3,
+       "deltaFiber": 1
+      }
+     }
+    },
+    "prompt": "You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.\n\nTHE PERSON\n- 41 years, male, 74 kg, mostly sitting\n- Eats: Veg and egg. Home food: North Indian.\n- Health flag: none\n\nTHE PLATE: Egg Bhurji with Whole Wheat Rotis (Spiced three-egg scramble with onions, tomatoes, warm rotis, and cooling cucumber raita.)\n- 200 g Whole eggs scrambled with onion and tomato [protein]; 90 g Whole wheat roti [carbs]; 150 g Low-fat curd raita with cucumber [protein]; 6 g Mustard oil for cooking [fats]\n- As written: 574 kcal, 34 g protein, 53 g carbs, 25 g fats, 7 g fibre. Prep 20 minutes.\n\nHARD RULES\n- Diet is absolute: Veg and egg (eggs allowed; no meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n\nWHAT TO RETURN\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. Deltas are the change in kcal and grams versus the meal as written.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+    "ms": 10551
+   },
+   "tuneMs": 10591
+  }
+ },
+ {
+  "id": "bp-after-eating-out",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 9275,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "Balancing out a heavier restaurant lunch with a light, low-sodium, high-volume home dinner to comfortably satisfy evening hunger.",
+   "meals": [
+    {
+     "title": "Homestyle Boiled Egg Bhurji with Phulka",
+     "subtitle": "Spiced scrambled whole eggs and whites cooked with plenty of tomatoes, onion, and a soft phulka.",
+     "cuisine": "North Indian Home",
+     "minutes": 18,
+     "items": [
+      {
+       "food": "Egg bhurji (1 whole egg, 2 whites, onion, tomato, spices)",
+       "grams": 160,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat phulka (no oil)",
+       "grams": 35,
+       "group": "carbs"
+      },
+      {
+       "food": "Cucumber and tomato salad with lemon",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil for cooking",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 328,
+     "protein": 18,
+     "carbs": 31,
+     "fats": 14,
+     "fiber": 6,
+     "why": [
+      {
+       "pair": "Lemon juice + fresh cucumber",
+       "effect": "Enhances flavour naturally without relying on added table salt."
+      },
+      {
+       "pair": "Eggs + raw salad",
+       "effect": "Provides steady fullness and digestive ease after a long break between meals."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "lighter_now",
+      "ate_out",
+      "long_gap",
+      "bp_salt"
+     ],
+     "forYou": "This light plate gives you ample volume from crisp vegetables and protein to reset after your afternoon biryani.",
+     "tuned": false
+    },
+    {
+     "title": "Tawa Chicken Tikka with Lauki Sabzi",
+     "subtitle": "Pan-seared skinless chicken breast paired with a gentle bottle gourd stir-fry and fresh greens.",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Tawa chicken breast with mild spices",
+       "grams": 120,
+       "group": "protein"
+      },
+      {
+       "food": "Lauki sabzi cooked with cumin",
+       "grams": 150,
+       "group": "greens"
+      },
+      {
+       "food": "Small whole wheat phulka",
+       "grams": 30,
+       "group": "carbs"
+      },
+      {
+       "food": "Ghee for cooking",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 315,
+     "protein": 30,
+     "carbs": 24,
+     "fats": 11,
+     "fiber": 5,
+     "why": [
+      {
+       "pair": "Bottle gourd + chicken breast",
+       "effect": "Creates a hydrating, light dinner that fills your plate without excess calories."
+      },
+      {
+       "pair": "Cumin + mild spices",
+       "effect": "Builds comforting aroma and depth of taste while keeping sodium low."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "lighter_now",
+      "ate_out",
+      "bp_salt"
+     ],
+     "forYou": "You get a lean, high-protein meal balanced with gentle gourd to keep your evening calm and comfortable.",
+     "tuned": false
+    },
+    {
+     "title": "Steamed Rohu Fish Curry with Brown Rice",
+     "subtitle": "Light home-style fish curry in a mild tomato gravy served with a modest portion of rice.",
+     "cuisine": "East Indian Home",
+     "minutes": 22,
+     "items": [
+      {
+       "food": "Rohu fish fillet in light tomato curry",
+       "grams": 140,
+       "group": "protein"
+      },
+      {
+       "food": "Steamed brown rice",
+       "grams": 75,
+       "group": "carbs"
+      },
+      {
+       "food": "Steamed French beans and carrots",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 334,
+     "protein": 24,
+     "carbs": 33,
+     "fats": 10,
+     "fiber": 5,
+     "why": [
+      {
+       "pair": "Steamed beans + rohu fish",
+       "effect": "Supplies satisfying fibre and lean protein to prevent evening snacking."
+      },
+      {
+       "pair": "Tomato gravy + brown rice",
+       "effect": "Offers rich moisture and complex carbohydrates for steady evening energy."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "planned": [
+      "lighter_now",
+      "ate_out",
+      "long_gap",
+      "bp_salt"
+     ],
+     "forYou": "A comforting fish plate that respects your calorie budget while keeping spices gentle and sodium completely omitted.",
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "lighter_now": "lighter after earlier meals",
+    "ate_out": "after eating out",
+    "long_gap": "7 h since the last meal",
+    "bp_salt": "easy on salt (BP)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "Balancing out a heavier restaurant lunch with a light, low-sodium, high-volume home dinner to comfortably satisfy evening hunger.",
+    "meals": [
+     {
+      "title": "Homestyle Boiled Egg Bhurji with Phulka",
+      "subtitle": "Spiced scrambled whole eggs and whites cooked with plenty of tomatoes, onion, and a soft phulka.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 18,
+      "items": [
+       {
+        "food": "Egg bhurji (1 whole egg, 2 whites, onion, tomato, spices)",
+        "grams": 160,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat phulka (no oil)",
+        "grams": 35,
+        "group": "carbs"
+       },
+       {
+        "food": "Cucumber and tomato salad with lemon",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil for cooking",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 328,
+      "protein": 18,
+      "carbs": 31,
+      "fats": 14,
+      "fiber": 6,
+      "why": [
+       {
+        "pair": "Lemon juice + fresh cucumber",
+        "effect": "Enhances flavour naturally without relying on added table salt."
+       },
+       {
+        "pair": "Eggs + raw salad",
+        "effect": "Provides steady fullness and digestive ease after a long break between meals."
+       }
+      ],
+      "planned_around": [
+       "lighter_now",
+       "ate_out",
+       "long_gap",
+       "bp_salt"
+      ],
+      "for_you": "This light plate gives you ample volume from crisp vegetables and protein to reset after your afternoon biryani."
+     },
+     {
+      "title": "Tawa Chicken Tikka with Lauki Sabzi",
+      "subtitle": "Pan-seared skinless chicken breast paired with a gentle bottle gourd stir-fry and fresh greens.",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Tawa chicken breast with mild spices",
+        "grams": 120,
+        "group": "protein"
+       },
+       {
+        "food": "Lauki sabzi cooked with cumin",
+        "grams": 150,
+        "group": "greens"
+       },
+       {
+        "food": "Small whole wheat phulka",
+        "grams": 30,
+        "group": "carbs"
+       },
+       {
+        "food": "Ghee for cooking",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 315,
+      "protein": 30,
+      "carbs": 24,
+      "fats": 11,
+      "fiber": 5,
+      "why": [
+       {
+        "pair": "Bottle gourd + chicken breast",
+        "effect": "Creates a hydrating, light dinner that fills your plate without excess calories."
+       },
+       {
+        "pair": "Cumin + mild spices",
+        "effect": "Builds comforting aroma and depth of taste while keeping sodium low."
+       }
+      ],
+      "planned_around": [
+       "lighter_now",
+       "ate_out",
+       "bp_salt"
+      ],
+      "for_you": "You get a lean, high-protein meal balanced with gentle gourd to keep your evening calm and comfortable."
+     },
+     {
+      "title": "Steamed Rohu Fish Curry with Brown Rice",
+      "subtitle": "Light home-style fish curry in a mild tomato gravy served with a modest portion of rice.",
+      "cuisine": "East Indian Home",
+      "prepMinutes": 22,
+      "items": [
+       {
+        "food": "Rohu fish fillet in light tomato curry",
+        "grams": 140,
+        "group": "protein"
+       },
+       {
+        "food": "Steamed brown rice",
+        "grams": 75,
+        "group": "carbs"
+       },
+       {
+        "food": "Steamed French beans and carrots",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "kcal": 334,
+      "protein": 24,
+      "carbs": 33,
+      "fats": 10,
+      "fiber": 5,
+      "why": [
+       {
+        "pair": "Steamed beans + rohu fish",
+        "effect": "Supplies satisfying fibre and lean protein to prevent evening snacking."
+       },
+       {
+        "pair": "Tomato gravy + brown rice",
+        "effect": "Offers rich moisture and complex carbohydrates for steady evening energy."
+       }
+      ],
+      "planned_around": [
+       "lighter_now",
+       "ate_out",
+       "long_gap",
+       "bp_salt"
+      ],
+      "for_you": "A comforting fish plate that respects your calorie budget while keeping spices gentle and sodium completely omitted."
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Non-veg. Home food: North Indian.\n- Health flag: High BP\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 330 kcal and at least 12 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1660 kcal and 62 g protein. Logged so far: 800 kcal, 30 g protein. Left to plan from this meal on: about 329 kcal, 9 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Logged today: Lunch: Chicken biryani (eaten out).\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [lighter_now] They have eaten more than planned so far today, so this meal is lighter than usual: about 330 kcal. Keep volume with vegetables.\n- [ate_out] They ate out earlier today (Chicken biryani). Balance it: a simple home plate, more vegetables, less oil and salt.\n- [long_gap] It is 7 hours since they last ate. Expect real hunger: give volume from vegetables and protein, not extra grain.\n- [bp_salt] High blood pressure: no pickle, papad, namkeen or added salt.\n\nHARD RULES\n- Diet is absolute: Non-veg.\n- Never use: (no extra exclusions).\n- High blood pressure: no pickle, papad, namkeen, chips or added salt.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on those reasons. Speak to them as \"you\". No percentages.",
+   "ms": 9235
+  }
+ },
+ {
+  "id": "log-paratha",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 5049,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "title": "Aloo paratha with curd",
+   "items": [
+    {
+     "food": "Aloo paratha",
+     "grams": 200,
+     "group": "carbs"
+    },
+    {
+     "food": "Plain curd",
+     "grams": 100,
+     "group": "protein"
+    }
+   ],
+   "kcal": 536,
+   "protein": 14,
+   "carbs": 70,
+   "fats": 22,
+   "fiber": 6,
+   "assumed": "Assumed two medium parathas cooked with oil and one small bowl of plain curd.",
+   "raw": {
+    "status": "ok",
+    "title": "Aloo paratha with curd",
+    "items": [
+     {
+      "food": "Aloo paratha",
+      "grams": 200,
+      "group": "carbs"
+     },
+     {
+      "food": "Plain curd",
+      "grams": 100,
+      "group": "protein"
+     }
+    ],
+    "kcal": 536,
+    "protein": 14,
+    "carbs": 70,
+    "fats": 22,
+    "fiber": 6,
+    "assumed": "Assumed two medium parathas cooked with oil and one small bowl of plain curd."
+   },
+   "prompt": "You are the dietitian inside Next Plate. The person is telling you what they actually ate, so it can be counted in their day. Do not judge it and do not change it.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n\nWHAT THEY ATE for breakfast: \"2 aloo paratha with curd\"\n\nWHAT TO RETURN\n- status \"ok\"; title (the meal in at most 7 words); items, each with food, grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.\n- If this is not something a person ate, return status \"refer\".\n- Plain words. No advice, no warnings, no percentages, no exclamation marks.",
+   "ms": 5003
+  }
+ },
+ {
+  "id": "log-thali",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 7372,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "title": "Dal, rotis, rice, bhindi, and salad",
+   "items": [
+    {
+     "food": "Yellow dal",
+     "grams": 150,
+     "group": "protein"
+    },
+    {
+     "food": "Whole wheat roti",
+     "grams": 60,
+     "group": "carbs"
+    },
+    {
+     "food": "Cooked white rice",
+     "grams": 100,
+     "group": "carbs"
+    },
+    {
+     "food": "Bhindi sabzi",
+     "grams": 100,
+     "group": "greens"
+    },
+    {
+     "food": "Cucumber and tomato salad",
+     "grams": 75,
+     "group": "greens"
+    }
+   ],
+   "kcal": 465,
+   "protein": 16,
+   "carbs": 76,
+   "fats": 11,
+   "fiber": 10,
+   "assumed": "Assumed one medium bowl dal, two medium rotis, half cup rice, and one katori bhindi.",
+   "raw": {
+    "status": "ok",
+    "title": "Dal, rotis, rice, bhindi, and salad",
+    "items": [
+     {
+      "food": "Yellow dal",
+      "grams": 150,
+      "group": "protein"
+     },
+     {
+      "food": "Whole wheat roti",
+      "grams": 60,
+      "group": "carbs"
+     },
+     {
+      "food": "Cooked white rice",
+      "grams": 100,
+      "group": "carbs"
+     },
+     {
+      "food": "Bhindi sabzi",
+      "grams": 100,
+      "group": "greens"
+     },
+     {
+      "food": "Cucumber and tomato salad",
+      "grams": 75,
+      "group": "greens"
+     }
+    ],
+    "kcal": 465,
+    "protein": 16,
+    "carbs": 76,
+    "fats": 11,
+    "fiber": 10,
+    "assumed": "Assumed one medium bowl dal, two medium rotis, half cup rice, and one katori bhindi."
+   },
+   "prompt": "You are the dietitian inside Next Plate. The person is telling you what they actually ate, so it can be counted in their day. Do not judge it and do not change it.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n\nWHAT THEY ATE for lunch: \"dal, 2 roti, bhindi sabzi, small bowl rice, salad\"\n\nWHAT TO RETURN\n- status \"ok\"; title (the meal in at most 7 words); items, each with food, grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.\n- If this is not something a person ate, return status \"refer\".\n- Plain words. No advice, no warnings, no percentages, no exclamation marks.",
+   "ms": 7331
+  }
+ },
+ {
+  "id": "log-out",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 2329,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "title": "Butter chicken with naans and gulab jamun",
+   "items": [
+    {
+     "food": "Butter chicken",
+     "grams": 220,
+     "group": "protein"
+    },
+    {
+     "food": "Plain naan",
+     "grams": 160,
+     "group": "carbs"
+    },
+    {
+     "food": "Gulab jamun",
+     "grams": 50,
+     "group": "other"
+    }
+   ],
+   "kcal": 1025,
+   "protein": 43,
+   "carbs": 115,
+   "fats": 44,
+   "fiber": 6,
+   "assumed": "Assumed one medium bowl of butter chicken, two restaurant naans, and one piece of gulab jamun.",
+   "raw": {
+    "status": "ok",
+    "title": "Butter chicken with naans and gulab jamun",
+    "items": [
+     {
+      "food": "Butter chicken",
+      "grams": 220,
+      "group": "protein"
+     },
+     {
+      "food": "Plain naan",
+      "grams": 160,
+      "group": "carbs"
+     },
+     {
+      "food": "Gulab jamun",
+      "grams": 50,
+      "group": "other"
+     }
+    ],
+    "kcal": 1025,
+    "protein": 43,
+    "carbs": 115,
+    "fats": 44,
+    "fiber": 6,
+    "assumed": "Assumed one medium bowl of butter chicken, two restaurant naans, and one piece of gulab jamun."
+   },
+   "prompt": "You are the dietitian inside Next Plate. The person is telling you what they actually ate, so it can be counted in their day. Do not judge it and do not change it.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Non-veg. Home food: North Indian.\n- Health flag: none\n\nWHAT THEY ATE for dinner: \"butter chicken with 2 naan and a gulab jamun\"\n\nWHAT TO RETURN\n- status \"ok\"; title (the meal in at most 7 words); items, each with food, grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.\n- If this is not something a person ate, return status \"refer\".\n- Plain words. No advice, no warnings, no percentages, no exclamation marks.",
+   "ms": 2288
+  }
+ },
+ {
+  "id": "log-not-food",
+  "expect": "refer",
+  "got": "refer",
+  "ok": true,
+  "ms": 1588,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "refer",
+   "raw": {
+    "status": "refer"
+   },
+   "prompt": "You are the dietitian inside Next Plate. The person is telling you what they actually ate, so it can be counted in their day. Do not judge it and do not change it.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n\nWHAT THEY ATE for lunch: \"my knee hurts when I climb stairs\"\n\nWHAT TO RETURN\n- status \"ok\"; title (the meal in at most 7 words); items, each with food, grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.\n- If this is not something a person ate, return status \"refer\".\n- Plain words. No advice, no warnings, no percentages, no exclamation marks.",
+   "ms": 1549
+  }
+ },
+ {
+  "id": "rescue-with-day",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 4923,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "dish": {
+    "name": "Paneer butter masala with 2 butter naan",
+    "portion": "1 bowl curry and 2 butter naans",
+    "kcal": 1180,
+    "protein": 34,
+    "carbs": 115,
+    "fats": 65,
+    "fiber": 7,
+    "warning": "Heavy with cream, butter, and refined flour",
+    "breakdown": "The rich tomato gravy relies on heavy butter and cream, while the tandoori flatbreads are made with refined white flour and extra butter."
+   },
+   "hacks": [
+    {
+     "title": "Swap both butter naans for two plain tandoori rotis",
+     "kind": "swap",
+     "deltaKcal": -360,
+     "deltaProtein": -2,
+     "deltaCarbs": -30,
+     "deltaFats": -26,
+     "deltaFiber": 5
+    },
+    {
+     "title": "Eat half the paneer gravy and leave the excess oil",
+     "kind": "portion",
+     "deltaKcal": -310,
+     "deltaProtein": -10,
+     "deltaCarbs": -8,
+     "deltaFats": -27,
+     "deltaFiber": -2
+    },
+    {
+     "title": "Order paneer tikka dry instead of the rich gravy curry",
+     "kind": "order",
+     "deltaKcal": -220,
+     "deltaProtein": 4,
+     "deltaCarbs": -10,
+     "deltaFats": -22,
+     "deltaFiber": 0
+    },
+    {
+     "title": "Take a brisk twenty minute walk after finishing your meal",
+     "kind": "move",
+     "deltaKcal": 0,
+     "deltaProtein": 0,
+     "deltaCarbs": 0,
+     "deltaFats": 0,
+     "deltaFiber": 0
+    }
+   ],
+   "raw": {
+    "status": "ok",
+    "dish": {
+     "name": "Paneer butter masala with 2 butter naan",
+     "portion": "1 bowl curry and 2 butter naans",
+     "kcal": 1180,
+     "protein": 34,
+     "carbs": 115,
+     "fats": 65,
+     "fiber": 7,
+     "warning": "Heavy with cream, butter, and refined flour",
+     "breakdown": "The rich tomato gravy relies on heavy butter and cream, while the tandoori flatbreads are made with refined white flour and extra butter."
+    },
+    "hacks": [
+     {
+      "title": "Swap both butter naans for two plain tandoori rotis",
+      "kind": "swap",
+      "deltaKcal": -360,
+      "deltaProtein": -2,
+      "deltaCarbs": -30,
+      "deltaFats": -26,
+      "deltaFiber": 5
+     },
+     {
+      "title": "Eat half the paneer gravy and leave the excess oil",
+      "kind": "portion",
+      "deltaKcal": -310,
+      "deltaProtein": -10,
+      "deltaCarbs": -8,
+      "deltaFats": -27,
+      "deltaFiber": -2
+     },
+     {
+      "title": "Order paneer tikka dry instead of the rich gravy curry",
+      "kind": "order",
+      "deltaKcal": -220,
+      "deltaProtein": 4,
+      "deltaCarbs": -10,
+      "deltaFats": -22,
+      "deltaFiber": 0
+     },
+     {
+      "title": "Take a brisk twenty minute walk after finishing your meal",
+      "kind": "move",
+      "deltaKcal": 0,
+      "deltaProtein": 0,
+      "deltaCarbs": 0,
+      "deltaFats": 0,
+      "deltaFiber": 0
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate. The person is eating out or ordering in. Take the dish as it is usually served and give the few moves that make it fit their day.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: none\n\nTHE DISH\n- \"Paneer butter masala with 2 butter naan\"\n- Their target for this meal: about 400 kcal and at least 29 g protein.\n- Logged so far today: 520 kcal, 18 g protein. Left for the day: about 405 kcal, 29 g protein.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- Plain, calm English. No exclamation marks, no emojis, no hype words.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If this is not food, or asks about symptoms or medicines, return status \"refer\".\n\nWHAT TO RETURN\n- status \"ok\" and dish: name, portion (as usually served, at most 8 words), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).\n- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).\n- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix.",
+   "ms": 4883
+  }
+ }
+]

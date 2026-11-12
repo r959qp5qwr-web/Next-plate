@@ -46,8 +46,9 @@ function ctxKey(){var a=appetite();return [C.meal,P.goal,P.focus,C.mode,C.mood,C
 function curKey(){return STORE.shown[C.meal]||ctxKey();}
 function curRes(){return STORE.res[curKey()]||null;}
 function lastForMeal(){var best=null;Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r.meal===C.meal&&r.meals&&r.meals.length&&(!best||r.at>best.at))best=r;});return best;}
-function fileOut(){return {today:FILE.today,patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days};}
-function ctxOut(text){var c={lite:true,meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
+function fileOut(){return {today:FILE.today,patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days,recent:FILE.recent};}
+function dayNo(){return Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);}
+function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
@@ -67,7 +68,7 @@ function makePlates(text){
     UI.busy="";
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
-      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;save();tune(key,0);
+      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";}
     else UI.err=errText(j.code);
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});

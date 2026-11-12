@@ -47,6 +47,8 @@ function buildFile(events,nowMs,par){
   if(lateN>=par.patternMin)f.patterns.push({id:"late_dinner",n:lateN,of:dinN});
   SLOTS.forEach(function(m){if((skip[m]||0)>=par.patternMin)f.patterns.push({id:"skips_meal",meal:m,n:skip[m],of:logged});});
   Object.keys(words).sort(function(a,b){return words[b]-words[a];}).forEach(function(k){if(words[k]>=par.patternMin)f.patterns.push({id:"repeat",slot:k.charAt(0),food:k.slice(2),n:words[k]});});
+  var rec=[],seen={};events.slice().reverse().forEach(function(e){if(nowMs-e.t>3*864e5||rec.length>=10)return;var ts=e.type==="shown"?(e.titles||[]):(isMealEv(e)||e.type==="next")?[e.title]:[];
+    ts.forEach(function(t){if(t&&!seen[t]&&rec.length<10){seen[t]=1;rec.push(String(t).slice(0,60));}});});f.recent=rec;
   f.slotProtein={};SLOTS.forEach(function(m){if(slotN[m]>=par.patternMin)f.slotProtein[m]=Math.round(slotP[m]/slotN[m]);});
   return f;
 }
@@ -115,6 +117,22 @@ function hooksFor(p,file,c,pl,par){
   if(p.health==="bp")add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
   return H.slice(0,9);
 }
+/* Variety is decided by code, not left to the model's habits: the lead ingredient rotates through the week, skips anything
+   repeated lately or eaten today, and respects the diet. Gemini decides the dish. */
+var ANCHORS=[["rajma, chole or lobia","veg","pulse",/rajma|chole|lobia|chana/],["paneer","veg","dairy",/paneer/],["moong or masoor dal","veg","",/dal|moong|masoor/],["soya chunks or tofu","veg","soya",/soya|tofu/],
+  ["sprouts or kala chana","veg","",/sprout|kala chana/],["besan or moong chilla","veg","",/chilla|besan/],["curd with legumes (kadhi, dahi-based)","veg","dairy",/kadhi|curd|dahi/],
+  ["eggs","egg","",/egg/],["chicken","nonveg","",/chicken/],["fish","nonveg","",/fish|rohu|surmai/]];
+function anchorFor(p,file,c){
+  if(c.text||c.dayNo==null)return "";
+  var ok=ANCHORS.filter(function(a){
+    if(a[1]==="egg"&&["egg","nonveg"].indexOf(p.diet)<0)return false;if(a[1]==="nonveg"&&p.diet!=="nonveg")return false;
+    if(a[2]==="dairy"&&(p.diet==="vegan"||(p.leave||[]).indexOf("dairy")>=0))return false;if(a[2]==="soya"&&(p.leave||[]).indexOf("soya")>=0)return false;
+    return !crosses(a[0],p);});
+  var avoid=(file.recent||[]).concat(file.today.meals.map(function(m){return m.title;})).concat(file.patterns.filter(function(x){return x.id==="repeat";}).map(function(x){return x.food;})).join(" ").toLowerCase();
+  var fresh=ok.filter(function(a){return !a[3].test(avoid);});if(fresh.length)ok=fresh;
+  if(!ok.length)return "";
+  return ok[(c.dayNo*4+SLOTS.indexOf(c.meal))%ok.length][0];
+}
 /* One plain sentence for the top of Today, written by code from the plan and the strongest hook ([S] "Live Dietitian Directive") */
 function directive(p,pl,hooks,meal){
   if(!pl)return "";
@@ -129,7 +147,7 @@ function directive(p,pl,hooks,meal){
 
 /* ---------- request validation for the food file (the phone sends numbers and short words, never prompt text) ---------- */
 function readFile(x,par){
-  var f={today:{kcal:0,protein:0,carbs:0,fats:0,fiber:0,meals:[],lastHoursAgo:null,lastKcal:0},patterns:[],slotProtein:{},days:0};
+  var f={today:{kcal:0,protein:0,carbs:0,fats:0,fiber:0,meals:[],lastHoursAgo:null,lastKcal:0},patterns:[],slotProtein:{},days:0,recent:[]};
   if(!x||typeof x!=="object")return f;var t=x.today||{};
   ["kcal","protein","carbs","fats","fiber"].forEach(function(k){f.today[k]=num(t[k],0,k==="kcal"?9000:900)||0;});
   f.today.lastHoursAgo=t.lastHoursAgo==null?null:Math.max(0,Math.min(48,+t.lastHoursAgo||0));f.today.lastKcal=num(t.lastKcal,0,4000)||0;
@@ -141,10 +159,11 @@ function readFile(x,par){
     else if(q.id==="repeat"){var w=mainWord(q.food);if(w&&/^[bsm]$/.test(q.slot))f.patterns.push({id:q.id,slot:q.slot,food:w,n:num(q.n,0,21)||0});}});
   var sp=x.slotProtein||{};SLOTS.forEach(function(m){var v=num(sp[m],0,200);if(v!=null)f.slotProtein[m]=v;});
   f.days=num(x.days,0,7)||0;
+  f.recent=(Array.isArray(x.recent)?x.recent:[]).slice(0,10).map(function(t){return plainText(t,60);}).filter(Boolean);
   return f;
 }
 readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";if(p.age&&p.age<18)p.age=0;return p;};})(readProfile);
-readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;var h=+((x||{}).hour);c.hour=isFinite(h)&&h>=0&&h<24?h:null;return c;};})(readCtx);
+readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;var h=+((x||{}).hour);c.hour=isFinite(h)&&h>=0&&h<24?h:null;var dn=num((x||{}).dayNo,1,366);c.dayNo=dn;return c;};})(readCtx);
 
 /* ---------- prompts ---------- */
 function briefText(p,c,file,pl,hooks){
@@ -156,6 +175,11 @@ function briefText(p,c,file,pl,hooks){
   L.push("");L.push("WHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)");
   hooks.forEach(function(h){L.push("- ["+h.id+"] "+h.brief);});
   if(!hooks.length)L.push("- [plain_day] Nothing unusual today: a balanced plate at the target.");
+  var an=anchorFor(p,file,c);
+  L.push("");L.push("VARIETY");
+  if(an)L.push("- Plate 1 is built on "+an+" (today's turn in the rotation). Plates 2 and 3 each use a different main ingredient.");
+  if(file.recent&&file.recent.length)L.push("- Eaten or offered in the last three days, so do not offer these again: "+file.recent.join("; ")+".");
+  L.push("- Vary the cooking style across the three plates (not three bhurjis or three curries).");
   return L.join("\n");
 }
 /* lite = the three plates only (fast). The swaps and one-tap changes for a plate are asked for separately (kind "tune"). */
