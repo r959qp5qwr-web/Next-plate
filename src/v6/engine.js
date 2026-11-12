@@ -254,7 +254,7 @@ profileText(p,null),
 function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
   if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
-  m.properties.planned_around={type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};m.properties.taste={type:"ARRAY",items:{type:"STRING"}};
+  m.properties.planned_around={type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.for_you={type:"STRING"};m.properties.taste={type:"ARRAY",items:{type:"STRING"}};
   m.required=m.required.concat(["planned_around","for_you","taste"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you","taste"]);return s;
 }
 SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
@@ -358,7 +358,7 @@ pl&&pl.day.meds?"- They take insulin or sulfonylurea tablets, or are not sure: a
 "  ask: one way to order it better, in the words the person would say to the waiter, at most 80 characters (\"Less butter, no cream on top\"). No numbers. Empty if nothing needs asking.",
 "  with: one side from this same menu that completes the dish for this person: a count, then the name exactly as written on the menu (\"2 Tandoori Roti\", \"1 Cucumber Raita\"), at most 60 characters. Empty if the dish is a meal on its own.",
 "  with_kcal, with_protein, with_carbs, with_fats, with_fiber: your estimate for that side in that amount. All 0 when \"with\" is empty.",
-"  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (at most 4; only ids listed there).",
+"  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (1 to 4; only ids listed there). Every order cites at least one; a health id (such as salt with BP) applies to every order you choose.",
 "- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied exactly) and why (at most 14 words, plain, about the food itself, no numbers).",
 "- tip: one sentence, at most 24 words, on the order of eating at this meal: what to start with and what to keep for last. No numbers."
   ].filter(function(x){return x!==null;}).join("\n");
@@ -368,7 +368,7 @@ function menuSchema(ids){
   function obj(props,req){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:Object.keys(props)};}
   return obj({status:{type:"STRING",enum:["ok","refer","unreadable"]},place:S,
     dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,ask:S,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,
-      planned_around:{type:"ARRAY",items:{type:"STRING",enum:ids.length?ids:["plain_day"]}}})},
+      planned_around:{type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}}})},
     leave:{type:"ARRAY",items:obj({as_written:S,why:S})},tip:S},["status"]);
 }
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}
