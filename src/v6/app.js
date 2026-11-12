@@ -53,7 +53,7 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",limit_day:"That's today's limit for new plates. Your plates so far stay here.",limit_ip:"That's today's limit for new plates on this phone. Your plates so far stay here.",
   bad_key:"This link needs the code from your coach's message. Open the link they sent you.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it.",
-  busy:"Next Plate is busy just now. Try again in a minute."};
+  busy:"Next Plate is busy just now. Try again in a minute.",upstream_error:"Next Plate couldn't get an answer just now. Try again.",unparsed:"The answer came back cut off. Try again."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
 var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_image","bad_request"];
 function RETRY(code){return NORETRY.indexOf(code)<0;}
