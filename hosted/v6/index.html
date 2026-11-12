@@ -1191,6 +1191,14 @@ function dayTargets6(p,par){
   return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};
 }
 
+/* The v5 screens (still the live ones until the owner deploys v6) show targets through these two v5 functions.
+   Point them at the same numbers the engine plans with, so the screen and the plates agree. */
+dayTargets=function(p){return dayTargets6(Object.assign({goal:"hold"},p));};
+mealTargets=function(day,meal,appetite){
+  if(!day)return null;var a=Math.max(1,Math.min(10,Math.round(appetite||5)));
+  return {kcal:Math.round(day.kcal*PARAM.split[meal]*(0.85+0.03*a)/10)*10,protein:Math.round(day.protein*PARAM.proteinSplit[meal])};
+};
+
 /* ===== Next Plate v6 engine. Loaded after the v5 core, in the page and on the server (np-core).
    docs/ARCHITECTURE-v6.md: event log -> food file -> day plan -> context brief with hooks -> Gemini -> checks.
    Code counts, Gemini cooks: every target, pattern and hook below is computed here; the model only plans food. ===== */

@@ -83,3 +83,11 @@ function dayTargets6(p,par){
   if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sulfonylurea tablets can cause low sugar; your doctor's advice comes first."]);
   return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};
 }
+
+/* The v5 screens (still the live ones until the owner deploys v6) show targets through these two v5 functions.
+   Point them at the same numbers the engine plans with, so the screen and the plates agree. */
+dayTargets=function(p){return dayTargets6(Object.assign({goal:"hold"},p));};
+mealTargets=function(day,meal,appetite){
+  if(!day)return null;var a=Math.max(1,Math.min(10,Math.round(appetite||5)));
+  return {kcal:Math.round(day.kcal*PARAM.split[meal]*(0.85+0.03*a)/10)*10,protein:Math.round(day.protein*PARAM.proteinSplit[meal])};
+};
