@@ -4,3 +4,5 @@ node_modules/
 demo/reel/promo2/audio/*.wav
 demo/reel/promo2/audio/**/*.wav
 demo/reel/out/
+demo/reel/promo3/audio/*.wav
+demo/reel/promo3/audio/**/*.wav
