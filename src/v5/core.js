@@ -239,6 +239,7 @@ rulesText(p),
 "WHAT TO RETURN",
 "- status \"ok\" and dish: name, portion (as usually served, at most 8 words), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).",
 "- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).",
+"- Each move stands on its own and can be combined with the others: never give two moves that change the same item (not both \"eat one bhatura\" and \"swap the bhature for rotis\"). Together they must still leave a real meal.",
 "- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix."
   ].filter(function(x){return x!==null;}).join("\n");
 }

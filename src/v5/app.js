@@ -512,7 +512,7 @@ function rescue(text,image){
   if(UI.rbusy)return;UI.rbusy=true;UI.rerr="";UI.rtext=text||"Photo of the menu";render();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
   api("/api/rescue",body,function(s,j){UI.rbusy=false;
-    if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};(j.hacks||[]).slice(0,2).forEach(function(h,i){UI.rmoves[i]=true;});}
+    if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};(j.hacks||[]).slice(0,1).forEach(function(h,i){UI.rmoves[i]=true;});}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read};}
     else if(s===200)UI.rerr="That didn't come back as a dish that fits your food rules. Try naming it differently.";
     else UI.rerr=errText(j.code);
@@ -538,7 +538,7 @@ function renderRescue(){
   if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s,el("h2",null,r.read||SAFETY));v.appendChild(e);return;}
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.max(0,Math.round(a[k]));});
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.max(k==="protein"||k==="fiber"?0:Math.round(d[k]*.4),Math.round(a[k]));});
   var r0=riseOf(d,null),r1=riseOf(a,hab),tg=target(),f0=fitOf(d,tg),f1=fitOf(a,tg);
   var inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");
   hl.appendChild(el("span","dish",d.name));hl.appendChild(el("span","dish-s",[d.portion,d.warning].filter(Boolean).join(" · ")));ih.appendChild(hl);inst.appendChild(ih);
