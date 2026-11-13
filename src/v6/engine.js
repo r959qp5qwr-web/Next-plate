@@ -392,6 +392,12 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
 /* a grain the portion adds beyond the dish itself: "Dal Tadka | 1 bowl dal with 1 roti" counts; "Moong Dal Dosa | 2 dosas" does not.
    Round 14: the grain must be an item the typed menu sells, matched by the item's last word ("Tandoori Roti" sells a roti; "Rice Kheer" and
    "Bread Pakora" sell no rice or bread). */
+/* Round 28 (owner decision): with diabetes, an order whose grain is a side or part of the portion carries the grain's name, and the
+   order card asks the person "Is roti available now?" before they order it. A menu cannot say everything; the person in the
+   restaurant can. A dish that is itself the grain (a biryani, a dosa) needs no question. */
+function grainAsk(name,por,side){if(isGrain(name))return "";var src=side&&isGrain(side)?side:por,nw=words(name),w=words(src),out="";
+  w.forEach(function(x,i){if(GRAIN_RX.test(x)&&nw.indexOf(x)<0&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x))out=(/^(?:tandoori|butter|plain|jeera|steamed|missi|rumali|tawa|garlic|brown|jowar|bajra|makki|lachha|laccha|ragi|jeera)$/.test(w[i-1]||"")?w[i-1]+" ":"")+x;});
+  return out;}
 function porGrain(name,por,text,meal){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
   if(!isGrain(r))return false;
@@ -408,10 +414,10 @@ function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|cha
    the section when they are not grains on their own ("jeera rice"); a bracket that starts with "with" lists what comes with the dish; a
    section word alone on a line is a heading on a priced menu and an item on an unpriced one; a free-typed list splits on commas and "and".
    An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
-var SOLDOUT=/\b(?:nahi\s+hai|khatam|not\s+available|unavailable|sold\s+out|finished|over(?!\s+\d)|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na|nil|none\s+left|all\s+gone|no\s+more|not\s+(?:there|ready|now|making|made|cooking))\b/;
+var SOLDOUT=/\b(?:nahi\s+hai|khatam|not\s+available|unavailable|sold\s+out|finished|over(?!\s+(?:\d|slow|low|high|medium|a|the|fire|flame|charcoal|coal|tawa|wood|heat))|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na|nil|none\s+left|all\s+gone|no\s+more|not\s+(?:there|ready|now|making|made|cooking))\b/;
 var SOLDW=/^(?:nahi|hai|khatam|sold|finished|over|closed|nil|gone|na)$/;
 var TIMEMARK=/\b(?:after|from|before|till|until)\s+\d|\d\s*(?:pm|am)\b|\b(?:dinner|lunch|evening|night|breakfast|morning|weekends?|sundays?|saturdays?)\s+only\b|\bonly\s+(?:at|for|in\s+the|on)\s+(?:dinner|lunch|evening|night|breakfast|morning|weekends?|sundays?)\b/i;
-var QUALW=/^(?:with|and|or|per|each|piece|pieces|nos|plate|half|full|small|large|regular|extra|add|on|of|the|a|an|veg|non|nonveg|jain|special|house|chef|chefs|fresh|hot|ghee|butter|garlic|plain|jeera|tandoori|tawa|masala|stuffed|onion|tomato|mint|pudina|methi|missi|lachha|laccha|rumali|roomali|kashmiri|green|peas|steamed|fried|boiled|cumin|curd|today|todays|available|in|for|cheese|chilli|chili|aloo|gobi|paneer|mix|mixed|multigrain|wheat|atta|maida|bajra|jowar|makki|ragi|brown|white|red|basmati|soft|crispy|thin|thick|desi|homestyle|home|style|bowl|serving|portion|cup|katori|qty|unit|units|pc|pcs|kg|gm|gms|g|ml|only|also|served|serves|people|after|from|pm|am|onwards|hrs|till|until|before|to|ready|min|mins|minutes|hai|bhi|please|too|etc|yes|ok|okay|whole|tandoor|v|amul|each|persons|person|dry|gravy|lemon|coconut|tamarind|sweet|salted|plus|bread|breads|kulcha|naan|roti|rotis|paratha|rice|combos?|sides?|mains?|staples?|accompaniments?|indian)$/;
+var QUALW=/^(?:with|and|or|per|each|piece|pieces|nos|plate|half|full|small|large|regular|extra|add|on|of|the|a|an|veg|non|nonveg|jain|special|house|chef|chefs|fresh|hot|ghee|butter|garlic|plain|jeera|tandoori|tawa|masala|stuffed|onion|tomato|mint|pudina|methi|missi|lachha|laccha|rumali|roomali|kashmiri|green|peas|steamed|fried|boiled|cumin|curd|today|todays|available|in|for|cheese|chilli|chili|aloo|gobi|paneer|mix|mixed|multigrain|wheat|atta|maida|bajra|jowar|makki|ragi|brown|white|red|basmati|soft|crispy|thin|thick|desi|homestyle|home|style|bowl|serving|portion|cup|katori|qty|unit|units|pc|pcs|kg|gm|gms|g|ml|only|also|served|serves|people|cooked|slow|fire|wood|charcoal|clay|oven|fired|baked|dum|over|after|from|pm|am|onwards|hrs|till|until|before|to|ready|min|mins|minutes|hai|bhi|please|too|etc|yes|ok|okay|whole|tandoor|v|amul|each|persons|person|dry|gravy|lemon|coconut|tamarind|sweet|salted|plus|bread|breads|kulcha|naan|roti|rotis|paratha|rice|combos?|sides?|mains?|staples?|accompaniments?|indian)$/;
 var MENUSEC=/^(?:breads?|indian\s+breads?|rice|naans?|parathas?|kulchas?|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
 var NOTSOLD=/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps|cutlets?|kanji|meetha|cakes?|sweet|pani|sev|bhel|golgappa|chaat|dahi\s+puri)\b/;
 function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(?:sold\s+out|finished|not\s+available|over|khatam|nil|n\/a|na|out\s+of\s+stock)\b)/gi," - ");   /* round 25: "Roti 30 | sold out" */
@@ -431,8 +437,9 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
      "only wheat", "off the tawa", "Jain", "not spicy") are taken out first. */
   var WIN={breakfast:[6,11],lunch:[11,16],snack:[15,19],dinner:[18,24]}[meal]||null;
   var MEALW={breakfast:/\b(?:breakfast|morning|mornings|nashta|subah)\b/,lunch:/\blunch\b/,dinner:/\b(?:dinner|supper|evenings?|nights?|raat|shaam)\b/};
-  var hr=function(h,mm,suf,dflt){h=+h;if(h>=100){mm=h%100;h=Math.floor(h/100);}var t=h+(+(mm||0))/60;suf=(suf||dflt||"").toLowerCase();if(suf==="pm"&&h<12)t+=12;else if(!suf&&h>=4&&h<=9)t+=12;return t;};
-  var window_=function(lx){var m=/(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\s*(?:-|to|\u2013)\s*(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|hrs)?/.exec(lx);
+  var hr=function(h,mm,suf,dflt){h=+h;if(h>=100){mm=h%100;h=Math.floor(h/100);}var t=h+(+(mm||0))/60;suf=(suf||dflt||"").toLowerCase();if(suf==="pm"&&h<12)t+=12;else if(!suf&&h>=1&&h<=9)t+=12;return t;};
+  var window_=function(lx){lx=lx.replace(/\bmidnight\b/g,"12 am");var w0=window0(lx);if(w0&&w0[1]<w0[0])w0[1]+=24;if(w0&&w0[1]===0)w0[1]=24;return w0;};
+  var window0=function(lx){var m=/(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\s*(?:-|to|\u2013)\s*(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm|hrs)?/.exec(lx);
     if(m&&(m[3]||m[6]||m[2]||m[5])){var b=hr(m[4],m[5],m[6]==="hrs"?"x":m[6]);var a=hr(m[1],m[2],m[3]||((m[6]==="pm"||m[6]==="am")&&+m[1]<=+m[4]?m[6]:m[6]==="hrs"?"x":""));return [a,b];}
     m=/(?:after|from|starts\s+at)\s+(\d{1,4})(?:[.:](\d{2}))?\s*(am|pm|hrs)?|(\d{1,2})(?:[.:](\d{2}))?\s*(am|pm)?\s*(?:o\s*'?\s*clock\s*)?(?:onwards|baje\s+ke\s+baad|se)\b/.exec(lx);
     if(m)return [m[1]?hr(m[1],m[2],m[3]==="hrs"?"x":m[3]):hr(m[4],m[5],m[6]),24];
@@ -442,13 +449,13 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
   var HEADW=/^(?:starters?|mains?|main|course|courses|desserts?|sweets?|beverages?|drinks?|soups?|salads?|sides?|specials?|special|chinese|indian|north|south|tandoor|tandoori|breads?|rice|biryanis?|combos?|thalis?|meals?|veg|non|nonveg|vegetarian|chicken|mutton|fish|seafood|egg|eggs|paneer|from|the|our|house|chefs?|signature|kitchen|items?|a|la|carte|accompaniments?|raita|snacks?|chaat|rolls?|wraps?|sandwich(?:es)?|pizzas?|pasta|burgers?|noodles|fried|curries|curry|gravy|dry|dals?|sabzi|kebabs?|tikka|tawa|punjabi|mughlai|hyderabadi|gujarati|rajasthani|kerala|andhra|chettinad|continental|italian|thai|healthy|fresh|todays|today|value|mini|and|of|in|on|with|for|our|clay|oven|griddle|staples?|extras?|add|ons?|light|bites|platters?|dosas?|idli|uttapam|parathas?|rotis?|naans?|kulchas?|pulao|khichdi|south|regional|street|food|foods|mocktails?|shakes?|juices?|lassi|tea|coffee|hot|cold|ice|cream|kids|jain|menu)$/;
   var HOURW=/^(?:open|opens|timings?|hours|am|pm|hrs|to|daily|everyday|onwards|from|till|until|after|before|baje|ke|baad|o|clock|se|starts|at|served|serving|all|day|ready|in|min|mins|minutes|fresh)$/;
   /* a time on a priced item is read against this meal too: "Naan 50 (after 7 pm)" is off at lunch, on at dinner */
-  var TIMEOFF=function(x){var lx=x.toLowerCase();for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;if(/\b(?:weekends?|sundays?|saturdays?|sat|sun)\b/.test(lx))return true;
+  var TIMEOFF=function(x){var lx=x.toLowerCase();if(!(MEALW[meal]&&MEALW[meal].test(lx)))for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;if(/\b(?:weekends?|sundays?|saturdays?|sat|sun)\b/.test(lx))return true;
     var w=window_(lx.replace(CURNUM," "));return !!w&&(!WIN||w[1]<=WIN[0]||w[0]>=WIN[1]);};
   var HEADMARK=function(x,i){if(!anyPrice||isPriced(x))return false;
     var lx=x.toLowerCase().replace(/\bno\s+(?:onion|garlic|maida|butter|ghee|oil|cream|sugar|added\s+sugar)\b/g," ").replace(/\b(?:only\s+(?:wheat|whole\s+wheat|atta|millets?|veg|vegetarian|jain))\b/g," ").replace(/\boff\s+the\s+(?:tawa|griddle|grill)\b/g," tawa ").replace(/\b(?:not|less|mild(?:ly)?)\s+spicy\b/g," ");
-    for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;   /* "DINNER", "(evenings only)" at lunch; "BREAKFAST" at breakfast is fine */
+    if(!(MEALW[meal]&&MEALW[meal].test(lx)))for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;   /* "DINNER" at lunch; "LUNCH & DINNER" sells at both */
     var w=window_(lx);if(w&&(!WIN||w[1]<=WIN[0]||w[0]>=WIN[1]))return true;   /* "TANDOOR 7-11 pm" at lunch; "(10 am - 11 pm)" covers lunch */
-    return words(lx.replace(/\d+/g," ")).some(function(y){return !(HEADW.test(y)||HOURW.test(y)||QUALW.test(y)||GRAIN_RX.test(y)||MAT_RX.test(y)||PARTFOOD.test(y)||VEGW.test(y)||(MEALW[meal]&&MEALW[meal].test(y)));});};
+    return /\b(?:band|closed|shut|off|nahi|nil|none|over|finished|khatam|unavailable|repair|stopped|down|tomorrow|kal|weekends?|sat|sun|saturdays?|sundays?)\b|\bnot\s+(?:available|working|today|now|ready|served)\b/.test(lx);};   /* round 28 (owner decision): explicit marks only; the person confirms the grain with one tap */
   var cur="",deadKind="",deadSet=[],deadPerm=[];
   lines.forEach(function(line,li){
     var ni=li+1;while(ni<lines.length&&markOf(ni,true)&&!(/[a-z]/i.test(orig[ni]||"")&&!/[a-z]/.test(orig[ni]||"")))ni++;   /* round 25: look past sold-out items for what a heading heads */
@@ -480,15 +487,11 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
     if(priced&&list.length&&(isGrain(head)||MENUSEC.test(head)||cur)){var iw=words(head).filter(function(x){return !SOLDW.test(x);});
       if(words(line.replace(/\bno\s+(?:butter|ghee|oil|onion|garlic|cream|sugar|salt)\b/g," ").replace(/\bask\s+for\s+(?:extra\s+|less\s+|more\s+|no\s+)?(?:butter|ghee|oil|onion|garlic|cream|cheese|chutney|pickle|curd|raita)\b/g," ")).some(function(x){return iw.indexOf(x)<0&&!QUALW.test(x)&&!GRAIN_RX.test(x)&&!MAT_RX.test(x)&&!PARTFOOD.test(x)&&!VEGW.test(x);}))list=[];}
     var isHeadLine=anyPrice&&!priced&&ni<lines.length&&isPriced(lines[ni]);
-    if(!isHeadLine&&!priced&&/\b(?:tandoor|tandoori|breads?)\b/.test(line)&&(SOLDOUT.test(line)||TIMEOFF(o)))deadPerm.push("*");   /* "* Tandoor items after 7 pm" at lunch */
-    if(!isHeadLine)o.toLowerCase().split(/[.;!?]\s+|\n/).forEach(function(sen){if(SOLDOUT.test(sen))words(sen).forEach(function(y){if(GRAIN_RX.test(y)&&deadPerm.indexOf(grainCanon(y))<0)deadPerm.push(grainCanon(y));});});   /* round 27: "Roti and naan finished." marks both */
-    if(soldOut&&!isHeadLine)words(line).forEach(function(y){if(GRAIN_RX.test(y)&&deadPerm.indexOf(grainCanon(y))<0)deadPerm.push(grainCanon(y));});   /* round 27: "Roti finished", "Note: roti not available today" anywhere on the menu */
     list=list.map(function(x){return x.replace(/\s+(?:hai|bhi|please|too|etc|available|yes|ok|okay|also)\b\.?/g,"");});   /* "roti hai", "roti please" */
     var before0=list.slice();
     list=list.filter(function(x){var w=words(x),lg=-1;w.forEach(function(y,k){if(GRAIN_RX.test(y))lg=k;});if(lg<0)return true;   /* round 26: "roti not avail", "roti band", "no roti", "roti later" */
       if(w.slice(0,lg).some(function(y){return /^(?:no|not|without|nahi|nai|minus)$/.test(y);}))return false;
       return w.slice(lg+1).every(function(y){return QUALW.test(y)||GRAIN_RX.test(y)||MAT_RX.test(y)||PARTFOOD.test(y)||VEGW.test(y)||/^(?:yes|ok|available|today)$/.test(y);})&&!(rest&&!priced&&words(rest).some(function(y){return !(QUALW.test(y)||GRAIN_RX.test(y)||MAT_RX.test(y)||PARTFOOD.test(y)||VEGW.test(y)||/^(?:yes|ok|with)$/.test(y));}));});
-    before0.forEach(function(x){if(list.indexOf(x)<0&&!isHeadLine&&!NOTSOLD.test(x))words(x).forEach(function(y){if(GRAIN_RX.test(y)&&deadPerm.indexOf(grainCanon(y))<0)deadPerm.push(grainCanon(y));});});   /* "Dal tadka, paneer, roti. Roti is over." */
     if((deadKind||deadSet.length)&&list.length)list=list.filter(function(x){return !words(x).some(function(y){return GRAIN_RX.test(y)&&(grainCanon(y)===deadKind||deadKind==="bread*"||deadKind==="*"||deadSet.indexOf(grainCanon(y))>=0);});});   /* a sold-out grain heading covers that grain on the whole menu */   /* "ROTI (SOLD OUT)" then "Roti 30" */
     list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!NOTSOLD.test(x))out.push(x);});});
   return out.filter(function(x){return !words(x).some(function(y){return GRAIN_RX.test(y)&&(deadPerm.indexOf(grainCanon(y))>=0||deadPerm.indexOf("*")>=0&&/^(?:roti|naan|kulcha|paratha|tandoori)$/.test(grainCanon(y)));});});}
@@ -540,7 +543,7 @@ function checkMenu(r,p,c,pl,hooks){
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por,typed?c.text:"",c.meal))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
-    list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,
+    list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,por,side):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place=clean(r.place,40);if(bad(out.place))out.place="";

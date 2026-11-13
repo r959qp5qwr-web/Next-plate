@@ -451,7 +451,7 @@ function readMenu(text,image){
   UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
-    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";}
+    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mok={};UI.mtext="";}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
     else{UI.mretry=s!==200&&RETRY(j.code);UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();});
@@ -481,7 +481,21 @@ function orderView(v,r){
   var go=btn("btn primary","I'll order this","check","order-go");
   go.addEventListener("click",function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+o["with"]:""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
     UI.mres=null;UI.mtext="";C.meal=r.meal;show("plate");toast("Counted for "+mn+". The rest of the day follows it.");});
-  card.appendChild(go);v.appendChild(card);
+  /* Round 28 (owner decision): with diabetes the plan keeps a grain. When the grain is a side or part of the portion, the person
+     confirms it is available before ordering; "No" moves to the next order with another grain, or back to the menu. */
+  UI.mok=UI.mok||{};
+  if(o.grain&&!UI.mok[UI.msel]){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
+    var gt=el("p","gq",(/s$/.test(o.grain)&&!/rice$/.test(o.grain)?"Are ":"Is ")+o.grain+" available now?");gt.id="order-grain-q";
+    var gn=el("p","fine","Your plan keeps a grain with this meal. Ask before you order.");
+    var gy=btn("btn primary","Yes","check","order-grain-yes"),gx=btn("btn","No","x","order-grain-no"),ga=el("div","pick-acts");add(ga,gy,gx);
+    gy.addEventListener("click",function(){UI.mok[UI.msel]=true;render();var b=$("order-go");if(b)b.focus();});
+    gx.addEventListener("click",function(){var g=grainCanon(words(o.grain).pop()||"");var keep=r.orders.filter(function(x){return !x.grain||grainCanon(words(x.grain).pop()||"")!==g;});
+      if(!keep.length){var lt=UI.mlast&&UI.mlast.t||"";UI.mres=null;UI.mok={};UI.merr="None of these orders keeps a grain you can get here. Ask which roti or rice they have today"+(lt?", add it to the menu above and read it again.":", then type the menu with it.");UI.mopen=true;UI.mtext=lt;}
+      else{r.orders=keep;UI.msel=0;UI.mok={};UI.mmoves={};toast("Showing the next order with a grain you can get.");}
+      render();var c=$("order-card")||document.querySelector("#v-rescue .note");if(c)c.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});});
+    add(gq,gt,gn,ga);card.appendChild(gq);}
+  else{if(o.grain){var gc=el("p","fine gok");gc.id="order-grain-ok";gc.appendChild(document.createTextNode(o.grain.charAt(0).toUpperCase()+o.grain.slice(1)+": available, you checked."));card.appendChild(gc);}card.appendChild(go);}
+  v.appendChild(card);
   if(r.moves.length){var mh=el("div","sec-h");mh.appendChild(el("h3",null,"The two moves that help most"));v.appendChild(mh);
     var mv=el("div","moves");r.moves.forEach(function(m,k){var b=el("button","move");b.type="button";b.id="order-move-"+k;setPressed(b,!!UI.mmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
       var tx=el("span"),sc=m.kind==="portion"?scaleN(o.n,m.scale):null;tx.appendChild(document.createTextNode(m.title));

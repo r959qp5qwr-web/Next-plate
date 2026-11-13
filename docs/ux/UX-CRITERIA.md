@@ -465,6 +465,35 @@ safe-side refusals ("DINNER MENU" and a "Dinner" heading at lunch, "Roti 15 to 2
 round 26 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65); the
 recorded menu replay offers 88 orders with and without diabetes, as before.
 
+## Part A, changes after Critic round 28 (owner decision)
+Round 28 found that the fail-closed heading reader of round 27 refused ordinary menus (MAJOR: "ASSORTED BREADS", "RICE VARIETIES",
+"Bread Basket" sold no grain, so a person with diabetes saw "No dish on that menu passed the checks"), and that other wordings were still
+missed in the other direction ("TANDOOR (7 baje se)", "We ran out of roti", "keep it 4 hours, then eat it"). Rounds 21 to 28 showed that
+reading a typed menu closely enough to know whether the grain is available now does not converge: a strict reader refuses ordinary menus,
+a lenient one misses a new wording.
+Decision (owner, 13 Nov, fixed): with diabetes, when an order's grain is a side or part of the portion, the order card asks the person
+"Is <grain> available now?" with Yes and No before "I'll order this". The person in the restaurant knows; the menu text is only a first
+filter. A dish that is itself the grain (a biryani, a dosa) asks nothing. Changes:
+1. The engine names the grain on each such order (order field "grain", empty otherwise and always empty without diabetes).
+2. The order card shows the question; Yes shows "<Grain>: available, you checked." and the order button; No moves to the next order with a
+   grain of another kind, or, when none is left, back to the menu with "None of these orders keeps a grain you can get here. Ask which
+   roti or rice they have today, add it to the menu above and read it again."
+3. The menu reader keeps only marks on the grain's own line (sold-out words, crosses, strike-through, an item time that misses this meal)
+   and explicit heading marks (closed, band, not available, over, finished, under repair, tomorrow, kal, weekends, or a meal or hour range
+   that misses this meal). It no longer reads unknown heading words as closed, and a note elsewhere ("Roti finished", "Out of roti") no
+   longer removes the grain: the person's answer covers it. Prices with paise and price ranges stay prices; meal headings and hours are
+   read against the meal asked for, with "lunch & dinner" selling at both and hours past midnight read as late night.
+4. One-tap notes: when "then eat/have/serve/reheat it" follows, thenKeeps() alone decides; the words before it must be a wait within the
+   meal (no later meal, time, store, other eater, hours or "second meal"); "keep it" and "let it" with no "then" wait only for a short
+   named wait (warm, covered, to cool, a few minutes). "Then eat it at dinner" keeps on a dinner plate; "then have it at lunch" on a dinner
+   plate is held (the round 20 record listed it as a keep; moved to removals).
+Measured: the Critic's 91 ordinary bread and rice section names and its full menu sell the grain; its 54 sell-expected menus are offered
+and its 56 refuse-expected menus are refused or ask about the grain; 50 of the round 27 menus whose mark sits elsewhere are now offered
+with the question; its round 28 one-tap notes read as it expects (0 of 19 offered, 0 of 10 held). Every earlier Critic probe reads the same
+as on the round 27 build except those menu cases and the "at lunch" note; all 4,897 combinatorial cases read right; on recorded live
+replies 65 of 2,005 one-tap notes are held (the same 65) and the recorded menu replay offers 88 orders, as before. The films were made
+before the question and show the order card without it.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

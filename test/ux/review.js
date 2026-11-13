@@ -83,6 +83,9 @@ const STATES = [
   ['menu-unreadable', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'eval/v6/menu-blurred.jpg')); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the unreadable-menu note'); }],
   ['rescue-menu-typed', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await h.settle(300); await p.fill('#mtext', fx.typed); await h.settle(200); }],
   ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the menu order'); }],
+  // round 28 (owner decision): the grain question on a menu order with diabetes, after "Yes" and after "No"
+  ['menu-grain-yes', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.waitForSelector('#order-go'); await h.settle(600); await h.inView(p, '#order-card', 'the confirmed order'); }],
+  ['menu-grain-no', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 }); await p.click('#order-grain-no'); await h.settle(900); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

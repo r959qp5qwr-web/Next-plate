@@ -231,3 +231,9 @@
 #app .tune.alc .tnote{grid-column:1/-1;margin:2px 0 0;text-align:center}
 /* Critic round 8: how much to have is the order's second fact, after the dish; it reads at the size of the side, in ink, upright */
 #app .order .por{margin:4px 0 0;font:500 18px/24px var(--text);font-style:normal;color:var(--ink);font-variant-numeric:lining-nums}
+
+/* round 28: the grain question on a menu order (diabetes) */
+#app .order .gask{margin:12px 0 0;background:transparent;border:1px solid var(--line)}
+#app .order .gask .gq{margin:0 0 4px;font:600 19px/25px var(--text);color:var(--ink)}
+#app .order .gask .fine{margin:0 0 10px}
+#app .order .gok{margin:10px 0 0}

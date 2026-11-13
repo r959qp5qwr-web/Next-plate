@@ -54,10 +54,10 @@ for (const page of pages) {
     eq(E.readCtx({ meal: 'dinner', text: long }, 'meals').text.length, 240, 'meals text length');
     yes(!/["\\\n]/.test(E.readCtx({ meal: 'dinner', text: 'Dal "Tadka"\\\nRoti' }, 'menu').text), 'quotes, backslashes and line breaks must not reach the prompt');
   });
-  check('checked reply has the contract shape: orders (name, portion, ask, with, n, fit, rise, planned), leave, tip, dropped', () => {
+  check('checked reply has the contract shape: orders (name, portion, ask, with, n, fit, rise, grain, planned), leave, tip, dropped', () => {
     const out = ask(reply([DAL()], { leave: [{ as_written: 'Butter Naan', why: 'Refined flour and butter.' }] }));
     eq(out.status, 'ok', 'status');
-    eq(Object.keys(out.orders[0]), ['name', 'portion', 'ask', 'with', 'n', 'fit', 'rise', 'planned'], 'order fields');
+    eq(Object.keys(out.orders[0]), ['name', 'portion', 'ask', 'with', 'n', 'fit', 'rise', 'grain', 'planned'], 'order fields');   // round 28: grain names the side or portion grain the person confirms (diabetes); empty otherwise
     eq(out.orders[0].n, { kcal: 520, protein: 23, carbs: 78, fats: 13, fiber: 15 }, 'n is the dish plus its side');
     eq(out.orders[0].portion, '1 bowl, ≈ 300 g', 'a weight in the portion carries the sign');
     eq(ask(reply([Object.assign(DAL(), { portion: '1 katori' }), Object.assign(PALAK(), { portion: '1 bowl, 340 kcal' })])).orders.map(o => o.portion), ['', ''], 'no katori as a unit, no unchecked figure in the portion line');
