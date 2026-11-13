@@ -388,7 +388,7 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
      a food named in the first part before "with", or in any later part, with no grain, is the part without the grain (round 15) */
   var parts=p.split(/[,;]/),food=function(x){return words(x).some(function(y){return PARTFOOD.test(y)||MAT_RX.test(y);});};
   if(food(parts[0].split(/\bwith\b/)[0]))return true;
-  return parts.slice(1).some(function(x){return !/\b(?:extra|on\s+the\s+side|side\s+of|toppings?|topped|garnish\w*|plus|served\s+with|about|approx\w*|no|without|less)\b/.test(x)&&food(x);});}
+  return parts.slice(1).some(function(x){return !/\b(?:extra|on\s+the\s+side|side\s+of|toppings?|topped|garnish\w*|plus|served\s+with|about|approx\w*|no|without|less)\b|^\s*(?:and\s+)?with\b|\b(?:filling|stuffing|stuffed)\s*$/.test(x)&&food(x);});}   /* "1 plate, with raita", "1 piece, potato filling" describe the dish */
 /* a grain the portion adds beyond the dish itself: "Dal Tadka | 1 bowl dal with 1 roti" counts; "Moong Dal Dosa | 2 dosas" does not.
    Round 14: the grain must be an item the typed menu sells, matched by the item's last word ("Tandoori Roti" sells a roti; "Rice Kheer" and
    "Bread Pakora" sell no rice or bread). */
@@ -396,19 +396,34 @@ function porGrain(name,por,text){var nw=words(name).map(function(x){return x.rep
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
   if(!isGrain(r))return false;
   if(!text)return true;                                                              /* a photo: the menu text is not typed */
-  var stem=function(x){return x.replace(/(?:es|s)$/,"").replace(/[ae]$/,"");},sold=soldItems(text);
-  return words(r).filter(function(x){return GRAIN_RX.test(x);}).some(function(x){return sold.some(function(it){return words(it).some(function(y){return stem(y)===stem(x);});});});}
-/* Round 15: the items a typed menu sells, for the grain a portion adds. Each line is an item; its head before a bracket, " - " or ":" is
-   the dish ("Kheer (Rice)", "Papad - Rice", "Pakode: Aloo / Bread" sell no rice or bread), unless the head is a section ("Breads: Roti /
-   Naan"); a free-typed list splits on commas and "and". An item sells a grain only when it is itself a grain dish ("Rice Papad", "Roti
-   Pakora" are not); sizes and prices are dropped ("Steamed Rice Half 70 Full 120"). */
+  var sold=soldItems(text);
+  return words(r).filter(function(x){return GRAIN_RX.test(x);}).some(function(x){var k=grainKey(x);return sold.some(function(it){return words(it).some(function(y){return grainKey(y)===k;});});});}
+/* one name for each everyday grain, so a roti on the menu sells the phulka a portion names ("Phulka 15", "Chawal 80") */
+function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|chapatis?|chapathis?|chappatis?|chapattis?|fulkas?)$/.test(x))return "roti";if(/^(?:rice|chawal|bhaat|bhat|sadam)$/.test(x))return "rice";
+  if(/^(?:kulchas?|kulche)$/.test(x))return "kulcha";if(/^(?:bhaturas?|bhature|bhatoora)$/.test(x))return "bhatura";if(/^(?:puris?|pooris?)$/.test(x))return "puri";if(/^(?:parathas?|paranthas?|parotha)$/.test(x))return "paratha";
+  return x.replace(/(?:es|s)$/,"").replace(/[ae]$/,"");}
+/* Rounds 15 and 16: the items a typed menu sells, for the grain a portion adds. Each line is an item ("|" from menuText is a line break);
+   its head before a bracket, " - " or ":" is the dish ("Kheer (Rice)", "Papad - Rice", "Pakode: Aloo / Bread" sell no rice or bread),
+   unless the head is a section ("Breads - Roti / Naan", "Rice: Jeera / Plain", "Breads (Roti, Naan)"), whose items are sold, named with
+   the section when they are not grains on their own ("jeera rice"); a bracket that starts with "with" lists what comes with the dish; a
+   section word alone on a line is a heading on a priced menu and an item on an unpriced one; a free-typed list splits on commas and "and".
+   An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
 var MENUSEC=/^(?:breads?|indian\s+breads?|rice|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
-function soldItems(text){var out=[];String(text||"").toLowerCase().split(/\n|\s\|\s/).forEach(function(line){   /* menuText() keeps a line break as " | " */
-    var priced=/\d/.test(line);line=line.replace(/\d+(?:\.\d+)?/g," ").replace(/\b(?:rs|inr|half|full|qtr|quarter|small|medium|large|regular|plate|portion|basket|pc|pcs|nos)\b/g," ").replace(/[\u20B9$]/g," ");
-    var head=line.split(/[(\[]|\s-\s|:/)[0].trim(),rest=line.slice(head.length);
-    var list=head.split(/,|\band\b/).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
-    if(MENUSEC.test(head)&&(/^\s*:/.test(rest)||(!priced&&!rest.replace(/[()\[\]\s]/g,"")))){list=[];list=list.concat(rest.replace(/[()\[\]:-]/g," ").split(/\/|,|\band\b/));}   /* a section heading alone sells nothing; what it lists does */
-    list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps)\b/.test(x))out.push(x);});});   /* a snack or sweet made with a grain is not a grain to eat with a curry */
+var NOTSOLD=/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps|cutlets?|kanji|meetha|cakes?|sweet|pani|sev|bhel|golgappa|chaat|dahi\s+puri)\b/;
+function soldItems(text){var out=[],lines=String(text||"").toLowerCase().split(/\n|\s\|\s/),anyPrice=/\d/.test(text||"");
+  var cur="";
+  lines.forEach(function(line,li){
+    var priced=/\d/.test(line),next=(lines[li+1]||"").trim();line=line.replace(/\d+(?:\.\d+)?/g," ").replace(/\b(?:rs|inr|half|full|qtr|quarter|small|medium|large|regular|plate|portion|basket|pc|pcs|nos)\b/g," ").replace(/[\u20B9$]/g," ");
+    var head=line.split(/[(\[]|\s-\s|:/)[0].trim(),rest=line.slice(line.indexOf(head)+head.length);
+    var list=head.split(/,|\band\b|\//).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
+    var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(Boolean);
+    if(MENUSEC.test(head)){
+      if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});}   /* "Rice: Jeera / Plain" */
+      else if(anyPrice&&!priced&&/\d/.test(next)&&!MENUSEC.test(next.replace(/[^a-z ]/g," ").trim())){list=[];cur=/^(?:rice|breads?|indian\s+breads?|rotis?)$/.test(head)?head.replace(/^indian\s+/,"").replace(/s$/,""):"";}}   /* a heading over priced items; "Rice" then "Jeera / Plain 100" is jeera rice */
+    else if(!priced&&anyPrice&&/^[a-z ]+$/.test(head)&&!isGrain(head))cur="";                 /* another heading ends a grain section */
+    if(cur&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&words(x).length<=3?x+" "+cur:x;});
+    else if(/^\s*[(\[]\s*with\b/.test(rest))list=list.concat(restItems);              /* "Dal Tadka (with Jeera Rice)" */
+    list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!NOTSOLD.test(x))out.push(x);});});
   return out;}
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}
 /* When nothing fits (rule 7): the two moves whose effect code can measure on the order's own figures. Eating part of it counts only

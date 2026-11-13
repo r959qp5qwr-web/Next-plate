@@ -190,6 +190,31 @@ removals offered and 0 of 9 keeps refused; no grain counted as sold on its five 
 do. Its round 14, 13 and 12 probes hold. On recorded live replies nothing moves against the round 12 build. The rule check holds 677 names
 that are not a grain and 463 true grains; the round 14 build fails 9 of its checks.
 
+## Part A, changes after Critic round 16
+Round 16 found that the round 15 rule reading a pure grain after a frying word as the dish ("egg fried quinoa") let coatings with the frying
+word first count ("crispy rava fish", "tawa rava brinjal"); that "goes", "can go" and "is off/out" had become too narrow to catch "rice is off
+for this meal" or "the rice goes back in the pot"; that "<grain>: take it/save it" and the own-portion test held eating-order notes ("rice:
+take it after the salad", "have one roti and give the rest to the family"); that ", with raita" was read as the part eaten; and that rice
+cakes, sweet rice and pani puri counted as sold. Changes:
+1. Coatings are judged by what follows the last grain word: a food after it, with a frying word anywhere, is a coating ("crispy rava fish",
+   "noodle fried prawns"); with rava, sooji, semolina or maida, a vegetable, legume, cheese, egg or meat after it is a coating ("rava
+   brinjal", "rava fish cakes"); a grain named last is the dish ("fried paneer quinoa", "tomato rava", "egg oats"). Corn alone is the
+   vegetable.
+2. "atta" reads its phrase back to "and", "with" or a comma; "dal ka atta" is dal flour; "dal atta roti" and "low-oil atta paratha" are wheat.
+3. "Goes", "go", "can go" and "is off/out" remove when nothing follows or what follows sends the grain away (completely, for this meal, this
+   time, tonight, back in the pot, to the fridge, off the plate); they keep it before last, after, down, to 150 g, cold or with.
+4. "<grain>: take/save/leave it" removes only with nothing, out, off, aside or a later time after it; an amount ("more than 150 g") keeps;
+   the own portion includes "have one roti", "eat one roti", "you take one small bowl" (not "one bowl of dal").
+5. A portion part starting with "with", or naming a filling or stuffing, describes the dish; the potato filling counts as what is eaten
+   only in the portion's first part.
+6. The sold-items reader names items under a grain heading ("Rice" then "Jeera / Plain"), reads sections with a dash, colon or bracket, a
+   "(with Jeera Rice)" bracket and unpriced section words that are items, treats phulka, chapati and roti (and chawal and rice) as one, and
+   leaves out cakes, sweets, chaat and drinks.
+Measured: the Critic's round 16 probes give 0 of 40 and 0 of 19 names counted, 59 of 63 true grains (the four others are read the safe way,
+D7), 0 of 22 one-tap removals offered and 0 of 26 keeps held, 0 of 6 menu removals offered and 0 of 16 keeps refused, 0 of 14 not-sold menus
+counted, 0 of 17 selling menus refused, 0 of 23 end-to-end plates accepted. Its round 15 to 12 probes hold. On recorded live replies nothing
+moves. The rule check holds 740 names that are not a grain and 512 true grains; the round 15 build fails 9 of its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -244,3 +269,5 @@ that are not a grain and 463 true grains; the round 14 build fails 9 of its chec
   Round 13 reads cucumber sandwich, coconut roti and urad dal dosa the safe way, as not grains: each has a common grain-free version.
   Rajgira (amaranth) still counts as a grain, as kuttu and samak do, in both the name test and the declared material.
   Round 15 listed sattu atta roti as a true grain, round 13 as a stand-in; sattu is mostly roasted gram, so it is read the safe way.
+  Round 16 listed coconut atta dosa, sesame atta roti, seeds atta roti and "atta" alone as true grains; coconut, sesame and seed flours have
+  grain-free versions and "atta" alone is not a serving, so they are read the safe way.
