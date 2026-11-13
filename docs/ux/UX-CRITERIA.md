@@ -424,7 +424,7 @@ Round 26 found typed-menu marks the round 25 reader missed (WhatsApp single-tild
 ✖ ❎ ✕ 👎), and one-tap notes that name a later meal before "then" ("Rice: set it aside for tomorrow's lunch, then eat it with
 the dal", "keep it for your tiffin", "put it in a container"). Changes:
 1. Every clock form ("7.30 pm", "7-11 pm", "7 to 11 pm", "19:00", "40 min") is read as a time, not a price; on a priced item it marks
-   the item.
+   the item. (Round 27 found this also read "25.00" and "20-25" as times; corrected in round 27: a time needs a clock mark.)
 2. An unpriced heading over priced items that names a closing, a negation or a later time (band, closed, off, no, not, nahi, nil, over,
    only, onwards, evening, night, dinner, morning, later, after, till, or a clock time) covers every grain under it until the next clean
    heading; a line about the menu's hours ("Open 11 am to 11 pm", "LUNCH MENU (12 - 3 pm)") does not.
@@ -439,6 +439,31 @@ the dal", "keep it for your tiffin", "put it in a container"). Changes:
 Measured: the Critic's round 26 menus offer 0 of 45 not sold and refuse 0 of 22 sold; its 54 later-meal notes are all held and its 6
 same-meal waits stay on offer. Every earlier Critic probe reads the same as on the round 25 build; all 4,897 combinatorial cases read
 right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
+
+## Part A, changes after Critic round 27
+Round 27 found one MAJOR regression from round 26: prices with paise ("Roti 25.00", "₹30.00", "Butter Naan 45.50") and price ranges
+("Roti 20-25") were read as clock times, so ordinary menus sold no grain; and meal headings and times ignored the meal asked for
+("DINNER" refused the roti at dinner, "BREAKFAST (7-11 am)" the poori at breakfast). It also found that a later sentence saying a grain is
+over ("Dal tadka, paneer, roti. Roti finished.", "Note: roti not available today") no longer removed it, that other closed-tandoor
+wordings ("(kal se)", "(under repair)", "(Sat & Sun)", "~ Roti ~") were missed, and that one-tap notes sending the rice elsewhere in
+other words ("keep it overnight", "save it for your son", "in a steel dabba", "chill it", "kal ke liye rakh do") were offered. Changes:
+1. A time needs a clock mark: am, pm, hrs, a colon, "onwards", "o'clock", "baje", or after/from/before/till/until; a number after a
+   currency sign, "25.00" and "20-25" stay prices.
+2. Heading marks and item times are read against the meal asked for: a meal word other than this meal ("DINNER" at lunch) or an hour
+   range that misses this meal's hours (breakfast 6-11, lunch 11-16, dinner 18-24) marks the section or item; "DINNER" at dinner and
+   "BREAKFAST (7-11 am)" at breakfast sell.
+3. An unpriced heading on a priced menu is read fail-closed: any word that is not a known heading, food, plain qualifier or hours word
+   marks the section ("under repair", "kal se", "Sat & Sun", "band"); food descriptions ("no onion no garlic", "only wheat", "off the
+   tawa", "Jain", "not spicy") are taken out first. A tilde anywhere on a line is a strike-through.
+4. A line that says a grain is over, outside a heading, marks that grain on the whole menu ("Roti finished", "Roti and naan finished.",
+   "Note: roti not available today"); a later note about tandoor items at another time marks the tandoor breads.
+5. One-tap notes: the words before "then" must all be a wait within the meal (for now, a few minutes, till the end, while you eat the
+   salad, on the tawa, in the pot, after the salad); any other word holds the note. "Keep it ..." reads as a removal unless it is a wait
+   within the meal ("keep it warm", "keep it to 150 g", "keep it on the side"); "put it in/into/away", "chill it" and "kal ke liye" too.
+Measured: the Critic's round 27 probes (m27, dec, din, bf, later, later2, k27) read as it expects in 316 of 319 cases; the three left are
+safe-side refusals ("DINNER MENU" and a "Dinner" heading at lunch, "Roti 15 to 20"). Every earlier Critic probe reads the same as on the
+round 26 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65); the
+recorded menu replay offers 88 orders with and without diabetes, as before.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
