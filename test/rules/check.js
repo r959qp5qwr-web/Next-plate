@@ -92,6 +92,9 @@ const STANDINS = ['Cauliflower rice', 'Cauli rice', 'Broccoli rice', 'Zucchini n
   'Pulao masala', 'Pav bhaji masala', 'Dosa chutney', 'Rice papad', 'Bread spread',
   // round 11: where the Critic's rounds disagreed the later round stands (D7): a paneer wrap and a moong dal roti are not grains
   'Paneer wrap', 'Moong dal roti',
+  // round 13: the Critic's names ("atta" after a pulse, nut or seed; grain coatings on fish and paneer; porridge, bread or rice of a fruit;
+  // gluten-free with no gluten-free grain named), oat milk, and three names D7 reads the safe way (keto versions exist)
+  "Peanut atta roti", "Peanut atta paratha", "Nuts atta roti", "Urad atta roti", "Chana dal atta roti", "Kathal atta roti", "Roti made from besan atta", "Roti made from almond atta", "Roti made from chana atta", "Chapati made from peanut atta", "Bread made from almond atta", "Roti made with coconut atta", "Paratha made from soya atta", "Roti made from moong atta", "Pizza made from almond atta", "Rava fish", "Rava fried fish", "Rava fried prawns", "Rava tawa fish", "Semolina fried fish", "Rava fried paneer", "Oats paneer tikki", "Oats tikki", "Rava tikki", "Kathal rice", "Kathal roti", "Banana porridge", "Milk porridge", "Avocado bread", "Coconut milk porridge", "Paneer tikka, naan if wanted", "Paneer tikka with naan on request only", "Dal makhani, roti not today", "Paneer tikka; skip the naan", "Gluten-free bread", "Gluten-free roti", "Gluten-free atta roti", "Gluten-free multigrain bread", "Chana atta thepla", "Chana atta bhakri", "Besan atta chilla", "Besan atta cheela", "Moong atta chilla", "Chana atta roti", "Rajma atta roti", "Sattu atta roti", "Soya atta roti", "Besan atta", "Peanut atta", "Oat milk", "Cucumber sandwich", "Coconut roti", "Urad dal dosa",
   // round 12: the Critic's names (a grain-dish word beside a vegetable, legume, nut, seed, cheese, egg or meat that is not a known grain dish;
   // a non-grain flour or 'made from'; 'gluten-free' with no grain named; a grain left out in menu words). Cauliflower biryani moves here (D7).
   'Cauliflower biryani', 'Cauliflower khichdi', 'Cauliflower pulao', 'Cauliflower risotto', 'Cauliflower dosa', 'Cauliflower idli', 'Broccoli biryani', 'Broccoli khichdi', 'Broccoli pulao', 'Broccoli risotto', 'Zucchini rice', 'Sweet potato rice', 'Lauki rice', 'Cabbage khichdi', 'Cabbage pulao', 'Paneer rice', 'Rice made from mushrooms', 'Rice made from zucchini and mushrooms', 'Noodles made from mushrooms', 'Peanut flour roti', 'Peanut flour chapati', 'Peanut flour paratha', 'Peanut flour bread', 'Peanut flour pizza', 'Peanut roti', 'Bread made from peanut flour', 'Roti made from peanut flour', 'Gram flour noodles', 'Gram flour pasta', 'Gram flour idli', 'Gram flour upma', 'Noodles made from gram flour', 'Coconut flour noodles', 'Coconut flour pasta', 'Coconut flour upma', 'Coconut flour idli', 'Flaxseed pasta', 'Flax pasta', 'Flaxseed noodles', 'Chickpea upma', 'Besan upma', 'Moong dal upma', 'Soya chunks roti', 'Tofu roti', 'Nuts porridge', 'Mixed nuts porridge', 'Peanut porridge', 'Warm nuts porridge', 'Cheese gnocchi', 'Paneer gnocchi', 'Paneer lasagne', 'Egg lasagne', 'Chicken crust pizza', 'Cheese crust pizza', 'Egg crust pizza', 'Omelette pizza', 'Pizza omelette', 'Thin egg wrap', 'Thin omelette wrap', 'Thin cheese wrap', 'Thin paneer wrap', 'Stuffed egg pancake', 'Thin egg pancake', 'Cheese bread', 'Egg bread', 'Burger bowl', 'Chicken burger bowl', 'Veg burger bowl', 'Pizza bowl', 'Paneer pizza bowl', 'Sandwich bowl', 'Mushroom bun', 'Mushroom buns burger', 'Paneer bun burger', 'Paneer tikka, naan not included', 'Paneer tikka, naan not served', 'Dal, rice served separately on request', 'Dal makhani, naan not part of the meal', 'Paneer tikka, no naan needed', 'Dal, rice optional', 'Chole, kulcha optional', 'Rajma, chawal later', 'Dal tadka with roti on the side optional', 'Palak paneer (without the roti)', 'Paneer bhurji, roti kept aside', 'Dal, roti set aside', 'Rajma, keep the rice aside', 'Kadhi, skip chawal', 'Kadhi minus chawal', 'Chole, leave out the bhature', 'Paneer tikka, hold off on naan', 'Paneer tikka - roti not included',
@@ -149,6 +152,9 @@ const GRAINS = ['Jowar roti', 'Bajra roti', 'Ragi dosa', 'Hand-pounded brown bas
   'Egg roti', 'Cheese roti', 'Paneer roti', 'Egg paratha', 'Paneer paratha', 'Moong dal paratha', 'Dal paratha', 'Chana dal paratha',
   'Besan paratha', 'Sattu paratha', 'Paneer stuffed roti', 'Masoor dal khichdi', 'Moong dal chilla with 1 roti',
   'Gobi pulao', 'Coconut rice',
+  // round 13 (Critic): ordinary grain dishes with a vegetable, sprouts or cheese, and the Hindi words for wheat
+  'Carrot upma', 'Green peas upma', 'Sprouts sandwich', 'Cheese garlic bread', 'Mushroom paratha', 'Potato rice', 'Palak idli', 'Palak sandwich',
+  'Beetroot paratha', 'Pumpkin paratha', 'Brinjal rice', 'Beetroot dosa', 'Chakki atta roti', 'Gehun roti', 'Whole wheat atta roti', 'Bajra atta roti',
   // round 13: known grain dishes with a vegetable, cheese, egg or meat word, and 'gluten-free' with a grain named
   'Paneer burger', 'Egg rice', 'Chicken rice', 'Mushroom rice', 'Gobi rice', 'Peanut butter toast', 'Gluten-free oats', 'Gluten-free rice pasta',
   'Mushroom risotto', 'Methi khakhra', 'Aloo poha', 'Matar kulcha', 'Chicken chow mein', 'Mushroom fried rice', 'Paneer burger with 1 bun', 'Coconut chutney with 2 idlis', 'Egg fried rice', 'Paneer fried rice', 'Tofu fried rice',
@@ -502,6 +508,133 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   ok(!order(base, { grain_made_of: 'cauliflower' }), 'declared grain: a menu order whose grain is a vegetable is dropped');
   ok(!order(base, { grain_grams: 0 }), 'declared grain: a menu order with no grain grams is dropped');
   ok(!order(['Paneer Tikka', '6 pieces, about 220 g', 'Green Salad', '']), 'declared grain: an order with no grain dish is dropped, whatever it declares');
+}
+
+{ // round 13: "atta" after a pulse, nut or seed is that flour; grain coatings; the declared material list; the Critic's round 13 orders and notes
+  const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
+  const pnv = readProfile(Object.assign({}, P, { diet: 'nonveg' })); pnv.slot = 'dinner';
+  const NOTMAT = ["besan atta", "chana atta", "moong atta", "urad atta", "chana dal atta", "besan and atta? no", "gram flour", "chickpea flour (besan)", "besan", "almond flour", "peanut atta", "soya atta", "sattu", "sattu atta", "kathal atta", "jackfruit flour", "singhara atta", "cauliflower", "rice-shaped cauliflower", "cauliflower rice", "konjac", "moong dal", "moong dal and rice? no", "oat fibre", "oat bran", "wheat bran", "rice bran", "psyllium husk", "makhana", "sabudana", "sago pearls", "tapioca", "potato", "sweet potato", "none", "no grain", "grain-free", "rice-free", "wheat-free", "not rice", "almond and coconut flour", "coconut", "urad dal", "rice paper? no", "wheat gluten", "vital wheat gluten", "seitan (wheat gluten)", "rice milk", "oat milk", "corn starch", "cornflour", "maize starch", "rice starch", "arrowroot", "water chestnut flour", "quinoa? yes", "besan with a little atta", "mostly besan, some wheat", "lentils with a pinch of rice", "moong dal with rice flour coating", "rava coating"], ISMAT = ["whole wheat", "brown rice", "foxtail millet", "jowar", "jowar (sorghum)", "whole wheat flour (atta)", "wheat", "atta", "rice", "basmati rice", "semolina", "rava", "sooji", "broken wheat", "cracked wheat", "beaten rice", "flattened rice", "poha", "puffed rice", "rice flakes", "rolled oats", "steel-cut oats", "oats", "pearl millet", "bajra", "ragi", "finger millet", "little millet", "samai", "kodo millet", "barnyard millet", "varagu", "kambu", "thinai", "proso millet", "ragi (finger millet)", "red rice", "matta rice", "hand-pounded rice", "parboiled rice", "idli rice", "rice and urad dal", "rice, urad dal and fenugreek", "fermented rice and lentil batter", "rice and moong dal", "maida", "refined wheat flour", "refined flour (maida)", "durum wheat semolina", "whole wheat pasta", "wheat noodles", "rice noodles", "buckwheat", "barley", "pearl barley", "dalia (broken wheat)", "whole grain wheat", "whole-grain wheat", "multigrain flour", "mixed millets", "corn", "maize", "makki (maize) flour", "sourdough wheat", "whole wheat bread", "bulgur wheat", "quinoa", "amaranth", "rajgira (amaranth)", "kuttu (buckwheat)", "sorghum", "Brown rice.", "Whole wheat atta", "wheat (roti)", "rice (dosa batter)"];
+  const badM = NOTMAT.filter(isGrainMaterial), lostM = ISMAT.filter(x => !isGrainMaterial(x));
+  ok(!badM.length, 'round 13: no pulse, nut, seed or vegetable material passes as a declared grain' + (badM.length ? ' (passed: ' + badM.join(' | ') + ')' : ''));
+  ok(!lostM.length, 'round 13: true grains in everyday words pass as a declared grain' + (lostM.length ? ' (refused: ' + lostM.join(' | ') + ')' : ''));
+  const E2E = [["Besan atta chilla", "besan atta"], ["Moong atta chilla", "moong atta"], ["Roti made from chana atta", "chana atta"], ["Chana atta thepla", "chana atta"], ["Chana atta bhakri", "chana atta"], ["Urad atta roti", "urad atta"], ["Chana dal atta roti", "chana dal atta"], ["Roti made from besan atta", "besan atta"], ["Besan atta chilla", "besan"], ["Besan atta chilla", "gram flour"], ["Roti made from almond atta", "almond atta"], ["Peanut atta roti", "peanut atta"], ["Rava fried fish", "rava"], ["Semolina fried fish", "semolina"], ["Rava fried paneer", "rava"], ["Oat milk", "oats"]];
+  const plateAs = (f, mo, prof) => { const m = JSON.parse(JSON.stringify(meal)); m.items = m.items.map(i => i.group === 'carbs' ? Object.assign({}, i, { food: f }) : i);
+    m.grain = { food: f, made_of: mo, grams: 200 }; m.title = 'Plate'; m.subtitle = 'With palak'; return !!checkMeal(m, prof).meal; };
+  const passedE = E2E.filter(([f, mo]) => plateAs(f, mo, pnv));
+  ok(!passedE.length, 'round 13: plates of pulse flours or grain-coated fish and paneer are dropped, whatever they declare' + (passedE.length ? ' (accepted: ' + passedE.map(c => c.join(' as ')).join(' | ') + ')' : ''));
+  // a protein swap takes the place of the first protein item: with diabetes it may not replace the grain item
+  const z = { deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 };
+  const km = { title: 'Moong dal khichdi with palak', subtitle: 'Brown rice and moong khichdi, palak, curd', cuisine: 'North Indian home', prepMinutes: 25,
+    items: [{ food: 'Yellow moong dal and brown rice khichdi', grams: 250, group: 'protein' }, { food: 'Plain low-fat curd', grams: 100, group: 'protein' }, { food: 'Stir-fried palak with garlic', grams: 120, group: 'greens' }, { food: 'Ghee for tempering', grams: 5, group: 'fats' }],
+    grain: { food: 'Yellow moong dal and brown rice khichdi', made_of: 'brown rice and moong dal', grams: 250 }, kcal: 470, protein: 24, carbs: 62, fats: 12, fiber: 11, why: [],
+    swaps: { protein: [{ food: 'Yellow moong dal and brown rice khichdi', grams: 250, ...z }, { food: 'Paneer bhurji', grams: 150, ...z, deltaCarbs: -40, deltaKcal: -30 }], base: [] }, alchemy: {} };
+  const kc = checkMeal(JSON.parse(JSON.stringify(km)), p);
+  ok(!!kc.meal && !kc.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'round 13: with diabetes no protein swap takes the place of a grain item grouped as protein');
+  const kn = checkMeal(JSON.parse(JSON.stringify(km)), (() => { const q = readProfile(Object.assign({}, P, { health: 'none' })); q.slot = 'dinner'; return q; })());
+  ok(!!kn.meal && kn.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'round 13: without diabetes that protein swap stays on offer');
+  const tap = (note, after) => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); };
+  const oRemoves = [
+
+ "Have a salad bowl in the khichdi's place.",
+ 'Bin the khichdi and eat the paneer and palak.',
+ 'Shelve the khichdi for tonight; more palak.',
+ 'Keep the khichdi for the family and eat the paneer.',
+ 'Serve the khichdi to the kids; you have paneer and palak.',
+ 'Khichdi off the menu tonight; extra palak.',
+ "Don't bother with the khichdi tonight.",
+ 'Give the khichdi a rest tonight; double the palak.',
+ 'Take a break from the khichdi tonight.',
+ 'Have the khichdi another time; tonight, paneer and palak.',
+ 'Use lettuce cups as the base instead.',
+ 'Paneer and palak over a bed of greens, khichdi set aside.',
+ 'Replace khichdi -> sauteed palak.',
+ 'Khichdi out, extra paneer in.',
+ 'Cancel the khichdi; add a big salad.',
+ 'Trade the khichdi bowl for a bowl of dal.',
+ 'Swap in palak where the khichdi would go.',
+ 'The palak becomes the base, not the khichdi.',
+  ];
+  const oKeeps = [
+
+ 'Ask for the ghee to be kept off the khichdi.',
+ 'Keep the ghee off the khichdi; add lemon.',
+ 'Have millet khichdi, not white rice.',
+ 'Foxtail millet khichdi; no white rice.',
+ 'Use brown rice, not white rice, in the khichdi.',
+ 'Let the khichdi rest for 5 minutes before serving.',
+ 'Keep the khichdi warm while you sear the paneer.',
+ 'Take the khichdi off the heat early so it stays loose.',
+ 'Set the khichdi aside to rest while the paneer cooks.',
+ 'Cook the khichdi with half rice, half moong.',
+ 'Have half the khichdi now and half later.',
+  ];
+  const offO = oRemoves.filter(n => tap(n, 200)), heldO = oKeeps.filter(n => !tap(n, 150)), offO0 = oRemoves.filter(n => tap(n, 0));
+  ok(!offO.length, 'round 13: no one-tap note that takes the grain off is offered, even when it declares 200 g left' + (offO.length ? ' (offered: ' + offO.join(' | ') + ')' : ''));
+  ok(!offO0.length, 'round 13: with an honest 0 g left every one of those notes is held');
+  ok(!heldO.length, 'round 13: one-tap notes that keep the grain stay on offer' + (heldO.length ? ' (held: ' + heldO.join(' | ') + ')' : ''));
+  const typed = 'MAINS\nPaneer Tikka 320\nPaneer Butter Masala 340\nDal Tadka 240\nDal Makhani 260\nVeg Biryani 380\nRajma Chawal 300\nChole Bhature 520\nChole Kulche 300\nMasala Dosa 120\nPlain Dosa 90\nIdli Sambar 80\nVeg Thali (2 roti, rice, dal, sabzi) 450\nPav Bhaji 180\nKadhi Chawal 200\nPaneer Tikka Wrap 220\nVeg Kathi Roll 180\nBREADS\nTandoori Roti 30\nButter Naan 60\nPlain Naan 50\nLachha Paratha 60\nPhulka 20\nSIDES\nGreen Salad 80\nJeera Rice 150\nSteamed Rice 120';
+  const pl = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: typed } });
+  const order = ([n, por, side, ask], typedPl) => { const d = Object.assign({ as_written: n, portion: por, kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask: ask || '', grain_made_of: 'wheat', grain_grams: 80 },
+    side ? { with: side, with_kcal: 90, with_protein: 3, with_carbs: 18, with_fats: 1, with_fiber: 2 } : { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 });
+    return ((typedPl || pl).check({ status: 'ok', place: 'Restaurant', dishes: [d], leave: [], tip: '' }).orders || []).length; };
+  const mKeeps = [
+
+ ['Pav Bhaji', '1 plate with 2 pav, about 300 g', '', 'Ask for the butter to be kept off the pav'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask for the ghee to be left off the roti'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Steamed Rice', 'Ask for the oil to be kept out of the rice'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask for the butter to be taken off the roti'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Tandoori roti, not butter naan'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Tandoori roti; no naan'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Phulka', 'Ask for phulka, not paratha'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Roti without ghee, please'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask for one roti instead of two'],
+ ['Rajma Chawal', '1 plate, about 350 g', '', 'Ask for brown rice if they have it'],
+ ['Masala Dosa', '1 dosa with the stuffing, about 250 g', '', ''],
+ ['Idli Sambar', '3 idlis with sambar, about 300 g', '', ''],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 500 g', '', 'Ask them to hold the gulab jamun'],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 500 g', '', 'Ask for one roti instead of two'],
+ ['Chole Bhature', '1 bhatura with 1 bowl chole, about 300 g', '', 'Ask for one bhatura instead of two'],
+ ['Chole Bhature', '2 bhature with 1 bowl chole, about 400 g', '', 'Ask them to take the extra oil off the bhature'],
+ ['Chole Kulche', '1 plate, about 300 g', '', 'Ask for the kulcha to be served without butter'],
+ ['Veg Biryani', '1 plate, about 300 g', '', 'Ask for the fried onions to be left off the top'],
+ ['Veg Biryani', '1 plate, about 300 g', '', 'Ask for the ghee to be kept out of the biryani'],
+ ['Kadhi Chawal', '1 plate, about 350 g', '', 'Ask for the pakoras to be taken out of the kadhi'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'No butter brushed on top, extra lemon wedges and onion rings'],
+  ];
+  const mRemoves = [
+
+ ['Rajma Chawal', '1 bowl, about 250 g', '', 'Rice in a separate box, please'],
+ ['Masala Dosa', 'The stuffing, about 200 g', '', ''],
+ ['Masala Dosa', 'The stuffing and chutneys, about 200 g', '', ''],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', 'The curries, about 300 g', '', ''],
+ ['Pav Bhaji', 'The mash with onions, about 250 g', '', ''],
+ ['Veg Biryani', '1 bowl of the salan, about 200 g', '', ''],
+ ['Veg Biryani', 'The toppings, about 150 g', '', ''],
+ ['Chole Bhature', '1 bowl, about 250 g', '', ''],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Roti for the table to share'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Ask them to put the roti in a doggy bag'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Have the roti boxed up'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Roti off the order; extra salad'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Cancel the roti and add a salad'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Do not bother with the roti'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Tell them you will pass on the roti tonight'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Return the roti and ask for salad'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Send the roti back'],
+ ['Rajma Chawal', 'The kidney bean curry, about 250 g', '', ''],
+ ['Kadhi Chawal', 'A bowl of the yogurt curry, about 250 g', '', ''],
+ ['Rajma Chawal', 'Rajma bowl with salad instead, about 300 g', '', ''],
+  ];
+  const refM = mKeeps.filter(k => !order(k)), offM = mRemoves.filter(k => order(k));
+  ok(!refM.length, 'round 13: menu orders that keep their grain are offered' + (refM.length ? ' (refused: ' + refM.map(c => c.join(' | ')).join('; ') + ')' : ''));
+  ok(!offM.length, 'round 13: no menu order that leaves the grain out is offered' + (offM.length ? ' (offered: ' + offM.map(c => c.join(' | ')).join('; ') + ')' : ''));
+  // a grain written into the portion counts only when the place sells it
+  const bare = plan('menu', { profile: Object.assign({}, P, { diet: 'nonveg' }), ctx: { meal: 'lunch', text: 'MAINS\nPaneer Tikka 320\nDal Tadka 240\nPalak Paneer 300\nChicken Tikka 360\nSIDES\nGreen Salad 80\nCucumber Raita 90' } });
+  const withBread = plan('menu', { profile: Object.assign({}, P, { diet: 'nonveg' }), ctx: { meal: 'lunch', text: 'MAINS\nPaneer Tikka 320\nDal Tadka 240\nPalak Paneer 300\nChicken Tikka 360\nBREADS\nTandoori Roti 30\nButter Naan 60\nRICE\nSteamed Rice 120' } });
+  const PG = [['Dal Tadka', '1 bowl dal with 1 roti, about 330 g', '', ''], ['Paneer Tikka', '6 pieces with 2 rotis, about 300 g', '', ''], ['Palak Paneer', '1 bowl with steamed rice, about 400 g', '', ''], ['Chicken Tikka', '6 pieces with 1 naan, about 300 g', '', '']];
+  const offPG = PG.filter(k => order(k, bare)), refPG = PG.filter(k => !order(k, withBread));
+  ok(!offPG.length, 'round 13: a grain in the portion that the menu does not sell does not count' + (offPG.length ? ' (offered: ' + offPG.map(c => c[0] + ' | ' + c[1]).join('; ') + ')' : ''));
+  ok(!refPG.length, 'round 13: a grain in the portion that the menu sells counts' + (refPG.length ? ' (refused: ' + refPG.map(c => c[0] + ' | ' + c[1]).join('; ') + ')' : ''));
 }
 
 // ---- Rule 4, the owner's banned words, in every field the model writes for the person to read (Critic round 7).

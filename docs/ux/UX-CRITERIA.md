@@ -121,6 +121,30 @@ and 338 true grains, plus the declared-field cases; the round 11 build fails 22 
 Plates saved on a phone before this change carry no declared grain and were checked under the old rules, so the app drops them when it
 opens and makes today's plates again (review state plate-old-saved; the round 11 build fails it: the old plate stays and its swaps fail).
 
+## Part A, changes after Critic round 13
+Round 13 found that "atta" was read as wheat wherever it stood, so besan atta, chana atta or peanut atta passed both the name test and the
+declared material; that rava- or semolina-coated fish and paneer counted as grains; that a grain written into a menu portion counted even
+where the place does not sell it; that a protein swap could take the place of a grain item grouped as protein; and that the declared list
+refused everyday words for true grains (cracked wheat, beaten rice, samai, whole wheat bread). Changes:
+1. "<x> atta" is read as "<x> flour", a grain only when <x> is a grain (whole wheat, bajra, chakki ...); a declared material with a pulse,
+   nut or seed flour in it is not a grain, and neither is a milk or bran.
+2. A pure grain word beside fish, meat, prawns, paneer, egg, tikki or cutlet, with no grain dish named, is a coating. A porridge counts
+   only with its grain named. Fruit and jackfruit words join the materials (banana bread counts, banana porridge and kathal roti do not).
+3. The declared material uses the same grain words as the name test, plus everyday forms (cracked, beaten, chakki, idli rice, whole wheat bread).
+4. A grain in the menu portion counts only when the typed menu sells it. With diabetes, a protein swap that would take the place of the grain
+   item is not offered.
+5. The removal reader reads passives ("the butter to be kept off the pav" keeps the grain), contrasts ("tandoori roti, not butter naan"),
+   time-outs ("set the khichdi aside to rest") and more removals ("bin", "cancel", "a separate box", "off the menu", "khichdi out", "in the
+   khichdi's place"); a bowl of a curry-and-bread dish ("Chole Bhature | 1 bowl") is the curry.
+Measured: 0 of the Critic's 49 round 13 names count; its round 12 (92) and round 11 (115) names stay refused and 135 of its 136 true grains
+are kept. Its 16 end-to-end plates are dropped. Of its declared materials, all 61 non-grains are refused and all 75 true grains accepted
+(rajgira counts, D7; "wheat and chickpea flour" is refused under correction 1). Its round 13 probes with a worst-case declaration: 0 of 20
+menu removals and 0 of 18 one-tap removals offered, 0 of 21 menu keeps and 0 of 11 one-tap keeps refused; all 18 removals are held with an
+honest 0 g. Its 37 true-grain names: 31 count; cucumber sandwich, coconut roti and urad dal dosa are read the safe way (D7), and egg bread,
+cheese bread and paneer rice stay refused (round 12). On recorded live replies nothing moves against the round 12 build: 408 of 495 meals
+with a grain, 225 of 313 base swaps, 65 of 2005 one-tap notes held, and with diabetes 87 menu orders, none empty, 9 dropped. The rule check
+holds 478 names that are not a grain and 354 true grains, plus the round 13 cases; the round 12 build fails 12 of its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -172,3 +196,5 @@ opens and makes today's plates again (review state plate-old-saved; the round 11
   round 11 stands. "Ghee roast" alone is also a chicken curry, so it is read the safe way, as not a grain.
   Round 12 reads cauliflower biryani, paneer rice, cheese bread and egg bread the safe way, as not grains (round 10 had cauliflower biryani
   as a grain); round 12 stands. A paneer burger, a bread omelette and a gobi pulao count; a paneer bun burger and a pizza omelette do not.
+  Round 13 reads cucumber sandwich, coconut roti and urad dal dosa the safe way, as not grains: each has a common grain-free version.
+  Rajgira (amaranth) still counts as a grain, as kuttu and samak do, in both the name test and the declared material.
