@@ -145,6 +145,28 @@ cheese bread and paneer rice stay refused (round 12). On recorded live replies n
 with a grain, 225 of 313 base swaps, 65 of 2005 one-tap notes held, and with diabetes 87 menu orders, none empty, 9 dropped. The rule check
 holds 478 names that are not a grain and 354 true grains, plus the round 13 cases; the round 12 build fails 12 of its checks.
 
+## Part A, changes after Critic round 14
+Round 14 found that vegetables, legumes, cheese or egg fried or coated in rava, sooji, semolina or oats still counted as the grain; that
+"chana ka atta" still read as wheat; that the round 13 contrast rule let "roti, not tonight" through; that the bowl rule refused ordinary rice
+bowls (Rajma Chawal, Dal Chawal, a quinoa chicken bowl); and that a portion's grain was matched to the menu by a single word ("rice" in Rice
+Kheer). Changes:
+1. A coating: a name whose only grain words are pure grains, with no grain dish, a vegetable, legume, cheese, egg or meat word, and either a
+   coating grain (rava, sooji, semolina, oats, maida) or a frying word (fried, fry, tawa, crusted, coated) is not a grain. A grain bowl and
+   oats chilla still count.
+2. "atta" is judged by the first word before it after ka, ki, ke and adjectives: a vegetable, legume, nut, seed or fruit makes it that flour;
+   anything else ("thin atta roti", "gehun ka atta", "sharbati atta") is wheat. The declared material accepts the same everyday forms.
+3. "<grain>, not/no/never/none/skip" followed by nothing or a time or politeness word removes the grain ("khichdi, not tonight", "rice, no
+   thanks"); followed by a grain it is a contrast that keeps one ("brown rice, not white rice"); followed by anything else it keeps the
+   grain ("rice, no ghee on top"). "Can go", "goes" and "is off" with a grain are removals; "out of the cooker" and "fresh out of the tandoor"
+   are cooking; sharing counts as a removal only when the person keeps no portion of their own; "a rest for 5 minutes" is cooking.
+4. The bowl rule covers only a curry with its bread (chole bhature, pav bhaji), never a dish named as a bowl or a rice pair; a portion is read
+   by its first part, so "1 plate, extra onions on the side" is the whole dish; a portion's grain counts only when a menu item ends with it.
+Measured: the Critic's round 14 probes give 0 of 18 "ka atta" names and 0 of 50 coated names counted, 0 of 43 true grains refused, 0 of 20
+one-tap removals offered at 200 g declared and 0 of 16 keeps held, 0 of 8 menu removals offered and 0 of 17 keeps refused, and none of its
+portion-grain orders offered on the kheer and papad menus. Its round 13 and round 12 probes hold as before. On recorded live replies nothing
+moves against the round 12 build. The rule check holds 544 names that are not a grain and 393 true grains; the round 13 build fails 8 of
+its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
