@@ -239,6 +239,28 @@ Measured: all 4,588 combinatorial cases read right; the Critic's round 17 probes
 probes hold; on recorded live replies nothing moves. The rule check holds 792 names that are not a grain and 592 true grains; the round 16
 build fails 6 of its checks.
 
+## Part A, changes after Critic round 18
+Round 18 found that an amount of another food ("have 100 g extra paneer"), "then eat more dal" and "with the leftovers" read as the grain
+kept; that "with the potato filling" read as the filling eaten; that crispy poha, cornflakes or vermicelli on fish counted; that a stand-in
+named after the dish ("Rice (Cauliflower)") counted; that a ROTI heading no longer named its items; and that "send half the rice back"
+was held. Changes:
+1. An amount kept is an amount of the grain: "N g" followed by a grain word, nothing, "and" or a portion word; "then eat/have" keeps only
+   with the grain or an amount; "with the leftovers" and "leave it on the side" remove.
+2. "With the <x> filling", "stuffed with" and "the filling inside" describe the dish; "the potato filling" alone is what is eaten.
+3. Crispy, crunchy or puffed rice, poha, cornflakes, vermicelli or sevai before a food is a crust; "crispy noodle prawns" too.
+4. A vegetable stand-in named after the grain dish is still its base; a side-dish word counts only when no grain word follows it
+   ("cauliflower masala rice" is cauliflower rice); a thali stays a meal.
+5. A ROTI, NAAN or RICE heading names its items; under BREADS, roti kinds (tandoori, butter, missi ...) read as rotis and other words stay
+   unknown.
+6. A part of the grain sent away keeps the rest in every removal rule; "cut 50 g rice from the plate", "drop the rice by 50 g" and "leave
+   50 g rice for the family" are parts.
+7. test/rules/combos.js adds the Critic's dimensions: figures for other foods and "then eat" beside removals, stand-ins after a dish,
+   crusts that are not pure grains, fillings with "with the".
+Measured: all 4,897 combinatorial cases read right; the Critic's round 18 probes give 0 removals offered and 0 keeps held in every group,
+0 coatings or stand-ins counted, every heading sells its items; its earlier probes hold; on recorded live replies nothing moves. The rule
+check holds 833 names that are not a grain and 612 true grains; the round 17 build fails 8 of its checks. D7: tofu fried in rice is read
+the safe way ("fish fried in rice" is a coating).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

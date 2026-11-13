@@ -56,6 +56,21 @@ for (const g of ['Rava', 'Sooji', 'Semolina', 'Rice flour', 'Atta', 'Wheat flour
   for (const f of ['fish', 'prawns', 'paneer', 'brinjal', 'potato', 'bhindi', 'mushrooms', 'gobi', 'chicken'])
     for (const form of ['G fried F', 'crispy G F', 'tawa G F', 'G crusted F', 'G coated F', 'G F fry', 'F fry in G', 'F fried in G', 'crispy G fried F', 'golden G fried F'])
       coatNames.push(cap(form.replace('G', g.toLowerCase()).replace('F', f)));
+  // round 18 (Critic): a figure for another food, "then eat", a stand-in after the grain dish, crusts that are not pure grains, fillings
+  for (const g of G) { const Gc = cap(g);
+    for (const f of ['have 100 g extra paneer', 'have 150 g of dal', 'eat 200 g salad', 'add 100 g paneer', 'then eat more dal', 'then have double salad', 'then eat the paneer with salad'])
+      for (const r of [Gc + ': skip it; ', Gc + ': leave it tonight, ', 'Rice for the kids; '.replace('Rice', Gc), 'Box the ' + g + ' for tomorrow lunch; ', Gc + ': save it with the leftovers; '])
+        removes.push(r + f + '.');
+    keeps.push('Send half the ' + g + ' to the family; you keep half.', 'Cut 50 g ' + g + ' from the plate; 150 g is plenty.', 'Drop the ' + g + ' by 50 g; more dal.', 'Leave 50 g ' + g + ' for the family; eat 150 g.',
+      Gc + ': keep 150 g for yourself.', 'Serve 150 g and the rest of the ' + g + ' goes back in the pot.'); }
+  for (const d of ['Rice', 'Noodles', 'Pasta', 'Roti', 'Fried Rice', 'Masala Rice'])
+    for (const st of ['Cauliflower', 'Zucchini', 'Broccoli', 'Cabbage', 'Konjac'])
+      for (const sp of [' (X)', ' - X', ' X']) coatNames.push(d + sp.replace('X', st));
+  for (const st of ['Cauliflower', 'Zucchini', 'Broccoli']) for (const mid of ['masala', 'tikka', 'manchurian', 'fried']) coatNames.push(st + ' ' + mid + ' rice');
+  for (const c of ['poha', 'cornflakes', 'vermicelli', 'sevai', 'noodle', 'rice']) for (const f of ['fish', 'prawns', 'chicken', 'paneer']) for (const fr of ['Crispy', 'Crunchy', 'Puffed'])
+    coatNames.push(fr + ' ' + c + ' ' + f);
+  for (const d of ['Masala Dosa', 'Aloo Paratha', 'Paneer Paratha']) for (const v of ['with the potato filling', 'with the aloo stuffing', 'with the paneer stuffing', 'stuffed with the aloo filling'])
+    grainNames.push(d + ' ' + v);
   const wrong = [];
   const judge = (kind, text, want, got) => { if (got !== want) wrong.push(kind + ': ' + text); };
   for (const r of removes) judge('one-tap removal offered', r, false, tapOK(N, r, 200));
