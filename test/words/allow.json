@@ -1,15 +1,112 @@
 [
-  {"file": ".claude/agents/ux-critic.md", "contains": "Banned words in any user-facing text", "why": "the rule itself: the Critic's list has to name the words"},
-  {"file": ".claude/agents/ux-critic.md", "contains": "unlock, empower, smart, magic", "why": "the rule itself, continued on its second line"},
-  {"file": ".claude/skills/promo-film/SKILL.md", "contains": "**Banned words** in the script AND in every note", "why": "the rule itself: the promo-film method lists the words"},
-  {"file": "handoff-next-plate.md", "contains": "Banned in scripts AND in every note, brief or reply", "why": "the rule itself, with the owner's own words that set it (handoff rule 13)"},
-  {"file": "handoff-next-plate.md", "contains": "| 18 | v3 copy \"real food\"", "why": "correction log: quotes the words the owner rejected; rewording them would falsify the record"},
-  {"file": "handoff-next-plate.md", "contains": "| 21 | Used \"real screens\" in a brief", "why": "correction log: quotes the phrase that led to the ban"},
-  {"file": "handoff-next-plate.md", "contains": "- Film v3 (46.5 s, menu first, words \"real food\", \"quietly\")", "why": "rejected list: names the words that got film v3 rejected"},
-  {"file": "demo/reel/promo/docs/script-v2.md", "contains": "you can see exactly how they were worked out", "why": "rejected narration quoted word for word, under the header 'Record of a rejected script'"},
-  {"file": "demo/reel/promo/docs/shotlist.md", "contains": "Real food, in real amounts", "why": "rejected narration quoted word for word, under the header 'Record of a rejected film'"},
-  {"file": "demo/reel/promo/docs/shotlist.md", "contains": "quietly adjusts the rest of your day", "why": "rejected narration quoted word for word, under the header 'Record of a rejected film'"},
-  {"file": "demo/reel/promo2/docs/script.md", "contains": "Real food, in grams.", "why": "rejected narration quoted word for word, under the header 'Record of a rejected script'"},
-  {"file": "docs/film/RESEARCH-ad-films.md", "contains": "promotion-in-real-time", "why": "a web address of a cited source; changing it breaks the link"},
-  {"file": "docs/ARCHITECTURE-v6.md", "contains": "[S] CURATED_MEALS", "why": "the name of a constant in the owner's own Gemini file (docs/foundation), cited as the source of the sample meals"}
+ {
+  "file": ".claude/agents/ux-critic.md",
+  "contains": "Banned words in any user-facing text",
+  "why": "the rule itself: the Critic's list has to name the words"
+ },
+ {
+  "file": ".claude/agents/ux-critic.md",
+  "contains": "unlock, empower, smart, magic",
+  "why": "the rule itself, continued on its second line"
+ },
+ {
+  "file": ".claude/skills/promo-film/SKILL.md",
+  "contains": "**Banned words** in the script AND in every note",
+  "why": "the rule itself: the promo-film method lists the words"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "Banned in scripts AND in every note, brief or reply",
+  "why": "the rule itself, with the owner's own words that set it (handoff rule 13)"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "| 18 | v3 copy \"real food\"",
+  "why": "correction log: quotes the words the owner rejected; rewording them would falsify the record"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "| 21 | Used \"real screens\" in a brief",
+  "why": "correction log: quotes the phrase that led to the ban"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "- Film v3 (46.5 s, menu first, words \"real food\", \"quietly\")",
+  "why": "rejected list: names the words that got film v3 rejected"
+ },
+ {
+  "file": "demo/reel/promo/docs/script-v2.md",
+  "contains": "you can see exactly how they were worked out",
+  "why": "rejected narration quoted word for word, under the header 'Record of a rejected script'"
+ },
+ {
+  "file": "demo/reel/promo/docs/shotlist.md",
+  "contains": "Real food, in real amounts",
+  "why": "rejected narration quoted word for word, under the header 'Record of a rejected film'"
+ },
+ {
+  "file": "demo/reel/promo/docs/shotlist.md",
+  "contains": "quietly adjusts the rest of your day",
+  "why": "rejected narration quoted word for word, under the header 'Record of a rejected film'"
+ },
+ {
+  "file": "demo/reel/promo2/docs/script.md",
+  "contains": "Real food, in grams.",
+  "why": "rejected narration quoted word for word, under the header 'Record of a rejected script'"
+ },
+ {
+  "file": "docs/film/RESEARCH-ad-films.md",
+  "contains": "promotion-in-real-time",
+  "why": "a web address of a cited source; changing it breaks the link"
+ },
+ {
+  "file": "docs/ARCHITECTURE-v6.md",
+  "contains": "[S] CURATED_MEALS",
+  "why": "the name of a constant in the owner's own Gemini file (docs/foundation), cited as the source of the sample meals"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "var BANW=[\"real\"",
+  "why": "the rule itself: the owner's list, used to drop model text that carries a word and sent to the model so it uses none"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "\"revolutionary\",\"transform\",\"curated\"",
+  "why": "the rule itself, second line of the owner's list"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "[S] CURATED_MEALS",
+  "why": "the name of a constant in the owner's own Gemini file (docs/foundation), cited as a source"
+ },
+ {
+  "file": "src/v6/engine.js",
+  "contains": "var NOTTASTE=/^(healthy",
+  "why": "the filter itself: taste notes that are one of these words are dropped"
+ },
+ {
+  "file": "test/v5/fixture.js",
+  "contains": "[S] CURATED_MEALS",
+  "why": "the name of a constant in the owner's own Gemini file, cited as the source of the sample meals"
+ },
+ {
+  "file": "test/rules/check.js",
+  "contains": "",
+  "why": "the rule check plants the banned words into model replies on purpose, to prove each one is dropped before it reaches the person"
+ },
+ {
+  "file": "test/words/check.js",
+  "contains": "const BANNED = ['real'",
+  "why": "the rule itself: the sweep's copy of the owner's list"
+ },
+ {
+  "file": "test/words/check.js",
+  "contains": "'magic', 'game-changer', 'revolutionary'",
+  "why": "the rule itself, second line of the sweep's list"
+ },
+ {
+  "file": "test/words/check.js",
+  "contains": "line = line.replace(/(?:text-)?transform",
+  "why": "names the CSS and SVG property so the sweep can tell it from the word"
+ }
 ]

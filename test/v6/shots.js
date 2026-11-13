@@ -1,7 +1,7 @@
 // Phone screenshots of v6 Phase 1 against a local server.  node test/v6/shots.js [scale] [base]
 const { chromium } = require('playwright');
 const DSF = Number(process.argv[2] || 2), BASE = process.argv[3] || 'http://localhost:3006/', OUT = 'screens/v6-phase1/';
-// LIVE=<url> CODE=<eval code>: the page is served locally, but every /api call goes to the live engine, so the screens show real Gemini output
+// LIVE=<url> CODE=<eval code>: the page is served locally, but every /api call goes to the live engine, so the screens show the live Gemini output
 const LIVE = process.env.LIVE || '', CODE = process.env.CODE || '';
 const NOW = new Date('2026-11-12T20:40:00+05:30').getTime(), H = 36e5, D = 864e5;
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };

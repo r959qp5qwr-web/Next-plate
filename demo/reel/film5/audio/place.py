@@ -1,7 +1,7 @@
 # /// script
 # dependencies = ["numpy", "soundfile"]
 # ///
-"""Features film voice: take A cut into its seven lines at the measured quiet points between them (not at the transcript's word times,
+"""Features film voice: take A cut into its seven lines at the measured silences between them (not at the transcript's word times,
 which run about 0.15 s late and put cuts inside words), each line placed so its cut lands on its beat; then the 30 s film's own read of
 "Next Plate. Made for you." (film4/audio/vo/end-a.mp3) on the end card.   uv run place.py <duration> -> vo.wav and ../vo.js"""
 import json, sys, subprocess, numpy as np, soundfile as sf, pathlib

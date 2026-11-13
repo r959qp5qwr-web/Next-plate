@@ -213,7 +213,7 @@ export function inkBlob(f, size, ch) {
 export function fill(ctx, color) { ctx.fillStyle = color; ctx.fillRect(0, 0, W, H); }
 export function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, Math.max(0, Math.min(r, w / 2, h / 2))); }
 export function zoomAbout(ctx, s, x, y) { ctx.translate(x, y); ctx.scale(s, s); ctx.translate(-x, -y); }
-// Draw a real asset cover-fit into a box. fx/fy (0..1) pick the focal point; zoom >= 1 pushes in.
+// Draw an image asset cover-fit into a box. fx/fy (0..1) pick the focal point; zoom >= 1 pushes in.
 export function cover(ctx, img, x, y, w, h, { fx = 0.5, fy = 0.5, zoom = 1, radius = 0 } = {}) {
   const s = Math.max(w / img.width, h / img.height) * zoom;
   const dw = img.width * s, dh = img.height * s;
@@ -222,7 +222,7 @@ export function cover(ctx, img, x, y, w, h, { fx = 0.5, fy = 0.5, zoom = 1, radi
   ctx.drawImage(img, x + (w - dw) * fx, y + (h - dh) * fy, dw, dh);
   ctx.restore();
 }
-// A crop of a real screenshot (source-pixel rect) placed into a box, e.g. one UI card.
+// A crop of a screenshot (source-pixel rect) placed into a box, e.g. one UI card.
 export function crop(ctx, img, [sx, sy, sw, sh], x, y, w, h) { ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h); }
 
 // ------------------------------------------------------------------ grid

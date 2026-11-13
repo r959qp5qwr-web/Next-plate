@@ -101,7 +101,7 @@ function hooksFor(p,file,c,pl,par){
     if(m.kind==="skipped")add("skipped_"+m.meal,"skipped "+nm,"They skipped "+nm+" today. Do not make up for it with an oversized plate; a normal, protein-led meal.");
     else if(m.kind==="rescued"||m.kind==="ordered")add("ate_out","after eating out","They ate out earlier today ("+m.title+"). Balance it: a simple home plate, more vegetables, less oil and salt.");
     else if(m.title)add("had_"+m.meal,"different from "+nm,"For "+nm+" they had "+m.title+". Lead with a different main ingredient now.");});
-  if(t.lastHoursAgo!=null&&t.lastHoursAgo>=par.hookLongGap)add("long_gap",Math.round(t.lastHoursAgo)+" h since the last meal","It is "+Math.round(t.lastHoursAgo)+" hours since they last ate. Expect real hunger: give volume from vegetables and protein, not extra grain.");
+  if(t.lastHoursAgo!=null&&t.lastHoursAgo>=par.hookLongGap)add("long_gap",Math.round(t.lastHoursAgo)+" h since the last meal","It is "+Math.round(t.lastHoursAgo)+" hours since they last ate. Expect strong hunger: give volume from vegetables and protein, not extra grain.");
   var rep=0,lateNow=meal==="dinner"&&c.hour!=null&&(c.hour>=par.lateDinnerHour||c.hour<4);
   file.patterns.forEach(function(x){
     if(x.id==="late_dinner"&&meal==="dinner"&&!lateNow)add("late_dinner","dinners run late","Their dinner was late on "+x.n+" of the last "+x.of+" dinners logged. Keep dinner lighter and easy to digest.");
@@ -188,7 +188,7 @@ function briefText(p,c,file,pl,hooks,noVariety){
 function buildPlatesPrompt(p,c,file,pl,hooks,lite){
   var t=c.target;
   return [
-"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers, around how their day is actually going.",
+"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in everyday food, with honest numbers, around how their day is actually going.",
 "",
 profileText(p,c),
 "",
@@ -207,7 +207,7 @@ rulesText(p),
 "- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.",
 "",
 "WHAT TO RETURN",
-"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other (different main ingredient in each).",
+"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and 3 meals (no more, no fewer), best first, clearly different from each other (different main ingredient in each).",
 "- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
 "- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.",
 "- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.",
@@ -219,7 +219,7 @@ lite?null:TUNETEXT(p)
 function TUNETEXT(p){return [
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
 "- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
-"  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
+"  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
 function buildTunePrompt(p,m){
   return [
 "You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.",
@@ -247,6 +247,7 @@ profileText(p,null),
 "WHAT TO RETURN",
 "- status \"ok\"; title (the meal in at most 7 words); items, each with food, grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.",
 "- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.",
+voiceText(),
 "- If this is not something a person ate, return status \"refer\".",
 "- Plain words. No advice, no warnings, no percentages, no exclamation marks."
   ].join("\n");
@@ -292,10 +293,10 @@ function checkLog(r){
   if(r.status==="refer")return {status:"refer"};
   var n={kcal:num(r.kcal,1,5000),protein:num(r.protein,0,300),carbs:num(r.carbs,0,600),fats:num(r.fats,0,300),fiber:num(r.fiber,0,100)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a real meal */
-  var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
+  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
+  var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:quoted(it&&it.food,60),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
   var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as))as="";else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
-  return {status:"ok",title:clean(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
+  return {status:"ok",title:quoted(r.title,60)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
 /* ---------- Read the menu (docs/FEATURE-menu.md): before ordering. Gemini reads the dishes that are on the menu;
@@ -352,14 +353,14 @@ pl&&pl.day.meds?"- They take insulin or sulfonylurea tablets, or are not sure: a
 "- status \"ok\"; place: the kind of place this menu looks like, at most 40 characters (\"North Indian restaurant\", \"South Indian tiffin room\", \"office canteen\").",
 "- dishes: at most 8 dishes from this menu that could be the centre of this "+mn+", in the order they appear on the menu. If the menu has more, keep the 8 most worth considering for this person. Plain breads, plain rice, raita and salads are sides: they go in \"with\", not here.",
 "- For each dish:",
-"  as_written: the name copied from the menu exactly as it is written there, at most 60 characters. Never a dish that is not on this menu, and never a renamed or improved one.",
+"  as_written: the name copied from the menu letter for letter as it is written there, at most 60 characters. Never a dish that is not on this menu, and never a renamed or improved one.",
 "  portion: one order as this kind of place usually serves it, in pieces or grams, at most 10 words (\"1 bowl, about 300 g\", \"6 pieces, about 180 g\"). No household units such as katori.",
 "  kcal, protein, carbs, fats, fiber: your honest estimate for that one order as served, before any change.",
 "  ask: one way to order it better, in the words the person would say to the waiter, at most 80 characters (\"Less butter, no cream on top\"). No numbers. Empty if nothing needs asking.",
-"  with: one side from this same menu that completes the dish for this person: a count, then the name exactly as written on the menu (\"2 Tandoori Roti\", \"1 Cucumber Raita\"), at most 60 characters. Empty if the dish is a meal on its own.",
+"  with: one side from this same menu that completes the dish for this person: a count, then the name letter for letter as written on the menu (\"2 Tandoori Roti\", \"1 Cucumber Raita\"), at most 60 characters. Empty if the dish is a meal on its own.",
 "  with_kcal, with_protein, with_carbs, with_fats, with_fiber: your estimate for that side in that amount. All 0 when \"with\" is empty.",
 "  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (1 to 4; only ids listed there). Every order cites at least one; a health id (such as salt with BP) applies to every order you choose.",
-"- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied exactly) and why (at most 14 words, plain, about the food itself, no numbers).",
+"- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied letter for letter) and why (at most 14 words, plain, about the food itself, no numbers).",
 "- tip: one sentence, at most 24 words, on the order of eating at this meal: what to start with and what to keep for last. No numbers."
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -406,7 +407,7 @@ function checkMenu(r,p,c,pl,hooks){
   function bad(x){return CLAIM.test(x)||supp(x)||crosses(x,p);}
   raw.forEach(function(d,i){
     if(!d||typeof d!=="object")return drop("shape");
-    var name=clean(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=clean(d["with"],60),all=name+" "+por+" "+ask+" "+side,key=menuNorm(name);
+    var name=quoted(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=quoted(d["with"],60),all=name+" "+por+" "+ask+" "+side,key=menuNorm(name);
     if(!name||seen[key])return drop("shape");seen[key]=1;
     if(typed&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
@@ -417,12 +418,12 @@ function checkMenu(r,p,c,pl,hooks){
     por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~\u2248]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"\u2248 $1");   /* a weight is an estimate and says so */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&!sideOnMenu(side,typed)?"side-off-menu":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
-    if(p.health==="diabetes"&&p.slot!=="snack"&&!GRAINW.test(name+" "+por+" "+side))return drop("diabetes-grain");   /* rule 3: the same word list the plates use */
+    if(p.health==="diabetes"&&p.slot!=="snack"&&!isGrain(name+" "+por+" "+side))return drop("diabetes-grain");   /* rule 3: the same grain test the plates use */
     if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
-  out.place=clean(r.place,40);if(bad(out.place))out.place="";
+  out.place=quoted(r.place,40);if(bad(out.place))out.place="";
   out.tip=clean(r.tip,170);if(bad(out.tip)||FIGTXT.test(out.tip))out.tip="";
   if(!list.length){out.status="empty";return out;}
   /* rule 6: fit to this meal's target, then the gentler band, then fewer changes (an ask, a side); ties keep the menu's order */
@@ -430,12 +431,12 @@ function checkMenu(r,p,c,pl,hooks){
   list.sort(function(a,b){return (b.fit||0)-(a.fit||0)||(t&&!a.fit&&!b.fit?far(a.n)-far(b.n):0)||BANDN[a.rise]-BANDN[b.rise]||a.ch-b.ch||a.i-b.i;});
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl);}   /* rule 7 */
   var kept={};out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;delete o.i;delete o.ch;return o;});
-  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){return {name:clean(l&&l.as_written,60),why:clean(l&&l.why,90)};})
+  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){return {name:quoted(l&&l.as_written,60),why:clean(l&&l.why,90)};})
     .filter(function(l){return l.name&&l.why&&(!typed||onMenu(l.name,typed))&&!bad(l.name+" "+l.why)&&!onlyInBarred(l.name,items,p)&&!FIGTXT.test(l.why)&&!kept[menuNorm(l.name)];}).slice(0,3);
   return out;
 }
 
-/* ---------- the entry point, replacing v5's. A request without a food file still works (it is simply a day with nothing logged).
+/* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
 KINDS=["meals","rescue","log","tune","menu"];
 plan=function(kind,body){

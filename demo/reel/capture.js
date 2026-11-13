@@ -1,6 +1,6 @@
 // Film captures of the v6 Phase 1 screens, at 3x for close-ups, with the on-screen position of every named element.
 //   LIVE=<engine url> CODE=<eval code> node demo/reel/capture.js [base]
-// The page is served locally (hosted/v6); every /api call goes to the live engine, so the screens show real output.
+// The page is served locally (hosted/v6); every /api call goes to the live engine, so the screens show the engine's own output.
 // Writes demo/reel/promo/assets/shots/*.png and demo/reel/promo/assets/rects.json (CSS px, 390 x 844 viewport).
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -11,7 +11,7 @@ const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 
 const week = []; for (let i = 1; i <= 6; i++) { week.push({ t: NOW - i * D - 12 * H, type: i % 2 ? 'skipped' : 'had', meal: 'breakfast', title: 'Vegetable poha', kcal: 300, protein: 8, carbs: 50, fats: 8, fiber: 4 });
   week.push({ t: NOW - i * D + (i < 5 ? 1.3 : -1) * H, type: 'had', meal: 'dinner', title: i < 4 ? 'Rajma chawal' : 'Vegetable pulao and raita', kcal: 520, protein: 16, carbs: 80, fats: 12, fiber: 12 }); }
 const today = [{ t: NOW - 11.5 * H, type: 'skipped', meal: 'breakfast' }, { t: NOW - 6.5 * H, type: 'other', meal: 'lunch', title: 'Chole bhature', kcal: 820, protein: 22, carbs: 98, fats: 36, fiber: 14 }];
-// text the film underlines or circles: located on the page, so the marks sit on the real words
+// text the film underlines or circles: located on the page, so the marks sit on the words as shown
 const PHRASES = ['So far [^.]*\\.', '[A-Z][a-z]+ carries [^.]*\\.', 'That is every meal for today\\.', 'How these numbers are worked out', 'less rajma this week', 'dinners run late', 'planned around:[^\\n]*', 'the grain stays on the plate',
   "Your doctor.s advice comes first", 'age, sex, height, weight', 'your weight trend has the last word', 'counted on \\d+ kg', 'Never under \\d+ kcal a day', 'for your coach\\s+and doctor to plan with you', 'Nothing here is suggested\\s+for now',
   'Counted[^.]*\\.', 'The rest of the day follows it\\.', 'Moves that make it fit', 'Fit \\d+ . \\d+ ?/ ?100', 'lighter after earlier meals', 'to catch up on protein', '\\(an estimate\\)', 'Eating out anyway', 'Chole Bhature'];

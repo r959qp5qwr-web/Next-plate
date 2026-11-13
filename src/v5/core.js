@@ -87,6 +87,12 @@ var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83
 var SAFETY="This one is for your coach and doctor to plan with you.";
 
 var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
+/* A grain-free stand-in named like a grain is not a grain: cauliflower or broccoli "rice", zucchini or konjac noodles, almond- or
+   coconut-flour roti, keto bread. Those words are taken out before the grain test. After a vegetable only rice, noodles, pasta, roti,
+   naan and bread count, and only next to it ("broccoli fried rice" is rice; "cauliflower paratha" is a wheat paratha with a gobi filling);
+   after words that are never a grain (konjac, shirataki, keto, almond flour) any grain word counts. */
+var STANDIN=/\b(?:(?:cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|kelp|palmini|lettuce)[\s-]+(?:rice|noodles?|pasta|spaghetti|couscous|roti|rotis|chapati|chapatis|naan|bread|tortillas?|pizza)|(?:konjac|shirataki|keto|low[\s-]?carb|carb[\s-]?free|grain[\s-]?free|no[\s-]?grain|cloud)(?:[\s-]+[a-z]+)?[\s-]+(?:roti|rotis|chapati|chapatis|paratha|parathas|phulka|phulkas|naan|bhakri|thepla|rice|noodles?|pasta|spaghetti|bread|toast|pav|couscous|upma|poha|idli|idlis|dosa|uttapam|tortillas?)|(?:almond|coconut|lupin|psyllium)[\s-]+(?:flour|meal|husk)(?:[\s-]+[a-z]+)?[\s-]+(?:roti|rotis|chapati|chapatis|paratha|parathas|phulka|phulkas|naan|bhakri|thepla|rice|noodles?|pasta|spaghetti|bread|toast|pav|couscous|upma|poha|idli|idlis|dosa|uttapam|tortillas?))\b/gi;
+function isGrain(t){return GRAINW.test(String(t||"").replace(/[\u2018\u2019\u201C\u201D"']/g,"").replace(STANDIN," "));}
 function wordRx(list){return new RegExp("\\b("+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")\\b","i");}
 function badWords(p){
   var bad=[];
@@ -104,7 +110,15 @@ function crosses(text,p){var b=badWords(p);return !!b.length&&wordRx(b).test(Str
 function supp(text){return wordRx(SUPPW).test(String(text).toLowerCase());}
 
 /* ---------- cleaning ---------- */
-function clean(t,max){if(typeof t!=="string")return "";t=t.replace(EMO,"").replace(/!+/g,".").replace(/\s+/g," ").trim();return t.length>max?t.slice(0,max-1).replace(/\s+\S*$/,"")+"\u2026":t;}
+/* The owner's banned words (handoff rule 13). Text the model writes in its own voice is dropped when it uses one; the prompts ask for
+   none. Names the model copies from a menu or from what the person typed keep their words (quoted()). */
+var BANW=["real","quiet","quietly","simply","seamlessly","effortlessly","exactly","just works","journey","unlock","empower","smart","magic","game-changer",
+  "revolutionary","transform","curated","tailored","personalised","holistic","wellness journey"];
+var BANRX=new RegExp("(^|[^a-z])("+BANW.concat(["seamless","effortless","journeys","unlocks","unlocking","empowers","empowering","magical","game changer",
+  "transforms","transformed","transforming","transformative","personalized"]).map(function(w){return w.replace(/[\s-]/g,"[\\s-]");}).join("|")+")(?![a-z])","i");
+function quoted(t,max){if(typeof t!=="string")return "";t=t.replace(EMO,"").replace(/!+/g,".").replace(/\s+/g," ").trim();return t.length>max?t.slice(0,max-1).replace(/\s+\S*$/,"")+"\u2026":t;}
+function clean(t,max){t=quoted(t,max);return BANRX.test(t)?"":t;}
+function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
 function delta(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):0;}
 var GROUPS=["protein","greens","carbs","fats","other"];
@@ -124,7 +138,7 @@ function checkMeal(m,p){
   var all=title+" "+sub+" "+items.map(function(i){return i.food;}).join(" ");
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
-  if(p.health==="diabetes"&&p.slot!=="snack"&&!items.some(function(i){return GRAINW.test(i.food);}))return {drop:"diabetes-grain"};
+  if(p.health==="diabetes"&&p.slot!=="snack"&&!items.some(function(i){return isGrain(i.food);}))return {drop:"diabetes-grain"};
   var n={kcal:num(m.kcal,40,2500),protein:num(m.protein,0,250),carbs:num(m.carbs,0,400),fats:num(m.fats,0,200),fiber:num(m.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
   var est=4*n.protein+4*n.carbs+9*n.fats;
@@ -135,13 +149,13 @@ function checkMeal(m,p){
       return {food:clean(s&&s.food,60),grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
     .filter(function(s){return s.food&&!crosses(s.food,p)&&!supp(s.food)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
-      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!GRAINW.test(s.food));});}
+      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!isGrain(s.food));});}
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
     var x={suffix:clean(a.titleSuffix,50),note:clean(a.note,140),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
     var txt=x.suffix+" "+x.note;
-    if(!x.note||crosses(txt,p)||supp(txt)||CLAIM.test(txt))return;
+    if(!x.note||!x.suffix||crosses(txt,p)||supp(txt)||CLAIM.test(txt))return;
     if(p.health==="diabetes"&&k==="glucose"&&/\b(no|skip|remove|drop|without)\b[^.]*\b(rice|roti|grain|millet|carb)/i.test(x.note))return;
     al[k]=x;});
   return {meal:{title:title,subtitle:sub,cuisine:clean(m.cuisine,40),minutes:num(m.prepMinutes,0,180)||0,items:items,
@@ -164,13 +178,13 @@ function checkRescue(r,p){
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer")return {status:"refer",read:SAFETY};
   var d=r.dish||{},n={kcal:num(d.kcal,40,4000),protein:num(d.protein,0,300),carbs:num(d.carbs,0,500),fats:num(d.fats,0,300),fiber:num(d.fiber,0,80)};
-  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!clean(d.name,80))return {status:"empty"};
+  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!quoted(d.name,80))return {status:"empty"};
   var hacks=(Array.isArray(r.hacks)?r.hacks:[]).slice(0,4).map(function(h){
     return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
     .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.title,p);});
   if(!hacks.length)return {status:"empty"};
   var warn=clean(d.warning,80),br=clean(d.breakdown,180);if(CLAIM.test(warn)||supp(warn))warn="";if(CLAIM.test(br)||supp(br))br="";
-  return {status:"ok",dish:{name:clean(d.name,80),portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
+  return {status:"ok",dish:{name:quoted(d.name,80),portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
 }
 
 /* ---------- prompts. Built only from validated fields; the server builds them itself ---------- */
@@ -183,7 +197,8 @@ p.health==="diabetes"?"- Diabetes: every breakfast, lunch and dinner lists a mea
 p.health==="bp"?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":null,
 "- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.",
 "- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.",
-"- Plain, calm English. No exclamation marks, no emojis, no hype words.",
+"- No exclamation marks, no emojis, no hype words.",
+voiceText(),
 "- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats."
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -199,7 +214,7 @@ c?"- Today is "+MODEFOCUS[c.mode]+".":null
 function buildMealPrompt(p,c){
   var t=c.target;
   return [
-"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in real food, with honest numbers.",
+"You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in everyday food, with honest numbers.",
 "",
 profileText(p,c),
 "",
@@ -217,12 +232,12 @@ rulesText(p),
 "- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.",
 "",
 "WHAT TO RETURN",
-"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and exactly 3 meals, best first, clearly different from each other.",
+"- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and 3 meals (no more, no fewer), best first, clearly different from each other.",
 "- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
 "- why: 2 short food-pairing reasons, each a pair (e.g. \"Lemon + spinach\") and a plain effect (at most 20 words, no numbers).",
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
 "- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
-"  protein = add about 12 to 18 g protein with real food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+"  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
   ].filter(function(x){return x!==null;}).join("\n");
 }
 function buildRescuePrompt(p,c){
@@ -241,7 +256,7 @@ rulesText(p),
 "WHAT TO RETURN",
 "- status \"ok\" and dish: name, portion (as usually served, at most 8 words), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).",
 "- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).",
-"- Each move stands on its own and can be combined with the others: never give two moves that change the same item (not both \"eat one bhatura\" and \"swap the bhature for rotis\"). Together they must still leave a real meal.",
+"- Each move stands on its own and can be combined with the others: never give two moves that change the same item (not both \"eat one bhatura\" and \"swap the bhature for rotis\"). Together they must still leave a full meal.",
 "- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix."
   ].filter(function(x){return x!==null;}).join("\n");
 }

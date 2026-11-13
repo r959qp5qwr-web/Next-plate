@@ -205,22 +205,25 @@
 #app .logrow{flex-wrap:wrap;row-gap:0}
 #app .logrow .linkbtn{white-space:nowrap}
 /* Critic round 6: on short screens (320 x 568, and phones whose browser bars leave 600 px or less) the plate, its grams and the dish name
-   share the first view. The plate sits beside its grams; the vine and sprig ornaments step aside; the three chips keep one row. */
+   share the first view. The plate sits beside its grams; the vine and sprig ornaments step aside; the chips sit closer and still wrap
+   when they do not fit (a food left out makes the first chip longer). */
 @media (max-height:600px){
-  #app .hero .band,#app .hero .hero-sprig{display:none}
-  #app .hero-top{gap:2px;flex-wrap:nowrap}
-  #app .hero-top .hchip{padding:0 2px}
-  #app .hero-main{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:6px;align-items:center;justify-items:stretch;padding-top:4px}
-  #app .hero-main>div:not(.platebox){display:contents}
-  #app .hero-main .platebox{grid-column:1;grid-row:1;width:auto}
-  #app .hero-main .thali{width:116px;margin:0}
-  #app .hero-main .prlegend{grid-column:2;grid-row:1;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;margin:0;text-align:left}
-  #app .hero-main .prlegend li{display:grid;grid-template-columns:10px minmax(0,1fr);column-gap:5px;row-gap:0;align-items:center;white-space:normal;line-height:18px}
-  #app .hero-main .prlegend li b{grid-column:2}
-  #app .hero-main .prlegend i{width:10px}
-  #app .hero-main>div>:not(.prlegend){grid-column:1/-1}
+  #app .plate:not(.wait) .hero .band,#app .plate:not(.wait) .hero .hero-sprig{display:none}
+  #app .plate:not(.wait) .hero-top{gap:0 2px;flex-wrap:wrap}
+  #app .plate:not(.wait) .hero-top .hchip{padding:0 2px}
+  #app .plate:not(.wait) .hero-main{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:6px;align-items:center;justify-items:stretch;padding-top:4px}
+  #app .plate:not(.wait) .hero-main>div:not(.platebox){display:contents}
+  #app .plate:not(.wait) .hero-main .platebox{grid-column:1;grid-row:1;width:auto}
+  #app .plate:not(.wait) .hero-main .thali{width:116px;margin:0}
+  #app .plate:not(.wait) .hero-main .prlegend{grid-column:2;grid-row:1;flex-direction:column;align-items:stretch;justify-content:center;gap:4px;margin:0;text-align:left}
+  #app .plate:not(.wait) .hero-main .prlegend li{display:grid;grid-template-columns:10px minmax(0,1fr);column-gap:5px;row-gap:0;align-items:center;white-space:normal;line-height:18px}
+  #app .plate:not(.wait) .hero-main .prlegend li b{grid-column:2}
+  #app .plate:not(.wait) .hero-main .prlegend i{width:10px}
+  #app .plate:not(.wait) .hero-main>div>:not(.prlegend){grid-column:1/-1}
   #app .tabs{padding-top:2px;padding-bottom:4px}
-  #app .tab{min-height:46px;gap:1px}
   #app .composer{padding-top:5px;padding-bottom:5px}
   #app .composer input{height:46px}
 }
+/* Critic round 7: the two answers to "Remove your data?" keep their words whole; at 320 px they stack. */
+#app .confirm .pick-acts{display:flex;flex-wrap:wrap;gap:8px}
+#app .confirm .pick-acts .btn{flex:1 1 auto;white-space:nowrap}

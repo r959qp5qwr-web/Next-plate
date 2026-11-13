@@ -119,7 +119,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 | Repo / branch | r959qp5qwr-web/Next-plate (public), branch `claude/nice-hawking-307ljy` (latest pushed commit b890035) |
 | Live URL | https://next-plate-production.up.railway.app/ |
 | Railway project / service / environment | f006648a-5f51-4156-ba71-2898963cecc0 / 6825884e-02d9-4692-92ac-c098715f4af7 / 1e784c4d-0792-4bfc-a766-a474371b519b (production) |
-| Live now | v5 screens + v6 engine: function `hosted/v5/server.ts`, `PAGE_REF=5f1d63fb9df7e9f4f44a51df34aa2cfcf1e171b0`, page `hosted/v5/index.min.html` |
+| Live now | v6 screens + v6 engine: function `hosted/v5/server.ts`, `PAGE_REF=baa5e08173889891a630dd9c9c0fbc0e361cb982`, page `hosted/v6/index.min.html` (deployed on the owner's "Deploy." during handoff #3; checked 2026-11-12 from the public page: www.nextplate.in is byte-identical to `git show baa5e08:hosted/v6/index.min.html`). The legibility build on this branch is not live yet. |
 | Railway variables | GEMINI_API_KEY [secret removed: re-enter it], ACCESS_CODE [secret removed: re-enter it], DAILY_ASKS (default 150), ASKS_PER_PHONE (default 15), MODEL, FALLBACK_MODEL, THINKING=low, PHOTOS, EVAL_CODE (empty), PAGE_REF, PAGE_PATH, PAGE_FILE |
 | To put the v6 screens live | `PAGE_PATH=hosted/v6/index.min.html` and `PAGE_REF=<commit>` |
 | Engine checks (live engine) | v5 26/26 (`eval/v5/results-live-final.json`); v6 18/18 (`eval/v6/results-live4.json`), both before the rescue fix |
