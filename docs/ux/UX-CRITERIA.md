@@ -308,6 +308,32 @@ non-selling menus and 0 of 6 removal asks are offered, 0 of 7 selling menus refu
 a tandoori roti is (the same grain). All earlier Critic probes read the same as on the round 19 build; all 4,897 combinatorial cases read
 right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
 
+## Part A, changes after Critic round 21
+Round 21 found that a share of another food after a removal of the grain read as the grain kept ("rice: skip it; extra dal; you have
+150 g", "rice: skip it; pack 100 g dal; eat the rest", "leave out the rice; dal for the family; your 150 g stays"); that "then serve it
+to my mother", "for tiffin", "on Sunday" and "rice: refrigerate it", "give it away" read as kept; that "each and every bit of the rice"
+and "not one bit of the rice" were offered; that an unpriced grain heading followed by a title-case heading ("Roti" then "Hot
+Beverages") still sold its grain; and that tandoori, butter and chilli rolls, khubz, Andhra meals and muri mixture were refused while a
+salad thali counted. Changes:
+1. Once a note takes the whole grain off ("rice: skip it", "leave out the rice", "keep the rice off the plate", "the rice goes back",
+   "no rice"), nothing after it brings the grain back except an amount of the grain named outright ("150 g of brown rice"). A keep stated
+   before the removal still counts; "the extra rice goes back", "skip 50 g", "leave it to cool" and "leave it overnight" are not removals.
+2. "Then eat, have, serve or reheat it" keeps only when the clause ends there or goes on with a same-meal phrase: "with <one or two
+   words>", "next to the dal", "after the salad", "last", "first", "slowly", "hot", "now". "Rice: refrigerate it", "wrap it", "give it
+   away", "tiffin it", "keep it aside" read like "leave it"; "give up the rice" is unchanged.
+3. "Each and every bit", "every single grain", "every last grain of" read as "all of"; "not one bit of", "not a bit" as "none".
+4. A line with no price that is not a grain is a heading; an unpriced grain heading followed by one sells nothing ("Roti" then "Hot
+   Beverages", "Rice" then "Raita", "Roti / Naan" then "DESSERTS"); "Rice - sold out" and "ROTI (ask the waiter)" sell nothing; NAAN,
+   PARATHAS and KULCHAS are section headings.
+5. Tandoori, butter, chilli and chaap rolls and wraps count; khubz is a grain word; Andhra, Kerala and Tamil meals and muri mixture count;
+   a salad, fruit, keto, soup or protein thali does not; "<food> only" names only that food.
+Measured: the Critic's round 21 probes give 0 of 86 removals offered and 0 of 19 keeps held; its 1,024-note grid and 630-note "your 150 g"
+grid offer 0; 0 of 82 non-grain names count and 0 of 33 grain names are refused; 0 of 24 non-selling menus and 0 of 9 asks are offered.
+Every earlier Critic probe reads the same as on the round 20 build; the 4,032-name grid counts 9 more (paneer butter <dish> wraps) and loses
+none; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes
+the menu replay offers 88 and drops 6. Held on the safe side: "then have it at home with dal"; "rice 150 g, 0 g sugar in the curd" (the
+sweets rule reads "sugar"). D7: soya chaap roll and chilli paneer noodles are read the safe way (soya and paneer also name stand-in bases).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -369,3 +395,5 @@ right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65)
   Round 18 listed tofu fried in rice as a grain dish; "fish fried in rice" is a coating, so it is read the safe way.
   Round 19 listed Roti (lauki), Pasta (broccoli) and crispy noodle chicken salad as grains; a vegetable in brackets after the grain also
   names a stand-in (lauki roti, broccoli pasta) and "crispy noodle" also names a crust on a salad, so they are read the safe way.
+  Round 21 listed soya chaap roll and chilli paneer noodles as grains; "soya roll" and "paneer noodles" also name stand-in bases, so they
+  are read the safe way.
