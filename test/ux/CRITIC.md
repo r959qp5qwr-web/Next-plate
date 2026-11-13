@@ -1,123 +1,117 @@
 VERDICT: FAIL
-BUILD: 11fa37797919f452887784f0edc139e83ffccd8df020e07e03065c19d1216b5d
+BUILD: 9400dabe36b4b6d6ee664acd81cd5323a1165b3c65a502db0770007c648db571
 
-# Critic round 29: the grain question on a menu order (owner decision "Ask with one tap")
+# Critic round 30: the grain question on a menu order (owner decision of round 28), round 29 fixes
 
-Reviewed: git diff ea07cdc..3008050 (src/v5/core.js, src/v6/engine.js, src/v6/app.js, src/v6/legible.css, the three built pages,
-test/rules/check.js, test/ux/review.js, eval/v6/menu-checks.js, docs/ux/UX-CRITERIA.md, handoff-next-plate.md). The owner decision is
-taken as fixed; what follows judges how it is carried out.
+Reviewed: git diff 1bc90c9..e617345 (src/v5/core.js, src/v6/engine.js, src/v6/app.js, the three built pages, test/rules/check.js,
+test/ux/review.js, docs/ux/UX-CRITERIA.md "Part A, changes after Critic round 29"). The owner decision stands; this round judges how it
+is carried out.
 
 ## Measured (run by me on this build)
 - npm run drill: every planted fault caught.
-- npm run review: 9 runs, 48 states, 432 checks, no violations, no unreachable state, no page error.
-- npm run rules: "every rule check holds" on hosted/v6/index.html, hosted/v6/index.min.html and hosted/v5/index.min.html (471 ok lines).
-- npm run words: no banned words outside the 42 listed exceptions (allow lists not changed in this diff).
-- npm run films: all four films pass (-16.7/-16.8 dB, no freeze, no decode errors). Films not changed in this diff.
-- My own browser probe (mock engine, 320 px, the review's diabetes profile and typed menu) of the Yes path, both No paths and a re-read
-  after No; engine probes of grainAsk, soldItems headings and one-tap notes on the built page and on the round 28 build.
+- npm run review: 9 runs, 50 states, 450 checks, no violations, no page errors.
+- npm run rules: "every rule check holds" on all three pages (483 ok lines), round 29 block included.
+- npm run words: no banned words outside the 42 listed exceptions (allow lists unchanged in this diff).
+- npm run films: four films pass (-16.7/-16.8 dB, no freeze, no decode errors); films unchanged.
+- The built pages carry the source changes (grainNone note, STOPG, the widened later-sentence list) in v6, v6 min and v5 min.
+- My own browser probe (mock engine, 320 px, the review's diabetes profile; routed replies) and engine probes of grainAsk on the built
+  page, on the round 29 build (git show 1bc90c9) and on the 115 dish/side pairs in the recorded live-engine menu replies
+  (eval/v6/results-menu-*.json). Probe files: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r30/
 
 ## Findings, most serious first
 
-1. MAJOR. Rescue > menu order > "No" when no order is left (state menu-grain-no), all widths, both schemes.
-   What is wrong: the next step the screen gives cannot work, and following it brings back the same question. The note says "None of these
-   orders keeps a grain you can get here. Ask which roti or rice they have today, add it to the menu above and read it again." The review's
-   own typed menu already lists "Jeera Rice 160" and "Butter Naan 60"; the person's "No" is not carried into the next read (the request
-   body has no trace of it, the kept text still says "Tandoori Roti 30", and side grains are only checked for presence on the menu,
-   sideOnMenu, engine.js:312). Measured: after No, tapping "Read this menu for lunch" again returns Paneer Tikka with
-   "Is tandoori roti available now?" (probe step A2). A person with diabetes at the table, one-handed, is sent round a loop with no order;
-   the one way out that works ("Already chosen? Name the dish", just below) is not mentioned. "keeps a grain you can get" is also app
-   wording, not plain English for these readers. The photo variant ("..., then type the menu with it.") asks a phone user mid-meal to
-   type a whole menu.
-   Why it matters: this is half of the owner's chosen flow; it is the screen a person sees when the restaurant has run out, and it must
-   lead to an order or a clear choice.
-   Criteria: B6 (error states say what to do next), A13 (the next step fits the error), B7 (plain words).
-   Evidence: src/v6/app.js:492-494 (No handler, message at 493); test/ux/out/screens/320-light/menu-grain-no-2.png and -3.png;
-   test/v6/fixture-menu.js:5-10 (Jeera Rice and Butter Naan on the menu); probe output A1/A2.
-   Smallest correction: keep the grains the person said No to for this menu (for example UI.mno) and drop orders with those grains on any
-   re-read of the same menu (send them with the request so the engine can also tell the model); name the grain and point to the box that
-   works, for example "No tandoori roti today. Ask which roti or rice they have, then name your dish below, for example dal tadka with
-   jeera rice." Add a review state that re-reads after No.
+1. MAJOR. Rescue > menu order > "No", then any later menu in the same page session (no review state; probe A2 and C3, 320 px light).
+   What is wrong: UI.mno is never cleared (src/v6/app.js:462-470; set in grainNo, read by grainFilter on every fresh result at app.js:478;
+   no reset on a new menu, a new place, a new meal or a new day; only a page reload clears it). Measured: after "No" to tandoori roti on
+   the fixture menu, typing a different restaurant's menu ("DHABA / Sarson Saag / Dal Fry / Tandoori Roti 15 / Makki Roti 25", reply
+   place "Punjabi dhaba") shows no order and no question, only "You said tandoori roti is not available. No order left on this menu has a
+   grain you can get. ..." The person never said that about this place. When some orders remain, the ones with that grain vanish with no
+   word. A "No" cannot be taken back (after No the only buttons are Read the menu, type the menu and the dish chips; probe C3), so one
+   mis-tap on two equal, adjacent buttons, one-handed, closes that grain for every menu until reload. grainNone also names only the last
+   grain said No to (UI.mno.slice(-1)), so a later menu needing an earlier grain is told about the wrong one.
+   Why it matters: the app states something false about what the person said, removes the menu path at a new restaurant, and gives no
+   way to correct an answer. A WhatsApp in-app tab often stays open from lunch to dinner.
+   Criteria: B6 (error states true and say what to do next), B11 (the person can correct a choice), B7.
+   Evidence: src/v6/app.js:462-470, 478, 507-511; scratchpad r30/A2.png; r30/probe.out (A2, C3).
+   Smallest correction: keep the No answers with the menu they were given for (clear UI.mno and UI.myes when the menu text or photo,
+   or the meal, changes); on the none-left note add a "Change answer" (or "Ask again") button that clears that No and brings the orders
+   back; name the grain this menu needs.
 
-2. MINOR. Rescue > menu order > "No" when another order is left (no review state; rendered by me at 320 px).
-   What is wrong: the toast "Showing the next order with a grain you can get." states something the app does not know. The next card then
-   asks "Is steamed rice available now?" (the grain is not yet checked), and after a No to rice the next card is Veg Biryani, a rice dish,
-   under the same toast.
-   Why it matters: the owner's rule forbids invented claims; the line contradicts the question shown under it.
-   Criteria: B7, owner rule 4 (no invented insights).
-   Evidence: src/v6/app.js:494; probe B1 and B2 (screens in the scratchpad, see below).
-   Smallest correction: "Here is the next order." or "Next order, without tandoori roti."
+2. MINOR. Engine grainAsk (src/v6/engine.js:398-403): the grain span picks up words that are not the grain, so the question reads as
+   broken English, and answers kept by the whole name stop matching.
+   Measured on the built page (round 29 build in brackets): "1 cup Red Rice" asks "Is cup red rice available now?" (was "rice");
+   "1 cup Steamed Rice" -> "cup steamed rice"; "1 Tandoori Roti (Plain / Butter)" -> "tandoori roti plain butter"; "1 Roti (Plain)" ->
+   "roti plain"; "2 Tawa Roti (Dry)" -> "tawa roti dry"; "2 Phulka (no ghee)" -> "phulka no ghee"; "2 roti without ghee" -> "roti without
+   ghee"; "2 tandoori roti on the side" -> "tandoori roti on"; "2 roti instead of naan" -> "Are roti instead and naan available now?";
+   "1 Tandoori Roti/Naan" -> "tandoori roti naan". The live engine copies menu names with brackets and prices into the side ("Idli (2 pcs)
+   50", "1 Buttermilk 30" in the recorded replies), so bracketed names are likely. In the recorded pairs, "Steamed Fish in Ginger Sauce"
+   with "1 Steamed Rice" asks "Is rice available now?" ("steamed" is dropped because it is in the dish name), while "Schezwan Chicken"
+   with the same side asks "Is steamed rice available now?". Probe B1: "No" to rice moves to the next order and asks "Is steamed rice
+   available now?", the same question again in other words; "rotis" and "roti" are also kept apart.
+   Criteria: B7 (plain English), B11; A14.
+   Smallest correction: add cup/cups/glass/bowl-size words and "on, only, without, no, instead, ask, for" to the stop list and stop the
+   span at a bracket or slash; do not drop a word from the side because the dish name has it; match a No on the grain's last word
+   plus its qualifier, so "rice" also covers "steamed rice" and "rotis" covers "roti".
 
-3. MINOR. Rescue > menu order > after "No", both outcomes; screen readers and keyboard.
-   What is wrong: the No button is removed by render() and focus falls to the page body (measured document.activeElement = BODY in A1 and
-   B1). In the none-left outcome the note is not written to the live region (#said), so nothing is announced. Yes moves focus to
-   "I'll order this" correctly (C1).
-   Criteria: B5, WCAG 2.4.3 Focus order and 4.1.3 Status messages.
-   Evidence: src/v6/app.js:492-495; src/v5/app.js:222 (toast writes #said; the merr note does not).
-   Smallest correction: after No, focus the new card's question or heading (or the note, tabindex -1) and write the none-left message to #said.
+3. MINOR. Rescue > menu order > two-grain question (probe D0/D1, 320 px).
+   What is wrong: "Are steamed rice and roti available now?" has one No. A No when only the rice is missing drops every roti order too
+   (Dal Tadka with 2 Roti disappears) and the note says "You said steamed rice and roti are not available", which the person did not say.
+   Criteria: B7, B11, B6.
+   Evidence: src/v6/app.js:468 (both parts pushed to UI.mno); r30/probe.out D1.
+   Smallest correction: ask one grain at a time, or after No ask "Which one is missing?" with the two names as buttons.
 
-4. MINOR. Engine grainAsk (src/v6/engine.js:398): the question names a different grain from the order.
-   Measured: side "1 cup Red Rice" asks "Is rice available now?"; "1 cup Matta Rice" asks "rice"; "2 Makki di Roti" asks "roti";
-   "2 Multigrain Rotis" asks "rotis"; "2 Neer Dosa" asks "dosa"; "1 plate Steamed Rice and 1 Roti" asks only about roti. A Yes to "rice"
-   does not confirm the red rice the figures and Rise band are for. The No handler (app.js:492) matches on the last word only, so a No to
-   "tandoori roti" also removes orders with plain roti; tandoor not lit at lunch while the tawa roti is there is the common case the
-   earlier rounds were about.
-   Criteria: B7, B11 (the person can correct what the model chose), owner rule 5 (figures belong to what is named).
-   Smallest correction: ask with the side as written, without its count ("Is red rice available now?"), name both grains when the side has
-   two, and match No on the whole grain name.
+4. MINOR. Review state menu-grain-again does not read the menu again.
+   What is wrong: after a successful read UI.mtext is set to "" (app.js:478), so the state's tap on "or type the menu" shows an empty box,
+   and its tap on #mgo is ignored (submit needs more than 2 characters, app.js:551). The screen it records is the No note again, not a
+   fresh read; the round 29 MAJOR's regression is therefore not guarded by the review (my probe A2 shows a fresh read does filter).
+   Criteria: A (every state reaches what it names); doctrine rule that rendered states, not claims, carry the proof.
+   Evidence: test/ux/review.js:221-222; test/ux/out/screens/320-dark/menu-grain-again-1.png (empty box), -3.png.
+   Smallest correction: fill #mtext with fx.typed before #mgo and wait for the /api/menu response; add a rules check on grainFilter.
 
-5. MINOR. Rescue > menu order > after "Yes".
-   What is wrong: a Yes cannot be taken back (the waiter says the tandoor is off after the person tapped Yes); and the answer is stored by
-   order position (UI.mok[UI.msel]), so choosing "Dal Tadka" under "Also on this menu", with the same tandoori roti, asks the same
-   question again.
-   Criteria: B5 (state visible and changeable), B11.
-   Evidence: src/v6/app.js:487, 491; test/ux/out/screens/320-light/menu-grain-yes-3.png.
-   Smallest correction: key the answer by grain name and add a "Change" text button beside "Tandoori roti: available, you checked."
+5. MINOR. Rescue > menu order > No with none left, focus (probe A1, 320 px).
+   What is wrong: focus moves to the text input #rin, which sits above the note. On a phone a focused text box raises the keyboard,
+   which covers the note that explains why there is no order; without the keyboard only the first two lines of the note show at 320 px.
+   Criteria: B6, WCAG 3.2.2 (no change of context on input; the keyboard is unasked for).
+   Evidence: src/v6/app.js:470; scratchpad r30/A1.png.
+   Smallest correction: focus the note (tabindex -1) and scroll it into view; the person taps the box when ready.
 
-6. MINOR. Engine soldItems heading marks (src/v6/engine.js:458): the explicit-mark word list still refuses ordinary headings.
-   Measured on the built page, lunch and dinner, heading then "Tandoori Roti 30 / Jeera Rice 160": "BREADS (Mon to Sun)",
-   "BREADS (Sat-Sun also)", "BREADS (none with maida)", "BREADS (not available for parcel)" sell no grain; "RICE (served over dal)",
-   "RICE (Down South style)", "RICE (Sunday special pulao below)" sell no rice. Impact is limited to portion grains (porGrain,
-   engine.js:405), since side grains are only checked for presence, so a side order is still offered; it is the round 28 failure in
-   a narrower form, and against the decision that the person, not the menu text, settles availability.
-   Criteria: A14 (the grain rule without refusing ordinary menus), B6.
-   Smallest correction: day words only with "only", "closed" or "off" and a day that is today; "over", "down", "none" only alone or next
-   to a grain; "not available" not when followed by "for parcel / takeaway / delivery".
+6. MINOR. Engine soldItems heading marks (src/v6/engine.js:465): explicit marks now read as selling.
+   Measured at lunch, heading then "Tandoori Roti 30 / Jeera Rice 160": "TANDOOR OFF", "TANDOOR (off)" and "Tandoor - down" now sell both
+   (they sold nothing on the round 29 build); "TANDOOR - No Tandoor Today" and "(no tandoor today)" sell on both builds. The owner decision
+   keeps explicit heading marks as the first filter. The question still asks about a side grain, so this is not a breach. Also: "TANDOOR
+   (closed Mondays)" closes the section on a Thursday (both builds).
+   Criteria: A14.
+   Smallest correction: "off" or "down" alone or at the end of a heading line closes it; "no <section word> today" closes it; a day word
+   after "closed" closes only on that day.
 
-7. MINOR. One-tap notes (src/v5/core.js:444): `if(!thenKeeps(t))` skips every send-away clause in the note once any then-clause keeps.
-   Measured at dinner: "Rice last. Leave it to cool, then eat it; the rice goes back into the pot." is now offered (held on the round 28
-   build). Present on both builds: "Rice last. Leave the rice to cool, then eat it. The rice goes in the fridge." is offered. The declared
-   grain_grams_after (at least half) still stands behind the wording check, so this is not a breach today, but the wording check is
-   the documented second line for rule 3.
-   Criteria: A14, owner rule 3.
-   Smallest correction: run the send-away loop on every clause except the one thenKeeps read; add "goes in/into the fridge" to the
-   send-away wordings.
+7. MINOR (present before this diff, not raised earlier). With diabetes some grain sides ask nothing.
+   Measured: grainAsk returns "" for the sides "1 Jeera Rice (Qtr)", "1 Brown Rice (Healthy)", "Roti x2", "1 Tandoori Roti Rs 30" and
+   "1 small bowl rice (about 100 g cooked)" (isGrain(side) is false, so it falls back to the portion). The order card then has no
+   question, against the owner decision.
+   Criteria: owner decision of round 28; A14.
+   Smallest correction: take the side when any of its words is a grain word, not only when isGrain(side) holds.
 
-8. COSMETIC. Safe-side holds that contradict the documented rule (UX-CRITERIA "Part A, changes after Critic round 28", item 4), all held
-   on this build: "Rice: let it cool for 10 minutes, then have it." and "Rice: keep it 30 minutes, then eat it." (dinner);
-   "Rice: keep it till you finish the salad, then eat it at dinner." (dinner); "Poha: keep it warm, then eat it at breakfast." (breakfast).
-   Fewer one-tap changes offered, never a breach.
+8. COSMETIC. One-tap later sentences (src/v5/core.js:319): the widened list holds a note when a later sentence has "back", "goes",
+   "pot", "kitchen", "kids" or "family" for any reason ("Sit back and eat slowly."); safe side, fewer offers. The builder reports the same
+   65 of 2,005 recorded live-engine notes held; I did not re-run the replay.
 
-9. COSMETIC. The question block styles Yes as the filled primary and No as outline, which leans the person toward Yes on a check the owner
-   added for safety; equal weight would ask more fairly. Plural wording "Is bhature available now?". At 320 px the question and its buttons
-   sit about one and a half screens below the card top (as "I'll order this" did before), so the first read of the card is the dish and
-   its grams, as B1 asks.
+9. COSMETIC. "No order left on this menu has a grain you can get" is still app wording for these readers; "None of these orders works
+   without tandoori roti" would read plainer.
 
-10. COSMETIC (declared by the builder). The films predate the question and show the menu order card without it; handoff step 4
-    re-captures them.
+10. COSMETIC (declared). The films predate the question and show the order card without it.
 
 ## What holds
-- Look: the question block is Raw Linen (paper surface, line border, EB Garamond 19/25 semibold question, italic fine line), the same in
-  dark mode (paper kept) and at 130 % text; nothing crowded at 320 px; Yes/No 44 px or more; the review measured no contrast, size,
-  overlap or clipping fault.
-- Order and names: role="group" labelled by the question; reading order question, reason, Yes, No; Yes moves focus to "I'll order this".
-- Rules: grain field empty without diabetes and at snack; a dish that is itself the grain asks nothing; no mg/dL, no katori or phulka as
-  a unit, no supplement, no banned word in the new strings; kidney and pregnancy referral states unchanged in the review.
+- Round 29 items fixed: No with another order left shows it, writes "Next order: Schezwan Chicken with 1 Steamed Rice." to #said and
+  focuses #order-grain-q (probe B1); none-left writes the note to #said; the toast is gone; Yes focuses "I'll order this"; "Change answer"
+  (44 px link button) asks again and focuses the question (C1, C2); Yes and No are both outlined, equal weight; "Is bhature" now "Are".
+- Look: the question block, the "available, you checked" line and "Change answer" are Raw Linen at 320, 360, 390 and 412, light and dark
+  (paper kept) and at 130 % text; nothing crowded; the plate and its grams come before the question.
+- Rules: no mg/dL, no katori or phulka as units, no supplements, no banned word in the new strings; kidney and pregnancy referral states
+  unchanged in the review; the grain stays with diabetes.
 
 ## Not inspected
-- The live engine: whether a re-read after No returns different orders there (the mock returns the same), and how often live replies
-  carry two grains in a side.
-- A screen reader by ear (only roles, names, focus and the live region were measured in the DOM).
-- The owner's own phone model; widths 375, 393 and 430 (the quick gate set was run).
-- Film frames and audio by ear (films unchanged in this diff; the film check was re-run).
-- Probe screens of the "No, next order" path: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r29/B1.png and B2.png
-  (scratch only; not part of the review set).
+- The live engine: how often live sides carry brackets, cups or two grains; the full recorded replay (88 orders, 2,005 notes) was not
+  re-run by me.
+- A screen reader by ear and a phone keyboard on a device (focus and live region measured in the DOM only).
+- The owner's own phone model; widths 375 and 430 (quick gate set run).
+- Film frames and audio by ear (films unchanged; the film check was re-run).
