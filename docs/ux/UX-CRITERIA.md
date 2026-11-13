@@ -78,8 +78,8 @@ recorded live replies in eval/ (477 meals, 655 base swaps, 986 one-tap notes) an
 the 477 live meals hold a grain (383 under the round 9 test, which missed bulgur, sourdough and suji); the two live plates no longer counted
 had only a dusting of flour. One-tap changes and menu portions are read for what a "skip", "avoid", "not", "instead of", "set aside",
 "save for later" or "only" applies to; 33 of the 986 live one-tap notes are held back with diabetes, nearly all of them dropping or
-swapping a roti or the rice. The rule check holds 220 names that are not a grain and 216 true grains, and the previous build fails 12 of
-its checks.
+swapping a roti or the rice. The rule check holds 220 names that are not a grain and 216 true grains; the round 9 build fails 7 of its
+checks and the round 8 build 12.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
