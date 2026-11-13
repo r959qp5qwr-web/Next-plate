@@ -79,7 +79,7 @@ function makePlates(text){
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
-    }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";}
+    }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";if(text)UI.askDraft=text;}
     else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;}
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});
   });

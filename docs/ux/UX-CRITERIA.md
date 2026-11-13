@@ -81,6 +81,17 @@ had only a dusting of flour. One-tap changes and menu portions are read for what
 swapping a roti or the rice. The rule check holds 220 names that are not a grain and 216 true grains; the round 9 build fails 7 of its
 checks and the round 8 build 12.
 
+## Part A, changes after Critic round 11
+Round 11 found that the round 10 lists had made shapes into grains (wrap, toast, flatbread, gnocchi, lasagne) while the companion list held
+the stand-in bases, so a cauliflower toast or a chickpea flour tortilla counted. A shape is now a grain only with a grain named or with
+fillings alone, and a vegetable, legume, nut or seed before a roti, chapati, bhakri or uttapam is what it is made of. With diabetes, a
+one-tap note or menu portion that names the grain together with any word of absence (a miss, off the plate, to tomorrow, not tonight,
+hold, alone, just the) is held back, unless the absence word applies to something that is not a grain ("without ghee", "skip the butter on
+the roti") or takes part of the grain only ("drop half a phulka"). Measured: all 115 of the Critic's grain-free names are refused and 135
+of its 136 true grains kept ("ghee roast" is also a chicken curry, so it is read the safe way); the 477 live meals keep 391 with a grain;
+35 of 986 live one-tap notes are held back. The rule check now holds 335 names that are not a grain and 328 true grains; the round 10
+build fails 5 of its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -127,4 +138,6 @@ checks and the round 8 build 12.
   the 51 s film, mixed here, sets the music beat by beat instead.
 - D7 Where the Critic's rounds disagreed, the later round stands: round 9 listed paneer, egg and cheese roti as stand-ins, round 10 as wheat
   rotis with a filling; they count as grains. Names that can be read either way are read the safe way, as not a grain (cauliflower and broccoli
-  fried rice, flaxseed roti, cauliflower upma, besan roti); gobi rice, kuttu, rajgira and samak count as grains.
+  fried rice, flaxseed roti, cauliflower upma, besan roti); gobi rice, kuttu, rajgira and samak count as grains. Round 11 read a paneer
+  wrap and a moong dal roti as not grains (round 10 had them as grains), and mushroom rice as a grain (round 10 had it as a stand-in);
+  round 11 stands. "Ghee roast" alone is also a chicken curry, so it is read the safe way, as not a grain.

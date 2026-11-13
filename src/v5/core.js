@@ -97,7 +97,7 @@ var SAFETY="This one is for your coach and doctor to plan with you.";
 var GRAINW=/\b(?:roti|rice|millet|jowar|bajra|ragi|oats|dalia|quinoa|bread|poha|upma|idli|dosa|naan|paratha|phulka|chapati|khichdi|pulao|biryani|pasta|noodles)\b/i;   /* kept for the prompts' wording only */
 /* Round 10 candidate: a grain is identified, not guessed. Every word of the name must be a known grain or grain-dish word, an amount,
    a way of cooking, or a known companion of a grain dish; an unknown word means "not shown to be a grain". */
-var GRAINT="roti|rotis|rotti|rotla|rotlas|phulka|phulkas|chapati|chapatis|chapathi|chapathis|chappati|chapatti|paratha|parathas|parantha|paranthas|parotta|parottas|thepla|theplas|bhakri|bhakris|naan|naans|kulcha|kulchas|kulche|rice|basmati|chawal|bhaat|bhat|sadam|pulao|pulav|pulaw|khichdi|khichri|kichdi|khichadi|biryani|biriyani|briyani|millet|millets|jowar|jolada|bajra|bajre|bajri|ragi|nachni|foxtail|kodo|kutki|quinoa|dalia|daliya|oats|oat|oatmeal|poha|pohe|upma|uppittu|idli|idlis|idly|idlies|dosa|dosas|dosai|uttapam|uttapams|uthappam|uthappams|bread|breads|toast|pav|bun|buns|noodles|noodle|pasta|spaghetti|penne|macaroni|soba|farro|freekeh|bulgur|couscous|orzo|polenta|rava|sooji|suji|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|maize|corn|mudde|appam|appams|puttu|pongal|thalipeeth|puri|puris|poori|pooris|luchi|bhatura|bhature|idiyappam|bisibelebath|puliyogare|sorghum|rye|buckwheat|kuttu|samak|sama|samai|varagu|thinai|kambu|moraiyo|samvat|wholemeal|wholewheat|wheat|atta|maida|muthia|muthiya|adai|pathiri|kozhukattai|paniyaram|handvo|litti|baati|khakhra|sandwich|sandwiches|wrap|roll|frankie|muesli|granola|cornflakes|thukpa|dabeli|pizza|flatbread|pita|sourdough|cracker|crackers|porridge|malt|satva|ambli|koozh|sattu|murmura|flattened|grain|grains|multigrain|tortilla|tortillas|cereal|ravioli|lasagne|risotto|gnocchi|bath|neer|burger|burgers|sub|subs|toasts";
+var GRAINT="roti|rotis|rotti|rotla|rotlas|phulka|phulkas|chapati|chapatis|chapathi|chapathis|chappati|chapatti|paratha|parathas|parantha|paranthas|parotta|parottas|thepla|theplas|bhakri|bhakris|naan|naans|kulcha|kulchas|kulche|rice|basmati|chawal|bhaat|bhat|sadam|pulao|pulav|pulaw|khichdi|khichri|kichdi|khichadi|biryani|biriyani|briyani|millet|millets|jowar|jolada|bajra|bajre|bajri|ragi|nachni|foxtail|kodo|kutki|quinoa|dalia|daliya|oats|oat|oatmeal|poha|pohe|upma|uppittu|idli|idlis|idly|idlies|dosa|dosas|dosai|uttapam|uttapams|uthappam|uthappams|bread|breads|toast|pav|bun|buns|noodles|noodle|pasta|spaghetti|penne|macaroni|soba|farro|freekeh|bulgur|couscous|orzo|polenta|rava|sooji|suji|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|maize|corn|mudde|appam|appams|puttu|pongal|thalipeeth|puri|puris|poori|pooris|luchi|bhatura|bhature|idiyappam|bisibelebath|puliyogare|sorghum|rye|buckwheat|kuttu|samak|sama|samai|varagu|thinai|kambu|moraiyo|samvat|wholemeal|wholewheat|wheat|atta|maida|muthia|muthiya|adai|pathiri|kozhukattai|paniyaram|handvo|litti|baati|khakhra|sandwich|sandwiches|wrap|roll|frankie|muesli|granola|cornflakes|thukpa|dabeli|pizza|flatbread|pita|sourdough|cracker|crackers|porridge|malt|satva|ambli|koozh|sattu|murmura|flattened|grain|grains|multigrain|tortilla|tortillas|cereal|ravioli|lasagne|risotto|gnocchi|bath|neer|burger|burgers|sub|subs|toasts|momos|momo|chowmein|chow|mein|thali|semiya|dhokli|chappathi|kanji|khichuri|kitchari|polao|muri|chire|ruti|kochuri|kachori|porotta|parotha|chapathy|uttappam|oothappam|bhatoora|biriani|pidi|kozhukatta|palappam|ada|lasagna|flatbreads|wraps|rolls|cakes|cake|pancake|pancakes|crust";
 var GRAIN_RX=new RegExp("^(?:"+GRAINT+")$");
 /* the other words a grain dish is named with: amounts, kinds, ways of cooking, and the companions of Indian grain dishes */
 var COMPT="a|an|the|of|and|with|on|in|for|into|from|style|ki|ka|ke|bhaji|\\d+|one|two|three|four|five|half|small|medium|large|thin|thick|soft|single|portion|portions|cup|cups|bowl|bowls|katori|plate|g|gm|grams?|ml|pieces?|slices?|serving|servings|fingers|sheet|"+
@@ -105,40 +105,55 @@ var COMPT="a|an|the|of|and|with|on|in|for|into|from|style|ki|ka|ke|bhaji|\\d+|on
   "veg|vegetable|vegetables|mixed|masala|lemon|curd|thayir|tomato|tamarind|coconut|onion|kanda|aloo|potato|gobi|cauliflower|methi|fenugreek|palak|spinach|mooli|radish|matar|peas|pea|carrot|carrots|beans|cabbage|capsicum|lauki|bottle|gourd|dudhi|sweet|corn|"+
   "dal|dhal|moong|mung|toor|tuvar|masoor|urad|chana|rajma|chole|kadhi|sambar|rasam|chutney|raita|sabzi|sabji|bhurji|chokha|maska|kathi|kerala|kothu|vangi|onion|akki|jowar|"+
   "chicken|mutton|fish|prawn|prawns|keema|soya|chunks|tofu|chickpea|chickpeas|sabudana|hyderabadi|lucknowi|dum|hakka|fried|schezwan|arrabbiata|pesto|tikka|dhaba|punjabi|south|indian|kerala|mumbai|"+
-  "but|or|plus|alongside|side|only|extra|added|more|salad|besan|flax|flaxseed|flaxseeds|doodhi|zucchini|broccoli|bisi|bele|made|from|flour|green|cumin|spiced|sauteed|leaves|stewed|cubes|yellow|ajwain|roomali|rumali|fine|finely|chopped|diced|sliced|aromatic|puffs|light|low|fat|soaked|crumbled|savory|savoury|split|kernels|pocket|bed|crepe|crisps|flakes|chilla|cheela|kala|kabuli|gram|sprouts|mint|coriander|ginger|curry|unfried|blend|bhel|batter|into|nos|pre|premade|ready|store|bought|aglio|olio|alfredo|marinara|primavera|margherita|farmhouse|club|grilled|amritsari|kashmiri|peshawari|lachha|laccha|rumali|kadai|kadhai|makhani|jeera|tadka|butter|dal|bowl";
+  "but|or|plus|alongside|side|only|extra|added|more|salad|besan|flax|flaxseed|flaxseeds|doodhi|zucchini|broccoli|bisi|bele|made|from|flour|green|cumin|spiced|sauteed|leaves|stewed|cubes|yellow|ajwain|roomali|rumali|fine|finely|chopped|diced|sliced|aromatic|puffs|light|low|fat|soaked|crumbled|savory|savoury|split|kernels|pocket|bed|crepe|crisps|flakes|chilla|cheela|kala|kabuli|gram|sprouts|mint|coriander|ginger|curry|unfried|blend|bhel|batter|into|nos|pcs|pre|premade|ready|store|bought|mysore|set|paper|roast|benne|podi|mini|vada|thatte|button|kurma|malabar|ceylon|ven|khara|misal|usal|pakora|omelette|bombay|tikki|pudina|pyaz|mix|di|navratan|kolkata|ambur|thalassery|dindigul|donne|mughlai|awadhi|kathal|singapore|steamed|red|pink|sauce|veggie|chilli|chili|mushroom|mushrooms|regular|cheesy|paradise|pepperoni|mayo|banana|pani|breadsticks|croissant|deluxe|special|classic|royal|house|chef|combo|platter|spicy|tangy|crispy|crunchy|loaded|double|jumbo|garden|choco|chocolate|honey|peanut|avocado|overnight|milk|nuts|ponni|seeraga|samba|gobindobhog|browntop|batata|indori|churma|dhokli|kuzhi|stew|kadala|malai|kofta|whole|grain|wholegrain|spelt|gluten|free|aglio|olio|alfredo|marinara|primavera|margherita|farmhouse|club|grilled|amritsari|kashmiri|peshawari|lachha|laccha|rumali|kadai|kadhai|makhani|jeera|tadka|butter|dal|bowl";
 var COMP_RX=new RegExp("^(?:"+COMPT+")$");
 /* a grain word naming a spice mix, sauce, condiment or style is not a grain ("idli podi", "biryani-spiced", "pulao-style") */
-var CONDI=new RegExp("\\b(?:"+GRAINT+")(?:\\s+[a-z]+)?[\\s-]+(?:masala|sauce|podi|powder|seasoning|spices?|spiced|style|flavou?red|chutney|papad|spread|crust|crusted|crumbs?|crumbed|batter|vinegar|bran|paper|starch|water|wine|kanji|husk)\\b","gi");
+var CONDI=new RegExp("\\b(?:pav\\s+)?(?:biryani|pulao|khichdi|bhaji|chole|sambar|garam|chaat)\\s+masala\\b|\\b(?:"+GRAINT+")(?:\\s+(?!with\\b|and\\b|or\\b|in\\b|on\\b|plus\\b)[a-z]+)?[\\s-]+(?:sauce|podi|powder|seasoning|spices?|spiced|style|flavou?red|chutney|papad|spread|crust|crusted|crumbs?|crumbed|batter|vinegar|bran|paper|starch|water|wine|kanji|husk)\\b","gi");
 /* negation: what follows "no", "without", "instead of" ... up to the next comma, or what precedes "skipped", "optional", "-free", "-less" */
 var NEGPRE=/\b(?:no|not|without|minus|sans|except|avoid|avoiding|skip|skipping|hold|omit|omitting|drop|dropping|remove|removing|exclude|excluding|instead\s+of|in\s+place\s+of|rather\s+than|swap\s+out|leave\s+out|zero)\b([^,;.()]*?)(?=\s+but\b|[,;.()]|$)/gi;
-var NEGPOST=/\b([a-z]+)[\s-]+(?:skipped|avoided|omitted|removed|dropped|excluded|optional)\b/gi;   /* "-free" and "-less" are stand-ins (STAND), not left-out words */
+var NEGPOST=/\b([a-z]+)[\s-]+(?:skipped|avoided|omitted|removed|dropped|excluded|optional|not\s+included|not\s+needed|on\s+request|on\s+the\s+side\s+optional)\b/gi;   /* "-free" and "-less" are stand-ins (STAND), not left-out words */
 var STANDF=[
   "\\briced\\s+[a-z]+",
-  "\\b(?:cauli(?:flower)?|broccoli|cabbage|turnip|radish|mooli|daikon|konjac|mushroom|mushrooms|lentil|lentils)(?:[\\s-]+as)?[\\s-]+(?:fried[\\s-]+)?rice\\b",
-  "\\b(?:cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|kelp|palmini|lettuce|lauki|doodhi|dudhi|bottle\\s+gourd|carrots?|beetroot|beets?|cucumber|daikon|mooli|radish|turnip|squash|potato|sweet\\s+potato|tofu|paneer|egg[\\s-]+white|glass|mung\\s+bean|cellophane|shirataki|konjac|kelp)[\\s-]+(?:noodles?|pasta|spaghetti|couscous|crust)\\b",
+  "\\b(?:cauli(?:flower)?|broccoli|cabbage|turnip|radish|mooli|daikon|konjac|lentil|lentils)(?:[\\s-]+as)?[\\s-]+(?:fried[\\s-]+)?rice\\b|\\bminced\\s+(?:mushrooms?|cauliflower|broccoli|cabbage)\\b",
+  "\\b(?:veggie|protein|cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|kelp|palmini|lettuce|lauki|doodhi|dudhi|bottle\\s+gourd|carrots?|beetroot|beets?|cucumber|daikon|mooli|radish|turnip|squash|potato|sweet\\s+potato|tofu|paneer|egg[\\s-]+white|glass|mung\\s+bean|cellophane|shirataki|konjac|kelp)[\\s-]+(?:noodles?|pasta|spaghetti|couscous|crust)\\b",
   "\\b(?:cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|lauki)[\\s-]+(?:roti|rotis|chapati|chapatis|naan|bread|tortillas?|pizza|upma|poha|couscous)\\b",
   "\\b(?:gram|chana|besan|soy|soya|moong|masoor|chickpea|almond|coconut|flax(?:seed)?|lupin|psyllium|arrowroot|singhara|singhare|water\\s+chestnut)[\\s-]+(?:flour|atta|meal|ki|ka|ke)[\\s-]+(?:roti|rotis|bread|chapati|paratha|puri|naan|dosa|pizza)\\b",
+  "\\b(?:besan|gram|chana|chickpea|moong|mung|masoor|soya|soy|coconut|almond|flax|flaxseed|cauliflower|broccoli|zucchini|cabbage|sweet\\s+potato|makhana|singhara|singhare|arrowroot|sabudana|lupin|psyllium)(?:[\\s-]+dal)?[\\s-]+(?:roti|rotis|rotti|chapati|chapatis|chapathi|bhakri|bhakris|uttapam|uttappam|uthappam|tortillas?)\\b",
   "\\b(?:moong|mung|masoor|chana|urad|lentil|red\\s+lentil|chickpea|besan|green\\s+pea|pea|soy(?:bean|a)?|black\\s+bean|bean|edamame|lupin[ie]?)(?:\\s+dal)?(?:[\\s-]+(?:flour|based))?[\\s-]+(?:pasta|noodles?|spaghetti|penne|fusilli|dosa|idli)\\b",
   "\\b(?:almond|coconut|chia|seed|psyllium|lupin|cloud|oopsie|fathead|keto|besan|arrowroot|singhara|singhare|water\\s+chestnut|makhana|sago|tapioca|flax(?:seed)?)[\\s-]+(?:roti|rotis|bread|pizza|toast|wraps?|tortillas?)\\b",
   "\\b(?:konjac|shirataki|keto|low[\\s-]?carb|zero[\\s-]?carb|no[\\s-]?carb|no[\\s-]?grain|miracle|singhara|singhare|water\\s+chestnut|arrowroot|vrat|glucomannan|spirali[sz]ed|sabudana|sago|tapioca|makhana)\\b",
-  "\\b(?:"+GRAINT+"|carb|carbs|gluten)[\\s-]?(?:free|less)\\b|\\b(?:rice|grain|carb|wheat|atta)less\\b",
+  "\\b(?:"+GRAINT+"|carb|carbs)[\\s-]?(?:free|less)\\b|\\b(?:rice|grain|carb|wheat|atta)less\\b",
   "\\btofu[\\s-]+rice\\b|\\bsweet\\s+potato[\\s-]+(?:roti|rotis|bread|paratha|puri)\\b",
-  "\\bmade\\s+(?:with|from|of|using)\\s+(?:grated\\s+|riced\\s+)?(?:cauli(?:flower)?|broccoli|zucchini|konjac|shirataki|sabudana|sago|tapioca|singhara|singhare|water\\s+chestnut|almonds?|coconut|flax(?:seed)?s?|chickpeas?|lentils?|besan|chana|moong|mung|masoor|soy(?:bean|a)?s?|peas?|lupin[ie]?|psyllium|arrowroot|makhana|paneer|tofu|eggs?|cheese|potato|sweet\\s+potato|lauki|bottle\\s+gourd|nuts?|seeds?)\\b",
+  "\\bmade\\s+(?:with|from|of|using)\\s+(?:grated\\s+|riced\\s+|black\\s+|green\\s+|yellow\\s+|whole\\s+|split\\s+|red\\s+|white\\s+)*(?:cabbage|carrots?|radish|mooli|turnip|beetroot|pumpkin|spinach|palak|cauli(?:flower)?|broccoli|zucchini|konjac|shirataki|sabudana|sago|tapioca|singhara|singhare|water\\s+chestnut|almonds?|coconut|flax(?:seed)?s?|chickpeas?|lentils?|besan|chana|moong|mung|masoor|soy(?:bean|a)?s?|beans?|peas?|lupin[ie]?|psyllium|arrowroot|makhana|paneer|tofu|eggs?|cheese|potato|sweet\\s+potato|lauki|bottle\\s+gourd|nuts?|seeds?)\\b",
   "\\b(?:chickpea|lentil|legume|soy|soya|bean|pea|nut|almond|coconut|cauliflower|vegetable|veggie|protein|egg|paneer|tofu)[\\s-]+based\\b"
 ];
 var STAND=new RegExp(STANDF.join("|"),"i");
 var STANDN=new RegExp(STANDF.join("|").replace("|singhara|singhare|water\\s+chestnut|arrowroot|vrat|glucomannan|spirali[sz]ed|sabudana|sago|tapioca|makhana)","|glucomannan|spirali[sz]ed)"),"i");   /* for one-tap notes: makhana or sabudana named in passing is not a stand-in */
 var CORE=/^(?:\d+|one|two|three|four|half|a|an|the|of|small|medium|large|thin|cup|cups|bowl|katori|g|grams?|pieces?|slices?|cooked|steamed|boiled|plain|brown|red|black|white|whole|wheat|wholemeal|multigrain|atta|hand|pounded|unpolished|parboiled|basmati|sona|masoori|matta|jeera|tawa|tandoori|missi|makki|ki|ka|jowar|bajra|bajre|ragi|nachni|foxtail|kodo|little|barnyard|proso|kutki|samak|sama|samai|varagu|thinai|kambu|rajgira|kuttu|millet|millets|broken|rolled|steel|cut|oats|oat|dalia|daliya|quinoa|amaranth|sorghum|pearl|finger|rye|barley|buckwheat|soba|roti|rotis|rotti|phulka|phulkas|chapati|chapatis|chapathi|bhakri|rice|chawal|bread|toast|thepla|paratha|parathas|naan|kulcha|couscous|farro|freekeh|bulgur)$/i;
 function words(s){return s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(Boolean);}
-function known(part){var w=words(part);return w.length>0&&w.every(function(x){return GRAIN_RX.test(x)||COMP_RX.test(x);})&&w.some(function(x){return GRAIN_RX.test(x)&&!/^(?:wheat|atta|maida|corn|grain|grains|multigrain|flattened|sattu|style|cereal)$/.test(x)||/^(?:wheat|atta|maize)$/.test(x)&&w.length>1;});}   /* corn alone is eaten as a vegetable; it counts in makki roti, polenta, cornflakes */
+/* Shapes: a wrap, toast, flatbread or crust can be made of anything, so it is a grain only when a grain is named with it ("whole wheat
+   wrap", "oats porridge"), or, for the everyday wheat shapes (toast, bun, pizza, sandwich, bread, lasagne, gnocchi, porridge), when only
+   fillings stand with it ("cheese toast", "aloo tikki burger"). A vegetable, legume, nut or seed with a shape is a stand-in (Critic round 11). */
+var SHAPE_RX=/^(?:wraps?|rolls?|toasts?|buns?|burgers?|sandwich(?:es)?|pizza|flatbreads?|crackers?|cracker|porridge|tortillas?|gnocchi|lasagne|lasagna|crust|pancakes?|cakes?|bread|breads)$/;
+var STRICT_RX=/^(?:wraps?|rolls?|flatbreads?|crackers?|cracker|tortillas?|crust|pancakes?|cakes?)$/;
+var GMAT_RX=/^(?:wheat|atta|maida|rice|oats?|millets?|jowar|bajra|bajre|bajri|ragi|nachni|maize|makki|corn|multigrain|sourdough|rye|barley|semolina|rava|sooji|suji|quinoa|buckwheat|kuttu|wholemeal|wholewheat|wholegrain|spelt|bulgur|polenta)$/;
+var MAT_RX=/^(?:cauliflower|cauli|broccoli|zucchini|courgette|cabbage|lauki|doodhi|dudhi|gourd|pumpkin|kaddu|squash|potato|potatoes|carrots?|beetroot|beets?|radish|mooli|turnip|daikon|cucumber|spinach|palak|kale|lettuce|eggplant|brinjal|konjac|kelp|seaweed|tofu|chickpeas?|besan|gram|chana|moong|mung|masoor|lentils?|soy|soya|beans?|peas?|edamame|lupin|almonds?|coconut|flax|flaxseed|chia|seeds?|psyllium|makhana|sabudana|sago|tapioca|arrowroot|singhara|singhare|chestnut|cloud|oopsie|keto|protein|chilla|cheela|dal|gobi)$/;
+function known(part){var w=words(part);if(!w.length||!w.every(function(x){return GRAIN_RX.test(x)||COMP_RX.test(x);}))return false;
+  var g=w.filter(function(x){return GRAIN_RX.test(x)&&!/^(?:wheat|atta|maida|corn|grain|grains|multigrain|flattened|sattu|style|cereal|whole|wholegrain)$/.test(x);});
+  if(!g.length)return w.some(function(x){return /^(?:wheat|atta|maize)$/.test(x);})&&w.length>1;
+  if(g.some(function(x){return !SHAPE_RX.test(x);}))return true;                  /* a grain itself: rice, roti, dosa, khichdi ... */
+  if(w.some(function(x){return GMAT_RX.test(x);}))return true;                     /* a shape with a grain named: "whole wheat wrap" */
+  if(w.some(function(x){return MAT_RX.test(x);}))return false;                     /* a shape over a vegetable, legume, nut or seed */
+  if(g.every(function(x){return STRICT_RX.test(x);}))return w.some(function(x){return /^(?:kathi|frankie|khakhra|thin|thick|pan|stuffed)$/.test(x);});
+  return true;}                                                                   /* toast, bun, pizza, sandwich, bread with fillings only */
 var DISHW=/^(?:khichdi|pulao|poha|idli|idlis|dosa|pasta|noodles)$/;
 function plain(part,dish){var w=words(part);return w.length>0&&w.every(function(x){return CORE.test(x)||(dish&&DISHW.test(x));})&&w.some(function(x){return GRAIN_RX.test(x)&&!/^(?:wheat|atta|grain|grains|multigrain)$/.test(x);});}
 function isGrain(t){
   var s=" "+String(t||"").replace(/[‘’“”"']/g,"").replace(/[()\[\]]/g," ")+" ";
   s=s.replace(CONDI," ");
   var lost=false,stand0=STAND.test(s);   /* "atta-free", "grain-free" are read before the negations are taken out */
+  s=s.replace(NEGPOST,function(m,a){if(GRAIN_RX.test(a.toLowerCase()))lost=true;return " , ";});   /* "rice not included" before the single word "not" */
   s=s.replace(NEGPRE,function(m,obj){if(words(obj).some(function(x){return GRAIN_RX.test(x);}))lost=true;return " , ";});
-  s=s.replace(NEGPOST,function(m,a){if(GRAIN_RX.test(a.toLowerCase()))lost=true;return " , ";});
   var stand=stand0||STAND.test(s);
   if(!lost&&/\bmade\s+(?:with|from|of|using)\b[^.;]*\b(?:whole[\s-]+wheat|wheat|atta|jowar|bajra|ragi|nachni|makki|maize|rice\s+flour|oats?|maida|multigrain|millets?|barley|rye)\b/i.test(s))return true;
   var parts=s.split(/\s+(?:and|or|plus|but|with)\s+|[,;+&\/]/);
@@ -157,24 +172,44 @@ function hasGrainWord(x){var w=words(x);return w.some(function(v,i){return GRAIN
 function objectAfter(rest){var w=words(rest),out=[];for(var i=0;i<w.length&&out.length<3;i++){if(STOPW.test(w[i])&&!out.length)continue;if(BREAKW.test(w[i])||STOPW.test(w[i]))break;out.push(w[i]);}return out.join(" ");}
 function grainTarget(x){x=String(x||"").replace(/^\s*(?:then\s+)?(?:use|have|eat|serve|take|add|choose|pick|try|go\s+for|opt\s+for)\b/i,"");return isGrain(x);}
 function removesGrain(text){
-  var t=String(text||"").toLowerCase().replace(/[\u2018\u2019\u201C\u201D"']/g,""),m,re=new RegExp(REMV.source,"gi");
-  /* "paneer and palak only", "on their own", "order only paneer tikka": the grain is left out; "seasoned only with cumin", "only 1 tsp ghee" are not */
+  /* Critic rounds 10 and 11: English has more ways to leave a grain out than a list of verbs can hold, so with diabetes this reads fail-safe.
+     1. A restriction leaves the grain out even when no grain is named: "just the rajma", "the chole alone", "paneer and palak make the whole
+        dinner", "pick out the chicken", "the potato filling", "only ... ", "on their own".
+     2. Where a grain is named, an absence word anywhere in the sentence holds it back ("give the khichdi a miss", "move it to tomorrow",
+        "choose a salad over the khichdi", "not tonight"), except the forms that keep the grain: a swap or "instead of" whose other side is a
+        grain, "cut ... to/by" an amount, "just/only" an amount, a removal whose object is not a grain ("serve the khichdi without ghee").
+     A note that changes the plate without naming the grain or narrowing the meal stays. */
+  var t=" "+String(text||"").toLowerCase().replace(/[‘’“”"']/g,"").replace(/\bdon\s*t\b|\bdont\b/g,"do not").replace(/\boff\s+(?:the\s+)?(?:tawa|tava|stove|heat|flame|fire|pan|griddle|gas|hob)\b/g,"from the stove")+" ";   /* "off the tawa" is cooking */
   var SEASON="(?:season\\w*|spic\\w*|temper\\w*|flavou?r\\w*|tadka|cumin|jeera|hing|asafoetida|salt|turmeric|pepper|ginger|garlic|chilli\\w*|herbs?|masala|coriander|mint|lemon|oil|ghee|butter)";
-  if(/\bonly\b/.test(t)&&!new RegExp("\\bonly\\s+(?:\\d|one|a\\s+little|half|lightly|mild|of)\\b|\\b(?:using|made|keeping)\\s+only\\b|\\b"+SEASON+"\\b(?:\\s+(?:and|with|,)?\\s*[a-z]+){0,3}\\s+only\\b|\\bonly\\s+(?:with\\s+|using\\s+)?(?:[a-z]+\\s+){0,2}"+SEASON+"\\b").test(t))return true;
-  if(/\bon\s+(?:their|its)\s+own\b|\bby\s+itself\b/.test(t))return true;
-  /* "rice not included", "rice excluded", "rice optional", "rice on the side for later" */
-  if(new RegExp("\\b(?:"+GRAINT+")\\b[^.;,]{0,20}\\b(?:not\\s+included|excluded|left\\s+out|skipped|optional|avoided|omitted)\\b").test(t))return true;
-  while((m=re.exec(t))){
-    var v=m[1].replace(/\s+/g," "),after=t.slice(m.index+m[0].length),clause=after.split(/[.;,]/)[0];
-    var obj=objectAfter(clause.replace(/\b(?:out|aside|away)\b/," "));
-    if(/^(?:it|them|that|this)$/.test(obj.split(" ")[0])&&hasGrainWord(t.slice(0,m.index))&&!/^(?:keep|set|save|pack|hold|cut)$/.test(v))return true;   /* "skip it" after a grain is named */
-    if(!hasGrainWord(obj))continue;
-    if(/^(?:set|save|pack|keep|hold)$/.test(v)&&!AWAYW.test(clause))continue;          /* "keep the roti warm" is not a removal */
-    if(v==="cut"&&/\b(?:to|by|down|half|third|quarter|portion|serving|back)\b/.test(clause))continue;   /* "cut rice to 70 g" makes less, it does not take the grain off */
-    if(/^(?:swap|swapping|replace|replacing|exchange|trade|switch)$/.test(v)){var tg=/\b(?:for|with|to|into)\b([^.;]*)/.exec(clause);if(tg&&grainTarget(tg[1].split(/\b(?:then|if)\b/)[0])&&!/\b(?:then\s+)?(?:skip|drop|avoid|leave)\s+(?:it|them)\b/.test(t))continue;return true;}
-    if(/^(?:rather than|instead of|in place of)$/.test(v)){var before=t.slice(0,m.index).split(/[.;]/).pop();if(grainTarget(before))continue;return true;}
-    return true;}
-  return false;
+  var AMOUNT="(?:\\d|one|two|three|a\\s+little|a\\s+few|half|lightly|mild|a\\s+pinch|a\\s+dash|a\\s+squeeze|a\\s+teaspoon|minutes?|mins?)";
+  /* 1. restrictions */
+  var r=t.replace(new RegExp("\\b(?:only|just)\\s+(?:with\\s+|using\\s+|of\\s+)?"+AMOUNT+"[^,.;]*","g")," ")
+         .replace(new RegExp("\\b"+SEASON+"\\b(?:\\s+(?:and|with|,)?\\s*[a-z]+){0,3}\\s+only\\b","g")," ")
+         .replace(new RegExp("\\b(?:using|made|keeping|seasoned|spiced|tempered|flavou?red)\\s+(?:with\\s+)?only\\b","g")," ")
+         .replace(new RegExp("\\bonly\\s+(?:with\\s+|using\\s+)?(?:[a-z]+\\s+){0,2}"+SEASON+"\\b","g")," ");
+  if(/\b(?:only|just\s+the|just\s+(?:eat|have)|alone|on\s+(?:their|its)\s+own|by\s+(?:it|them)sel(?:f|ves)|nothing\s+else|that\s+is\s+all|thats\s+all|whole\s+(?:dinner|lunch|meal|plate|breakfast)|(?:are|is|make|makes)\s+(?:the\s+)?(?:dinner|lunch|meal|breakfast)|(?:are|is)\s+enough|pick\s+out|picked\s+out|from\s+the\s+(?:top|thali|plate)|(?:potato|aloo|masala|bhaji)\s+filling)\b/.test(r))return true;
+  /* 2. a grain named with an absence word */
+  var G=new RegExp("\\b(?:"+GRAINT+"|grains?|carbs?|starch|staple)\\b","g"),gm=t.match(G);
+  if(!gm||!gm.some(function(w){return w!=="corn";}))return false;
+  var u=t.replace(new RegExp("\\bcut\\b[^.;,]*?\\b(?:to|by|down|half|third|quarter|back)\\b","g")," ");   /* "cut the rice to 70 g" makes less, it keeps the grain */
+  /* a removal of part of the grain keeps the grain ("drop half a phulka", "swap 40 g of rice for ...", "drop to one thepla") */
+  u=u.replace(/\b(?:drop\w*|swap\w*|trade|replace\w*|skip\w*|remove\w*|reduce\w*)\s+(?:down\s+)?(?:to\s+(?:one|a\s+single|1)\b|half\b|a\s+(?:third|quarter|little)\b|\d+\s*(?:g|grams?)\b|(?:ten|twenty|thirty|forty|fifty|sixty|seventy|eighty)\s+grams?\b)[^.;,]*/g," ");
+  /* a swap or "instead of" whose other side is a grain keeps the grain */
+  var sw=/\b(?:swap|swapping|replace|replacing|exchange|trade|switch)\b([^.;]*?)\b(?:for|with|to|into)\b([^.;]*)/.exec(u);
+  if(sw){var tgt=sw[2].split(/,|\b(?:then|if|and\s+(?:skip|drop|avoid|leave))\b/)[0];if(grainTarget(tgt)||!hasGrainWord(sw[1]))u=u.replace(sw[0]," "+sw[2].slice(tgt.length));else return true;}   /* the grain swapped for something that is not a grain */
+  var io=/([^.;]*)\b(?:instead\s+of|in\s+place\s+of|rather\s+than)\b([^.;,]*)/.exec(u);
+  if(io){if(grainTarget(io[1])||!hasGrainWord(io[2]))u=u.replace(io[0]," ");else return true;}
+  /* a removal word counts when what it applies to is a grain ("no reheating", "skip cooking the bhurji", "without black pepper" stay) */
+  var OBJV=/\b(no|not|never|without|skip\w*|avoid\w*|drop\w*|remov\w*|omit\w*|ditch\w*|forgo|forget|lose|minus|sans|exclud\w*|zero|save|leave|hold|cut|pass\s+on|give\s+up|do\s+without|go\s+without|do\s+away\s+with|rule\s+out|take)\b/g,mm,hit=false,VERB=/^(?:eat|eating|serve|serving|bring|have|having|take|add|include|order|use|put|give|cook|cooking|make|making|try|to|be|any|the|a|an|your|all|extra|added|some|this|that|it|of|on|in|too|much|more)$/;
+  u=u.replace(OBJV,function(m0,v,off,str){var rest=str.slice(off+m0.length).split(/[.;,]/)[0],w=words(rest),o=[];
+    if(/^\s*(?:it|them|that|those)\b/.test(rest)&&!/^(?:take|cut|save|leave|hold)$/.test(v)){hit=true;return " ";}   /* "skip it" after a grain is named */
+    for(var i=0;i<w.length&&o.length<3;i++){if(VERB.test(w[i])&&!o.length)continue;if(BREAKW.test(w[i])&&w[i]!=="for")break;if(w[i]==="for"){if(!o.length)continue;break;}o.push(w[i]);}
+    if(/^(?:leave|hold|save)$/.test(v)&&!hasGrainWord(o.join(" "))&&!/^(?:off|out|aside|away)$/.test(o[0]||""))return " ";
+    if(v==="take"){if(hasGrainWord(o.join(" "))&&/\b(?:off|away|out)\b/.test(str.slice(off).split(/[.;]/)[0]))hit=true;return " ";}   /* "take the khichdi off the plate" */
+    if(hasGrainWord(o.join(" "))||/^(?:need|tonight|today|now|thanks|please)$/.test(o[0]||"")||/^(?:it|them|that|those)$/.test(o[0]||""))hit=true;return " ";});   /* "skip it" after a grain is named */
+  if(hit)return true;
+  return /\b(?:off|away|aside|out|instead|rather|in\s+place\s+of|tomorrow|later|stop|move|needed|optional|request|miss|not\s+included|included|excluded)\b|\b(?:choose|chose|prefer|pick|opt|go\s+for|select)\b[^.;]*\bover\b/.test(u);
+
 }
 
 /* a one-tap change keeps the grain: it names no stand-in, leaves at least half the plate's carbs, and takes no grain off */
@@ -210,15 +245,14 @@ function quoted(t,max){if(typeof t!=="string")return "";t=t.replace(EMO,"").repl
 function clean(t,max){t=quoted(t,max);return BANRX.test(t)?"":t;}
 /* A name the model writes for something the person typed (the Rescue dish, the log's title and foods) keeps one of the words only when the
    person typed that word themselves (a dish they named that way); otherwise the name is dropped. */
-function own(t,max,typed){var q=quoted(t,max),low=" "+String(typed||"").toLowerCase().replace(/[^a-z0-9]+/g," ")+" ",ql=q.toLowerCase(),re=new RegExp(BANRX.source,"ig"),m,
-    SW=/^(?:a|an|the|of|and|or|with|to|in|on|for|is|it|this|that|one|your)$/;
-  /* the word stays only when the person typed it next to the same content word (a dish they named that way); "a", "the" do not count */
-  while((m=re.exec(ql))){var w=m[2].replace(/[^a-z]+/g," ").trim(),
-      bw=ql.slice(0,m.index+m[1].length).replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(function(x){return x&&!SW.test(x);}),
-      aw=ql.slice(m.index+m[0].length).replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(function(x){return x&&!SW.test(x);}),
-      lw=low.trim().split(" ").filter(function(x){return x&&!SW.test(x);}),lj=" "+lw.join(" ")+" ",before=bw.pop()||"",after=aw[0]||"";
-    var ok=(before&&lj.indexOf(" "+before+" "+w+" ")>=0)||(after&&lj.indexOf(" "+w+" "+after+" ")>=0);
-    if(!ok)return "";}
+function own(t,max,typed){var q=quoted(t,max),SW=/^(?:a|an|the|of|and|or|with|to|in|on|for|is|it|this|that|one|your)$/;
+  function pairs(text,w){var x=String(text||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" "),out=[];
+    for(var i=0;i<x.length;i++){if(x[i]!==w)continue;var j=i-1,k=i+1;while(j>=0&&SW.test(x[j]))j--;while(k<x.length&&SW.test(x[k]))k++;
+      if(j>=0&&j>=i-2)out.push("b:"+x[j]);if(k<x.length&&k<=i+2)out.push("a:"+x[k]);}return out;}
+  var re=new RegExp(BANRX.source,"ig"),m,ql=q.toLowerCase();
+  /* the word stays only when the person typed it beside the same content word (a dish they named that way), at most one small word between */
+  while((m=re.exec(ql))){var w=m[2].replace(/[^a-z]+/g," ").trim();if(/\s/.test(w))return "";
+    var mine=pairs(typed,w),theirs=pairs(ql,w);if(!theirs.some(function(p){return mine.indexOf(p)>=0;}))return "";}
   return q;}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
