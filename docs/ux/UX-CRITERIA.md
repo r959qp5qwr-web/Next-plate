@@ -400,6 +400,8 @@ word ("TANDOOR - not available", "BREADS (dinner only)", "Tandoor items availabl
 note claimed a sold-out item inside a section kept the section when it did not. Changes:
 1. A mark anywhere on a line ends it: sold-out words (now also nil, none left, all gone, no more, not there, not ready, not now, not making),
    a cross or no-entry symbol, a strike-through, or a time ("dinner only", "after 7 pm", "from 7 pm"). A time is not read as a price.
+   (Round 26 found that "7.30 pm", "7-11 pm" and "19:00" were still read as prices and single-tilde strike-throughs were missed;
+   corrected in round 26.)
 2. An unpriced heading with a mark covers every grain under it until the next heading, whatever the heading word; a marked rice, roti, naan,
    paratha or kulcha heading covers that grain until the next section heading.
 3. The allow-list of plain words runs on every grain-selling priced line, including items named through their section ("Jeera 120"
@@ -415,6 +417,28 @@ its 10 keeps stay on offer. "Rice: pack it, then have it with dal" is now held (
 in the rules). Held on the safe side: "Roti ₹30 each", "Roti x 2 = 60" and the "(over 2 people)" forms. Every earlier Critic probe reads
 the same as on the round 24 build except that note; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap
 notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
+
+## Part A, changes after Critic round 26
+Round 26 found typed-menu marks the round 25 reader missed (WhatsApp single-tilde strike-throughs "~Roti~", clock forms "7.30 pm",
+"7-11 pm", "19:00", "evenings only", "DINNER" on a heading, the Hindi "band", free-typed "roti - no", "roti not avail", and the symbols
+✖ ❎ ✕ 👎), and one-tap notes that name a later meal before "then" ("Rice: set it aside for tomorrow's lunch, then eat it with
+the dal", "keep it for your tiffin", "put it in a container"). Changes:
+1. Every clock form ("7.30 pm", "7-11 pm", "7 to 11 pm", "19:00", "40 min") is read as a time, not a price; on a priced item it marks
+   the item.
+2. An unpriced heading over priced items that names a closing, a negation or a later time (band, closed, off, no, not, nahi, nil, over,
+   only, onwards, evening, night, dinner, morning, later, after, till, or a clock time) covers every grain under it until the next clean
+   heading; a line about the menu's hours ("Open 11 am to 11 pm", "LUNCH MENU (12 - 3 pm)") does not.
+3. Single tildes around words are a strike-through; ✖ ❎ ✕ 👎 join ❌ ✗ ✘ ⛔ 🚫 as marks.
+4. Each item of a free-typed list is read on its own: a negation before the grain ("no roti") or any word after it that is not a plain
+   qualifier or a food ("roti not avail", "roti band", "roti later", "roti will take 40 min") sells nothing; "Dal tadka, paneer, roti.
+   Naan over" still sells the roti.
+5. A later meal, time, store or other eater named before "then" (tomorrow, lunch, tiffin, dabba, next, fridge, container, box, away,
+   home, kids, family) holds the note; a wait within the meal ("for now", "for a few minutes", "till the end", "till you finish the
+   sabzi", "for the end of the meal", "on the side") keeps it. "Keep it for your tiffin / the next meal / the evening snack", "keep it in
+   a box" and "put it in a container" read as removals.
+Measured: the Critic's round 26 menus offer 0 of 45 not sold and refuse 0 of 22 sold; its 54 later-meal notes are all held and its 6
+same-meal waits stay on offer. Every earlier Critic probe reads the same as on the round 25 build; all 4,897 combinatorial cases read
+right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
