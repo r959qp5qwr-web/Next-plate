@@ -1,52 +1,53 @@
 VERDICT: FAIL
-BUILD: 110f2464e42b4c4ecd32abf8427227ead67d0e7726c9ec1f8b6b55976b993dff
+BUILD: 2710dddad5a8e7a8342f432a35ea4aca2c7aeb248d1ee3b4b3d2756472a58575
 
-# Critic round 23 (branch claude/nice-hawking-307ljy, HEAD 82ffc3e, diff read 61d0889..82ffc3e)
+# Critic round 24 (branch claude/nice-hawking-307ljy, HEAD 41cc681, diff read 9f8c84e..41cc681)
 
 ## What I measured on this state
-- `npm run rules`: passes on all three pages (396 ok lines, "every rule check holds" three times; the round 22 block with 3,337 notes included).
-- `npm run review`: passes. 9 runs x 46 states = 414 checks, no violations, no unreached state, no page error (one run, no retry needed).
+- `npm run rules`: passes on all three pages (408 ok lines, "every rule check holds" three times; the round 23 block with 254 notes, 292 menus, 15 colon sections and 21 keeps included).
+- `npm run review`: passes on the first run. 9 runs x 46 states = 414 checks, no violations, no unreached state, no page error.
 - `npm run drill`: passes; every planted fault is caught.
 - `npm run words`: passes (42 listed exceptions). test/ux/allow.json (still empty) and test/words/allow.json are not in the diff.
 - `npm run films`: passes on all four films (-16.7 to -16.8 dB, picture from 0 s, no decode errors, no 7 s freeze). No film or post in the diff.
-- Rebuilt the three pages from HEAD (git archive, build6.js): byte-identical. No lookbehind in any page. Working tree clean. The page diff touches only the np-core engine (src/v5/core.js, src/v6/engine.js). The fingerprint above was taken after all measuring and matches the builder's.
-- Recorded live replies (g13/live2.js): 408 of 495 meals and 225 of 313 base swaps count a grain; 65 of 2,005 one-tap notes held, the same 65 as the round 21 build. None of the recorded menus has a sold-out mark, so finding A's live frequency is not measured.
+- Rebuilt the three pages from HEAD (git archive, build6.js, in scratchpad/build24-*): byte-identical to the committed pages. No lookbehind in any page. Working tree clean. The fingerprint above was taken after all measuring and matches the builder's.
+- Recorded live replies (g13/live2.js, this build against the round 22 fix build): 408 of 495 meals and 225 of 313 base swaps count a grain; 65 of 2,005 one-tap notes held, the same 65. No recorded note uses "then eat/have it" with the grain, and no recorded typed menu carries a sold-out mark, so neither finding below has a measured live frequency.
 
-Probes and outputs: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r23/ (m23.js, m23b.js, k23.js, k23k.js, *.out, sbs/). Columns: this build, then the round 21 fix build (scratchpad/old21.html). Profile with diabetes, dinner slot; menus on the nonveg profile at lunch.
+Probes and outputs: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r24/ (m24.js, t24.js, k24.js, *.out, sbs/). Columns: this build, the round 22 fix build (scratchpad/old22.html), the round 21 fix build (scratchpad/old21.html). Profile with diabetes, dinner slot; menus on the nonveg profile at lunch.
 
-## Round 22's findings, checked with my own probes
-- g22: 360 of 1,296 offered, all with another eater (kids, husband, wife, guests, mother); every later-meal and later-time tail on the list is held. k22: 0 of 2,400 offered (round 21 build 379). m22: 0 of 14 non-selling offered, 0 of 9 selling refused. m22b: 1 of 8 asks kept ("then have it with dal"). n22: 0 of 41 and 0 of 30 wrong. The builder's numbers hold.
-- Earlier probes read as on the round 21 build: p21 0 offered; g21 0 of 1,024; g21b 0 of 630; n21 2 of 35 refused (D7 names); m21 0 of 24 offered, 2 of 11 refused; p20 0/0; g20 0 of 2,916; k20 0 newly held; n20 0 wrong; m20 1 of 12 (the butter roti case, both builds).
-- Round 22 A and B are fixed for the phrasings I named; a new regression came in with the menu change (A below), and the later-meal list leaves common words out (B below).
+## Round 23's findings, checked with my own probes
+- A (sold-out grain line sold the grain): m23 0 of 220 offered (round 22 build 170); the 15 colon sections all offered again; m23b 0 of 72 offered. Fixed for the wordings I named.
+- B (later meal outside the word list): k23 0 of 192 offered. Fixed for sentences where the later meal sits in the same comma-free clause; see finding A below for the rest.
+- C (same grain removed under another name): fixed ("have 2 rotis; skip the phulka", "keep 150 g rice; no bhaat" held). The 10 k23 entries still offered remove a different grain than the one kept ("2 rotis: no rice at all", "Rice 150 g: skip the phulka"); I accept the builder's reading that these keep a grain.
+- D1 unchanged and on the safe side ("Keep 2 rotis; skip the naan."; two "sugar" notes held by the sweets rule).
+- Code read: the soldItems() chain is one if/else again; thenKeeps() replaces the deny-list lookahead; grainCanon() feeds sameGrain() and the keep-then-remove test. sameGrain() moved from "every" to "some": "rice 150 g; not rice and roti" now reads as a removal (held), on the safe side. No safety line, unit, label or screen code is touched.
 
 ## Findings, most serious first
 
-### A. MINOR, regression in this diff (owner rule 3; owner rule 5; A14). A grain line marked sold out now sells the grain on a typed or read menu.
-- Surface: Rescue, Read the menu, the order list (engine-side, every width and scheme).
-- Cause: src/v6/engine.js:425 (soldItems). The new statement `if(priced&&isGrain(head))list.push(head);` was put between the `else if(colon section)` branch and the `else if(anyPrice&&!priced)` branch. That ends the old if/else-if chain: (1) after the sold-out test empties the list, a priced line pushes the grain back ("Roti (sold out) 30"); (2) the unpriced-heading branch now hangs off the new `if` and runs after the sold-out and colon branches too, so an unpriced "Roti - sold out" followed by a priced line sets the section to roti and the next item becomes a roti ("Paneer 220" -> "paneer roti"). The round 22 rules block only tries unpriced sold-out lines followed by Kheer, which the sweets list throws out, so it cannot see this.
-- Evidence: m23.js, 220 menus with a sold-out, finished, not-available, not-today, over or ask-the-waiter mark on a Roti, Rice, Naan or Paratha line: 170 offered on this build, 0 on the round 21 build. Examples: "Roti (sold out) 30", "Rice 30 (finished)", "Rice: sold out 30", "Roti (not today) 30", "Roti - sold out / Paneer 220", "Rice (finished) / Jeera 120", "Roti: not today / Tandoori 30". m23b.js, other wordings ("out of stock", "no stock", "NA", "not in stock", "not served today", "closed"): 60 of 72 offered, 55 of them refused on the round 21 build. Same counts on index.min.html.
-- Why it matters: with diabetes the order is shown as "dal with 2 roti" when the menu says there is no roti; the person gets dal alone, the grain the plan counts is not on the plate, and the order names a dish the menu does not offer.
-- Smallest correction: keep the chain whole, e.g. `if(soldOut)list=[]; else if(colon){...; if(priced&&isGrain(head))list.push(head);} else if(priced&&isGrain(head))list.push(head); else if(anyPrice&&!priced){...}`, and add to the rules block priced sold-out grain lines and unpriced sold-out lines followed by a plain priced item (Paneer 220, Tandoori 30, Jeera 120).
-- Same cause, safe side: m23.js, 15 of 15 unpriced colon sections on a priced menu ("Rice: Jeera / Plain", "Roti: Tandoori / Butter" followed by a heading or a dish) are now refused (offered on the round 21 build). The fix above restores them.
+### A. MINOR, round 23 B partly met (owner rule 3; A14). "Then eat/have it" reads only to the next comma, so a later meal after a comma still reads as the grain kept; a bare "after" or "before" is newly read as kept.
+- Surface: Plate, the one-tap glucose change (engine-side, every width and scheme).
+- Cause: src/v5/core.js:300, thenKeeps(): the clause is `([^.;,!?]*)`, so every word after the first comma, semicolon or full stop is not read; and "after"/"before" with nothing after it ends the loop with ok still true.
+- Evidence: k24.js, 54 of 156 later-meal notes offered. On all three builds: "Rice: pack it, then eat it with the dal, later.", "Rice: save it, then have it hot, at night.", "Rice: set it aside, then eat it, tomorrow.", "Rice: pack it, then have it, with breakfast.", "Rice: save it, then eat it, after gym.", "Rice: pack it, then eat it; at lunch.", "Rice: save it, then eat it. Lunch tomorrow." Newly offered on this build (held on the round 22 build): "Rice: save it, then eat it after.", "Rice: pack it, then have it before." The same probe's forms without a comma ("with the next meal", "with dal for lunch", "with the kids at school", "as dinner", "first thing tomorrow") are all held.
+- Why it matters: as round 22 A and round 23 B; the note sends the grain to a later meal while the plate, with diabetes, counts it at this one. "With the dal, later" is an ordinary way to write the sentence.
+- Smallest correction: read the rest of the sentence, not the clause: after "then eat/have it", every word up to the next full stop (and across commas and semicolons) must pass the allow-list, and a following sentence that names a meal or time holds the note; "after"/"before" must be followed by a food word or the note is held. Add the comma forms and the bare "after." to the round 23 rules block.
 
-### B. MINOR, round 22 A partly met (owner rule 3; A14). "Then eat/have it" with a later meal outside the fixed word list still reads as the grain kept.
-- Cause: src/v5/core.js, the then-clause in removesGrain(): the meal and time list is a deny list over open words; "with <one or two words>" and "after <word>" are accepted for anything not on it.
-- Evidence: k23.js, 192 of 192 offered on this build and the round 21 build: "Rice: save it, then have it with the afternoon meal.", "...with the noon meal.", "...eat it after midnight.", "...with your lunchbox.", "...with brekkie.", "...with afternoon chai.", "...with nashta.", "...with your dabba.", "...with sehri.", "...after class.", "...after college.", "...after tuition.", "...after duty." ("after gym", "after yoga", "with chai" are open to a same-meal reading; I do not count them.)
-- Why it matters: as round 22 A; the note sends the grain to a later meal while the plate counts it.
-- Smallest correction: turn the open list into a closed one: after "with" or "next to", accept only a food or companion the engine already knows (dal, sabzi, curd, raita, salad, paneer ... from its companion and food lists); after "after", only "the <food or course>"; hold everything else.
+### B. MINOR, remainder of round 23 A (owner rule 3; owner rule 5; A14). On a typed, priced menu, a grain line marked sold out in words outside the list, or after a comma or slash, still sells the grain.
+- Surface: Rescue, Read the menu, typed menus only (porGrain() skips the check when the menu is a photo, src/v6/engine.js:398).
+- Cause: src/v6/engine.js:411, SOLDOUT is a deny list tested on the text after the head; the head splits on a bracket, " - " or ":" only, so "Roti 30, sold out" splits the line into items instead.
+- Evidence: m24.js, 66 of 96 offered. On this build and the round 22 build, refused on the round 21 build (the round 22 change "Roti (today) 25 sells roti" opened them): "Roti 30 - khatam", "Rice (khatam) 30", "Naan 30 (nahi hai)", "Roti 30 - none left", "- all gone", "- not there", "- not ready", "(dinner only)" at lunch, "(evening only)", "(after 7 pm)", "(sundays only)", "- no", "- nil", "- not making today", "(not now)", "(x)". On all three builds: "Roti, sold out", "Rice 30, sold out", "Naan / sold out", "Roti 30 / not available", "~~Roti~~ 30". Free-typed lines without a price ("roti khatam", "no roti today", "roti is over") are refused, as they should be (t24.js).
+- Why it matters: as round 23 A; with diabetes the order shows "dal with 2 roti" when the person typed that roti is finished, in the word they would use ("khatam", "nahi hai"); the plan counts a grain that is not on the plate. The live engine reads the typed text first, which lowers but does not remove the risk; the guard exists because that read is not trusted.
+- Smallest correction: turn the priced-line test into an allow-list, as round 23 B did for one-tap notes: on a priced line whose head is a grain, sell it only when every word after the head is a dish or grain word, a price word or a short known qualifier (today, fresh, tandoori, butter, plain, jeera, per piece, each ...); any other word sells nothing. Treat a comma or slash after a lone grain head the same way. Add the Hindi marks and the comma forms to the rules block.
 
-### C. Cosmetic, mostly on both builds. An amount, then the same grain removed under another name or number, reads as kept.
-- k23.js, offered: "Have 2 rotis; skip the roti.", "Eat 2 rotis; drop the chapati.", "Keep 2 rotis; leave out the chapatis.", "Have 150 g rice; skip the chawal.", "Keep 150 g rice; no bhaat.", "Take 150 g rice; skip the rice and the roti.", "2 rotis: no roti.", "Roti 2 pieces: skip the phulka.", "Rice 150 g: no chawal."; "Rice, 150 g: no chawal." is newly offered (held on the round 21 build). keepsAmount() and sameGrain() compare literal words, so roti/rotis/phulka/chapati and rice/chawal/bhaat count as different grains. These notes contradict themselves and none appears in the recorded replies. Smallest correction: compare grainKey() of the words, and read a removal that names the kept grain plus another as a removal.
+### C. Cosmetic, safe side.
+- C1 m24.js: words on the list used in another sense now refuse a sold grain: "Roti 30 (over 2 people)", "Rice 30 (serves over 2)", "Naan 30 (na)", "Roti 30 (fresh, not today's special)", "(closed at 11 pm? no)" (15 of 19 refused; offered on the round 22 build). The allow-list in B would read "over 2 people" as a qualifier if wanted.
+- C2 A sold-out item inside a grain section ends the section: "ROTI / Tandoori 30 / Butter - sold out / Garlic 50" refuses "2 garlic roti"; "NAAN / Butter 40 / Cheese (finished) / Garlic 50" refuses "2 garlic naan" (cur set to "" at src/v6/engine.js:424). The round 22 build sold the sold-out butter roti, so this is the safer error.
+- C3 "Rice: leave it, then reheat it and eat it with the dal." is held on all builds (the verb chain "reheat it and eat it" is not read).
+- C4 A heading marked sold out does not cover items that name the grain under it ("ROTI (SOLD OUT)" then "Roti 30"), all builds.
+- C5 Carried from round 23 D3: soya chaap roll and chilli paneer noodles refused (owner's D7 line).
 
-### D. Cosmetic, safe side or listed for completeness.
-- D1 held, both builds: "Keep 2 rotis; skip the naan."; "Have 150 g rice, zero sugar in the curd."; "Eat 150 g rice; skip the fried papad; 0 g sugar." (the sweets rule reads "sugar"). k23k.js: 10 other keeps that remove another food stay on offer.
-- D2 menus, both builds: "Roti - N/A" with a following item, and "Roti 30 - N/A", sell roti; m20's butter roti under "CHICKEN (BONELESS)"; m21's unpriced "Dal / Rajma / Rice / Roti" and "Dal fry, roti, rice, salad" refused (no Dal Tadka on them).
-- D3 names: soya chaap roll and chilli paneer noodles refused (owner's D7 line).
-
-### E. Screens. No screen code changed. Against the round 12 review set: 1,340 identical, 63 the state added in round 13, 38 differ; the 11 with large changes are toast and logged frames. I viewed 320-dark plate-skipped-meds-2 and 360-light-big toast-3 with difference images (scratchpad/r23/sbs/): only the toast's timing differs. Part B as judged in rounds 21 and 22 stands: Raw Linen paper in dark mode, grams and kcal, the medicines toast in plain words, nothing cramped at 320 px or at 130 % text.
+### D. Screens. No screen code changed (rebuilt pages identical; the page diff is np-core only). Against the round 12 review set: 1,299 identical, 63 the state added in round 13, 79 differ. I viewed difference images for ten of the largest (412-light plate-leave-two-1, 390-light menu-unparsed-2, 360-light plate-loading-1, 390-light plate-ask-busy-3, 320-dark plate-no-body-4 and others; scratchpad/r24/sbs/): the differences are sub-pixel text rendering, a scrolled menu box and focus outline, nothing in layout, copy or colour. Part B as judged in rounds 21 to 23 stands: Raw Linen paper in light and dark, grams and kcal with the nutrient colours, the brand masthead, nothing cramped at 320 px or at 130 % text.
 
 ## Not inspected
-- The owner's own phone model; live Gemini text and live menu reads (no live engine call made; only recorded replies replayed, none with a sold-out mark).
+- The owner's own phone model; live Gemini text and live menu reads (no live engine call made; only recorded replies replayed, none with "then eat it" for the grain or a sold-out mark).
 - Films and the WhatsApp post by eye or ear this round (not in the diff; the films check passed).
 - Server deployment of np-core (no deploy authorised or checked).
-- Screens beyond the differing frames named above.
+- Screens beyond the differing frames named above, by eye.
