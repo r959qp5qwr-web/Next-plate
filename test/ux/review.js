@@ -39,6 +39,10 @@ const STATES = [
   ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
   ['plate-hero', seed(), async (p, h) => { await h.plate(p); }],
+  // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
+  ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
+    meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
+    async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); }],
   ['plate-leave-two', seed({ p: Object.assign({}, P, { leave: ['dairy', 'nut'] }) }), async (p, h) => { await h.plate(p); }],
   ['plate-dial-open', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-appetite'); await h.settle(); }],
   ['plate-swap-open', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); }],

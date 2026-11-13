@@ -159,7 +159,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 ## 11. Next steps
 1. **Next action:** make mock-up screens of the five adopted items (portion ring, nutrient colours, stoneware plate, pairing tips, taste notes) on the Plate screen using the Phase 1 page and the mock engine, and show them to the owner before changing the app.
 2. On approval, build them into `src/v6/` (taste notes and pairing tips need new schema fields from Gemini, food only; check them in code like the other text: no supplements, no claims).
-3. Ask for "Deploy."; then set `PAGE_REF` and `PAGE_PATH=hosted/v6/index.min.html`, run live-engine checks with a temporary `EVAL_CODE` (v5 26, v6 18, menu 8), fix failures, clear `EVAL_CODE`.
+3. Ask for "Deploy."; then set `PAGE_REF` and `PAGE_PATH=hosted/v6/index.min.html`, run live-engine checks with a temporary `EVAL_CODE` (v5 26, v6 18, menu 8), fix failures, clear `EVAL_CODE`. These runs are also the first live check of the declared grain fields (Critic round 12: grain on each plate, made_of on each base swap, grain_grams_after on each one-tap change, grain_made_of and grain_grams on each menu order); with diabetes, a reply that leaves them empty is dropped, so the diabetes scenarios must still come back with plates and orders.
 4. Re-capture the film's screens from the revised app and re-render the same 30 s film (same script, voice, music, timing).
 5. Owner's five target choices; DAILY_ASKS (recommend 60); domain (recommend www + forwarding); hosting after the trial.
 

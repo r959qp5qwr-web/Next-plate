@@ -92,6 +92,35 @@ of its 136 true grains kept ("ghee roast" is also a chicken curry, so it is read
 35 of 986 live one-tap notes are held back. The rule check now holds 335 names that are not a grain and 328 true grains; the round 10
 build fails 5 of its checks.
 
+## Part A, changes after Critic round 12
+Round 12 found the material test held only for shapes: a vegetable, legume, nut, cheese or egg beside rice, roti, risotto, khichdi or porridge
+still counted (peanut flour roti, nuts porridge, cauliflower risotto), and menu portions that name only the non-grain part (rajma part,
+1 bowl chole) passed. It also found ordinary orders refused (a masala dosa with its potato filling, a thali with the papad left out, tandoori
+roti instead of naan, two rotis only). Three changes:
+1. The model now declares the grain. Each plate gives its grain item, what it is made of and its grams; each base swap what it is made of;
+   each one-tap change the grams of grain left after it; each menu order what its grain is made of and its grams. With diabetes the plate,
+   swap, change or order is dropped when the field is missing, the material is not on a fixed list of true grains (wheat, rice, millets,
+   oats ...), the item is not on the plate or is under 30 g, or a change leaves under half the grain. The name and wording tests below still
+   apply on top, so a stand-in declared as rice is still dropped by its name.
+2. The material test holds for every grain word. A grain named outright (millet, oats, wheat, rava ...) makes a name a grain. Otherwise a
+   vegetable, legume, nut, seed, cheese, egg or meat word beside a grain word counts only when the pair is a known grain dish (stuffed
+   parathas, flavoured rice, biryanis and pulaos with their usual additions, egg or chicken fried rice). "Made from <x>" and "<x> flour" count
+   only when <x> is a grain; "gluten-free" only with a grain named; "burger bowl" and "naan not served" are not grains.
+3. The removal reader judges what each word applies to: off, out, aside, away and back count only when their object is a grain ("leave the
+   butter off the roti" keeps it); "2 rotis only" and "two rotis are enough" are amounts of the grain; "instead of", "over" and "rather than"
+   with a grain on the chosen side keep it; "thali" is not a grain word in a portion or ask; a grain kept for later, sent elsewhere or left
+   to wait is a removal ("pack the roti for tomorrow", "the roti can wait"). On the menu, when the grain is in the dish name, a portion that
+   names a food must name the grain too ("the vegetables from the biryani" does not).
+Measured: all 92 of the Critic's round 12 names and all 115 of its round 11 names are refused, and 135 of its 136 true grains kept. With a
+worst-case declaration (every order declares wheat, every change 200 g left), 0 of its 28 menu removals and 0 of its 39 one-tap removals are
+offered; 41 of its 43 menu keeps are offered (the paneer tikka wrap, D7, and a kathi roll the diet rule drops for mayonnaise on a veg
+profile) and none of its 34 one-tap keeps is held. On recorded live replies: 408 of 495 distinct meals hold a grain, as under the round 11
+build; 65 of 2005 one-tap notes are held (71 before); replayed with diabetes, the recorded menus give 87 orders, none empty, and 9 dropped for
+the grain rule (12 before), each an order with no grain dish or the paneer tikka wrap. The rule check holds 427 names that are not a grain
+and 338 true grains, plus the declared-field cases; the round 11 build fails 22 of its checks.
+Plates saved on a phone before this change carry no declared grain and were checked under the old rules, so the app drops them when it
+opens and makes today's plates again (review state plate-old-saved; the round 11 build fails it: the old plate stays and its swaps fail).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -141,3 +170,5 @@ build fails 5 of its checks.
   fried rice, flaxseed roti, cauliflower upma, besan roti); gobi rice, kuttu, rajgira and samak count as grains. Round 11 read a paneer
   wrap and a moong dal roti as not grains (round 10 had them as grains), and mushroom rice as a grain (round 10 had it as a stand-in);
   round 11 stands. "Ghee roast" alone is also a chicken curry, so it is read the safe way, as not a grain.
+  Round 12 reads cauliflower biryani, paneer rice, cheese bread and egg bread the safe way, as not grains (round 10 had cauliflower biryani
+  as a grain); round 12 stands. A paneer burger, a bread omelette and a gobi pulao count; a paneer bun burger and a pizza omelette do not.

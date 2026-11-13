@@ -92,6 +92,9 @@ const STANDINS = ['Cauliflower rice', 'Cauli rice', 'Broccoli rice', 'Zucchini n
   'Pulao masala', 'Pav bhaji masala', 'Dosa chutney', 'Rice papad', 'Bread spread',
   // round 11: where the Critic's rounds disagreed the later round stands (D7): a paneer wrap and a moong dal roti are not grains
   'Paneer wrap', 'Moong dal roti',
+  // round 12: the Critic's names (a grain-dish word beside a vegetable, legume, nut, seed, cheese, egg or meat that is not a known grain dish;
+  // a non-grain flour or 'made from'; 'gluten-free' with no grain named; a grain left out in menu words). Cauliflower biryani moves here (D7).
+  'Cauliflower biryani', 'Cauliflower khichdi', 'Cauliflower pulao', 'Cauliflower risotto', 'Cauliflower dosa', 'Cauliflower idli', 'Broccoli biryani', 'Broccoli khichdi', 'Broccoli pulao', 'Broccoli risotto', 'Zucchini rice', 'Sweet potato rice', 'Lauki rice', 'Cabbage khichdi', 'Cabbage pulao', 'Paneer rice', 'Rice made from mushrooms', 'Rice made from zucchini and mushrooms', 'Noodles made from mushrooms', 'Peanut flour roti', 'Peanut flour chapati', 'Peanut flour paratha', 'Peanut flour bread', 'Peanut flour pizza', 'Peanut roti', 'Bread made from peanut flour', 'Roti made from peanut flour', 'Gram flour noodles', 'Gram flour pasta', 'Gram flour idli', 'Gram flour upma', 'Noodles made from gram flour', 'Coconut flour noodles', 'Coconut flour pasta', 'Coconut flour upma', 'Coconut flour idli', 'Flaxseed pasta', 'Flax pasta', 'Flaxseed noodles', 'Chickpea upma', 'Besan upma', 'Moong dal upma', 'Soya chunks roti', 'Tofu roti', 'Nuts porridge', 'Mixed nuts porridge', 'Peanut porridge', 'Warm nuts porridge', 'Cheese gnocchi', 'Paneer gnocchi', 'Paneer lasagne', 'Egg lasagne', 'Chicken crust pizza', 'Cheese crust pizza', 'Egg crust pizza', 'Omelette pizza', 'Pizza omelette', 'Thin egg wrap', 'Thin omelette wrap', 'Thin cheese wrap', 'Thin paneer wrap', 'Stuffed egg pancake', 'Thin egg pancake', 'Cheese bread', 'Egg bread', 'Burger bowl', 'Chicken burger bowl', 'Veg burger bowl', 'Pizza bowl', 'Paneer pizza bowl', 'Sandwich bowl', 'Mushroom bun', 'Mushroom buns burger', 'Paneer bun burger', 'Paneer tikka, naan not included', 'Paneer tikka, naan not served', 'Dal, rice served separately on request', 'Dal makhani, naan not part of the meal', 'Paneer tikka, no naan needed', 'Dal, rice optional', 'Chole, kulcha optional', 'Rajma, chawal later', 'Dal tadka with roti on the side optional', 'Palak paneer (without the roti)', 'Paneer bhurji, roti kept aside', 'Dal, roti set aside', 'Rajma, keep the rice aside', 'Kadhi, skip chawal', 'Kadhi minus chawal', 'Chole, leave out the bhature', 'Paneer tikka, hold off on naan', 'Paneer tikka - roti not included',
   // round 11: the Critic's names (a shape over a vegetable, legume, nut or seed; made from a non-grain; a grain left out in menu words)
   'Cauliflower gnocchi', 'Cauliflower flatbread', 'Cauliflower buns', 'Cauliflower bun', 'Cauliflower toast', 'Cauliflower crackers',
   'Cauliflower lasagne', 'Cauliflower porridge', 'Zucchini lasagne', 'Zucchini sheet lasagne', 'Zucchini flatbread', 'Zucchini buns',
@@ -145,7 +148,10 @@ const GRAINS = ['Jowar roti', 'Bajra roti', 'Ragi dosa', 'Hand-pounded brown bas
   'Ragi malt', 'Ragi ambli', 'Kambu koozh', 'Thinai pongal', 'Varagu rice', 'Samai rice', 'Moraiyo', 'Cheese toast', 'Egg toast', 'Paneer toast',
   'Egg roti', 'Cheese roti', 'Paneer roti', 'Egg paratha', 'Paneer paratha', 'Moong dal paratha', 'Dal paratha', 'Chana dal paratha',
   'Besan paratha', 'Sattu paratha', 'Paneer stuffed roti', 'Masoor dal khichdi', 'Moong dal chilla with 1 roti',
-  'Cauliflower biryani', 'Gobi pulao', 'Coconut rice', 'Coconut chutney with 2 idlis', 'Egg fried rice', 'Paneer fried rice', 'Tofu fried rice',
+  'Gobi pulao', 'Coconut rice',
+  // round 13: known grain dishes with a vegetable, cheese, egg or meat word, and 'gluten-free' with a grain named
+  'Paneer burger', 'Egg rice', 'Chicken rice', 'Mushroom rice', 'Gobi rice', 'Peanut butter toast', 'Gluten-free oats', 'Gluten-free rice pasta',
+  'Mushroom risotto', 'Methi khakhra', 'Aloo poha', 'Matar kulcha', 'Chicken chow mein', 'Mushroom fried rice', 'Paneer burger with 1 bun', 'Coconut chutney with 2 idlis', 'Egg fried rice', 'Paneer fried rice', 'Tofu fried rice',
   'Soya chunks pulao', 'Chickpea pulao', 'Sweet potato and rice khichdi', 'Sabudana with rice', 'Jeera rice, no ghee', 'Roti without butter',
   'Plain dosa, no oil', 'Brown rice, not too much', 'Not rice but quinoa', 'Quinoa instead of rice', 'Brown rice instead of white rice',
   'Bajra roti in place of wheat roti', 'Jowar roti, no maida', '2 phulka, no ghee',
@@ -171,15 +177,16 @@ STANDINS.splice(0, STANDINS.length, ...new Set(STANDINS)); GRAINS.splice(0, GRAI
 console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAINS.length} true grains`);
 {
   const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
-  const swapOf = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
+  // worst case: the model declares a grain (wheat) as what every swap and plate is made of; the name test must still hold
+  const swapOf = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, made_of: 'wheat', grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
     const c = checkMeal(m, p); return !!(c.meal && c.meal.swaps.base.some(s => s.food === f)); };
   const plateOf = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.items = m.items.map(i => i.group === 'carbs' ? Object.assign({}, i, { food: f }) : i);
-    m.title = 'Paneer tikka plate'; m.subtitle = 'With palak'; return checkMeal(m, p); };
+    m.grain = { food: f, made_of: 'wheat', grams: 200 }; m.title = 'Paneer tikka plate'; m.subtitle = 'With palak'; return checkMeal(m, p); };
   const offered = STANDINS.filter(swapOf), passed = STANDINS.filter(f => plateOf(f).meal);
   ok(!offered.length, 'diabetes: no grain-free stand-in is offered as a base swap' + (offered.length ? ' (offered: ' + offered.join(', ') + ')' : ''));
   ok(!passed.length, 'diabetes: a plate whose only base is a grain-free stand-in is dropped' + (passed.length ? ' (passed: ' + passed.join(', ') + ')' : ''));
   const pnv = readProfile(Object.assign({}, P, { diet: 'nonveg' })); pnv.slot = 'dinner';   // the true grains include egg and chicken dishes
-  const swapNV = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
+  const swapNV = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, made_of: 'wheat', grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
     const c = checkMeal(m, pnv); return !!(c.meal && c.meal.swaps.base.some(s => s.food === f)); };
   const lost = GRAINS.filter(f => !swapNV(f));
   ok(!lost.length, 'diabetes: every true grain stays on offer as a base swap' + (lost.length ? ' (dropped: ' + lost.join(', ') + ')' : ''));
@@ -187,7 +194,8 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
 
 { // the menu path, with diabetes: an order built on a stand-in is dropped; the same order with a roti on the side stays
   const typed = 'MAINS\nCauliflower Rice Biryani 320\nPaneer Tikka 320\nBREADS\nTandoori Roti 30';
-  const dish = (name, side) => Object.assign({ as_written: name, portion: '1 plate, about 300 g', kcal: 400, protein: 24, carbs: 30, fats: 20, fiber: 6, ask: '' },
+  // worst case: every order declares a grain (wheat, 80 g); the name and wording tests must still hold
+  const dish = (name, side) => Object.assign({ as_written: name, portion: '1 plate, about 300 g', kcal: 400, protein: 24, carbs: 30, fats: 20, fiber: 6, ask: '', grain_made_of: 'wheat', grain_grams: 80 },
     side ? { with: side, with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3 } : { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 });
   const pl = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: typed } });
   const a = pl.check({ status: 'ok', place: 'Restaurant', dishes: [dish('Cauliflower Rice Biryani', '')], leave: [], tip: '' });
@@ -272,17 +280,228 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
     'Use leftover rice from lunch and pan-fry the paneer.', 'Skip the ghee on the khichdi and add a squeeze of lemon.', 'Use brown rice instead of white rice.', 'Cut the rice to 70 g and double the salad.',
     'Keep the roti warm in a cloth.', 'Serve the khichdi without ghee.', 'Temper with cumin only, and keep the millet as it is.', 'Add a bowl of roasted makhana on the side.',
     'Eat the palak first, then the paneer, then the khichdi.', 'Keep the khichdi and add a squeeze of lemon.', 'Swap white rice for brown rice.', 'Take the roti hot off the tawa.', 'Cook the moong dal and rice together in one pot to save time.', 'Drop half a phulka and add a bowl of salad.'];
-  const kept = notes.filter(note => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
+  // worst case for removals: the model still declares 200 g of grain left after the change; the wording test must hold the change back
+  const kept = notes.filter(note => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: 200, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
     const c = checkMeal(m, p); return c.meal && c.meal.alchemy.glucose; });
   ok(!kept.length, 'diabetes: no one-tap change that removes the grain is offered' + (kept.length ? ' (offered: ' + kept.join(' | ') + ')' : ''));
-  const lostN = stays.filter(note => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
+  const lostN = stays.filter(note => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: 150, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
     const c = checkMeal(m, p); return !(c.meal && c.meal.alchemy.glucose); });
   ok(!lostN.length, 'diabetes: a one-tap change that keeps the grain stays on offer' + (lostN.length ? ' (withheld: ' + lostN.join(' | ') + ')' : ''));
-  const big = JSON.parse(JSON.stringify(meal)); big.alchemy = { glucose: { titleSuffix: '(lighter)', note: 'Half the millet, more palak.', minutes: 18, deltaKcal: -120, deltaProtein: 0, deltaCarbs: -30, deltaFats: 0, deltaFiber: 2 } };
+  const big = JSON.parse(JSON.stringify(meal)); big.alchemy = { glucose: { titleSuffix: '(lighter)', note: 'Half the millet, more palak.', minutes: 18, grain_grams_after: 100, deltaKcal: -120, deltaProtein: 0, deltaCarbs: -30, deltaFats: 0, deltaFiber: 2 } };
   ok(!(checkMeal(big, p).meal || { alchemy: {} }).alchemy.glucose, 'diabetes: a one-tap change that takes more than half the carbs off is not offered');
-  const good = JSON.parse(JSON.stringify(meal)); good.alchemy = { glucose: { titleSuffix: '(brown basmati)', note: 'Swap the millet khichdi for hand-pounded brown basmati, and add more palak.', minutes: 20, deltaKcal: -20, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 },
+  const good = JSON.parse(JSON.stringify(meal)); good.alchemy = { glucose: { titleSuffix: '(brown basmati)', note: 'Swap the millet khichdi for hand-pounded brown basmati, and add more palak.', minutes: 20, grain_grams_after: 180, deltaKcal: -20, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 },
     gut: meal.alchemy.gut, glucose2: null };
   const gk = checkMeal(good, p); ok(!!(gk.meal && gk.meal.alchemy.glucose && gk.meal.alchemy.gut), 'diabetes: a swap from one grain to another, and the fixture\'s own changes, stay on offer');
+}
+
+{ // round 12: the grain as the model declares it, and the Critic's round 12 one-tap notes (read with a worst-case declaration)
+  const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
+  const plate = (g) => { const m = JSON.parse(JSON.stringify(meal)); if (g === undefined) delete m.grain; else m.grain = g; return checkMeal(m, p); };
+  ok(!!plate({ food: 'Foxtail millet khichdi', made_of: 'foxtail millet', grams: 200 }).meal, 'declared grain: a plate that names its grain item and a grain material passes');
+  ok(plate(undefined).drop === 'diabetes-grain', 'declared grain: a plate with no grain field is dropped with diabetes');
+  ok(plate({ food: 'Foxtail millet khichdi', made_of: 'cauliflower', grams: 200 }).drop === 'diabetes-grain', 'declared grain: made of a vegetable is dropped');
+  ok(plate({ food: 'Foxtail millet khichdi', made_of: 'besan', grams: 200 }).drop === 'diabetes-grain', 'declared grain: made of gram flour is dropped');
+  ok(plate({ food: 'Brown rice', made_of: 'rice', grams: 200 }).drop === 'diabetes-grain', 'declared grain: an item that is not on the plate is dropped');
+  ok(plate({ food: 'Foxtail millet khichdi', made_of: '', grams: 200 }).drop === 'diabetes-grain', 'declared grain: an empty material is dropped');
+  { const m = JSON.parse(JSON.stringify(meal)); m.items = m.items.map(i => i.group === 'carbs' ? Object.assign({}, i, { grams: 20 }) : i);
+    ok(checkMeal(m, p).drop === 'diabetes-grain', 'declared grain: a grain item under 30 g is dropped'); }
+  { const m = JSON.parse(JSON.stringify(meal)); m.items = m.items.map(i => i.group === 'carbs' ? Object.assign({}, i, { food: 'Cauliflower rice' }) : i); m.grain = { food: 'Cauliflower rice', made_of: 'rice', grams: 200 };
+    ok(checkMeal(m, p).drop === 'diabetes-grain', 'declared grain: a stand-in declared as rice is still dropped by its name'); }
+  const pn = readProfile(Object.assign({}, P, { health: 'none' })); pn.slot = 'dinner';
+  ok(!!checkMeal(JSON.parse(JSON.stringify(fx.meals.meals[1])), pn).meal, 'declared grain: without diabetes a plate with no grain still passes');
+  const sw = (s) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], Object.assign({ grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }, s)];
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.swaps.base.some(x => x.food === s.food)); };
+  ok(sw({ food: 'Brown rice', made_of: 'brown rice' }), 'declared grain: a base swap made of a grain is offered');
+  ok(!sw({ food: 'Brown rice' }), 'declared grain: a base swap with no material is not offered with diabetes');
+  ok(!sw({ food: 'Brown rice', made_of: 'cauliflower' }), 'declared grain: a base swap made of a vegetable is not offered');
+  ok(!sw({ food: 'Brown rice', made_of: 'rice', grams: 20 }), 'declared grain: a base swap under 30 g is not offered');
+  const tap = (after, note) => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: Object.assign({ titleSuffix: '(changed)', note: note || 'Add more palak.', minutes: 18, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -4, deltaFats: 0, deltaFiber: 1 }, after === undefined ? {} : { grain_grams_after: after }) };
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); };
+  ok(tap(200), 'declared grain: a one-tap change that leaves the grain is offered');
+  ok(!tap(undefined), 'declared grain: a one-tap change with no grain-left figure is not offered with diabetes');
+  ok(!tap(0), 'declared grain: a one-tap change that leaves no grain is not offered');
+  ok(!tap(60), 'declared grain: a one-tap change that leaves under half the grain is not offered');
+  ok(!tap(0, 'Have the paneer and palak tonight.'), 'declared grain: a removal the words do not show is held by its figure');
+  // the Critic's round 12 one-tap notes, with the worst case: the model still declares 200 g left after each
+  const removes = [
+
+ 'Have the paneer and palak, and save your appetite: no khichdi tonight.',
+ 'Let the khichdi go tonight; double the palak.',
+ 'Give up the khichdi tonight and have more palak.',
+ 'Put the khichdi back in the pot and fill up on palak.',
+ 'Pack the khichdi for tomorrow and eat the paneer and palak now.',
+ 'Keep the khichdi for breakfast; have the paneer and palak now.',
+ 'The khichdi can wait; have paneer and palak.',
+ 'Fill up on paneer and palak instead.',
+ 'Replace the khichdi entirely with palak.',
+ 'Swap the khichdi for a bowl of moong sprouts.',
+ 'Trade all the khichdi for sauteed palak.',
+ 'Have palak and paneer, and no khichdi.',
+ 'Paneer and palak; khichdi is not needed.',
+ 'Make it a khichdi-free dinner with extra palak.',
+ 'Go without the khichdi; double the paneer.',
+ 'Keep the khichdi out of tonight\'s plate.',
+ 'Eat the paneer and palak; the khichdi is for another day.',
+ 'Dinner tonight is paneer and palak, without khichdi.',
+ 'Serve the paneer over a bed of palak in place of the khichdi.',
+ 'Use cucumber ribbons where the khichdi was.',
+ 'Replace one-third... no: replace all the khichdi with sauteed palak.',
+ 'Swap khichdi with cauliflower rice.',
+ 'Swap the khichdi for brown rice? No, for lettuce cups.',
+ 'Have a large salad and skip carbs tonight.',
+ 'Cut out the khichdi and add more paneer.',
+ 'Halve the paneer and drop the khichdi.',
+ 'Drop the khichdi, double the palak.',
+ 'Eat no grain tonight; more paneer.',
+ 'Pass on the khichdi and have more palak.',
+ 'Leave the khichdi in the pot and have extra paneer.',
+ 'Hold back the khichdi and add palak.',
+ 'Push the khichdi to lunch tomorrow.',
+ 'Save the khichdi; more palak tonight.',
+ 'Have more palak and paneer, minus the khichdi.',
+ 'More palak, less khichdi: none at all tonight.',
+ 'Paneer and palak with salad, khichdi free.',
+ 'Low-carb version: paneer and palak with a salad.',
+ 'Sautéed palak and paneer as the whole plate.',
+ 'Paneer palak bowl, no khichdi.',
+  ];
+  const keeps = [
+
+ 'Replace one-third of the rice with roasted okra to slow the rise.',
+ 'Swap one roti for whole wheat phulka.',
+ 'Use brown rice in place of white rice.',
+ 'Eat the khichdi after the palak and paneer.',
+ 'Eat the khichdi last, after the palak.',
+ 'Have the khichdi later in the meal, after the palak and paneer.',
+ 'Spread the khichdi out to cool for 10 minutes before eating.',
+ 'Let the khichdi cool and eat it at room temperature.',
+ 'Add a squeeze of lemon over the khichdi.',
+ 'Start with the palak, then move on to the khichdi.',
+ 'Have one bowl of khichdi only.',
+ 'One bowl of khichdi is enough; add more palak.',
+ 'Top the khichdi with extra palak instead of ghee.',
+ 'Use less ghee on the khichdi; add a squeeze of lemon instead.',
+ 'Choose jowar roti over white rice.',
+ 'Prefer brown rice over white rice.',
+ 'Pick the millet khichdi over the rice khichdi.',
+ 'Request a smaller portion of khichdi with extra palak.',
+ 'Cook the khichdi with more moong and less rice.',
+ 'Cook the khichdi with extra vegetables; stop at one bowl.',
+ 'Take a 10-minute walk after the khichdi.',
+ 'Take the khichdi off the heat early so the rice stays firm.',
+ 'Have the khichdi with curd, not on its own.',
+ 'Eat the khichdi with dal, not alone.',
+ 'Mix the palak into the khichdi; no extra ghee.',
+ 'Pair the khichdi with a side of cucumber raita instead of pickle.',
+ 'Add 50 g sprouts to the khichdi; skip the papad.',
+ 'Skip the papad and pickle; keep the khichdi.',
+ 'Keep the khichdi, skip the ghee.',
+ 'Drop one spoon of ghee from the khichdi.',
+ 'Leave the skin on the vegetables in the khichdi.',
+ 'Keep the khichdi portion as it is and add 100 g cucumber on the side.',
+ 'Cook the khichdi with brown rice instead of white.',
+ 'Use foxtail millet instead of rice in the khichdi.',
+  ];
+  // recorded live notes the round 12 reader held (eval/; one is from a non-veg plate, so only the grain reading is checked)
+  const live = ['Replace one-third of the rice with roasted okra to lower the meal carbohydrate speed.', 'Use pre-cooked millet grain tossed straight into the pan instead of rolling a roti.',
+    'Request the phulkas pre-cut into strips mixed into the dry keema for rapid desk dining.', 'Select the quick-box format where curry is packed directly over rice.',
+    'Use pre-made wheat phulkas and quick-cook red lentils instead of rolling millet roti.'];
+  const offeredR = removes.filter(n => tap(200, n)), heldK = keeps.filter(n => !tap(200, n)).concat(live.filter(n => removesGrain(n)));
+  ok(!offeredR.length, 'round 12: no one-tap note that takes the grain off is offered' + (offeredR.length ? ' (offered: ' + offeredR.join(' | ') + ')' : ''));
+  ok(!heldK.length, 'round 12: one-tap notes that keep the grain stay on offer' + (heldK.length ? ' (held: ' + heldK.join(' | ') + ')' : ''));
+}
+{ // round 12: menu orders (the Critic's typed menu, veg profile with diabetes, worst case: every order declares wheat, 80 g)
+  const typed = 'MAINS\nPaneer Tikka 320\nPaneer Butter Masala 340\nDal Tadka 240\nDal Makhani 260\nVeg Biryani 380\nRajma Chawal 300\nChole Bhature 520\nChole Kulche 300\nMasala Dosa 120\nPlain Dosa 90\nIdli Sambar 80\nVeg Thali (2 roti, rice, dal, sabzi) 450\nPav Bhaji 180\nKadhi Chawal 200\nPaneer Tikka Wrap 220\nVeg Kathi Roll 180\nBREADS\nTandoori Roti 30\nButter Naan 60\nPlain Naan 50\nLachha Paratha 60\nSIDES\nGreen Salad 80\nJeera Rice 150\nSteamed Rice 120';
+  const pl = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: typed } });
+  const order = ([n, por, side, ask], g) => { const d = Object.assign({ as_written: n, portion: por, kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask: ask || '', grain_made_of: 'wheat', grain_grams: 80 },
+    side ? { with: side, with_kcal: 90, with_protein: 3, with_carbs: 18, with_fats: 1, with_fiber: 2 } : { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 }, g || {});
+    return (pl.check({ status: 'ok', place: 'Restaurant', dishes: [d], leave: [], tip: '' }).orders || []).length; };
+  const keeps = [
+
+ ['Masala Dosa', '1 dosa with potato filling, about 240 g', '', '', 'live wording'],
+ ['Masala Dosa', '1 masala dosa with its aloo filling and sambar, about 300 g', '', ''],
+ ['Masala Dosa', '1 dosa, about 250 g', '', 'Ask for less oil on the dosa and extra sambar'],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 550 g', '', 'Please leave out the papad and pickle', 'live wording'],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 500 g', '', 'Ask them to leave the butter off the roti'],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 500 g', '', 'Ask for the sweet to be left out'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask for tandoori roti instead of naan'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Choose tandoori roti over naan'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Order tandoori roti rather than butter naan'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask them to take the butter off the roti'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask them to leave the butter off the roti'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask for the roti without butter, and the salad on the side'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Request the roti without butter'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Have the dal first and the roti after'],
+ ['Dal Tadka', '1 bowl, about 300 g', '2 Tandoori Roti', 'Two rotis are enough'],
+ ['Dal Tadka', '1 bowl, about 300 g', '2 Tandoori Roti', 'Have 2 rotis only'],
+ ['Dal Tadka', '1 bowl dal with 1 roti only, about 330 g', '', ''],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Keep the cream out of the dal'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Steamed Rice', 'Ask them to hold the ghee on the rice'],
+ ['Dal Makhani', '1 bowl, about 250 g', '1 Tandoori Roti', 'Ask them to skip the cream and butter on top'],
+ ['Dal Makhani', '1 bowl, about 250 g', '1 Tandoori Roti', 'Ask for the cream to be left out'],
+ ['Dal Makhani', '1 bowl, about 250 g', '1 Tandoori Roti', 'No cream on top; roti without butter'],
+ ['Veg Biryani', '1 plate, about 300 g', '', 'Ask for the raita on the side and skip the fried onions'],
+ ['Veg Biryani', '1 plate, about 300 g', '', 'Ask them to leave out the fried onions'],
+ ['Veg Biryani', '1 plate, about 300 g', '', 'Ask for extra vegetables instead of the fried onions'],
+ ['Veg Biryani', 'Half plate, about 200 g', '', 'Ask for the salan on the side instead of mixed in'],
+ ['Rajma Chawal', '1 plate, about 350 g', '', 'Please give more rajma and less rice', 'live wording'],
+ ['Rajma Chawal', '1 plate, about 350 g', '', 'Ask for the rice to be served on the side'],
+ ['Rajma Chawal', '1 plate, about 350 g', '', 'Ask for half the usual rice, extra rajma'],
+ ['Kadhi Chawal', '1 plate, about 350 g', '', 'Ask them to skip the pakoras in the kadhi'],
+ ['Kadhi Chawal', '1 plate, about 350 g', '', 'Ask for the pakodas to be left out'],
+ ['Pav Bhaji', '1 plate with 2 pav, about 300 g', '', 'Ask them to hold the butter on the pav'],
+ ['Pav Bhaji', '1 plate with 2 pav, about 300 g', '', 'Ask for the pav without butter'],
+ ['Pav Bhaji', '1 plate with 2 pav, about 300 g', '', 'Skip the extra butter on top of the bhaji'],
+ ['Idli Sambar', '2 idli with sambar, about 250 g', '', 'Ask for the chutney on the side'],
+ ['Idli Sambar', '2 idli with sambar, about 250 g', '', 'Ask for no coconut chutney, extra sambar'],
+ ['Idli Sambar', '2 idli only, with extra sambar, about 250 g', '', ''],
+ ['Chole Kulche', '1 plate, about 300 g', '', 'Ask for the kulcha without butter'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Ask for the mint chutney on the side'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Ask them to keep the butter off'],
+ ['Plain Dosa', '1 dosa, about 150 g', '', 'Ask for the dosa to be made with less oil, chutney on the side'],
+    // recorded live orders the round 12 reader refused (eval/v6/results-menu-live-look.json and the canteen replies)
+    ['Masala Dosa', '1 dosa with potato filling, about 240 g', '', 'Cook with light oil, serve extra sambar'],
+    ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali platter, about 550 g', '', 'Please leave out the papad and pickle completely']];
+  const removes = [
+
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Let the roti go; have the dal with salad'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask them to bring the roti later, if you still want it'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'The roti can wait; start with the dal and salad'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Have the dal with salad; pack the roti for tomorrow'],
+ ['Dal Tadka', '1 bowl, about 300 g', '1 Tandoori Roti', 'Ask them to pack the roti to go'],
+ ['Rajma Chawal', '1 bowl rajma with salad, about 300 g', '', 'Ask them to serve it without the chawal'],
+ ['Rajma Chawal', 'Rajma with salad, about 300 g', '', 'Ask for salad in place of the chawal'],
+ ['Rajma Chawal', 'A bowl of the rajma with salad, about 300 g', '', 'Ask them to swap the chawal for salad'],
+ ['Rajma Chawal', 'The rajma portion, about 250 g', '', ''],
+ ['Rajma Chawal', 'Rajma part, about 250 g', '', ''],
+ ['Rajma Chawal', 'A bowl of rajma, about 250 g', '', 'Ask them to put the rice in a separate box to take home'],
+ ['Chole Bhature', 'Chole, about 250 g', '', 'Ask them not to fry the bhature'],
+ ['Chole Bhature', '1 bowl chole, about 250 g', '', 'Ask for salad with it'],
+ ['Chole Bhature', '1 bowl chole, about 250 g', '', 'Ask them to serve the bhature to someone else'],
+ ['Veg Biryani', 'The vegetables from the biryani, about 150 g', '', ''],
+ ['Veg Biryani', 'Vegetables and paneer picked from the biryani, about 150 g', '', ''],
+ ['Veg Biryani', 'A plate of the vegetable pieces, about 150 g', '', 'Ask them to serve the vegetables without rice'],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', 'Dal and sabzi bowls from the thali, about 350 g', '', ''],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', 'Dal, sabzi and salad, about 350 g', '', ''],
+ ['Veg Thali (2 roti, rice, dal, sabzi)', '1 thali, about 400 g', '', 'Ask them to keep the rice and rotis in the kitchen'],
+ ['Masala Dosa', 'The filling and sambar, about 250 g', '', ''],
+ ['Masala Dosa', '1 dosa, about 250 g', '', 'Eat the masala and sambar; leave the crepe'],
+ ['Pav Bhaji', '1 bowl bhaji, about 250 g', '', 'Ask them to bring the bhaji with salad, pav not wanted'],
+ ['Pav Bhaji', 'Bhaji, about 250 g', '', 'Ask for cucumber slices to scoop with'],
+ ['Idli Sambar', '1 bowl sambar with vegetables, about 300 g', '', ''],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Give the roti to someone at the table'],
+ ['Paneer Tikka', '6 pieces, about 220 g', '1 Tandoori Roti', 'Ask them to skip carbs and add a salad'],
+ ['Kadhi Chawal', 'Kadhi, about 250 g', '', 'Ask for a bowl of kadhi with salad, no chawal'],
+  ];
+  const refused = keeps.filter(k => !order(k)), offered = removes.filter(k => order(k));
+  ok(!refused.length, 'round 12: menu orders that keep their grain are offered' + (refused.length ? ' (refused: ' + refused.map(c => c.slice(0, 4).join(' | ')).join('; ') + ')' : ''));
+  ok(!offered.length, 'round 12: no menu order that leaves the grain out is offered' + (offered.length ? ' (offered: ' + offered.map(c => c.join(' | ')).join('; ') + ')' : ''));
+  const base = ['Veg Biryani', '1 plate, about 300 g', '', ''];
+  ok(order(base) === 1, 'declared grain: a menu order that declares its grain is offered');
+  ok(!order(base, { grain_made_of: '' }), 'declared grain: a menu order with no grain material is dropped with diabetes');
+  ok(!order(base, { grain_made_of: 'cauliflower' }), 'declared grain: a menu order whose grain is a vegetable is dropped');
+  ok(!order(base, { grain_grams: 0 }), 'declared grain: a menu order with no grain grams is dropped');
+  ok(!order(['Paneer Tikka', '6 pieces, about 220 g', 'Green Salad', '']), 'declared grain: an order with no grain dish is dropped, whatever it declares');
 }
 
 // ---- Rule 4, the owner's banned words, in every field the model writes for the person to read (Critic round 7).

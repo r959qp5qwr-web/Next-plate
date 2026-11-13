@@ -211,6 +211,7 @@ rulesText(p),
 "- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.",
 "- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.",
 "- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.",
+"- grain: the meal's whole-grain or millet item: food copied letter for letter from items, made_of what that grain is made of (for example \"whole wheat\", \"brown rice\", \"foxtail millet\", \"jowar\"; never a vegetable, pulse, nut or seed), and its grams. A meal with no grain gives food \"\", made_of \"\" and grams 0.",
 "- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).",
 "- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.",
 lite?null:TUNETEXT(p)
@@ -218,6 +219,7 @@ lite?null:TUNETEXT(p)
 }
 function TUNETEXT(p){return [
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
+"- Each base swap also gives made_of: what it is made of, as for grain (never a vegetable, pulse, nut or seed). Each one-tap change also gives grain_grams_after: the grams of the plate's grain item after the change (0 if it takes the grain off)."+(p.health==="diabetes"?" With diabetes every change keeps the grain item, at least half of it.":"")+"",
 "- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
 "  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
 function buildTunePrompt(p,m){
@@ -359,6 +361,7 @@ pl&&pl.day.meds?"- They take insulin or sulfonylurea tablets, or are not sure: a
 "  ask: one way to order it better, in the words the person would say to the waiter, at most 80 characters (\"Less butter, no cream on top\"). No numbers. Empty if nothing needs asking.",
 "  with: one side from this same menu that completes the dish for this person: a count, then the name letter for letter as written on the menu (\"2 Tandoori Roti\", \"1 Cucumber Raita\"), at most 60 characters. Empty if the dish is a meal on its own.",
 "  with_kcal, with_protein, with_carbs, with_fats, with_fiber: your estimate for that side in that amount. All 0 when \"with\" is empty.",
+"  grain_made_of: what the grain in this order (in the dish or its side, as eaten in the portion you give) is made of, for example \"wheat\" for naan or roti, \"rice\" for biryani or dosa; \"\" if the order as given has none. grain_grams: the grams of that grain in the portion as eaten; 0 if none.",
 "  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (1 to 4; only ids listed there). Every order cites at least one; a health id (such as salt with BP) applies to every order you choose.",
 "- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied letter for letter) and why (at most 14 words, plain, about the food itself, no numbers).",
 "- tip: one sentence, at most 24 words, on the order of eating at this meal: what to start with and what to keep for last. No numbers."
@@ -368,10 +371,20 @@ function menuSchema(ids){
   var I={type:"INTEGER"},S={type:"STRING"};
   function obj(props,req){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:Object.keys(props)};}
   return obj({status:{type:"STRING",enum:["ok","refer","unreadable"]},place:S,
-    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,ask:S,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,
+    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,ask:S,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,grain_made_of:S,grain_grams:I,
       planned_around:{type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}}})},
     leave:{type:"ARRAY",items:obj({as_written:S,why:S})},tip:S},["status"]);
 }
+/* Critic round 12: when the grain is in the dish name and the side holds none, a portion that names a food must also name the grain.
+   "From the biryani" names where a part comes from, not what is eaten; a food after "with" is an addition ("1 plate with raita"). */
+var PARTFOOD=/^(?:dal|rajma|chole|chana|sabzi|sabji|salad|paneer|chicken|mutton|fish|egg|eggs|sambar|chutney|raita|curry|kurma|korma|gravy|bhaji|filling|kofta|tikka|curd|dahi|soup|vegetables?|veggies|veg|masala|keema|aloo|potato|kadhi|misal|usal|stew|sprouts|beans|matar|palak|gobi|mushrooms?|cheese)$/;
+function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
+  var p=String(por||"").toLowerCase().replace(/\b(?:from|out\s+of|off)\s+(?:the\s+|a\s+|your\s+|its\s+)?[a-z]+(?:\s+[a-z]+)?/g," ");
+  if(words(p).some(function(x){return GRAIN_RX.test(x);}))return false;
+  return words(p.split(/\bwith\b/)[0]).some(function(x){return PARTFOOD.test(x)||MAT_RX.test(x);});}
+/* a grain the portion adds beyond the dish itself: "Dal Tadka | 1 bowl dal with 1 roti" counts; "Moong Dal Dosa | 2 dosas" does not */
+function porGrain(name,por){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
+  return isGrain(String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;}));}
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}
 /* When nothing fits (rule 7): the two moves whose effect code can measure on the order's own figures. Eating part of it counts only
    if that brings the order closer to the target (and, on diabetes medicine, not under the meal's usual energy); then a walk; eating order last. */
@@ -418,7 +431,7 @@ function checkMenu(r,p,c,pl,hooks){
     por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~\u2248]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"\u2248 $1");   /* a weight is an estimate and says so */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&!sideOnMenu(side,typed)?"side-off-menu":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
-    if(p.health==="diabetes"&&p.slot!=="snack"&&((!isGrain(name)&&!isGrain(side))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)))return drop("diabetes-grain");   /* rule 3: the grain is in the dish or its side, and neither the portion nor the ask leaves it out */
+    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});

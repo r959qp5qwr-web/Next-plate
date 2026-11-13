@@ -22,6 +22,9 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="";
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
+  /* plates kept from before the declared grain field (Critic round 12) were checked under the old rules: drop them, so today's plates are made again */
+  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&r.meals.some(function(m){return !m||!m.grain;})){delete STORE.res[k];
+    Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k)delete STORE.shown[s];});}});
   if(typeof raw.k==="string")KEYCODE=raw.k;
 }catch(e){}})();
 try{var qk=new URLSearchParams(location.search).get("k");if(qk){KEYCODE=qk.slice(0,80);history.replaceState(null,"",location.pathname);}}catch(e){}
@@ -89,7 +92,7 @@ function makePlates(text){
 var TUNING={};
 function tune(key,i){
   var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
-  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,grain:m.grain,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
     delete TUNING[key+"#"+i];
     if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
     if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});

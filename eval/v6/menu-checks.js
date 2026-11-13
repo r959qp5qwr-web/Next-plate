@@ -8,14 +8,15 @@ const pages = process.argv.length > 2 ? process.argv.slice(2) : ['hosted/v5/inde
 const MENU = ['Paneer Tikka 320', 'Chicken Tikka 360', 'Dal Tadka 240', 'Palak Paneer 300', 'Butter Chicken 380', 'Veg Biryani 280', 'Tandoori Roti 30', 'Butter Naan 60', 'Cucumber Raita 90', 'Green Salad 80'].join('\n');
 const BASE = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 62, act: 'light' };
 const CTX = { meal: 'dinner', time: '8:30 pm', hour: 20.5, dayNo: 316, mode: 'focus', appetite: 5, text: MENU };
-const NOSIDE = { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 };
-const ROTI2 = { with: '2 Tandoori Roti', with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6 };
+const NOSIDE = { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: '', grain_grams: 0 };
+const RICE = { grain_made_of: 'rice', grain_grams: 200 };                          // the grain the model declares for a rice dish (Critic round 12)
+const ROTI2 = { with: '2 Tandoori Roti', with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6, grain_made_of: 'wheat', grain_grams: 80 };
 // a dish in the reply shape; kcal is close to 4 x protein + 4 x carbs + 9 x fats unless a check wants otherwise
 const dish = (name, kcal, protein, carbs, fats, fiber, more) => Object.assign({ as_written: name, portion: '1 bowl, about 300 g', kcal, protein, carbs, fats, fiber, ask: '', planned_around: [] }, NOSIDE, more);
 const DAL = () => dish('Dal Tadka', 280, 15, 34, 9, 9, ROTI2);                     // with its rotis: 520 kcal, 23 g protein
 const PALAK = () => dish('Palak Paneer', 340, 17, 12, 25, 5, ROTI2);               // 580 kcal, 25 g
 const TIKKA = () => dish('Paneer Tikka', 380, 24, 10, 27, 2);                      // no side, no grain
-const BIRYANI = () => dish('Veg Biryani', 520, 12, 78, 18, 6);                     // its own grain
+const BIRYANI = () => dish('Veg Biryani', 520, 12, 78, 18, 6, RICE);               // its own grain
 const reply = (dishes, more) => Object.assign({ status: 'ok', place: 'North Indian restaurant', dishes, leave: [], tip: 'Start with the salad and keep the roti for last.' }, more);
 
 let failed = 0;
@@ -40,7 +41,7 @@ for (const page of pages) {
     yes(typeof pl.prompt === 'string' && pl.prompt.indexOf('THE MENU') > 0 && pl.prompt.indexOf('Paneer Tikka 320 | Chicken Tikka 360') > 0, 'prompt does not carry the typed menu');
     eq([pl.image, pl.weight, typeof pl.check], [true, 1, 'function'], 'plan fields');
     eq(pl.schema.properties.status.enum, ['ok', 'refer', 'unreadable'], 'status enum');
-    eq(Object.keys(pl.schema.properties.dishes.items.properties), ['as_written', 'portion', 'kcal', 'protein', 'carbs', 'fats', 'fiber', 'ask', 'with', 'with_kcal', 'with_protein', 'with_carbs', 'with_fats', 'with_fiber', 'planned_around'], 'dish fields');
+    eq(Object.keys(pl.schema.properties.dishes.items.properties), ['as_written', 'portion', 'kcal', 'protein', 'carbs', 'fats', 'fiber', 'ask', 'with', 'with_kcal', 'with_protein', 'with_carbs', 'with_fats', 'with_fiber', 'grain_made_of', 'grain_grams', 'planned_around'], 'dish fields');
     eq(Object.keys(pl.schema.properties.leave.items.properties), ['as_written', 'why'], 'leave fields');
   });
   check('request: a photo or text is required; the typed menu keeps 2,000 characters for this kind only', () => {
@@ -107,10 +108,10 @@ for (const page of pages) {
     yes(/Diabetes, when ordering out: every order keeps one measured grain/.test(E.plan('menu', body({ health: 'diabetes', meds: 'no' })).prompt), 'the prompt does not say the grain stays');
   });
   check('diabetes on insulin or sulfonylurea (yes or unsure): an order under the meal\'s usual energy is dropped', () => {
-    const usual = target({ health: 'diabetes', meds: 'yes' }).usual.kcal, small = dish('Dal Tadka', 180, 10, 22, 6, 6, { with: '1 Tandoori Roti', with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3 });
+    const usual = target({ health: 'diabetes', meds: 'yes' }).usual.kcal, small = dish('Dal Tadka', 180, 10, 22, 6, 6, { with: '1 Tandoori Roti', with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3, grain_made_of: 'wheat', grain_grams: 40 });
     yes(usual > 300 && usual <= 520, 'test set-up: usual dinner energy is ' + usual);
     for (const meds of ['yes', 'unsure']) {
-      const out = ask(reply([small, dish('Veg Biryani', 520, 12, 78, 18, 6)]), { health: 'diabetes', meds });
+      const out = ask(reply([small, dish('Veg Biryani', 520, 12, 78, 18, 6, RICE)]), { health: 'diabetes', meds });
       eq(names(out), ['Veg Biryani'], 'orders, meds ' + meds);
       eq(out.dropped['meds-low'], 1, 'dropped meds-low, meds ' + meds);
       yes(out.orders.every(o => o.n.kcal >= usual), 'an order is under the usual energy');
@@ -167,7 +168,7 @@ for (const page of pages) {
     yes(out.moves[0].fit > out.orders[0].fit, 'the portion move must bring it closer');
     const zero = ask(reply([dish('Palak Paneer', 1996, 60, 40, 180, 8), dish('Veg Biryani', 1300, 30, 220, 33, 6)]));       // both score 0; the first is gentler but much further off
     eq([names(zero), zero.orders[0].fit, zero.orders[0].rise], [['Veg Biryani'], 0, 'Sharp'], 'among orders that all score 0, the nearest to the target');
-    const big = () => reply([dish('Veg Biryani', 940, 10, 150, 33, 6)]), usual = target({ health: 'diabetes', meds: 'yes' }).usual.kcal;   // half of it would be 470 kcal
+    const big = () => reply([dish('Veg Biryani', 940, 10, 150, 33, 6, RICE)]), usual = target({ health: 'diabetes', meds: 'yes' }).usual.kcal;   // half of it would be 470 kcal
     yes(usual > 470 && usual <= 630, 'test set-up: usual dinner energy is ' + usual);
     eq(ask(big(), { health: 'diabetes', meds: 'no' }).moves[0].scale, 0.5, 'without diabetes medicine, half is the closest portion');
     eq(ask(big(), { health: 'diabetes', meds: 'yes' }).moves[0].scale, 0.67, 'on diabetes medicine a portion move does not go under the meal\'s usual energy');
