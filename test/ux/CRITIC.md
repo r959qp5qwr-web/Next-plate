@@ -1,191 +1,161 @@
 VERDICT: FAIL
-BUILD: 637e0179748c4a7106f1189ce15625426f633694c854a4173d13201346d45184
+BUILD: 9967f973953c07d12776b1136885c5e3824407449f4be49693506383a6998747
 
-# Critic round 15 (branch claude/nice-hawking-307ljy, HEAD c6ab687, diff read 542ff62..c6ab687)
+# Critic round 16 (branch claude/nice-hawking-307ljy, HEAD fb89b5b, diff read 3f5e47c..fb89b5b)
 
 ## What I measured on this state
 - `npm run drill`: passes. Every planted fault is caught.
 - `npm run review`: passes. 9 runs x 46 states = 414 checks, 0 violations. No state was unreachable and no page error was reported.
-- `npm run rules`: passes on all three pages.
+- `npm run rules`: passes on all three pages ("677 names that are not a grain, 463 true grains"). The c6ab687 build fails 9 of its checks, as the builder says.
 - `npm run words`: passes with 42 exceptions. Neither allow file changed (git diff is empty for test/words/ and test/ux/allow.json).
 - `npm run films`: passes on all four films (-16.7 to -16.8 dB, picture from 0 s, no decode errors). No film or post file is in the diff.
-- I rebuilt the three pages from the sources in my scratchpad. They are byte-identical to the committed pages. The working tree is clean.
+- I rebuilt the three pages from the sources in my scratchpad. They are byte-identical to the committed pages. No lookbehind is in any of them. The working tree is clean.
 - The fingerprint above was taken after all measuring. It matches the builder's.
 
-## Round 14's five findings, checked with my own probes
-- Finding 1 (rava, semolina or oats on vegetables): fixed for every form I listed. 0 of 50 names count, and all 20 end-to-end plates are dropped. Part of the class is still open: finding 1 below.
-- Finding 2 ("<x> ka atta"): fixed. 0 of 18 count. A further 31 forms I tried are refused except three odd ones (finding 5).
-- Finding 3 ("<grain>, not tonight"): fixed. 0 of 20 removals are offered at 200 g declared, and 0 of 16 keeps are held. "Not at all", "no way", "never" and "no more" after a comma are held now too.
-- Finding 4 (rice bowls refused): fixed. All seven bowls are offered.
-- Finding 5 (portion grain matched by one word): fixed for Rice Kheer, Rice Papad and Bread Pakora. A narrow gap is left (finding 6).
-- My round 14 costs are gone:
-  - "Thin atta roti" and the other adjective forms count again.
-  - The milk porridges and "Paneer quinoa" count again.
-  - "gehun ka atta" and the other declared forms are accepted.
-  - The three menu keeps are offered, and 0 of 16 one-tap keeps are held.
-  - The besan mixes stay refused, as my round 13 correction 2 asked.
-- My round 13 and round 12 probes, re-run unchanged:
-  - fp13: 0 of 49 names count.
-  - menu13: 0 of 20 removals offered.
-  - onetap13: 0 of 11 keeps held.
-  - tg13: 6 of 37 refused, as before.
-  - menu12: 0 of 28 removals offered; 2 of 43 keeps refused.
-  - onetap12: 0 of 39 removals offered; 0 of 34 keeps held.
-  - Round 12 names: 0 of 92 count; 135 of 136 true grains kept.
-- Recorded live replies, this build against round 12 (fd0e299) and against round 14 (1861346): nothing moves.
-  - 408 of 495 meals hold a grain; 225 of 313 base swaps count.
-  - 65 of 2,005 one-tap notes are held.
-  - Menus with diabetes: 87 orders, none empty, 9 dropped.
+## Round 15's six findings, checked with my own probes
+My round 15 probes (r15/), re-run on this build:
+- names.js: 0 of 36, 20, 16, 17 and 31 count. 1 of 85 true grains is refused (Sattu atta roti; round 13 named it a stand-in, D7 now says so).
+- e2e.js: every plate and swap is dropped.
+- onetap.js: 0 of 30 removals offered; 0 of 20 keeps held.
+- menu.js: 0 of 17 removals offered; 0 of 9 keeps refused.
+- porgrain.js: no grain sold on the five menus that sell none; every grain sold on the seven that do.
 
-The five findings are fixed for the forms I named. But the coating class is still open for rice flour and atta (finding 1), and this diff opens new paths:
-- in the word reader (findings 2 and 4);
-- in the portion reader (finding 3);
-- in the atta reader (finding 5).
+So findings 1 to 6 are fixed for every form I listed. The old gaps ("Rice, not for me", "Rice? Leave it", "Rice, cut it out") are held. Both cosmetic notes are fixed:
+- maida now counts as a coating grain;
+- the ATTAMAT placeholder is gone.
 
-Probe scripts and outputs: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r15/
-- names.js, names2.js, e2e.js, onetap.js, menu.js and porgrain.js, each with its .out file.
-- Each run compares three pages: this build, the round 14 build (old-1861346.html) and the round 12 build (r14/old-fd0e299.html).
+My older probes hold:
+- Round 14: names 0 of 18 and 0 of 50; 0 of 43 true grains refused; one-tap 0 of 20 and 0 of 16; menu 0 of 8 and 0 of 17.
+- Round 13: fp13 0 of 49; menu13 0 of 20; onetap13 0 of 18 and 0 of 11; tg13 6 of 37 refused, as before; e2e 0 of 16.
+- Round 12: fp12 0 of 92; menu12 0 of 28 removals offered and 2 of 43 keeps refused, as before; onetap12 0 of 39 and 0 of 34.
+
+Recorded live replies, compared with the round 12 build: nothing moves.
+- 408 of 495 meals and 225 of 313 base swaps count.
+- 65 of 2,005 one-tap notes are held.
+- Menus with diabetes: 87 orders, none empty, 9 dropped.
+
+But the fix opens new paths. One is in the coating class itself, the subject of rounds 13 to 15. My round 16 probes and outputs are in /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r16/:
+- names.js, e2e.js, onetap.js, menu.js, porgrain.js and mat.js, each with its .out file;
+- the r15-*, r14-*, r13-* and g13-* outputs are the older probes re-run.
+- Each run compares this build, the round 15 build (old-c6ab687.html) and the round 12 build.
 
 ## Findings, most serious first
 
-### 1. FAIL (owner rule 3; A14 "a grain named as a coating does not count"). Fish, prawns, chicken, brinjal, potato and mushrooms fried in rice flour, rice rava, wheat flour or atta count as the grain of a diabetes plate. So do rava-fried vegetables named with a word outside the material list.
-- This is not a regression: the round 12 and round 14 builds count these too. My round 14 list named rava, sooji, semolina and oats only, so this part was missed.
-- Surface: every diabetes plate and every base swap (src/v5/core.js:191-205 known(), core.js:330 declaredGrain). This is server-side, so it is the same at every width and scheme.
-- What is wrong:
-  - The coating test (core.js:197-198) looks only at grain words that are pure grains (PUREG). "rice" is not in PUREG.
-  - The list of grain words leaves out wheat, atta and maida (core.js:195), so "Atta fried fish" reaches the line `w.some(wheat|atta|maize)&&w.length>1` and counts.
-  - The material test knows MAT_RX and COATW only. vegetables, veg, corn, capsicum, tomato, onion, kofta and vada are companion words (COMPT), so "Rava fried vegetables" passes as a grain dish.
-  - The declared field cannot catch this, because the coating really is rice flour or atta.
-- Evidence (r15/e2e.out, r15/names.out, r15/names2.out). With the honest material declared, these plates are accepted with diabetes:
-  - Rice flour fried fish (as "rice flour" and as "rice"), Rice rava fried fish, Rice flour tawa fish
-  - Atta fried fish, Wheat flour fried fish, Wheat fried fish, Atta tawa fish
-  - Rice flour fried brinjal, Rice rava fried brinjal, Rice flour fried potato, Rice flour fried mushrooms, Atta fried brinjal, Wheat fried brinjal, Atta fried potato, Atta fried mushrooms. Each of these is also offered as a base swap.
-  - Rava fried vegetables, Rava fried mixed vegetables, Rava fried veg, Sooji fried veg, Rava fried corn, Rava fried sweet corn, Rava fried capsicum, Rava fried tomato, Rava fried onion, Rava fried kofta, Rava fried vada (plate and swap).
-  - By name, these also count: Crispy rice flour fish, Rice flour fried prawns, Rice flour fried chicken, Fish fry with rice flour, Tawa fish with rice flour.
+### 1. FAIL, regression in this diff (owner rule 3; A14 "a grain named as a coating does not count"). A coating named with the frying word first counts as the grain of a diabetes plate: "Crispy rava fish", "Tawa rava fish", "Fried rava prawns", "Crispy oats tikki".
+- Surface: every diabetes plate and every base swap. This is server-side (src/v5/server.ts runs the page's np-core), so it is the same at every width and scheme.
+- What is wrong: the new `friedG` (src/v5/core.js:200) reads a pure grain right after a frying word as a dish, to keep "egg fried quinoa". When it is set, the whole coating test is skipped (core.js:201-205). Then the line `w.some(PUREG...)` returns true. "Crispy", "crisp", "tawa", "fried" and "batter" are all frying words (COATV), and rava, sooji, semolina, oats, millet, ragi, jowar and quinoa are all pure grains.
+- Evidence (r16/e2e.out, r16/names.out). With the honest material declared, 23 of 23 are accepted as a diabetes plate, and the vegetarian ones also as a base swap. The round 15 build refused all 23. The round 12 build accepted most of them, so this reopens the round 12-era hole.
+  - Plate: Crispy rava fish, Crispy rava fried fish, Crispy rava prawns, Fried rava fish, Tawa rava fish, Tawa rava prawns, Crispy semolina fried fish, Crispy sooji prawns, Crispy oats chicken, Crispy oats fish, Crispy millet fish, Crispy ragi chicken.
+  - Plate and swap: Crispy rava paneer, Crispy semolina paneer, Crispy rava potato, Crispy rava brinjal, Tawa rava brinjal, Tawa rava mushrooms, Crispy oats tikki, Fried oats tikki, Crispy oats paneer, Crispy quinoa paneer, Crispy jowar paneer.
+  - By name, 26 of 40 such forms count (r16/names.out). The same holds in hosted/v6/index.min.html and hosted/v5/index.min.html.
 - Why it matters:
-  - Fish fried in a rice-flour coating is as everyday on the Konkan, Mangalore and Kerala coast as rava fry.
-  - A client with diabetes can be shown a plate where "the grain stays" when the only grain on it is a dusting of flour on the fish.
-  - The base swap can put that coating in place of the rice.
-  - This is the same coating class as rounds 13 and 14.
+  - "Crispy rava fish" and "tawa rava fish" are the usual menu and home names for the Goan and Konkan rava fry.
+  - "Crispy oats tikki" is a common "healthy" snack name.
+  - A client with diabetes can be shown a plate where "the grain stays" when the only grain on it is a crust on the fish or the tikki, and the base swap can put that crust in place of the rice.
+  - The rule check does not catch this, because its round 15 block holds only my round 15 word orders ("Rava fried fish", not "Crispy rava fish").
 - Smallest correction:
-  - In known(), apply the coating test to every grain material named as a flour or rava: "rice flour", "rice rava", "wheat flour", atta, maida, cornflour. Also apply it to rice when "flour" or "rava" follows it.
-  - For this test, count vegetables, veg, corn, capsicum, tomato, onion, kofta and vada as materials.
-  - Read "with <grain> flour" as a coating, not a grain side.
-  - Add these names to STANDINS in test/rules/check.js.
+  - Count a frying word followed by a pure grain as a dish only when the grain is the head of the name: nothing but grain or dish words after it ("egg fried quinoa", "veg fried millet", "fried rice").
+  - When a food word (COATW, MAT_RX, VEGW) comes after the grain ("crispy rava fish", "tawa rava brinjal"), it stays a coating.
+  - Add the 23 names above to STANDINS in test/rules/check.js.
 
-### 2. MINOR, regression in this diff (owner rule 3; A14; this weakens the word reader that backs up the declared figures). "Your plate", "your portion", "have one" and "have half" let a grain given to the family or the table through. So does "a rest/break for a few days".
+### 2. MINOR, regression in this diff (owner rule 3; A14; this weakens the word reader that backs up the declared figures). The narrowed "goes", "can go" and "is/are off|out" let through removals that the round 15 build held.
 - Surface:
   - Plate, one-tap changes (the note);
   - Rescue, Read the menu, the order card (the ask).
+  - Code: core.js:318.
 - What is wrong:
-  - OWNPART (core.js:238) is tested against the whole text. It matches any "your plate/portion/share/serving", "you have/eat one" or "have one/half", whether or not that own portion holds any grain. When it matches, the family, table, share and "later" removals at core.js:308 and core.js:312 are switched off.
-  - The new exception for "a rest/break" (core.js:308) treats "for 2 days", "for a few days" and "for three meals" as cooking time.
-- Evidence (r15/onetap.out, r15/menu.out). Worst-case declaration: 200 g left on one-tap; wheat and 80 g on the menu. With an honest 0 g, all of these are held.
-  - One-tap, offered now and held by the round 14 build:
-    - "Rice for the family; your plate is dal and salad."
-    - "Keep the rice for the kids; your plate: paneer and palak."
-    - "The khichdi is for the family tonight; your portion is the dal and salad."
-    - "Rotis for the table; your share is the sabzi."
-    - "Have one bowl of dal; the rice is for the family."
-    - "Have half the paneer first; rice for the kids."
-    - "Rice to share at the table; you have one bowl of dal."
-    - "Serve the khichdi to the family; your plate is paneer and palak."
-    - "Rice for the others at the table; your serving is dal and salad."
-    - "Give the rice a rest for a few days; more dal." The same holds for "a break for 2 days", "a rest for three meals" and "a break for a few meals".
-  - "Pack the rice for tomorrow; your plate is dal and salad." was held by both the round 12 and the round 14 builds, and is offered now.
-  - Menu, offered now and refused by the round 14 build:
-    - "The roti is for the table; have one bowl of dal and the salad"
-    - "The biryani is for the family; your portion is the raita and salad"
-    - "Rice for the kids; you have one bowl of dal"
-    - "Pav for the family; your plate is the bhaji"
-    - "Bhature to share at the table; have one bowl of chole"
-  - None of these forms is among the 1,091 recorded live notes or the 163 recorded live asks.
-- Why it matters:
-  - "Make the rice for the family; your plate is dal and salad" is a natural way to tell a client with diabetes, who cooks for a family, to leave the rice out.
-  - When the model also fills in the grain figure, the word reader is the only check left.
+  - These words now count only when nothing follows them, or tonight, today, now, away, back (for "can go"), "for now/tonight/today" or "of the menu/order/plate".
+  - Every other time, extent or place falls through: for this meal, for dinner, for the week, this time, this evening, entirely, completely, altogether, off the plate, off the table, back in the pot, back to the kitchen.
+  - My round 15 correction asked to count "is out" only when nothing follows it, so part of this follows my own advice. It was too narrow.
+- Evidence (r16/onetap.out, r16/menu.out). Worst-case declaration: 200 g left on one-tap; wheat and 80 g on the menu. With an honest 0 g, all are held.
+  - One-tap: 20 of 22 are offered, and 19 of them were held by the round 15 build. Among them:
+    - "Rice is off for this meal; double dal."
+    - "The roti is out for dinner; extra sabzi."
+    - "Rice is out entirely; extra dal."
+    - "Rice is off the plate tonight; double dal."
+    - "The rice goes back in the pot; double dal."
+    - "The roti goes for tonight; extra sabzi."
+    - "Rotis are out for the week; double sabzi."
+    - "Rice is off completely; double dal."
+  - Menu asks: 5 of 6 are offered, and all 5 were refused by the round 15 build:
+    - "The roti is off for this meal; more salad"
+    - "The rice goes back to the kitchen; more salad"
+    - "Biryani is off the plate today; raita and salad"
+    - "Rice is out entirely; double salad"
+    - "The pav goes back; bhaji with salad"
+  - None of these forms is among the recorded live notes or asks.
+- Why it matters: when the model also fills in the grain figure, the word reader is the only check left. "The rice is off for this meal" is a plain way to write the removal.
 - Smallest correction:
-  - Let the own portion cancel a share only when it names a grain or grams of one: "you keep 150 g", "your 150 g portion", "have one roti".
-  - Treat "a rest/break for ..." as cooking only when minutes follow.
-  - Add the forms above to the rule check.
+  - Also count a time or extent after these words: for this/the meal, for dinner/lunch, for the week, this time, this evening, entirely, completely, altogether.
+  - Also count "off the plate/table" and a place away: back in or to the pot, box or kitchen; "goes back" alone.
+  - Keep the eating-order and amount forms as keeps: goes last/after/at the end, goes back to 150 g, can go down to or to an amount, goes cold, goes from ... to.
 
-### 3. MINOR, regression in this diff (owner rule 3; the round 12 rule that a portion naming a food must also name the grain). A portion that names only the curry after its first comma is read as the whole dish.
-- Surface: Rescue, Read the menu, with diabetes (src/v6/engine.js:388 partOnly).
-- What is wrong: partOnly now reads only `p.split(/,|;/)[0]`. The change was meant for "1 plate, extra onions on the side". But it also drops every food named after the first comma.
-- Evidence (r15/menu.out). Each is offered now and was refused by both the round 12 and the round 14 builds:
-  - Rajma Chawal | Half plate, rajma and salad, about 250 g
-  - Rajma Chawal | 1 plate, mostly rajma, about 300 g
-  - Pav Bhaji | 1 plate, the bhaji and onions, about 250 g
-  - Dal Chawal | 1 bowl, the dal part, about 250 g
-  - The recorded live portions are all "<amount>, about <weight>", so this form is not in them.
-- Why it matters: the order card would show a curry-only order as the whole rice or bread dish to a client with diabetes.
-- Smallest correction: drop only the comma parts that are additions or weights ("extra ...", "... on the side", "about N g"), and read the rest as before.
-
-### 4. MINOR, regression in this diff (A14 true-grain side; B6). The new "goes", "can go" and "is out" removals hold ordinary keeps. They hold eating-order notes ("rice last") and smaller grain portions, which are the two ordinary ways to soften the rise.
-- Surface:
-  - Plate, one-tap changes;
-  - Rescue, Read the menu, the ask (core.js:309).
-- What is wrong:
-  - `goes` counts as a removal unless well, with, into, in, on, best or great follows.
-  - `can/could go` counts unless with, into, in, on or well follows.
-  - `is out` counts unless "of" follows.
-  - Last, after, at the end, down, back, to, from, cold and thinner all fall through to "removal".
-- Evidence (r15/onetap.out, r15/menu.out).
-  - 12 of 20 keeps are held now. All were offered by the round 12 and round 14 builds:
-    - "Salad first, dal next, rice goes last."
-    - "Eat the salad first; the rice goes last."
-    - "The rice can go down to 150 g; add more dal."
-    - "Rice goes back to 150 g; extra dal on the side."
-    - "Rice goes from 200 g to 150 g; more dal."
-    - "Once the rice is out, squeeze lemon over it."
-    - "Cook the rice in the morning; rice that goes cold and is reheated gives a gentler rise."
-    - "The roti can go thinner; 2 rotis of 40 g."
-    - and four more.
-  - On the menu, the order is now refused for "Eat the salad first; the roti goes last" and "Rice can go down to half a bowl; more salad".
+### 3. MINOR, regression in this diff (A14 true-grain side; B6). Two new readings hold ordinary keeps, including eating-order notes ("rice last"), the advice a Gentle-rise change most often gives.
+- First reading: `<grain>[,;:?]` followed by take, save, hold, cut or leave plus it/them is now a removal (core.js:289).
+- Second reading: the narrowed OWNPART (core.js:246) no longer counts "have one/half <grain> and ..." or "you take 150 g".
+- Evidence (r16/onetap.out, r16/menu.out). 12 one-tap keeps are held at 150 g declared, all offered by the round 15 and round 12 builds:
+  - "Rice: take it after the salad."
+  - "Roti? Take it last, after the sabzi."
+  - "Roti, save it for last; start with the dal."
+  - "Rice? Save it for the end of the meal, 150 g."
+  - "Rice, take it with the dal, 150 g."
+  - "Rice; leave it to cool, then reheat 150 g."
+  - "Cook the rice in the morning; leave it to cool before lunch, 150 g."
+  - "Rotis: hold them in a cloth so they stay soft."
+  - "Rotis, cut them into quarters and eat with dal."
+  - "Have one roti and give the rest to the family."
+  - "Have half the rice and leave the rest for the family."
+  - "Share the rice at the table; you take 150 g."
+  - On the menu, three orders are refused that the round 15 build offered:
+    - "Roti: take it after the dal and salad"
+    - "Rice? Take it last, after the salad"
+    - "Share the biryani at the table; you take one small bowl"
   - None of these forms is among the recorded live notes or asks.
 - Why it matters:
-  - "Vegetables first, grain last" and "a smaller grain portion" are the advice a Gentle-rise change most often gives.
+  - "Grain last" and "cooled, reheated rice" are the changes that soften the rise without removing the grain.
   - Holding them takes away the one-tap change, and refusing the ask drops the order at the counter.
-- Smallest correction: count "goes" and "can go" only when nothing follows them, or when a place away from the person follows ("goes back in the pot", "can go to the family"). Count "is out" only when nothing follows it.
-
-### 5. MINOR, low likelihood, regression in this diff (owner rule 3; A14). attaNorm judges only the one word before "atta", and it reads back across commas.
-- Surface: diabetes plates and base swaps (core.js:140 attaNorm).
-- Evidence (r15/names.out, r15/e2e.out). Each of these is refused by the round 14 build, and is now accepted as plate and swap with "atta" declared:
-  - "Soya chunks atta roti": "chunks" is not a material, so "atta" stays wheat.
-  - "Gram flour atta roti": "flour" is not a material.
-  - "Besan, atta-free roti": the reader crosses the comma, so "atta-free" becomes "flour-free" and the stand-in mark is lost.
 - Smallest correction:
-  - Stop the walk-back at punctuation.
-  - Skip "flour" and "chunks" as filler, so the material before them is judged.
+  - Count take, save, hold, cut or leave + it/them after a grain only when nothing, out, off, away, aside, home, back or a later word follows.
+  - Do not count them when after, last, for last, for the end, with, to cool, in a cloth or into follows.
+  - In OWNPART, accept "have one/half (the) <grain>" followed by "and", and "you take <amount>".
 
-### 6. MINOR, narrow (owner rule 3; what is left of round 14 finding 5). A grain that the menu names only in brackets, after a dash, or in a slash list under another dish still counts as sold.
-- Surface: Read the menu, typed menus (engine.js:316 menuItems, engine.js:392 porGrain).
-- Evidence (r15/porgrain.out). All three builds count the grain:
-  - "Dal Tadka | 1 bowl dal with 1 bowl steamed rice" is offered on a menu whose only rice is "Kheer (Rice)", "Phirni (rice)" or "Papad - Rice".
-  - "Palak Paneer | 1 bowl with 2 slices bread" is offered on a menu with "Pakode: Aloo / Paneer / Bread".
-- Smallest correction: a grain word split off by a bracket, dash, colon or slash belongs to the dish before it. Count a grain as sold only when it ends a menu line's own name.
+### 4. MINOR, regression in this diff, low likelihood (owner rule 3 true-grain side; the round 12 rule that a portion naming a food must also name the grain). A portion with a ", with <side>" part is now read as the curry alone.
+- Surface: Rescue, Read the menu, with diabetes (src/v6/engine.js:389-391 partOnly).
+- What is wrong: every comma part is read. A part that begins with "with" is not on the list of additions (only "served with" is), so "with raita" reads as "the raita part".
+- Evidence (r16/menu.out). Each of these is refused now and was offered by both the round 15 and the round 12 builds:
+  - Veg Biryani | 1 plate, with raita, about 400 g
+  - Chicken Biryani | 1 plate, with raita and salan, about 450 g
+  - Rajma Chawal | 1 plate, with salad, about 400 g
+  - Masala Dosa | 1 piece, with sambar and chutney, about 300 g
+  - Idli Sambar | 3 pieces, with sambar, about 300 g
+  - Aloo Paratha | 2 pieces, with curd, about 300 g
+  - Dal Khichdi | 1 bowl, with kadhi, about 350 g
+  - Also "Aloo Paratha | 2 pieces, aloo stuffing" (the round 12 build refused it too).
+  - The prompt asks for "1 bowl, about 300 g" in at most 10 words (engine.js:359), and none of the 63 recorded live portions has a ", with" part, so this is unlikely.
+- Smallest correction:
+  - Treat a comma part that begins with "with", "and", "comes with" or "includes" as an addition, as the first part already does.
+  - Do not read a filling or stuffing named in the dish ("aloo stuffing" in Aloo Paratha) as the part without the grain.
+
+### 5. MINOR, narrow, mostly not in this diff (owner rule 3; what is left of round 15 finding 6). A grain named on the menu only in a sweet or chaat that is not on the exclusion list still counts as sold.
+- Surface: Read the menu, typed menus (engine.js:406-411 soldItems).
+- Evidence (r16/porgrain.out). "Dal Tadka | 1 bowl dal with 1 bowl steamed rice" is offered on a menu whose only rice is "Rice cake" (new; the round 15 build refused it) or "Sweet rice" (all three builds). "Chole | 1 bowl with 2 puri" is offered where the only puri is "Pani Puri", "Sev Puri" or "Bhel Puri" (all three builds).
+- Smallest correction: add cake, sweet and the chaat puris (pani, sev, bhel, dahi, golgappa) to the snack-and-sweet list.
 
 ### Costs, listed, not counted as findings (the safe direction; none appears in the recorded live replies)
-- Portion grain, now refused where the menu does sell it (offered by the round 14 build), because the last word of the item is not the grain:
-  - "Steamed Rice Half 70 Full 120", "Rice Plain", "Roti Tandoori", "Roti Basket (4)", "Rice Bowl";
-  - free-typed menus such as "... jeera rice and tandoori roti" or "... roti and rice".
-  - The kulcha/kulche spelling is not matched in either build.
-- Names now refused by the coating test:
-  - "Banana oats", "Carrot oats", "Palak oats chilla", "Carrot sooji cheela";
-  - the oats or sooji mixes with besan or moong. Refusing those mixes is consistent with round 13 correction 2.
-  - "Chia overnight oats", "Almond overnight oats" and "Apple oats porridge" are refused in all three builds.
-- Refused since round 13 and still refused: Palak, Methi, Aloo, Carrot and Paneer "atta" parathas, rotis and puris; "Grilled chicken, thin atta roti"; "Palak paneer, homemade atta roti".
-- Old gaps, offered in all three builds:
-  - "Rice, not for me; extra dal."
-  - "Rice? Leave it; extra dal."
-  - "Rice, cut it out; extra dal."
-
-### Cosmetic (code only, not shown to the person)
-- COATG lists maida, but maida is filtered out of the grain words before the test, so that entry never applies (core.js:194-197).
-- ATTAMAT holds a placeholder word, "kuttu_never" (core.js:139).
+- Portion grain now refused where the typed menu does sell it (the round 15 build offered each):
+  - a section heading with a dash or bracket: "Breads - Roti / Naan / Kulcha 30", "Breads (Roti, Naan) 30";
+  - a heading whose items do not repeat the grain: "RICE / Jeera / Plain 100", "Rice: Jeera / Plain / Veg Pulao";
+  - the grain in the dish's own bracket: "Dal Tadka (with Jeera Rice) 240";
+  - a menu typed one item per line with no prices ("Dal / Palak paneer / Rice / Roti"): the "Rice" and "Roti" lines are read as section headings, so they sell nothing.
+  - Phulka, Chapati and Chawal are not matched to roti or rice in either build.
+- Names now refused, counted by the round 15 build:
+  - "Low-oil atta paratha" and "Low oil atta roti": "low" is in ATTAPULSE (core.js:138), so "atta" becomes "flour", and "oil flour" then reads as a stand-in. Matching "low carb" as a pair would fix it.
+  - Also refused: "Dal atta roti", "Banana and atta pancake", "Vegetable rava", "Veg sooji", "Tomato rava", "Fried paneer quinoa" and "Tawa paneer jowar". Each of these can be read either way.
+- Declared materials: nothing moves against the round 15 build (r16/mat.out). The mixes "besan and wheat atta" and "low-gluten wheat atta" stay refused, as in round 15.
 
 ### Residual risk, for the live check after "Deploy." (not counted as a finding)
 - Photo menus have no typed text, so neither the side nor the portion grain can be checked against what the place sells.
-- When the declared figures are wrong, the word reader is the only check left. Findings 2 and 4 are the places where it changed in this diff.
+- When the declared figures are wrong, the word reader is the only check left. Findings 2 and 3 are the places where it changed in this diff.
 
 ## What holds (checked, not taken on the builder's word)
 - All the measured gates above. The fingerprint matches the builder's.
@@ -195,25 +165,29 @@ Probe scripts and outputs: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587
   - the built pages.
 - What the diff leaves alone:
   - No screen code, CSS, film or post changed.
-  - No safety line is removed. Kidney condition and pregnancy are still referred; I viewed builder-blocked at 360 px at 130 %.
-  - No unit, supplement or rise-band change.
-  - No banned word in the added lines.
-- Screens: I pixel-compared every screen of my own review run with the round 12 review.
-  - 1,324 of 1,441 are identical.
+  - No safety line is removed. Kidney condition and pregnancy are still referred; I viewed builder-blocked at 360 px at 130 % and rescue-blocked at 320 light.
+  - No unit, supplement or rise-band change. No banned word is in the added lines.
+- Screens: I pixel-compared every screen of this review with the round 12 review.
+  - 1,333 of 1,441 are identical.
   - 63 are the plate-old-saved state, added in round 13.
-  - 54 differ. I viewed 4 of these side by side with a difference image: plate-leave-two at 320 light, builder-blocked at 360 at 130 %, plate-skipped-meds at 360 at 130 % and plate-logged at 320 dark. I made images for rescue-entry at 360 dark and plate-limit at 412 light but did not view them.
-  - In the 4 I viewed, each difference is text anti-aliasing or a toast caught or missed. Going by name, 34 of the other 50 are wait, loading or toast frames (rescue-wait 10, menu-wait 9, plate-loading 8, toast 7); I did not view the rest.
-  - I also viewed rescue-menu-order at 320 dark and plate-hero at 360 at 130 % in full.
+  - 45 differ:
+    - 31 are wait, loading or toast frames: menu-wait 11, plate-loading 10, rescue-wait 6, toast 4.
+    - The rest are plate-skipped-meds 6, plate-logged 4, rescue-busy 2 and rescue-blocked 2.
+  - I viewed two side by side with a difference image:
+    - rescue-blocked-1 at 320 light: text anti-aliasing only;
+    - plate-skipped-meds-2 at 412 dark: the toast is caught in one frame and not the other.
+  - I made rescue-busy-1 at 320 light but did not view it.
+  - I viewed rescue-menu-order-2 at 320 dark and builder-blocked-1 at 360 at 130 % in full.
   - So the earlier visual judgement carries over: nothing runs off at 320 px or at 130 %, the plate and its grams lead, the paper look holds in dark mode, and the Raw Linen look is the same across tabs.
 
 ## Not inspected
 - The owner's own phone and his clients' phones; how clients read the screens.
 - Live Gemini output with the declared fields. No live run was made, so I have not measured how often Gemini:
-  - names a rice-flour or atta coating as the grain;
-  - writes a grain "for the family" beside "your plate";
-  - puts the food after the first comma of a portion;
-  - says the grain "goes last".
-- The v5 screens served by default (hosted/v5/index.min.html) were not rendered. Only their core was checked: it is built from the same sources, and the rule check passes on it.
+  - writes a coating with the frying word first ("Crispy rava fish");
+  - writes "is off for this meal" or "goes back in the pot";
+  - writes "<grain>: take it after ...";
+  - writes a ", with <side>" portion.
+- The v5 screens served by default (hosted/v5/index.min.html) were not rendered. Only their core was checked: it rebuilds from the same sources, and finding 1 reproduces in it.
 - The audio by ear. The films are unchanged; I took loudness from this round's check and voice, music and chimes from round 10's listening record.
 - The WhatsApp post copy was not re-read; it is not in the diff.
 - Every screenshot at full resolution: I relied on pixel identity with round 12 and viewed the frames listed above.
