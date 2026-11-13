@@ -396,13 +396,19 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
    order card asks the person "Is roti available now?" before they order it. A menu cannot say everything; the person in the
    restaurant can. A dish that is itself the grain (a biryani, a dosa) needs no question. */
 function grainAsk(name,por,side){if(isGrain(name))return "";
-  /* rounds 29-30: the grain as written, from the side when it names a grain ("1 Jeera Rice (Qtr)", "Roti x2"), else from the portion;
-     only grain words and the words that name a kind of grain are kept ("red rice", "makki di roti"), never counts, cups or notes */
-  var useSide=!!side&&words(side).some(function(x){return GRAIN_RX.test(x);}),src=String(useSide?side:por).replace(/\binstead\s+of\b[\s\S]*$/i," ").split(/\/|,|\bor\b/i)[0],nw=useSide?[]:words(name),w=words(src),runs=[],span=[];
+  /* rounds 29-32: the grain as written, from the side when it names a grain, else from the portion; only grain words and words that
+     name a kind of grain are kept. Every part of the text is read: grains in a list ("dal, 2 tandoori roti", "raita, 2 roti") are each
+     asked; alternatives ("rice or appam", "roti/naan") are asked together as one ("Is rice or appam available now?"). */
+  var useSide=!!side&&words(side).some(function(x){return GRAIN_RX.test(x);}),src=String(useSide?side:por).toLowerCase().replace(/\binstead\s+of\b[^,;]*/g," "),nw=useSide?[]:words(name);
   var GMOD=/^(?:tandoori|butter|plain|jeera|steamed|missi|rumali|roomali|tawa|garlic|brown|red|white|matta|jowar|bajra|makki|di|ki|ka|lachha|laccha|ragi|neer|masala|coconut|lemon|curd|ghee|kashmiri|basmati|sona|masoori|kolam|millet|multigrain|wheat|whole|phulka|stuffed|aloo|gobi|paneer|methi|pudina|onion|cheese|kerala|malabar|appam|veg)$/;
-  var flush=function(){while(span.length&&!GRAIN_RX.test(span[span.length-1]))span.pop();if(span.some(function(x){return GRAIN_RX.test(x)&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x);})){var r=span.join(" ");if(runs.indexOf(r)<0)runs.push(r);}span=[];};
-  w.forEach(function(x){if(nw.indexOf(x)>=0||!(GRAIN_RX.test(x)||GMOD.test(x)))flush();else span.push(x);});flush();
-  return runs.join(" and ");}
+  var spansOf=function(t){var w=words(t),out=[],span=[];var flush=function(){while(span.length&&!GRAIN_RX.test(span[span.length-1]))span.pop();
+      if(span.some(function(x){return GRAIN_RX.test(x)&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x);}))out.push(span.join(" "));span=[];};
+    w.forEach(function(x){if(nw.indexOf(x)>=0||!(GRAIN_RX.test(x)||GMOD.test(x)))flush();else span.push(x);});flush();return out;};
+  var parts=[],cur=[],seg=src.split(/(\/|\bor\b|,|;|\band\b|\+|\bwith\b)/);
+  for(var k=0;k<seg.length;k+=2){var sp=spansOf(seg[k]),sep=seg[k-1]||"";
+    if(!sp.length)continue;if(cur.length&&/^(?:\/|or)$/.test(sep.trim()))cur=cur.concat(sp);else{if(cur.length)parts.push(cur.join(" or "));cur=sp.slice();}}
+  if(cur.length)parts.push(cur.join(" or "));
+  return parts.filter(function(x,i,a){return a.indexOf(x)===i;}).join(" and ");}
 function porGrain(name,por,text,meal){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
   if(!isGrain(r))return false;
@@ -475,6 +481,7 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
     var list=head.split(/,|\band\b|\/|\.\s/).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
     var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(function(x){return /[a-z]/.test(x);});
     var soldOut=lineSold&&!(!priced&&list.length>1&&!(/\band\b/.test(head)&&!/,|\.\s/.test(head))&&list.every(function(x){return !SOLDOUT.test(x)||words(x).some(function(y){return GRAIN_RX.test(y)||PARTFOOD.test(y)||MAT_RX.test(y);});})&&!/~|[\u274C\u274E\u2716\u2715\u2717\u2718\u26D4]|\uD83D[\uDEAB\uDC4E]/.test(o));   /* round 26: "Dal tadka, paneer, roti. Naan over": each item is read on its own */if(anyPrice&&!priced&&!soldOut){deadKind="";if(MENUSEC.test(head))deadSet=[];}   /* a new section heading ends what a sold-out heading covered */   /* round 23: "Roti (sold out) 30", "Rice - out of stock", "Roti - N/A" sell nothing, on any line */
+    if(!priced&&anyPrice){var hn=/\bno\s+(rotis?|naans?|rice|parathas?|kulchas?|phulkas?|chapatis?)\b/.exec(line);if(hn&&deadSet.indexOf(grainCanon(hn[1]))<0)deadSet.push(grainCanon(hn[1]));}   /* round 32: "BREADS (no roti today, only naan)" */
     if(soldOut){if(!priced&&anyPrice){if(isGrain(head)&&!MENUSEC.test(head)&&!capsLine)deadSet.push(grainCanon(words(head).pop()||""));else if(/^(?:rice|rotis?|naans?|parathas?|kulchas?)$/.test(head)){deadSet.push(grainCanon(head));cur="";}else if(MENUSEC.test(head)||capsLine||TIMEMARK.test(o)||!cur)deadKind="*";if(deadKind)cur="";}list=[];}   /* round 25: "TANDOOR - not available", "BREADS (dinner only)" cover every grain under them */   /* round 24: a sold-out item inside a grain section keeps the section; a sold-out heading covers its items */
     else if(MENUSEC.test(head)){
       if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});if(priced&&isGrain(head))list.push(head);}   /* "Rice: Jeera / Plain"; round 22: "Roti (today) 25" sells roti */

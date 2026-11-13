@@ -94,6 +94,7 @@ const STATES = [
       { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: '1 Steamed Rice', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
     await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await p.waitForSelector('#order-grain-said'); await h.settle(900); await h.inView(p, '#order-card', 'the next order');
+    const top = await p.evaluate(() => { const r = document.getElementById('order-grain-said').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }); if (!top) throw new Error('after No, the "You said" line is not on screen');
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'order-grain-q') throw new Error('after No, focus is on ' + f + ', not the next question'); }],
   ['menu-grain-again', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
     await p.click('#order-grain-no'); await h.settle(400); if (!(await p.$('#mtext'))) await p.click('#mtype'); await h.settle(200); await p.fill('#mtext', fx.typed);

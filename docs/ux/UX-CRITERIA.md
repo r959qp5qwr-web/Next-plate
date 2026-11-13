@@ -554,6 +554,21 @@ and no review state or rule protected the per-menu answers, the two-grain questi
 Measured: rules hold; the six grain review states pass with their focus checks; every earlier Critic probe reads the same as on the round 30
 build; all 4,897 combinatorial cases read right; recorded live replies unchanged (65 of 2,005 held; menu replay 88 orders).
 
+## Part A, changes after Critic round 32
+Round 32 found one MAJOR from a round 31 cosmetic change: the grain name was cut at the first comma, slash or "or", so an order whose grain
+came after a comma ("1 bowl, about 250 g, with 2 tandoori roti", "1 bowl dal, 2 tandoori roti", side "Cucumber Raita, 2 Tandoori Roti")
+was offered with no grain question. It also found the "You said" line scrolled off screen after a No, and "BREADS (no roti today, only
+naan)" selling roti. Changes:
+1. grainAsk reads every part of the side or portion: grains in a list are each asked ("steamed rice and roti"); alternatives joined by
+   "or" or "/" are asked together ("Is rice or appam available now?", "tandoori roti or naan"); "instead of ..." is left out.
+2. After a No with orders left, the "You said" line is scrolled to the top and focus goes to the next question without scrolling; the
+   review state menu-grain-next now asserts the line is on screen.
+3. A heading "no <grain> ..., only ..." keeps the section open and leaves that grain out until the next section heading.
+4. Cosmetic: "Change answers" when more than one No is undone; after "Change answer" the screen reader hears "The order asks about the
+   grain again."
+The rules carry the round 32 grain-name and heading cases. Measured: rules hold; the eight grain review states pass; every earlier Critic
+probe reads the same as on the round 31 build; all 4,897 combinatorial cases read right; recorded live replies unchanged.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

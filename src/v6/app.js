@@ -467,12 +467,13 @@ function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.f
   grainNone();}
 function grainNone(){var g=(UI.mno||[]).join(" and ");UI.mres=null;UI.mopen=false;UI.mundo=true;
   UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available, and every order on this menu needs "+(UI.mno.length>1?"one of them":grainPlural(g)?"them":"it")+". Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
-function grainUndo(){UI.mno=[];UI.mundo=false;UI.merr="";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
+function grainUndo(){UI.mno=[];UI.mundo=false;UI.merr="";$("said").textContent="The order asks about the grain again.";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
 function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
   var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
   if(!keep.length){grainNone();render();var n=document.querySelector("#v-rescue .note");if(n){n.tabIndex=-1;n.focus();n.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}$("said").textContent=UI.merr;return;}
   r.orders=keep;UI.msel=0;UI.mmoves={};render();var nx=r.orders[0];$("said").textContent="Next order: "+nx.name+(nx["with"]?" with "+nx["with"]:"")+".";
-  var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();q.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}}
+  var tl=$("order-grain-said");if(tl)tl.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});   /* round 32: the answer line and the next dish stay in view */
+  var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus({preventScroll:true});}}
 function orderView(v,r){
   if(r.status==="refer"){var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));v.appendChild(e);return;}
   if(UI.msel>=r.orders.length)UI.msel=0;
@@ -481,7 +482,7 @@ function orderView(v,r){
   r.moves.forEach(function(m,k){if(!UI.mmoves[k])return;moved=true;if(m.kind==="portion")a=scaleN(a,m.scale);if(m.kind==="sequence")hab.veg=true;if(m.kind==="move")hab.walk=true;});
   var fit=moved?fitOf(a,r.target):o.fit,band=moved?riseOf(a,hab).band:o.rise;
   if(UI.mno&&UI.mno.length){var gn0=UI.mno.join(" and "),gl=el("p","fine gno");gl.id="order-grain-said";gl.appendChild(document.createTextNode("You said "+gn0+(grainPlural(gn0)?" are":" is")+" not available. "));
-    var gu0=btn("linkbtn","Change answer",null,"order-grain-redo");gu0.addEventListener("click",grainUndo);gl.appendChild(gu0);v.appendChild(gl);}   /* round 31: a No leaves a trace and can be undone */
+    var gu0=btn("linkbtn",UI.mno.length>1?"Change answers":"Change answer",null,"order-grain-redo");gu0.addEventListener("click",grainUndo);gl.appendChild(gu0);v.appendChild(gl);}   /* round 31: a No leaves a trace and can be undone */
   if(r.note){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,r.note));v.appendChild(nt);}
   var card=el("article","card order");card.id="order-card";card.appendChild(el("p","cap",(r.note?"The closest order":"Your order")+" · "+mn));
   var top=el("div","hero-top");
@@ -565,7 +566,7 @@ function renderRescue(){
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
-    if(k===0&&UI.mundo){var ub=btn("linkbtn","Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);}
+    if(k===0&&UI.mundo){var ub=btn("linkbtn",UI.mno&&UI.mno.length>1?"Change answers":"Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);}
     if(k===0&&UI.mlast&&UI.mretry&&(UI.mlast.t||UI.mlast.i)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
     n.appendChild(tx);v.appendChild(n);});
   if(UI.mres){orderView(v,UI.mres);return;}
