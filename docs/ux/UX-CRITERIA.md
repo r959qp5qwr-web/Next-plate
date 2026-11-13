@@ -268,7 +268,7 @@ fried rice", "paneer tikka roll", "fish curry meals"); that puffed rice or murmu
 single-word headings under BREADS (rumali, lachha) did not sell their items. Changes:
 1. A figure kept is a figure of the grain, in every sentence: "N g" tied to the grain word, "your N g" or "your portion is N g" only when no
    other food follows, "you keep N g" only at the end or before "with", "and" or "plus"; "eat the rest" keeps, "the rest of the dal" does
-   not. "Then eat it" keeps only without "tomorrow" or "later". "0 g", "the whole portion" and "skip all of it" remove; "leave all of it to cool" keeps.
+   not (narrowed in round 20). "Then eat it" keeps only without a later time or another eater (round 20). "0 g", "the whole portion" and "skip all of it" remove; "leave all of it to cool" keeps.
 2. Side-dish words before the grain (tikka, masala, curry, fry, korma, kebab, gravy, manchurian, kadai, makhani, butter) name the dish the
    grain is served with; the exception for a grain after a side word applies only to stand-in bases. A roll, wrap or kathi roll may carry
    tikka, kebab, seekh or shawarma; "meals" is a grain meal.
@@ -282,6 +282,31 @@ none the round 18 build counted; all 4,897 combinatorial cases read right; its e
 one-tap notes are held, the same 65 as before; with diabetes the menu replay offers 88 orders (was 87) and drops 6 (was 9), none of which
 add a grain; its round 12 menu now offers 43 of 43 keeps (the paneer tikka wrap counts).
 D7: Roti (lauki), Pasta (broccoli) and crispy noodle chicken salad are read the safe way.
+
+## Part A, changes after Critic round 20
+Round 20 found two regressions from round 19: "eat the rest" read as the grain kept after any removal ("rice: skip it; eat the rest"),
+and the new paratha kinds under BREADS carried into the next section when its heading had punctuation ("MAINS (VEG)"). It also found
+"then have it at lunch tomorrow" read as a keep, shawarma and seekh wraps and kadai paneer rice refused, kurmura and mamra not read as
+grains, and a figure after another food kept ("have the lobia, 200 g", "raise the chana to 150 g", "skip every bit of the rice"). Changes:
+1. "Eat, have or keep the rest" keeps the grain only after a share of it is set apart ("pack half the rice; eat the rest", "leave 50 g for
+   the family; eat the rest"); "the rest of the chole" or "of the thali" is the meal, not a part of the grain.
+2. A figure after the grain is the grain's only when no other food is brought in between ("have the lobia", "add", "raise", "extra");
+   "you have 150 g" or "your portion is 200 g" in a clause with no grain word keeps only when a share is named (half, some, the rest,
+   extra, "for the family"). "0 g" is the grain's only when no other food follows ("0 g ghee" is not); "0 grams" counts.
+3. "Then eat it" keeps only when no later time or other eater follows anywhere in its clause; "rice: pack it", "box it", "freeze it" and
+   "send it" read like "leave it". "Every bit of the rice" is all of it. "Cut it out and raise the chana to 150 g" is no longer read as
+   "cut the rice to 150 g".
+4. Shawarma, seekh, chilli and the words before a food (kadai, butter, chilli, tandoori) name the dish served with the grain; a wrap may
+   carry kadai; kurmura, mamra and muri are grain words, and "jhal muri" counts. "Meals" is a grain meal only after a meal word (veg, South
+   Indian, thali, curry, fry, mini, full); "salad meals", "chicken meals" do not count.
+5. Any unpriced line ends a bread or rice section; an unpriced ROTI or RICE heading followed by another heading (all capitals, "&", a
+   trailing colon, or a known section word) sells nothing; a bare grain line in an unpriced list still names an item.
+Measured: the Critic's round 20 probes give 0 removals offered of 38 and 0 keeps held of 13; its 2,916-note removal grid offers 0 (the round
+19 build offered 880); its 1,512-note keep grid holds 4 more than round 19, all "give the rest of the brown rice to the family; eat the
+rest", which contradicts itself and is held on the safe side; 0 of 74 non-grain names count and 0 of 91 grain names are refused; 0 of 11
+non-selling menus and 0 of 6 removal asks are offered, 0 of 7 selling menus refused. Under BREADS a butter roti still counts as sold when
+a tandoori roti is (the same grain). All earlier Critic probes read the same as on the round 19 build; all 4,897 combinatorial cases read
+right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |

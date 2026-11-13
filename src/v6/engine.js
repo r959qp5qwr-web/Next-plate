@@ -410,16 +410,19 @@ function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|cha
    An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
 var MENUSEC=/^(?:breads?|indian\s+breads?|rice|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
 var NOTSOLD=/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps|cutlets?|kanji|meetha|cakes?|sweet|pani|sev|bhel|golgappa|chaat|dahi\s+puri)\b/;
-function soldItems(text){var out=[],lines=String(text||"").toLowerCase().split(/\n|\s\|\s/),anyPrice=/\d/.test(text||"");
+function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lines=orig.map(function(x){return x.toLowerCase();}),anyPrice=/\d/.test(text||"");
   var cur="";
   lines.forEach(function(line,li){
-    var priced=/\d/.test(line),next=(lines[li+1]||"").trim();line=line.replace(/\d+(?:\.\d+)?/g," ").replace(/\b(?:rs|inr|half|full|qtr|quarter|small|medium|large|regular|plate|portion|basket|pc|pcs|nos)\b/g," ").replace(/[\u20B9$]/g," ");
+    var priced=/\d/.test(line),next=(lines[li+1]||"").trim(),onext=(orig[li+1]||"").trim();
+    if(anyPrice&&!priced)cur="";   /* round 20: any unpriced line ends a grain section ("MAINS (VEG)", "MAIN COURSE - VEG") */line=line.replace(/\d+(?:\.\d+)?/g," ").replace(/\b(?:rs|inr|half|full|qtr|quarter|small|medium|large|regular|plate|portion|basket|pc|pcs|nos)\b/g," ").replace(/[\u20B9$]/g," ");
     var head=line.split(/[(\[]|\s-\s|:/)[0].trim(),rest=line.slice(line.indexOf(head)+head.length);
     var list=head.split(/,|\band\b|\//).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
     var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(Boolean);
     if(MENUSEC.test(head)){
       if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});}   /* "Rice: Jeera / Plain" */
-      else if(anyPrice&&!priced&&(/\d/.test(next)&&!MENUSEC.test(next.replace(/[^a-z ]/g," ").trim())||!/\d/.test(next)&&/^(?:desserts?|sweets?|drinks?|beverages?|starters?|snacks?|soups?|salads?|mains?|main\s+course|sides?|chinese|tandoor|combos?|specials?|extras?)$/.test(next.replace(/[^a-z ]/g," ").trim().toLowerCase()))){list=[];cur=/^(?:rice|rotis?|naans?|parathas?|kulchas?)$/.test(head)?head.replace(/s$/,""):/^(?:indian\s+)?breads?$/.test(head)?"bread*":"";}}   /* a heading that names one grain names its items ("ROTI: Tandoori, Butter"); "BREADS" does not */   /* a heading over priced items; "Rice" then "Jeera / Plain 100" is jeera rice */
+      else if(anyPrice&&!priced){var nhead=!/\d/.test(next)&&(/[a-z]/i.test(onext)&&!/[a-z]/.test(onext)||/&|:\s*$/.test(onext)||/^(?:desserts?|sweets?|drinks?|beverages?|starters?|snacks?|soups?|salads?|mains?|main|sides?|chinese|tandoor|combos?|specials?|extras?|ice|mocktails?|cocktails?|shakes?|juices?)\b/.test(next));
+        if(/\d/.test(next)&&!MENUSEC.test(next.replace(/[^a-z ]/g," ").trim())){list=[];cur=/^(?:rice|rotis?|naans?|parathas?|kulchas?)$/.test(head)?head.replace(/s$/,""):/^(?:indian\s+)?breads?$/.test(head)?"bread*":"";}
+        else if(nhead)list=[];}}   /* a heading over priced items names them ("ROTI" then "Tandoori 30"); a heading followed by another heading ("ROTI" then "ICE CREAM") sells nothing; "Rice" then "Roti" in a list is an item */   /* a heading that names one grain names its items ("ROTI: Tandoori, Butter"); "BREADS" does not */   /* a heading over priced items; "Rice" then "Jeera / Plain 100" is jeera rice */
     else if(!priced&&anyPrice&&/^[a-z ]+$/.test(head)&&!isGrain(head))cur="";                 /* another heading ends a grain section */
     if(cur==="bread*"&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&/^(?:tandoori|butter|missi|plain|rumali|roomali|makki|bajra|jowar|methi|tawa|phulka|chapati)$/.test(x.trim())?x+" roti":/^(?:lachha|laccha|pudina|aloo|gobi|paneer)$/.test(x.trim())?x+" paratha":x;});   /* "BREADS" then "Tandoori 30": a tandoori roti; "Garlic 50" stays unknown */
     else if(cur&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&words(x).length<=3?x+" "+cur:x;});
