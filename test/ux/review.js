@@ -86,6 +86,15 @@ const STATES = [
   // round 28 (owner decision): the grain question on a menu order with diabetes, after "Yes" and after "No"
   ['menu-grain-yes', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.waitForSelector('#order-go'); await h.settle(600); await h.inView(p, '#order-card', 'the confirmed order'); }],
   ['menu-grain-no', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 }); await p.click('#order-grain-no'); await h.settle(900); }],
+  // round 29: "No" moves to an order with another grain; reading the menu again after "No" does not bring the same grain back
+  ['menu-grain-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Tandoori Roti', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
+      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: '1 Steamed Rice', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
+    await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await h.settle(900); await h.inView(p, '#order-card', 'the next order'); }],
+  ['menu-grain-again', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
+    await p.click('#order-grain-no'); await h.settle(400); await p.click('#mtype'); await h.settle(200); await p.click('#mgo'); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(900); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

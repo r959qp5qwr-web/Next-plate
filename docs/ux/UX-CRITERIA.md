@@ -494,6 +494,29 @@ as on the round 27 build except those menu cases and the "at lunch" note; all 4,
 replies 65 of 2,005 one-tap notes are held (the same 65) and the recorded menu replay offers 88 orders, as before. The films were made
 before the question and show the order card without it.
 
+## Part A, changes after Critic round 29
+Round 29 judged the grain question (owner decision, round 28) and found one MAJOR: after "No" with no order left, reading the menu again
+brought back the same grain question, and the note pointed to the menu box instead of "Already chosen? Name the dish". It also found a
+toast that claimed the next grain was available, focus lost after "No", the grain named by its last word ("Red Rice" as "rice", "Makki
+di Roti" as "roti"), a "Yes" that could not be taken back and was kept by the order's position, heading words that closed sections when
+they only described the food or the days, and a send-away sentence after "then eat it" skipped. Changes:
+1. Answers are kept by the grain's name for the session: a "No" drops every order needing that grain now and on any fresh read of a menu;
+   when none is left the note says "You said <grain> is not available. No order left on this menu has a grain you can get. Ask which roti
+   or rice they have, then type your dish with it under "Already chosen? Name the dish"." and focus moves to that box; the note is written
+   to the live region.
+2. "No" with another order left shows it with its own question and moves focus to that question; the screen reader hears "Next order:
+   <dish>". No toast. "Yes" shows "<Grain>: available, you checked." with "Change answer", which asks again. Yes and No carry equal weight.
+3. The engine names the grain as written without the count ("red rice", "makki di roti", "neer dosa") and both grains when there are two
+   ("steamed rice and roti", asked as "Are ... available now?").
+4. Heading marks: weekday names, "none with maida", "served over dal", "Down South style" and "not available for parcel" no longer close a
+   section; "closed", "not available", "over for today", "under repair" still do.
+5. One-tap: only the sentence that "then eat it" keeps is excused; a send-away sentence after it ("the rice goes back into the pot")
+   holds the note. Short waits before "then" (cool, warm, N minutes) and "at <this meal>" keep it.
+Review states added: menu-grain-next (No moves to an order with another grain) and menu-grain-again (reading the menu again after No).
+Measured: the round 29 rule block holds (grain names, headings, one-tap sentences); every earlier Critic probe reads the same as on the
+round 28 build except "TANDOOR (Sat & Sun)" and "(weekends)", now offered with the grain question; all 4,897 combinatorial cases read
+right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65) and the recorded menu replay offers 88 orders.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

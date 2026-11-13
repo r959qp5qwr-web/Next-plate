@@ -395,9 +395,12 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
 /* Round 28 (owner decision): with diabetes, an order whose grain is a side or part of the portion carries the grain's name, and the
    order card asks the person "Is roti available now?" before they order it. A menu cannot say everything; the person in the
    restaurant can. A dish that is itself the grain (a biryani, a dosa) needs no question. */
-function grainAsk(name,por,side){if(isGrain(name))return "";var src=side&&isGrain(side)?side:por,nw=words(name),w=words(src),out="";
-  w.forEach(function(x,i){if(GRAIN_RX.test(x)&&nw.indexOf(x)<0&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x))out=(/^(?:tandoori|butter|plain|jeera|steamed|missi|rumali|tawa|garlic|brown|jowar|bajra|makki|lachha|laccha|ragi|jeera)$/.test(w[i-1]||"")?w[i-1]+" ":"")+x;});
-  return out;}
+function grainAsk(name,por,side){if(isGrain(name))return "";var src=side&&isGrain(side)?side:por,nw=words(name),w=words(src),runs=[];
+  /* round 29: the grain as written ("red rice", "makki di roti", "neer dosa"), without the count; two grains are named together */
+  var STOPG=/^(?:\d+|with|and|or|plus|bowl|bowls|plate|plates|piece|pieces|pc|pcs|katori|small|large|medium|half|full|a|an|the|of|about|g|gm|grams|serving|portion|side|extra|one|two|three|four)$/;
+  var span=[];var flush=function(){if(span.some(function(x){return GRAIN_RX.test(x)&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x);})){var r=span.join(" ");if(runs.indexOf(r)<0)runs.push(r);}span=[];};
+  w.forEach(function(x){if(STOPG.test(x)||nw.indexOf(x)>=0||PARTFOOD.test(x)||MAT_RX.test(x))flush();else span.push(x);});flush();
+  return runs.join(" and ");}
 function porGrain(name,por,text,meal){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
   if(!isGrain(r))return false;
@@ -414,7 +417,7 @@ function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|cha
    the section when they are not grains on their own ("jeera rice"); a bracket that starts with "with" lists what comes with the dish; a
    section word alone on a line is a heading on a priced menu and an item on an unpriced one; a free-typed list splits on commas and "and".
    An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
-var SOLDOUT=/\b(?:nahi\s+hai|khatam|not\s+available|unavailable|sold\s+out|finished|over(?!\s+(?:\d|slow|low|high|medium|a|the|fire|flame|charcoal|coal|tawa|wood|heat))|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na|nil|none\s+left|all\s+gone|no\s+more|not\s+(?:there|ready|now|making|made|cooking))\b/;
+var SOLDOUT=/\b(?:nahi\s+hai|khatam|not\s+available(?!\s+for\s+(?:parcel|takeaway|take\s+away|delivery|home))|unavailable|sold\s+out|finished|over(?!\s+(?:\d|dal|rice|curry|sabzi|gravy|chole|rajma|slow|low|high|medium|a|the|fire|flame|charcoal|coal|tawa|wood|heat))|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na|nil|none\s+left|all\s+gone|no\s+more|not\s+(?:there|ready|now|making|made|cooking))\b/;
 var SOLDW=/^(?:nahi|hai|khatam|sold|finished|over|closed|nil|gone|na)$/;
 var TIMEMARK=/\b(?:after|from|before|till|until)\s+\d|\d\s*(?:pm|am)\b|\b(?:dinner|lunch|evening|night|breakfast|morning|weekends?|sundays?|saturdays?)\s+only\b|\bonly\s+(?:at|for|in\s+the|on)\s+(?:dinner|lunch|evening|night|breakfast|morning|weekends?|sundays?)\b/i;
 var QUALW=/^(?:with|and|or|per|each|piece|pieces|nos|plate|half|full|small|large|regular|extra|add|on|of|the|a|an|veg|non|nonveg|jain|special|house|chef|chefs|fresh|hot|ghee|butter|garlic|plain|jeera|tandoori|tawa|masala|stuffed|onion|tomato|mint|pudina|methi|missi|lachha|laccha|rumali|roomali|kashmiri|green|peas|steamed|fried|boiled|cumin|curd|today|todays|available|in|for|cheese|chilli|chili|aloo|gobi|paneer|mix|mixed|multigrain|wheat|atta|maida|bajra|jowar|makki|ragi|brown|white|red|basmati|soft|crispy|thin|thick|desi|homestyle|home|style|bowl|serving|portion|cup|katori|qty|unit|units|pc|pcs|kg|gm|gms|g|ml|only|also|served|serves|people|cooked|slow|fire|wood|charcoal|clay|oven|fired|baked|dum|over|after|from|pm|am|onwards|hrs|till|until|before|to|ready|min|mins|minutes|hai|bhi|please|too|etc|yes|ok|okay|whole|tandoor|v|amul|each|persons|person|dry|gravy|lemon|coconut|tamarind|sweet|salted|plus|bread|breads|kulcha|naan|roti|rotis|paratha|rice|combos?|sides?|mains?|staples?|accompaniments?|indian)$/;
@@ -455,7 +458,7 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
     var lx=x.toLowerCase().replace(/\bno\s+(?:onion|garlic|maida|butter|ghee|oil|cream|sugar|added\s+sugar)\b/g," ").replace(/\b(?:only\s+(?:wheat|whole\s+wheat|atta|millets?|veg|vegetarian|jain))\b/g," ").replace(/\boff\s+the\s+(?:tawa|griddle|grill)\b/g," tawa ").replace(/\b(?:not|less|mild(?:ly)?)\s+spicy\b/g," ");
     if(!(MEALW[meal]&&MEALW[meal].test(lx)))for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;   /* "DINNER" at lunch; "LUNCH & DINNER" sells at both */
     var w=window_(lx);if(w&&(!WIN||w[1]<=WIN[0]||w[0]>=WIN[1]))return true;   /* "TANDOOR 7-11 pm" at lunch; "(10 am - 11 pm)" covers lunch */
-    return /\b(?:band|closed|shut|off|nahi|nil|none|over|finished|khatam|unavailable|repair|stopped|down|tomorrow|kal|weekends?|sat|sun|saturdays?|sundays?)\b|\bnot\s+(?:available|working|today|now|ready|served)\b/.test(lx);};   /* round 28 (owner decision): explicit marks only; the person confirms the grain with one tap */
+    return /\b(?:band|closed|shut|nahi|nil|finished|khatam|unavailable|repair|stopped|tomorrow|kal)\b|\b(?:none\s+(?:left|today|available|now)|over\s*(?:$|\)|today|now|for\s+(?:today|now))|is\s+over|(?:is\s+)?down\s+(?:today|now)|off\s+(?:today|now)|(?:is|are)\s+off)\b|\bnot\s+(?:available|working|today|now|ready|served)\b(?!\s+for\s+(?:parcel|takeaway|take\s+away|delivery|home))/.test(lx);};   /* round 29: weekday names, "none with maida", "served over dal", "not available for parcel" do not close a section */
   var cur="",deadKind="",deadSet=[],deadPerm=[];
   lines.forEach(function(line,li){
     var ni=li+1;while(ni<lines.length&&markOf(ni,true)&&!(/[a-z]/i.test(orig[ni]||"")&&!/[a-z]/.test(orig[ni]||"")))ni++;   /* round 25: look past sold-out items for what a heading heads */

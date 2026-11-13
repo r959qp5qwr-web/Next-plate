@@ -1074,6 +1074,32 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   ok(!!on && on.grain === '', 'round 28: without diabetes the order asks nothing about the grain');
 }
 
+{ // round 29: the grain named as written; headings that only describe the food or the days sell; a send-away sentence after "then eat it" counts
+  const fs = require('fs'); const pg = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
+  const ga = new Function(pg.slice(pg.indexOf('<script id="np-core">') + 21, pg.indexOf('</script>', pg.indexOf('<script id="np-core">'))) + ';return grainAsk;')();
+  const GA = [['Dal Tadka', '1 bowl dal with 2 tandoori roti, about 400 g', '', 'tandoori roti'], ['Palak Paneer', '1 bowl', '1 Steamed Rice', 'steamed rice'], ['Sarson Saag', '1 bowl with 2 makki di roti', '', 'makki di roti'],
+    ['Fish Curry', '1 bowl', '1 plate Red Rice', 'red rice'], ['Chicken Curry', '1 bowl with 3 neer dosa', '', 'neer dosa'], ['Dal', '1 bowl', 'Steamed Rice and 1 Roti', 'steamed rice and roti'], ['Veg Biryani', '1 plate', '', '']];
+  const badG = GA.filter(([n, por, side, want]) => ga(n, por, side) !== want).map(c => c[0] + ' => ' + ga(c[0], c[1], c[2]));
+  ok(!badG.length, 'round 29: the question names the grain as written, without the count, and both grains when there are two' + (badG.length ? ' (' + badG.join(' | ') + ')' : ''));
+  const q = (text, g) => { const pl = plan('menu', { profile: Object.assign({}, P, { diet: 'nonveg' }), ctx: { meal: 'lunch', text } });
+    const d = { as_written: 'Dal Tadka', portion: '1 bowl dal with ' + g + ', about 400 g', kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask: '', grain_made_of: /rice/.test(g) ? 'rice' : 'wheat', grain_grams: 80, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 };
+    return ((pl.check({ status: 'ok', place: 'R', dishes: [d], leave: [], tip: '' }).orders) || []).length > 0; };
+  const m = 'MAINS\nDal Tadka 240\nPalak Paneer 300\n';
+  const SELL = [['2 roti', 'BREADS (Mon to Sun)\nRoti 30'], ['2 roti', 'BREADS (Sat-Sun also)\nRoti 30'], ['2 roti', 'BREADS (none with maida)\nRoti 30'], ['2 roti', 'BREADS (not available for parcel)\nRoti 30'],
+    ['1 plate rice', 'RICE (served over dal)\nRice 90'], ['1 plate rice', 'RICE (Down South style)\nRice 90'], ['1 plate rice', 'RICE (Sunday special pulao below)\nRice 90']];
+  const STOP = [['2 roti', 'BREADS (closed)\nRoti 30'], ['2 roti', 'BREADS - not available\nRoti 30'], ['2 roti', 'TANDOOR (under repair)\nTandoori Roti 30\nRoti 30'], ['2 roti', 'BREADS (over for today)\nRoti 30']];
+  const badS = SELL.filter(([g, t]) => !q(m + t, g)).map(c => c[1].split('\n')[0]), badT = STOP.filter(([g, t]) => q(m + t, g)).map(c => c[1].split('\n')[0]);
+  ok(!badS.length, 'round 29: headings that only describe the food, the days or parcels still sell the grain' + (badS.length ? ' (refused: ' + badS.join(' | ') + ')' : ''));
+  ok(!badT.length, 'round 29: headings that say the section is closed or over sell nothing' + (badT.length ? ' (offered: ' + badT.join(' | ') + ')' : ''));
+  const pp = readProfile(Object.assign({}, P)); pp.slot = 'dinner';
+  const tap = (note, after) => { const mm = JSON.parse(JSON.stringify(meal)); mm.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
+    const c = checkMeal(mm, pp); return !!(c.meal && c.meal.alchemy.glucose); };
+  const RM = ['Rice: leave it to cool, then eat it; the rice goes back into the pot.', 'Rice: leave it to cool, then eat it. The rice goes in the fridge.'];
+  const KP = ['Rice: let it cool for 10 minutes, then have it.', 'Rice: keep it 30 minutes, then eat it.', 'Rice: keep it till you finish the salad, then eat it at dinner.', 'Rice: keep it warm, then eat it at dinner.'];
+  const offR = RM.filter(n => tap(n, 200)), heldK = KP.filter(n => !tap(n, 150));
+  ok(!offR.length && !heldK.length, 'round 29: a send-away sentence after "then eat it" holds the note; short waits and "at <this meal>" keep it' + (offR.length || heldK.length ? ' (offered: ' + offR.join(' | ') + '; held: ' + heldK.join(' | ') + ')' : ''));
+}
+
 // ---- Rule 4, the owner's banned words, in every field the model writes for the person to read (Critic round 7).
 const WORDS = ['real', 'quiet', 'quietly', 'simply', 'seamlessly', 'effortlessly', 'exactly', 'just works', 'journey', 'unlock', 'empower', 'smart', 'magic',
   'game-changer', 'revolutionary', 'transform', 'curated', 'tailored', 'personalised', 'holistic', 'wellness journey'];

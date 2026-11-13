@@ -316,16 +316,16 @@ function thenKeeps(t){
   var bs=bf.split(/[.!?]/).filter(function(x){return /[a-z]/.test(x);});var bfs=bs.length?bs[bs.length-1]:"";   /* the sentence the "then" belongs to, not the change's title */
   if(/\b\d+\b(?!\s*(?:min|mins|minutes?)\b)/.test(bfs)||/\b(?:second|next|another|other|2nd)\s+meal\b|\b(?:after|post)\s+(?:the\s+|this\s+|your\s+)?(?:meal|dinner|lunch|breakfast)\b/.test(bfs))return false;   /* "till 7", "4 hours", "the second meal" */
   if(words(bfs).some(function(y){return !(GRAIN_RX.test(y)||/^(?:leave|set|keep|hold|save|let|put|move|push|place|it|them|the|a|an|aside|side|on|back|for|now|few|minutes?|mins?|min|moment|bit|while|till|until|end|of|meal|you|finish|finished|finishing|eat|eating|first|to|cool|cools|rest|plate|and|so|warm|covered|cover|lid|in|pot|pan|kadai|cooker|bowl|serving|dish|your|brown|white|red|plain|just|little|tawa|stove|flame|griddle|gas|counter|table|after|while|salad|second|half|is|are|done|sit|stand|rest|\d+)$/.test(y)||THEN_FOOD.test(y)||PARTFOOD_W.test(y)||MAT_RX.test(y)||VEGW.test(y)||COATW.test(y));}))return false;
-  var loose=!/\bleave\s+(?:it|them)\b/.test(before);   /* "set it aside", "keep it aside", "hold it": an anchor is needed */
+  var loose=!/\bleave\s+(?:it|them)\b/.test(before)&&!/\b(?:cool|cools|warm|covered|\d+\s*(?:min|mins|minutes?)|a\s+(?:few\s+)?minutes?)\b/.test(bfs);   /* round 29: "let it cool for 10 minutes, then have it" */   /* "set it aside", "keep it aside", "hold it": an anchor is needed */
   if(m[1]==="reheat"&&loose)return false;
   var parts=m[2].replace(/\brest\s+of\s+(?:the\s+)?(?:plate|meal|thali|food)\b/g,"plate").split(/[.!?\n;]/),first=parts[0],later=parts.slice(1).join(" ");
-  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box)\b/.test(later))return false;
+  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box|pot|kitchen|goes|back|kids|family)\b/.test(later))return false;
   var anchor=!loose,clauses=first.split(/[,;]/);
   for(var c=0;c<clauses.length;c++){var w=words(clauses[c]),mode="",needFood=false;
     for(var k=0;k<w.length;k++){var x=w[k];
       if(/^(?:the|your|my|a|some|his|her|our|of|and|plus|it|them|eat|have|serve|reheat|g|gm|grams?|\d+)$/.test(x))continue;
       if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";needFood=true;continue;}
-      if(x==="at"&&CUR_SLOT&&w[k+1]===CUR_SLOT){k++;continue;}   /* "then eat it at dinner" at dinner */
+      if(x==="at"&&CUR_SLOT&&w[k+1]===CUR_SLOT){k++;anchor=true;continue;}   /* "then eat it at dinner" at dinner */
       if(/^(?:milk|tea|chai|coffee|rest)$/.test(x))return false;
       if(/^(?:last|first|slowly|together)$/.test(x)&&mode!=="after"){anchor=true;continue;}
       if(THEN_SAME.test(x)&&mode!=="after")continue;
@@ -441,7 +441,9 @@ function removesGrain(text){
       if(!obj){var pv=cl[c].match(/([a-z ]+?)\s+(?:to\s+be|is|are|be|being|gets?|got)\s+[a-z]+\s+(?:off|out|aside|away|back)\b/);obj=pv?objectAfter(pv[1].split(/\b(?:for|ask|them|to)\b/).pop()):"";}
       if(hasGrainWord(obj)&&!partOf(obj+" "+cl[c])&&!keepsAmount(t))return true;}}   /* "send half the rice back; you keep half" */
   /* a grain kept for later, sent elsewhere or left to wait: "pack the roti for tomorrow", "the roti can wait", "let the roti go" */
-  if(!thenKeeps(t))for(c=0;c<cl.length;c++){var x=cl[c];if(!hasGrainWord(x))continue;
+  /* round 29: only the sentence that "then eat it" keeps is excused; a send-away clause in another sentence still counts */
+  var thenSen=thenKeeps(t)?(t.split(/[.;!?]/).filter(function(z){return /\bthen\s+(?:eat|have|reheat|serve)\b/.test(z);})[0]||""):"";
+  for(c=0;c<cl.length;c++){var x=cl[c];if(!hasGrainWord(x))continue;if(thenSen&&x.trim()&&thenSen.indexOf(x.trim())>=0)continue;
     if(/\b(?:separate\s+box|doggy\s+bag|boxed\s+(?:up|separately|for|to)|packed\s+up|parcel(?:led|ed)?|take\s+(?:it\s+|them\s+)?home|for\s+the\s+(?:table|family|kids|children|others)|to\s+share\s+(?:at\s+the\s+table|with\s+(?:the\s+)?(?:table|family|kids|children|others))|to\s+(?:the\s+)?(?:kids|children|family|others)|someone\s+else|somebody\s+else|off\s+the\s+(?:menu|order|list|bill)|another\s+time|a\s+(?:rest|break)(?!\s+(?:for\s+(?:\d+|a\s+few|five|ten|two|three|a\s+couple\s+of)\s*(?:min|mins|minutes?|secs?|seconds?)\b|between))|take\s+a\s+break\s+from)\b/.test(x)&&!keepsAmount(t)&&!partOf(x)&&!/\b(?:cook|cooks|cooked|soak|soaked|make|made|prepare|prep|boil|steam|knead|roast|ferment|batch)\b/.test(x))return true;
     var gm=/\b(?:goes|(?:can|could|should|may|will|must)\s+go|(?:is|are)\s+(?:off|out))\b(.*)$/.exec(x)||new RegExp("\\b(?:"+GRAINT+")\\s+go\\b(.*)$").exec(x);
     if(gm&&/^\s*(?:$|completely|entirely|altogether|for\s+good|for\s+(?:now|this|tonight|today|dinner|lunch|breakfast|a\s+while|a\s+week|\d+\s+days?|(?:two|three|a\s+few|few)\s+days|the\s+(?:day|night|evening|week|weekend|meal|rest))|this\s+(?:time|meal|evening|week|morning|afternoon)|tonight|today|away|off\s*$|unserved|untouched|uneaten|back\s+(?:in|into|to)\s+(?:the\s+)?(?:pot|kitchen|box|fridge|cooker|container|tiffin|counter)|back\s+(?:unserved|untouched|uneaten)|back\s*$|(?:in|into)\s+(?:the\s+)?(?:fridge|tiffin|box|freezer|container|bin)|to\s+(?:the\s+)?(?:fridge|kitchen|box|family|kids|table|others|freezer)|to\s+(?:your|the|my|his|her)\s+(?:husband|wife|son|daughter|kids|children|family|guests?|mother|father|parents|brother|sister|maid|neighbour|neighbor|friend)|off\s+the|(?:out\s+)?of\s+(?:the|this|my|your)\s+(?:plate|order|menu|meal|table|thali|dinner|lunch|breakfast)|(?:till|until)\s+(?:tomorrow|the\s+weekend|later|next|breakfast|lunch|dinner)|the\s+(?:plate|table|menu|order))/.test(gm[1])&&
