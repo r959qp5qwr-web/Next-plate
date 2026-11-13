@@ -297,17 +297,32 @@ var PRIORREM=new RegExp("\\b(?:skip|skipping|drop|omit|avoid|remove|ditch|withou
 var THEN_FOOD=/^(?:dal|daal|sabzi|sabji|subzi|curry|raita|salad|sambar|rasam|curd|dahi|yogurt|yoghurt|pickle|achar|chutney|papad|kadhi|rajma|chole|chana|paneer|ghee|gravy|soup|veg|vegetables?|veggies|sprouts|egg|eggs|chicken|fish|mutton|tofu|bhaji|bhurji|korma|kurma|poriyal|thoran|stew|main|mains|course|starter|starters|plate|meal|rest)$/;
 var THEN_PEOPLE=/^(?:kids|children|family|husband|wife|son|daughter|guests?|mother|father|parents|mom|mum|dad|everyone|us|others|table)$/;
 var THEN_SAME=/^(?:last|first|slowly|hot|warm|now|right|straight|away|immediately|together|too|also|fresh|then)$/;
-function thenKeeps(t){var re=new RegExp("(?:^|[^.!?]\\s)then\\s+(?:eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b([\\s\\S]*)$"),m=re.exec(t);
-  if(!m)return false;   /* round 24: every word to the end of the note is read, past commas and full stops */
-  var w=words(m[1]),mode="",needFood=false;
-  for(var k=0;k<w.length;k++){var x=w[k];
-    if(/^(?:the|your|my|a|some|his|her|our|of|and|plus|it|them|eat|have|serve|reheat)$/.test(x))continue;
-    if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";needFood=true;continue;}
-    if(THEN_SAME.test(x)&&mode!=="after")continue;
-    if(THEN_FOOD.test(x)||MAT_RX.test(x)||COATW.test(x)||VEGW.test(x)||PARTFOOD_W.test(x)){needFood=false;continue;}
-    if(THEN_PEOPLE.test(x)&&mode==="with")continue;
-    return false;}
-  return !needFood;}
+function thenKeeps(t){
+  /* Round 25. The note before "then" says how the grain was set apart: after a storing verb (save, pack, freeze, store, box, wrap ...)
+     or a removal (skip, drop, no) it is never eaten at this meal; after "set it aside", "keep it aside" or "hold it" the words after
+     "then" must name a food on the plate or "last", "first", "slowly"; "leave it, then eat it" keeps as it is. The first sentence after
+     "then" is read clause by clause with the allow-list; any later sentence holds the note only if it names a meal, a time or a store. */
+  var re=new RegExp("(?:^|\\s)then\\s+(eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b([\\s\\S]*)$"),m=re.exec(t);
+  if(!m)return false;
+  var before=t.slice(0,m.index);
+  if(/\b(?:pack|packed|freeze|frozen|store|stored|refrigerate|box|boxed|parcel|wrap|tiffin|send|give|skip|drop|omit|remove|avoid|no)\b/.test(before))return false;
+  var loose=!/\bleave\s+(?:it|them)\b/.test(before);   /* "set it aside", "keep it aside", "hold it": an anchor is needed */
+  if(m[1]==="reheat"&&loose)return false;
+  var parts=m[2].replace(/\brest\s+of\s+(?:the\s+)?(?:plate|meal|thali|food)\b/g,"plate").split(/[.!?\n;]/),first=parts[0],later=parts.slice(1).join(" ");
+  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box)\b/.test(later))return false;
+  var anchor=!loose,clauses=first.split(/[,;]/);
+  for(var c=0;c<clauses.length;c++){var w=words(clauses[c]),mode="",needFood=false;
+    for(var k=0;k<w.length;k++){var x=w[k];
+      if(/^(?:the|your|my|a|some|his|her|our|of|and|plus|it|them|eat|have|serve|reheat|g|gm|grams?|\d+)$/.test(x))continue;
+      if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";needFood=true;continue;}
+      if(/^(?:milk|tea|chai|coffee|rest)$/.test(x))return false;
+      if(/^(?:last|first|slowly|together)$/.test(x)&&mode!=="after"){anchor=true;continue;}
+      if(THEN_SAME.test(x)&&mode!=="after")continue;
+      if(THEN_FOOD.test(x)||MAT_RX.test(x)||COATW.test(x)||VEGW.test(x)||PARTFOOD_W.test(x)){needFood=false;anchor=true;continue;}
+      if(THEN_PEOPLE.test(x)&&mode==="with"){anchor=true;continue;}
+      return false;}
+    if(needFood)return false;}
+  return anchor;}
 function grainCanon(y){return /^(?:rice|chawal|bhaat|bhat|basmati|sadam|annam)$/.test(y)?"rice":/^(?:rotis?|phulkas?|fulkas?|chapatis?|chapathis?|chappatis?|chapattis?|rotlis?)$/.test(y)?"roti":y.replace(/s$/,"");}   /* round 23: rotis, phulka and chapati are one roti; chawal and bhaat are rice */
 function sameGrain(a,b){var q=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);}).map(grainCanon);},qa=q(a),qb=q(b);
   return qb.length>0&&qb.some(function(y){return qa.indexOf(y)>=0&&!/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);})&&!qb.some(function(y){return qa.indexOf(y)<0&&/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);});}

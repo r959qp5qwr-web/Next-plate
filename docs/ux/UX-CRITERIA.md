@@ -385,13 +385,36 @@ grain ("Roti 30 - khatam", "Naan 30 (nahi hai)", "Roti, sold out", "~~Roti~~ 30"
 2. A priced line whose item is a grain sells it only when every other word on the line is the item's own name, a grain, a food or a
    plain qualifier (half, full, plain, butter, tandoori, jeera, per piece, today, available ...); any other word ("khatam", "x", "nil",
    "dinner only", "not ready") or a strike-through sells nothing. "Khatam" and "nahi hai" join the sold-out marks.
-3. A sold-out heading ("ROTI (SOLD OUT)") covers the items of its grain under it until the next heading; a sold-out item inside a grain
-   section ("Butter - sold out" under ROTI) no longer ends the section.
+3. A sold-out heading ("ROTI (SOLD OUT)") covers the items of its grain under it until the next heading. (Round 25 found that a sold-out
+   item inside a grain section still ended the section when no item before it sold the grain; corrected in round 25.)
 Measured: the Critic's round 24 later-meal notes offer 0 of 156 and its keeps stay on offer (11 of 11); its 96 sold-out menus offer 0
 (the round 23 build offered 66); its sections with a sold-out item sell the rest. Held on the safe side: "Roti 30 (over 2 people)",
 "(serves over 2)", "(na)" and two notes with "no" in another sense. Every earlier Critic probe reads the same as on the round 23 build;
 all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the
 menu replay offers 88 and drops 6.
+
+## Part A, changes after Critic round 25
+Round 25 found that a typed menu still sold a grain it marked as not available in three forms: the mark on a heading that is not a grain
+word ("TANDOOR - not available", "BREADS (dinner only)", "Tandoor items available after 7 pm"), the mark on an item inside a grain section
+("RICE / Jeera 120 - none left", "NAAN / ~~Garlic 60~~"), and the mark as a symbol ("Roti 30 ❌", "Roti 🚫"); and that the round 24
+note claimed a sold-out item inside a section kept the section when it did not. Changes:
+1. A mark anywhere on a line ends it: sold-out words (now also nil, none left, all gone, no more, not there, not ready, not now, not making),
+   a cross or no-entry symbol, a strike-through, or a time ("dinner only", "after 7 pm", "from 7 pm"). A time is not read as a price.
+2. An unpriced heading with a mark covers every grain under it until the next heading, whatever the heading word; a marked rice, roti, naan,
+   paratha or kulcha heading covers that grain until the next section heading.
+3. The allow-list of plain words runs on every grain-selling priced line, including items named through their section ("Jeera 120"
+   under RICE); "whole wheat", "tandoor", "(V)", "Amul", "no butter" and "ask for butter" are plain words.
+4. A sold-out item inside a grain section keeps the section: the heading looks past marked lines to the priced items it heads.
+5. "Then eat it" is read by the verb before it: after a storing or removing verb (pack, freeze, store, box, wrap, refrigerate, tiffin,
+   skip, drop, no) it never keeps; after "set it aside", "keep it aside", "hold it" or "save it" the words after "then" must name a food on
+   the plate, a person at the table, or last, first, slowly; "leave it, then eat it" keeps as before. The first sentence after "then" is
+   read clause by clause; a later sentence holds the note only when it names a meal, a time or a store ("then eat it with the dal. This
+   keeps the rise gentle." keeps). "Then reheat it" keeps only after "leave it". Milk, tea, chai and "the rest" are not foods of this plate.
+Measured: the Critic's round 25 menus offer 0 of 53 not sold and refuse 0 of 16 sold; its 308 later or ambiguous notes are all held and
+its 10 keeps stay on offer. "Rice: pack it, then have it with dal" is now held (the round 22 record listed it as a keep; moved to removals
+in the rules). Held on the safe side: "Roti ₹30 each", "Roti x 2 = 60" and the "(over 2 people)" forms. Every earlier Critic probe reads
+the same as on the round 24 build except that note; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap
+notes are held (the same 65), with diabetes the menu replay offers 88 and drops 6.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
