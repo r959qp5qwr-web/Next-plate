@@ -1,88 +1,73 @@
 VERDICT: FAIL
-BUILD: 6981b908f29fe570f96c084ae2be2859d4181f918cbac8f4734d2969e3117530
+BUILD: 35c7de84d33e3a3baa86c34873340764a00cb57c765ce22a5c9d26d0a25780f9
 
-# Critic round 19 (branch claude/nice-hawking-307ljy, HEAD 90472cf, diff read d2e9942..90472cf)
+# Critic round 20 (branch claude/nice-hawking-307ljy, HEAD d3695c2, diff read c19a24c..d3695c2)
 
 ## What I measured on this state
+- `npm run rules`: passes on all three pages (342 ok lines, 114 per page; 833 names that are not a grain, 612 true grains; the round 19 block and combos.js included).
+- `npm run review`: passes. 9 runs x 46 states = 414 checks, no violations, no unreached state, no page error.
 - `npm run drill`: passes; every planted fault is caught.
-- `npm run review`: passes. 9 runs x 46 states = 414 checks, 0 violations, 0 errors, no unreached state.
-- `npm run rules`: passes on all three pages (324 ok lines; 833 names that are not a grain, 612 true grains). The build judged in round 18 (0a11be5) fails 8 checks, as the builder says.
-- `npm run films`: passes on all four films (-16.7 to -16.8 dB, picture from 0 s, no decode errors). No film or post file is in the diff.
-- `npm run words`: run after this file was written (the round 18 file held one banned word; this one holds none). Neither allow file is in the diff.
-- I rebuilt the three pages from the committed sources in my scratchpad: byte-identical. No lookbehind in any page. The working tree is clean.
-- The fingerprint above was taken after all measuring and matches the builder's.
+- `npm run words`: passes (42 listed exceptions; neither allow file is in the diff).
+- `npm run films`: passes on all four films (-16.7 to -16.8 dB, picture from 0 s, no decode errors, no 7 s freeze). No film or post is in the diff.
+- I rebuilt the three pages from the committed sources (git archive of HEAD, build6.js): byte-identical. No lookbehind in any page. Working tree clean. The fingerprint above was taken after all measuring and matches the builder's.
+- Recorded live replies (my g13 replay scripts): 408 of 495 meals, 225 of 313 base swaps, 65 of 2,005 one-tap notes held, the same 65 as the round 19 build. Menus with diabetes: 88 orders (round 19 build 87), 6 dropped (was 9); the only differences are in menu-cafe-egg-no-nuts, where Paneer Tikka Wrap (a grain) is now offered. Nothing adds a non-grain.
 
-Columns in the probe outputs: this build, the build judged in round 18 (0a11be5), the build judged in round 17 (394f6a6). Probes and outputs are in /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r19/ (onetap.js, onetap2.js, onetap3.js, names.js, grid.js, e2e.js, menu.js, each with output where saved; p18-*.out are my round 18 probes on this build). Every finding below also reproduces in hosted/v6/index.min.html and hosted/v5/index.min.html.
+Columns in my outputs: this build, then the build judged in round 19 (scratchpad/r19/new.html). Probes and outputs: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/r20/ (p20.js, g20.js, g20b.js, k20.js, n20.js, n20b.js, m20.js, m20b.js). Every finding below reproduces in hosted/v6/index.min.html and hosted/v5/index.min.html.
 
-## Round 18's findings, checked with my own probes
-- My round 18 probes on this build (p18-*.out): 0 of 37 removals offered, 0 of 15 keeps held; 0 of 17 coatings and 0 of 15 stand-ins count; 6 of 6 filling portions, 8 of 8 heading orders and the "you keep half" ask are offered; 0 of 6 removal asks offered.
-- Finding 1 (gram figure for another food; "then eat"): fixed for the forms I listed ("have 100 g extra paneer"). Not fixed for the figure written after the food, for "you have N g <food>", or for "then eat N g <food>" / "then have it tomorrow"; and the fix widened the gap to two more paths (findings A and B below).
-- Finding 2 (with the potato filling): fixed.
-- Finding 3 (non-grain crusts): fixed for cornflakes, poha, vermicelli, sevai, semiya, muesli, granola. Murmura, which my correction named, still counts (finding D).
-- Finding 4 (stand-ins after the dish): fixed; side effect in finding C and cosmetic E1.
-- Finding 5 (ROTI heading): fixed; ROTI, ROTIS, NAAN, PARATHA, KULCHA name their items; BREADS reads roti kinds and leaves Garlic unknown.
-- Finding 6 (you keep half): fixed.
-- Finding 7: fixed for every listed form (leave it with the kids / on the side, fridge overnight, cut/leave/drop N g, tossed in quinoa).
-- Finding 8: fixed (tuvar/mix dal atta; vegetables fried in rice counts again).
-- Recorded live replies against the round 12 build: nothing moves. 408 of 495 meals, 225 of 313 base swaps, 65 of 2,005 notes held (the same notes); menus with diabetes: 87 orders, none empty, 9 dropped, the same.
+## Round 19's findings, checked with my own probes
+- My round 19 probes on this build: 0 removals offered in every group (onetap, onetap2, onetap3), 0 of 22 keeps held; 0 of 9 coatings and 0 of 13 stand-ins count; 39 of 39 side-word grain dishes count; 6 of 6 selling headings offered, 0 of 5 non-selling headings offered, 0 of 9 menu removals offered; the 4,032-name grid counts 3,843 and loses none the round 19 build counted. The builder's numbers hold.
+- A (figure for another food, particle and later paths): fixed for the listed forms. In a 2,916-note grid (g20.js) 488 removals that the round 19 build offered are now held.
+- B (figure after the food, "you have N g dal", "then eat N g dal", "0 g"): fixed for those forms. "Then eat it" with a later time not right after it is not fixed (finding C).
+- C (side word before the grain): fixed; manchurian, tikka/kebab rolls and wraps, meals count. Shawarma and seekh wraps do not (finding D).
+- D (murmura crust): fixed for murmura. Kurmura and mamra are not grain words at all (finding E).
+- E (gaps): manchurian rice, tikka rolls, puffed rice chaat with peanuts, poha cutlet now count; "eat the rest" now keeps, but far too widely (finding A below; my round 19 wording asked for it without a limit, the intent was the rest of a grain share).
+- E3 (lachha under INDIAN BREADS): fixed.
+- D7 entries for Roti (lauki), Pasta (broccoli), crispy noodle chicken salad: recorded in docs/ux/UX-CRITERIA.md part D; safe side. Accepted.
 
 ## Findings, most serious first
 
-### A. MINOR, regression in this diff (owner rule 3; A14). A removal note whose gram figure follows another food is now offered on two more paths.
-- Surface: Plate, one-tap changes, with diabetes; server-side in all pages, so every width and scheme.
-- Cause: src/v5/core.js. The particle path (the "off/out/aside/away" rule, `if(hasGrainWord(obj)&&!partOf(...)&&!keepsAmount(t))`) and the kept-for-later path now test keepsAmount(t) where the 0a11be5 build tested OWNPART. keepsAmount counts any "N g" whose next content word is nothing, "and" or "then" as the grain kept, so "dal 200 g", "paneer (100 g)" and "raise the dal to 200 g" read as rice kept.
-- Evidence (r19/onetap3.js, 200 g declared): 10 notes are offered here and held by both older builds, among them:
-  - "Leave out the rice and raise the dal to 200 g."
-  - "Keep the rotis aside; increase paneer to 110 g."
-  - "Take the rice off the plate; add paneer (100 g)."
-  - "Keep the rice off the plate; dal 200 g."
-  - "Pack the rice for tomorrow; dal 200 g."
-  - "Rice for the kids; increase dal to 200 g."
-  - "The roti goes to the kids; sabzi up to 200 g."
-- Why it matters: the recorded Gemini notes use this form ("Increase low-fat paneer to 110 g.", "Increase hung curd to 120 g." in eval results). When the model pairs it with a grain removal and declares the grain kept, this reader is the only check left.
-- Smallest correction: count "N g" as the grain only when the figure is tied to the grain in its clause: a grain word right after it ("150 g of rice"), a grain word before it with no other food between ("rice 150 g", "rice (150 g)"), or a bare "N g." in a clause whose only food word is the grain. A figure after "to/up to" belongs to the food before it.
+### A. MINOR, regression in this diff (owner rule 3; A14). "Eat the rest" after a grain removal now reads as the grain kept, on every removal path, in one-tap notes and in menu asks.
+- Surface: Plate, one-tap changes with diabetes, and Rescue, Read the menu asks; server-side in all pages, so every width and scheme.
+- Cause: src/v5/core.js keepsAmount(), new last clause `/\b(?:eat|have|keep)\s+the\s+rest\b(?!\s+of\s+(?:the\s+)?(?:dal|sabzi|salad|paneer|curry|vegetables|raita|curd))/` returns true for any note holding "eat/have/keep the rest", whatever was removed before it. Only eight foods are excluded after "of".
+- Evidence (200 g of grain declared, should be held):
+  - p20.js: 7 of 10 offered here, 0 of 10 by the round 19 build: "Rice: skip it; eat the rest.", "Rice: skip it; eat the rest of the meal.", "Leave out the rice; have the rest of the chole.", "Rice: skip it; eat the rest of the rajma.", "Leave out the roti; eat the rest of the thali.", "Rice: skip it; eat the rest of the palak paneer.", "Leave out the rice; eat the rest of the kadhi."
+  - g20.js grid (4 grains x 9 removal wordings x 3 joins x 12 "rest" tails): 992 removals newly offered, every tail 84 of 84 (or 68 of 84), including "keep the rest", "eat the rest slowly", "have the rest with curd", "eat the rest of the sambar".
+  - m20b.js, menu with diabetes, Dal Tadka with 1 Steamed Rice (rice counted, 120 g): asks "Rice: skip it; eat the rest.", "Leave out the rice; have the rest of the rajma.", "Rice: skip it; eat the rest of the thali." are shown to the person here; the round 19 build refuses the order.
+- Why it matters: the person with diabetes is told to skip the grain while the plate or order counts it, so the plate shown has no grain. "Eat the rest" is a natural closing phrase for the model after any removal. No recorded live reply holds it yet (eval/ searched), so the frequency is not measured.
+- Smallest correction: count "eat/have/keep the rest" as a keep only when the note keeps a share of the grain first ("leave 50 g for the family; eat the rest", "send half the rice back; eat the rest"), i.e. when partOf() or a grain share is named before it and no removal of the grain is; otherwise ignore the phrase. Add the twelve tails above, with the nine removal wordings, to combos.js.
 
-### B. MINOR, left from the round 18 diff (finding 1 not fully fixed; owner rule 3; A14).
-- Evidence (r19/onetap.out, 200 g declared; all offered here and by 0a11be5, held by 394f6a6):
-  - figure after the food on the colon and goes paths: "Rice: skip it; add paneer (100 g) and salad.", "Rice? Cut it out; more dal (150 g).", "Rice: skip it; increase paneer to 110 g.", "Biryani is off tonight; raita 150 g." (7 of 10 in that group);
-  - "you have/get/eat N g <food>": 6 of 6, e.g. "Rice: skip it tonight; you have 150 g dal instead." OWNPART still holds `you (keep|have|eat|get|take) N g` with no grain check;
-  - "then eat N g <food>": 4 of 4, e.g. "Rice: leave it tonight, then eat 150 g dal." The new then-rule accepts any "\d+ g";
-  - "then have it tomorrow": "Rice: skip it tonight, then have it tomorrow.", "Roti: leave it, then eat them for breakfast.", "Rice? Leave it tonight, then reheat it tomorrow.";
-  - "Rice: drop it; 0 g of rice tonight." (a zero figure reads as rice kept).
-- Smallest correction: the rule in A for every path; in OWNPART require a grain word or no food word after "you have N g"; in the then-rule require the grain or "N g" with no other food after it, and not keep when a later time (tomorrow, for breakfast/lunch) follows; treat "0 g" as gone.
+### B. MINOR, regression in this diff (owner rule 3 menu side; A14). New paratha kinds under BREADS run into the next section when its heading has punctuation.
+- Cause: src/v6/engine.js soldItems(): the BREADS section ends only at a heading matching `/^[a-z ]+$/`; "MAINS (VEG)", "MAIN COURSE - VEG", "CHICKEN (BONELESS)" do not end it, and the new map turns "Aloo", "Paneer", "Gobi" into parathas.
+- Evidence (m20.js): menu "BREADS / Tandoori Roti 30 / MAINS (VEG) / Aloo 180 / Dal Tadka 240": an order with "2 aloo paratha" is offered here, refused by the round 19 build; same with "MAIN COURSE - VEG / Paneer 220" and a paneer paratha. "CHICKEN (BONELESS) / Butter 320" sells a butter roti in both builds.
+- Why it matters: the order names a grain the menu does not sell, with figures for it; the person asks for a dish that is not there. Single-word mains are uncommon, so the reach is small.
+- Smallest correction: end a grain section at any unpriced line whose letters, with punctuation removed, are not a grain (the same test as the line you already use for the next heading), not only at all-letter lines.
 
-### C. MINOR, reopened by this diff (owner rule 3 true-grain side; A14; B6). A grain dish named "<food> <side word> <grain>" is refused again.
-- Cause: core.js known(): a side word (masala, tikka, curry ...) is now ignored when a grain word follows it, so the food before it is checked as the dish material ("paneer" with rice). This follows my own round 18 wording, which was too broad; the intent was stand-in materials only.
-- Evidence:
-  - r19/grid.js: of 4,032 names "<food> <side> <grain>", 1,728 count here, 2,456 in 0a11be5, 1,344 in 394f6a6; 728 counted by 0a11be5 are refused here.
-  - Names: "Mushroom masala dosa", "Paneer tikka rice", "Chicken curry roti", "Fish curry roti" (r19/names.out).
-  - End to end with diabetes (r19/e2e.js, r19/menu.js): "Mushroom Masala Dosa" made_of rice, "Paneer Tikka Rice" made_of rice and "Chicken Curry Roti" made_of wheat are refused as orders and as plates here; 0a11be5 accepts them.
-- Why it matters: mushroom masala dosa is a common tiffin order; dropping it removes a fitting grain choice with diabetes.
-- Smallest correction: apply "a grain follows the side word" only when the material is a stand-in (the STB list: cauliflower, broccoli, zucchini ...). Add "Mushroom masala dosa", "Paneer tikka rice", "Chicken curry roti" to the true grains and the "<food> <side> <grain>" grid to combos.js.
+### C. MINOR, not fixed from round 19 finding B (owner rule 3; A14). "Then eat it" with a later time that is not the next word is still read as the grain kept.
+- Evidence (p20.js, 200 g declared, offered in both builds, 7 of 7): "Rice: leave it, then have it at lunch tomorrow.", "Rice: skip it, then eat it next day.", "Rice: save it, then have it in the morning.", "Roti: leave it, then have it the next day.", "Rice: hold it, then serve it to the kids.", "Rice: leave it tonight, then eat it at breakfast." UX-CRITERIA round 19 item 1 says "Then eat it keeps only without tomorrow or later"; the code checks only the word right after "it". Menu asks: "Rice: leave it, then have it at lunch tomorrow." is shown with the order (m20b.js).
+- Smallest correction: refuse the keep when tomorrow, later, next day, morning, breakfast, lunch or another person ("to the kids") appears anywhere in the same clause after "then <verb> it".
 
-### D. MINOR, left from round 18 finding 3 (owner rule 3; A14). "Crispy murmura prawns" still counts as a grain dish, and with made_of rice the plate passes (r19/e2e.js); 394f6a6 refused it. Murmura is missing from the new crust list in known(). The name is rare. Smallest correction: add murmura (and bread crumb) to that list and to combos.js.
+### D. MINOR, claim 2 not met for shawarma and seekh wraps (owner rule 3 true-grain side; A14). "Chicken shawarma wrap", "Paneer shawarma wrap", "Chicken seekh wrap" are refused, while "Chicken shawarma roll", "Chicken kebab wrap" and bare "Shawarma wrap" count (n20b.js). With diabetes the plate and the menu order "Chicken Shawarma Wrap" are refused (end to end check in r20). "Kadai paneer rice" and "Kadai chicken roti" (side word first) are refused in both builds. Cause: shawarma and seekh are in the roll/wrap test but not in SIDEW in known(), so "chicken" is checked as the wrap's material. Smallest correction: add shawarma and seekh to SIDEW; read a side word before the food ("kadai paneer") as the side dish too.
 
-### E. MINOR, not new: gaps present in all three builds that I had not listed.
-- True grains refused, so with diabetes the plate or order is dropped (r19/names.out, e2e.js): "Gobi manchurian fried rice", "Chicken manchurian fried rice", "Veg manchurian noodles", "Chilli paneer noodles", "Paneer tikka roll", "Chicken tikka roll", "Chicken kebab roll", "Chicken kebab wrap", "Paneer tikka wrap", "Fish curry meals", "Kadhi pakoda chawal", "Puffed rice chaat with peanuts", "Crunchy poha chivda with peanuts", "Crispy poha cutlet". Manchurian fried rice and tikka rolls are everyday orders.
-- A keep held: "Rice: leave 50 g for the family; eat the rest."
-- Removals offered: "Rice: skip the whole portion; extra dal.", "Rice 0 g; double the dal."
-- Smallest correction: manchurian, chilli, meals and pakoda as known companions; roll/wrap after tikka or kebab as a grain wrap; "eat the rest" as a keep; "whole portion" and "0 g" as removals.
+### E. MINOR, claim 3 not met for kurmura and mamra. They are not grain words (not in GRAINT), so "Kurmura with peanuts", "Kurmura chaat", "Mamra chivda", "Mamra with peanuts" never count (n20.js); with diabetes a plate with "Kurmura chaat" made_of rice is refused. "Jhal muri" is refused in both builds. Safe side, but the doc says they count. Smallest correction: add kurmura, mamra (and jhal muri's "muri" pairing) to GRAINT and to the puffed-rice crust list, or correct the doc.
 
-### Cosmetic
-- E1. "Pasta (broccoli)" and "Roti (lauki)" are now refused (they count in 0a11be5): the stand-in fix, which I asked for, cannot tell pasta with broccoli from broccoli pasta. Safe side; record it as a D-entry or keep lauki, mooli, beetroot, pumpkin and cabbage out of STB when the dish is a roti or paratha.
-- E2. "Crispy noodle chicken salad" is refused now; ambiguous, safe side.
-- E3. Under INDIAN BREADS, "Lachha 50" reads as a lachha roti, so an order "2 lachha paratha" is refused (all three builds).
-- E4. Screens: compared with the round 12 review, 1,340 identical, 63 the plate-old-saved state added in round 13, 38 differ; 10 by more than 2,000 strongly changed pixels (plate-logged-2, plate-skipped-meds-2, toast-3). I viewed 360-light toast-3 and 320-dark plate-logged-2 with a difference image: the only change is the "Saved for lunch" toast caught in one frame and not the other. No screen code changed in this diff.
+### F. MINOR, left: a figure for another food still kept on two narrow paths (owner rule 3; A14). 200 g declared, offered in both builds: "Leave out the rice and have the lobia, 200 g." (any food word not in PARTFOOD_W, MAT_RX or COATW before a bare figure in the same comma clause as the grain; 48 grid notes), "Rice? Cut it out and raise the chana to 150 g." (4 grid notes). "Skip every bit of the rice; more dal." is also offered. Smallest correction: in keepsAmount, a bare figure after any word that is not the grain, it/them or a portion word does not keep the grain.
+
+### Cosmetic (safe side or implausible names)
+- G1. "0 g" anywhere now reads as a removal: "Rice: 150 g with 0 g ghee." and "Rice 150 g; dal with 0 g oil." are held (offered by round 19 build); 84 keeps in k20.js. Tie "0 g" to the grain as the other figures are.
+- G2. "Rice: leave some for the kids; your 150 g stays." is now held (offered by round 19 build); "your N g stays" keeps only after a "rest of the rice" share (k20.js, 28 notes).
+- G3. "Salad meals" and "Chicken salad meals" now count as a grain ("meals" added to the grain words, "salad" a companion). Unlikely names.
+- G4. Unpriced grain headings followed by a heading outside the fixed list still sell their grain: "ROTI / SWEETS & DESSERTS", "ROTI / ICE CREAM", "ROTI / SWEET DISH", "ROTIS / MOCKTAILS", "RICE / SOUPS & SALADS" (both builds; m20.js).
+- G5. Screens: against the round 12 review, 1,335 identical, 63 the state added in round 13, 43 differ; 13 by more than 2,000 strongly changed pixels. I viewed 360-dark plate-skipped-meds-1 and 360-light-big plate-logged-1 side by side with a difference image: the only change is the toast caught in one frame and not the other. No screen code changed in this diff.
 
 ## What holds (checked, not taken on the builder's word)
-- All measured gates above; rebuild byte-identical; fingerprint matches.
-- The diff touches only src/v5/core.js, src/v6/engine.js, test/rules/check.js, test/rules/combos.js, docs/ux/UX-CRITERIA.md and the three built pages. No screen code, CSS, film, post or allow file changed. No removed line touches kidney, pregnancy, referral, supplements, units or the rise bands. "katori" sits only in a word list of portion words the reader ignores, as before.
-- Menu asks with a gram figure are still dropped by the engine, so A and B do not reach Rescue asks (r19/menu.out: 0 of 9 removal asks offered).
+- All measured gates; rebuild byte-identical; fingerprint matches.
+- The diff touches only src/v5/core.js, src/v6/engine.js, test/rules/check.js, docs/ux/UX-CRITERIA.md and the three built pages. No screen code, CSS, film, post or allow file changed. No removed line touches kidney, pregnancy, referral, supplements, units or the rise bands. The new words (meals, korma, kebab, chaat, cutlet, shawarma ...) are reader word lists, not shown text.
+- No new over-count among stand-ins and coatings: 0 of 22 stand-in wraps and rices with tikka, kebab, shawarma or manchurian count; 0 of 21 of my crust names count except "Crispy murmura chicken tikka" and "Crispy murmura fish tikki", which counted in the round 19 build and are now refused.
 
 ## Not inspected
 - The owner's phone and his clients' phones; how clients read the screens.
-- Live Gemini output with the declared fields; no live run was made. I have not measured how often Gemini writes a grain removal next to "increase <food> to N g" or "<food> (N g)", or names "Mushroom masala dosa" or "Gobi manchurian fried rice".
-- The v5 screens served by default were not rendered; only their core was probed, and A to D reproduce in it.
-- Audio by ear (films unchanged; loudness from this round's check, voice, music and chimes from round 10's listening record).
+- Live engine output with the declared fields; no live call was made. I have not measured how often Gemini closes a grain removal with "eat the rest" or writes single-word mains under a punctuated heading.
+- The v5 screens served by default were not rendered; only their core was probed, and A to F reproduce in it.
+- Audio by ear (films unchanged; loudness from this round's check).
 - The WhatsApp post copy was not re-read; it is not in the diff.
 - Every screenshot at full resolution; I relied on pixel comparison with round 12 and viewed the two frames listed.
