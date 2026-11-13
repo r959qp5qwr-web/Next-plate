@@ -537,6 +537,23 @@ note is 4.5:1 or more. Measured: rules hold with the round 30 cases; every earli
 except "No roti today" as a heading, now refused; all 4,897 combinatorial cases read right; recorded live replies unchanged (65 of 2,005
 held; menu replay 88 orders).
 
+## Part A, changes after Critic round 31
+Round 31 confirmed the round 30 MAJOR fixed and found three MINOR: a "No" with other orders left left no visible trace and no way back;
+the one-tap later-sentence guard let through notes that give the grain to someone else ("Your kids can share it", "Give it to your son");
+and no review state or rule protected the per-menu answers, the two-grain questions or the focus after the last No. Changes:
+1. With orders left after a No, the order view starts with "You said <grain> is not available." and "Change answer", which brings the full
+   order list back with the question.
+2. thenKeeps later sentences hold on people words (kids, children, family, husband, wife, son, daughter, guests, others, maid, someone,
+   mother, father) and on share/give/hand/return/pass it/them.
+3. Review states menu-grain-other (after a No, a different menu asks again and shows no old answer) and menu-grain-two (two grains asked
+   one at a time); menu-grain-no asserts focus on the note and menu-grain-next asserts focus on the next question and the trace line. The
+   rules carry the round 31 one-tap notes.
+4. Cosmetic: "Tandoori Roti/Naan", "Rice, Roti", "Rice or Roti" ask about the first grain named; "instead of ..." is left out; "tandoori
+   rotis ... needs them"; "no naan, only roti" and "kebabs to start off" no longer close a section; the "Change answer" links are
+   underlined; a photo's answers are keyed by a sample of the image data as well as its length.
+Measured: rules hold; the six grain review states pass with their focus checks; every earlier Critic probe reads the same as on the round 30
+build; all 4,897 combinatorial cases read right; recorded live replies unchanged (65 of 2,005 held; menu replay 88 orders).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

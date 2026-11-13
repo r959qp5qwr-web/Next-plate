@@ -461,12 +461,12 @@ function readMenu(text,image){
 function grainParts(g){return String(g||"").split(/\s+and\s+/).filter(Boolean);}
 function grainPlural(g){return / and /.test(g)||/(?:s|bhature)$/.test(g)&&!/(?:rice|dals?)$/.test(g);}
 function grainGone(g){UI.mno=UI.mno||[];return grainParts(g).some(function(x){return UI.mno.indexOf(x)>=0;});}
-function grainKey(meal,t,i){var k=meal+"|"+(t||("photo:"+(i?String(i).length:0)));if(UI.mkey!==k){UI.mkey=k;UI.mno=[];UI.myes={};}}
+function grainKey(meal,t,i){var si=String(i||""),hs=0;for(var q=0;q<si.length;q+=Math.max(1,Math.floor(si.length/997)))hs=(hs*31+si.charCodeAt(q))|0;var k=meal+"|"+(t||("photo:"+si.length+":"+hs));if(UI.mkey!==k){UI.mkey=k;UI.mno=[];UI.myes={};}}
 function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
   if(keep.length){if(keep.length<r.orders.length){r.orders=keep;UI.msel=0;}return;}
   grainNone();}
 function grainNone(){var g=(UI.mno||[]).join(" and ");UI.mres=null;UI.mopen=false;UI.mundo=true;
-  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available, and every order on this menu needs "+(UI.mno.length>1?"one of them":"it")+". Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
+  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available, and every order on this menu needs "+(UI.mno.length>1?"one of them":grainPlural(g)?"them":"it")+". Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
 function grainUndo(){UI.mno=[];UI.mundo=false;UI.merr="";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
 function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
   var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
@@ -480,6 +480,8 @@ function orderView(v,r){
   MENUK.forEach(function(k){a[k]=o.n[k];});
   r.moves.forEach(function(m,k){if(!UI.mmoves[k])return;moved=true;if(m.kind==="portion")a=scaleN(a,m.scale);if(m.kind==="sequence")hab.veg=true;if(m.kind==="move")hab.walk=true;});
   var fit=moved?fitOf(a,r.target):o.fit,band=moved?riseOf(a,hab).band:o.rise;
+  if(UI.mno&&UI.mno.length){var gn0=UI.mno.join(" and "),gl=el("p","fine gno");gl.id="order-grain-said";gl.appendChild(document.createTextNode("You said "+gn0+(grainPlural(gn0)?" are":" is")+" not available. "));
+    var gu0=btn("linkbtn","Change answer",null,"order-grain-redo");gu0.addEventListener("click",grainUndo);gl.appendChild(gu0);v.appendChild(gl);}   /* round 31: a No leaves a trace and can be undone */
   if(r.note){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,r.note));v.appendChild(nt);}
   var card=el("article","card order");card.id="order-card";card.appendChild(el("p","cap",(r.note?"The closest order":"Your order")+" · "+mn));
   var top=el("div","hero-top");

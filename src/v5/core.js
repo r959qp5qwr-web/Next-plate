@@ -319,7 +319,7 @@ function thenKeeps(t){
   var loose=!/\bleave\s+(?:it|them)\b/.test(before)&&!/\b(?:cool|cools|warm|covered|\d+\s*(?:min|mins|minutes?)|a\s+(?:few\s+)?minutes?)\b/.test(bfs);   /* round 29: "let it cool for 10 minutes, then have it" */   /* "set it aside", "keep it aside", "hold it": an anchor is needed */
   if(m[1]==="reheat"&&loose)return false;
   var parts=m[2].replace(/\brest\s+of\s+(?:the\s+)?(?:plate|meal|thali|food)\b/g,"plate").split(/[.!?\n;]/),first=parts[0],later=parts.slice(1).join(" ");
-  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box)\b|\b(?:goes|go|put|send)\s+(?:it\s+|them\s+)?(?:back|in|into|to)\b|\bback\s+(?:in|into|to)\b|\b(?:for|to)\s+(?:the\s+)?(?:kids|family)\b/.test(later))return false;
+  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box)\b|\b(?:goes|go|put|send)\s+(?:it\s+|them\s+)?(?:back|in|into|to)\b|\bback\s+(?:in|into|to)\b|\b(?:for|to)\s+(?:the\s+)?(?:kids|family)\b|\b(?:kids|children|family|husband|wife|son|daughter|guests?|others|maid|someone|somebody|mother|father|mom|dad)\b|\b(?:share|give|hand|return|pass)\s+(?:it|them)\b/.test(later))return false;   /* round 31: someone else has it */
   var anchor=!loose,clauses=first.split(/[,;]/);
   for(var c=0;c<clauses.length;c++){var w=words(clauses[c]),mode="",needFood=false;
     for(var k=0;k<w.length;k++){var x=w[k];

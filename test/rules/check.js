@@ -1097,7 +1097,9 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   const pp = readProfile(Object.assign({}, P)); pp.slot = 'dinner';
   const tap = (note, after) => { const mm = JSON.parse(JSON.stringify(meal)); mm.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
     const c = checkMeal(mm, pp); return !!(c.meal && c.meal.alchemy.glucose); };
-  const RM = ['Rice: leave it to cool, then eat it; the rice goes back into the pot.', 'Rice: leave it to cool, then eat it. The rice goes in the fridge.'];
+  const RM = ['Rice: leave it to cool, then eat it; the rice goes back into the pot.', 'Rice: leave it to cool, then eat it. The rice goes in the fridge.',
+    'Rice: set it aside, then eat it last. Your kids can share it.', 'Rice: set it aside, then eat it last. The family can have it.', 'Rice: set it aside, then eat it last. Share it with the family.',
+    'Roti: keep it aside, then eat it last. The kids can finish it.', 'Rice: leave it, then eat it. Give it to your son.', 'Rice: leave it, then eat it. Your husband can have it.'];   /* round 31: someone else has it */
   const KP = ['Rice: let it cool for 10 minutes, then have it.', 'Rice: keep it 30 minutes, then eat it.', 'Rice: keep it till you finish the salad, then eat it at dinner.', 'Rice: keep it warm, then eat it at dinner.'];
   const offR = RM.filter(n => tap(n, 200)), heldK = KP.filter(n => !tap(n, 150));
   ok(!offR.length && !heldK.length, 'round 29: a send-away sentence after "then eat it" holds the note; short waits and "at <this meal>" keep it' + (offR.length || heldK.length ? ' (offered: ' + offR.join(' | ') + '; held: ' + heldK.join(' | ') + ')' : ''));
