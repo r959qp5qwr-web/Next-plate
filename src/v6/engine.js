@@ -421,14 +421,14 @@ function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lin
     var list=head.split(/,|\band\b|\//).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
     var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(function(x){return /[a-z]/.test(x);});
     if(MENUSEC.test(head)){
-      if(/\b(?:ask|waiter|available|not|today|over|sold|finished)\b/.test(rest))list=[];   /* "Rice - sold out", "ROTI (ask the waiter)" */
-      else if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});}   /* "Rice: Jeera / Plain" */
+      if(/\b(?:not\s+available|unavailable|sold\s+out|finished|over|not\s+today|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter)\b/.test(rest))list=[];   /* "Rice - sold out", "ROTI (ask the waiter)" */
+      else if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});}   if(priced&&isGrain(head))list.push(head);   /* "Rice: Jeera / Plain"; round 22: "Roti (today) 25" sells roti */
       else if(anyPrice&&!priced){var nhead=nextHead;
         if(/\d/.test(next)&&!MENUSEC.test(next.replace(/[^a-z ]/g," ").trim())){list=[];cur=/^(?:rice|rotis?|naans?|parathas?|kulchas?)$/.test(head)?head.replace(/s$/,""):/^(?:indian\s+)?breads?$/.test(head)?"bread*":"";}
         else if(nhead)list=[];}}   /* a heading over priced items names them ("ROTI" then "Tandoori 30"); a heading followed by another heading ("ROTI" then "ICE CREAM") sells nothing; "Rice" then "Roti" in a list is an item */   /* a heading that names one grain names its items ("ROTI: Tandoori, Butter"); "BREADS" does not */   /* a heading over priced items; "Rice" then "Jeera / Plain 100" is jeera rice */
     else if(!priced&&anyPrice&&/^[a-z ]+$/.test(head)&&!isGrain(head))cur="";                 /* another heading ends a grain section */
     if(cur==="bread*"&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&/^(?:tandoori|butter|missi|plain|rumali|roomali|makki|bajra|jowar|methi|tawa|phulka|chapati)$/.test(x.trim())?x+" roti":/^(?:lachha|laccha|pudina|aloo|gobi|paneer)$/.test(x.trim())?x+" paratha":x;});   /* "BREADS" then "Tandoori 30": a tandoori roti; "Garlic 50" stays unknown */
-    else if(cur&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&words(x).length<=3?x+" "+cur:x;});
+    else if(cur&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&words(x).length<=3&&!(words(x).length>1&&words(x).some(function(y){return MAT_RX.test(y)||PARTFOOD.test(y);}))?x+" "+cur:x;});   /* round 22: "Paneer Tikka 220" under "Roti" is not a roti */
     else if(/^\s*[(\[]\s*with\b/.test(rest)&&!NOTSOLD.test(head))list=list.concat(restItems);              /* "Dal Tadka (with Jeera Rice)" */
     if(anyPrice&&!priced&&nextHead&&list.length&&list.every(function(x){return /^(?:rice|rotis?|naans?|parathas?|kulchas?|breads?|chapatis?|phulkas?)$/.test(x.trim());}))list=[];   /* "Roti / Naan" then "DESSERTS": a heading with nothing under it */
     list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!NOTSOLD.test(x))out.push(x);});});

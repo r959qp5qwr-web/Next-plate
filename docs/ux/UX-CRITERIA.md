@@ -334,6 +334,27 @@ none; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2
 the menu replay offers 88 and drops 6. Held on the safe side: "then have it at home with dal"; "rice 150 g, 0 g sugar in the curd" (the
 sweets rule reads "sugar"). D7: soya chaap roll and chilli paneer noodles are read the safe way (soya and paneer also name stand-in bases).
 
+## Part A, changes after Critic round 22
+Round 22 found that the round 21 "then eat it" test let a later meal through ("rice: save it, then have it with breakfast", "...eat it
+after lunch"), and that an amount named before a whole removal still kept the grain ("rice was 150 g; skip it", "150 g of rice is too
+much; no rice", "rice 150 g? skip it"). Changes:
+1. "Then eat, have, serve or reheat it" keeps only with a same-meal phrase and no meal, time or day word after it in its clause
+   (breakfast, lunch, dinner, tomorrow, later, evening, tea, tiffin, work, school, Sunday ...); a "Then eat it" in a new sentence does
+   not undo a removal before it. "Rice: set it aside" reads like "leave it".
+2. "Not even", "none of", "zero rice", "not one bit" and "0 g" are read on the whole note. An amount before a whole removal keeps the grain
+   only when it is worded as a keep and the removal is of another grain ("have 150 g brown rice; skip the white rice").
+3. "Rice 150 g; no rice" or "...; skip the rice" is not one grain for another; "Rice, 150 g; leave it out" and "Rice 150 g, but cut it out"
+   read the removal against the rice.
+4. Cosmetic: "<food> only" names only that food only when nothing joins it to a grain ("rice with dal only" counts); egg roll, Gujarati
+   and Rajasthani thalis count; "give it a stir", "give it 5 minutes", "keep it aside for the dal to cool" keep; "Roti (today) 25" and
+   "Rice - available in half 60" sell; "Paneer Tikka 220" under an unpriced "Roti" is not a roti.
+Measured: the Critic's round 22 later-meal grid (1,296 notes) offers 360, all naming another eater ("with the kids", "with my husband",
+"with my mother"), which can be the same meal and are left to the declared grams; every later-meal or later-time note is held. Its
+amount-then-removal grid offers 0 of 2,400 (the round 21 build offered 489); its menu asks keep 1 of 8 ("then have it with dal");
+its names refuse 0 and count 0 stand-ins; its menus offer 0 of 14 non-selling and refuse 0 of 9 selling. Every earlier Critic probe reads
+the same as on the round 21 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held
+(the same 65), with diabetes the menu replay offers 88 and drops 6.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
