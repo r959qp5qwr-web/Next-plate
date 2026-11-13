@@ -57,6 +57,7 @@ const STATES = [
   ['sheet-how-numbers', seed(), async (p, h) => { await h.plate(p); await p.click('#how'); await h.settle(); }],
   ['sheet-log-ask', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd and pickle'); await h.settle(200); }],
   ['sheet-log-estimate', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 20000 }); await h.settle(); }],
+  ['plate-ask-limit', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' })); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { hasNot: ['#remake'], text: 'New plates open again at' }, 'Ask at the daily limit with plates on screen'); }, () => {}],
   ['plate-asked', seed(), async (p, h) => { await h.plate(p); await p.fill('#askin', 'Only eggs, spinach and bread at home'); await p.press('#askin', 'Enter'); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(900); }],
   ['toast', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(250); }],
   ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); }],

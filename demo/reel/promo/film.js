@@ -1,6 +1,6 @@
 // Next Plate promo: "the question, answered fresh". A pure function of time: window.seek(t) paints frame t.
 // The narration (vo.js, the owner's voice on the beat grid) is the clock; each spoken word lands on screen as it is said.
-// Every app screen is a real capture (capture.js, 3x); positions below are CSS px in the 390 x 844 phone viewport,
+// Every app screen is a capture of the app (capture.js, 3x); positions below are CSS px in the 390 x 844 phone viewport,
 // taken from assets/rects.json. docs/shotlist.md is the plan this file follows.
 import * as M from './lib/motion.js';
 import { VO } from './vo.js';
@@ -228,7 +228,7 @@ function sceneChart(ctx, u) {
 }
 const ctxW = (ctx, str, f) => { ctx.font = f; return ctx.measureText(str).width; };
 
-// ------------------------------------------------------------------ S3 to S9: the phone (real captures only)
+// ------------------------------------------------------------------ S3 to S9: the phone (app captures only)
 // screens: [beat, shot]; camera: [beat, zoom (canvas px per CSS px), focus x, focus y (CSS px), canvas y the focus sits at]
 const SCREENS = [[24.3, 's03'], [36.9, 's04'], [42.6, 's05b'], [45.6, 's05'], [49.9, 'sD1'], [55.9, 'sD2'], [57.95, 'sD3'], [61.9, 's14'], [63.95, 's15'],
   [70.9, 's18'], [77.85, 's03'], [81.6, 's07']];
@@ -302,7 +302,7 @@ function scenePhone(ctx, u, IMG) {
   ctx.strokeStyle = 'rgba(29,26,22,0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(left, top, w, h, rad); ctx.stroke();
 }
 
-// ------------------------------------------------------------------ S9: careful (two cards cut from the real screens)
+// ------------------------------------------------------------------ S9: careful (two cards cut from the captured screens)
 const NOTE = { shot: 's06', r: [4, 172, 382, 115], w: 950, feather: 5 }, GRAIN = { shot: 's05b', r: [22, 226, 346, 56], w: 880 }, STEP = { shot: 's19', r: [16, 113, 358, 290], w: 880 };
 const CUT = new Map();
 function cutout(IMG, c) {

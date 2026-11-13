@@ -12,7 +12,7 @@ const files = execSync('git ls-files -co --exclude-standard', { cwd: ROOT }).toS
 const APP = ['src/v6/app.js', 'src/v5/app.js', 'src/v6/params.js', 'src/v6/plate.js', 'src/v5/markup.html', 'src/v6/engine.js', 'src/v5/core.js', 'src/v5/server.ts'];
 // Code and comments of the current app, its checks, the gate and the current films are notes too: every line is read (Critic round 7).
 const CODE = execSync('git ls-files -co --exclude-standard', { cwd: ROOT }).toString().split('\n')
-  .filter(f => /\.(js|mjs|ts|py|sh|css|html)$/.test(f) && /^(src\/v5\/|src\/v6\/|build6\.js|test\/|\.claude\/hooks\/|demo\/reel\/[^/]+\.(js|mjs)$|demo\/reel\/film4\/|demo\/reel\/film5\/|eval\/v6\/[^/]+\.js$)/.test(f)
+  .filter(f => /\.(js|mjs|ts|py|sh|css|html)$/.test(f) && /^(src\/v5\/|src\/v6\/|build6\.js|test\/|\.claude\/hooks\/|demo\/reel\/[^/]+\.(js|mjs)$|demo\/reel\/film4\/|demo\/reel\/film5\/|demo\/reel\/promo2?3?\/|eval\/v6\/[^/]+\.js$)/.test(f)
     && !/\/fonts\//.test(f));
 let hits = [], used = new Set();
 function scan(f, text, onlyStrings) {

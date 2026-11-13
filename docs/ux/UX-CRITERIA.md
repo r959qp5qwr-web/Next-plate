@@ -31,9 +31,9 @@ a plate with two foods left out (after Critic round 7: longer chips).
 | A11 | Coverage comes from the code | every tab, sheet and view in src/v6/app.js has at least one state in the review | BD-93 |
 | A12 | Each check catches a planted fault | `node test/ux/review.js --drill` plants one fault per rule and expects each to be caught | BD-91 |
 | A13 | After an error the next step fits the error: Try again where trying again can help (connection, busy, a broken reply), none where it cannot (a daily limit, the link, set-up, photos off, a photo that did not come through); what the person typed stays in its box | rule next-step on the five error-by-kind states and the upstream-error states | BD-46, BD-48, IX-36, IX-40, AU-19 |
-| A14 | The safety rules hold in the code every page and the server run: with diabetes every plate, every base swap and every menu order keeps a whole grain or millet, and a grain-free stand-in named like a grain (cauliflower rice, konjac noodles, almond-flour roti, keto bread) does not count; kidney condition and pregnancy are referred, never planned | `node test/rules/check.js <page>` on all three built pages, judged against a fixed list of stand-ins and of true grains (not the page's own word list) | owner rule 3, BD-56 |
+| A14 | The safety rules hold in the code every page and the server run: with diabetes every plate, every base swap and every menu order keeps a whole grain or millet, and a grain-free stand-in named like a grain does not count, nor any dish built on one (cauliflower rice pulao, sabudana khichdi, konjac noodles, chickpea pasta, almond-flour roti, keto bread): each part of a dish name counts only if it names a grain and holds no stand-in; kidney condition and pregnancy are referred, never planned | `node test/rules/check.js <page>` on all three built pages, judged against a fixed list of stand-ins and of true grains (not the page's own word list) | owner rule 3, BD-56 |
 | A15 | The owner's banned words appear in no note, no app text and no code comment of the current app, checks, gate and films, except the listed exceptions, each with its reason | `node test/words/check.js` (exceptions in test/words/allow.json) | owner rule 4 |
-| A17 | Text the model writes in its own voice (read lines, why this plate, pairing reasons, one-tap notes, swaps, Rescue warnings and moves, menu portions, asks, tips and reasons to leave a dish, the log's assumption line) never shows a banned word: such a field is dropped, the safe default; every prompt asks for none. Names copied from a menu or from what the person typed keep their words | `node test/rules/check.js` plants the words in every field of plates, swaps, Rescue, menu and log replies | owner rule 4, BD-59 |
+| A17 | Text the model writes in its own voice (read lines, why this plate, pairing reasons, one-tap notes, swaps, Rescue warnings and moves, menu portions, asks, tips and reasons to leave a dish, the log's assumption line) never shows a banned word: such a field is dropped, the safe default; every prompt asks for none. Dish names copied letter for letter from a menu keep their words (checked against the typed menu); a name the model writes for what the person typed (the Rescue dish, the log's title and foods) keeps a word only when the person typed it; the place a menu is read as is the model's own words and is screened | `node test/rules/check.js` plants the words in every field of plates, swaps, Rescue, menu and log replies | owner rule 4, BD-59 |
 | A16 | Every delivered film and its WhatsApp copy has its picture from 0 s, a frame for every 1/fps, no decode errors, no picture held 7 s or more, and its sound near the 30 s film's level | `test/films/check.sh` | owner's film gates; BD-90 |
 
 ## Part A, changes after Critic round 1
@@ -55,6 +55,13 @@ named like a grain, and that the chips could be cut off on short screens when fo
 every model string passes (A17), the grain test takes stand-ins out first (A14), both judged against fixed lists, and the chips wrap again
 (state plate-leave-two). The word sweep now reads code comments too. The daily-limit line names the time new plates open (the server resets at
 midnight UTC, shown in the phone's clock), and says the last plates are still there only on Plate and only when there are some.
+
+## Part A, changes after Critic round 8
+Round 8 found dishes built on a stand-in passing the grain test, and four model fields that skipped the word screen. The grain test now
+judges each part of a dish name, so a stand-in followed by a dish word is not a grain, and the fixed list grew to the names the Critic found.
+The place, the Rescue dish name and the log's title and foods are screened; a word stays in a name only when the person typed it. The word
+screen catches the words' other forms (quieter, unlocked, transformation). The sweep reads the rejected promo films' sources too; their quoted
+narration stays as the record. One-tap changes that are off say why on screen. The limit note says once that the last plates are shown.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |

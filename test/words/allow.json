@@ -90,11 +90,6 @@
   "why": "the name of a constant in the owner's own Gemini file, cited as the source of the sample meals"
  },
  {
-  "file": "test/rules/check.js",
-  "contains": "",
-  "why": "the rule check plants the banned words into model replies on purpose, to prove each one is dropped before it reaches the person"
- },
- {
   "file": "test/words/check.js",
   "contains": "const BANNED = ['real'",
   "why": "the rule itself: the sweep's copy of the owner's list"
@@ -108,5 +103,85 @@
   "file": "test/words/check.js",
   "contains": "line = line.replace(/(?:text-)?transform",
   "why": "names the CSS and SVG property so the sweep can tell it from the word"
+ },
+ {
+  "file": "test/rules/check.js",
+  "contains": "// planted on purpose",
+  "why": "each marked line plants a banned word into a model reply on purpose, to prove the word is dropped before it reaches the person"
+ },
+ {
+  "file": "test/rules/check.js",
+  "contains": "const WORDS = ['real'",
+  "why": "the rule itself: the check's own copy of the owner's list (its oracle)"
+ },
+ {
+  "file": "test/rules/check.js",
+  "contains": "'game-changer', 'revolutionary', 'transform'",
+  "why": "the rule itself, second line of the check's copy of the owner's list"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "var BANFORMS=[\"real\"",
+  "why": "the rule itself: each of the owner's words with the forms it takes in a sentence, used to drop model text"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "\"empower(?:s|ed|ing|ment)?\"",
+  "why": "the rule itself, second line of the word forms"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "\"curated\",\"tailored\",\"personali[sz]ed\"",
+  "why": "the rule itself, third line of the word forms"
+ },
+ {
+  "file": "demo/reel/promo/audio/place.py",
+  "contains": "Real food, in real amounts",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected"
+ },
+ {
+  "file": "demo/reel/promo/audio/place.py",
+  "contains": "and quietly adjusts the rest of your day",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected"
+ },
+ {
+  "file": "demo/reel/promo/film.js",
+  "contains": "rows: ['*Real food,*', 'in *real amounts,*']",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (its on-screen captions)"
+ },
+ {
+  "file": "demo/reel/promo/film.js",
+  "contains": "'and quietly adjusts'",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (its on-screen captions)"
+ },
+ {
+  "file": "demo/reel/promo/vo.js",
+  "contains": "Real food, in real amounts",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (the voice transcript)"
+ },
+ {
+  "file": "demo/reel/promo/vo.js",
+  "contains": "and quietly adjusts the rest of your day",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (the voice transcript)"
+ },
+ {
+  "file": "demo/reel/promo/vo.js",
+  "contains": "\"Real\",",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (one word of the voice transcript)"
+ },
+ {
+  "file": "demo/reel/promo/vo.js",
+  "contains": "\"real\",",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (one word of the voice transcript)"
+ },
+ {
+  "file": "demo/reel/promo/vo.js",
+  "contains": "\"quietly\",",
+  "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected (one word of the voice transcript)"
+ },
+ {
+  "file": "demo/reel/promo2/vo.js",
+  "contains": "export const WORDS = [[\"Show\"",
+  "why": "rejected narration (promo v2) word timings, quoted from the rejected take, kept as the record"
  }
 ]

@@ -227,3 +227,7 @@
 /* Critic round 7: the two answers to "Remove your data?" keep their words whole; at 320 px they stack. */
 #app .confirm .pick-acts{display:flex;flex-wrap:wrap;gap:8px}
 #app .confirm .pick-acts .btn{flex:1 1 auto;white-space:nowrap}
+/* Critic round 8: why a one-tap change is off is said on screen (a tooltip never shows on a phone) */
+#app .tune.alc .tnote{grid-column:1/-1;margin:2px 0 0;text-align:center}
+/* Critic round 8: how much to have is the order's second fact, after the dish; it reads at the size of the side, in ink, upright */
+#app .order .por{margin:4px 0 0;font:500 18px/24px var(--text);font-style:normal;color:var(--ink);font-variant-numeric:lining-nums}

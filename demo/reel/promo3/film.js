@@ -1,6 +1,6 @@
 // Next Plate film v3, "One decision". docs/treatment.md is the plan. A pure function of time: window.seek(t) paints frame t.
-// Apple-film grammar: one idea per shot, the phone large and calm, real screens at real speed, the detail lifted out of the
-// screen to full size, one quiet line of type at a time. Clock: seconds. Screens are real captures at 3x; rects are CSS px
+// Apple-film grammar: one idea per shot, the phone large and calm, app screens at their own speed, the detail lifted out of the
+// screen to full size, one soft line of type at a time. Clock: seconds. Screens are app captures at 3x; rects are CSS px
 // on the 390 x 844 viewport (assets/rects.json).
 import * as M from './lib/motion.js';
 import { WORDS } from './vo.js';
@@ -130,7 +130,7 @@ function close(ctx, t) {
   const m = out(prog(t, at('message') - 0.1, at('message') + 0.9)); lineMixed(ctx, 'Message me for your link.', W / 2, 1220 + (1 - m) * 12, 70, m);
 }
 
-// ------------------------------------------------------------------ sound: soft taps and two quiet chimes; the music carries the rest
+// ------------------------------------------------------------------ sound: soft taps and two soft chimes; the music carries the rest
 const HITS = [...TAPS.map(([s]) => [s, 'tap', 'tick', { gain: 0.11 }]),
   [26.0, 'order arrives', 'bell', { pitch: 'A5', gain: 0.05, len: 1.2 }], [19.45, 'counted', 'bell', { pitch: 'D6', gain: 0.05, len: 1.0 }]];
 

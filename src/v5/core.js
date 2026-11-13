@@ -86,13 +86,18 @@ var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave ou
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 var SAFETY="This one is for your coach and doctor to plan with you.";
 
-var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
-/* A grain-free stand-in named like a grain is not a grain: cauliflower or broccoli "rice", zucchini or konjac noodles, almond- or
-   coconut-flour roti, keto bread. Those words are taken out before the grain test. After a vegetable only rice, noodles, pasta, roti,
-   naan and bread count, and only next to it ("broccoli fried rice" is rice; "cauliflower paratha" is a wheat paratha with a gobi filling);
-   after words that are never a grain (konjac, shirataki, keto, almond flour) any grain word counts. */
-var STANDIN=/\b(?:(?:cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|kelp|palmini|lettuce)[\s-]+(?:rice|noodles?|pasta|spaghetti|couscous|roti|rotis|chapati|chapatis|naan|bread|tortillas?|pizza)|(?:konjac|shirataki|keto|low[\s-]?carb|carb[\s-]?free|grain[\s-]?free|no[\s-]?grain|cloud)(?:[\s-]+[a-z]+)?[\s-]+(?:roti|rotis|chapati|chapatis|paratha|parathas|phulka|phulkas|naan|bhakri|thepla|rice|noodles?|pasta|spaghetti|bread|toast|pav|couscous|upma|poha|idli|idlis|dosa|uttapam|tortillas?)|(?:almond|coconut|lupin|psyllium)[\s-]+(?:flour|meal|husk)(?:[\s-]+[a-z]+)?[\s-]+(?:roti|rotis|chapati|chapatis|paratha|parathas|phulka|phulkas|naan|bhakri|thepla|rice|noodles?|pasta|spaghetti|bread|toast|pav|couscous|upma|poha|idli|idlis|dosa|uttapam|tortillas?))\b/gi;
-function isGrain(t){return GRAINW.test(String(t||"").replace(/[\u2018\u2019\u201C\u201D"']/g,"").replace(STANDIN," "));}
+var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|chawal|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal)\b/i;
+/* A grain-free stand-in named like a grain is not a grain (owner rule 3). A dish name is split into its parts ("with", "and", commas);
+   a part counts as a grain only when it names a grain and holds no stand-in. A part that holds a stand-in is not a grain, whatever dish
+   word follows ("cauliflower rice pulao", "sabudana khichdi"). After a vegetable only rice, noodles, pasta, roti, naan, bread, upma and
+   poha count, and only next to it ("broccoli fried rice" is rice; "cauliflower paratha" is a wheat paratha with a gobi filling); legume
+   pasta and noodles are not a grain; the words in the last group are never a grain, wherever they sit in the part ("coconut rice" is rice,
+   "coconut flour roti" is not). */
+var STANDIN=/(?:^|[^a-z])(?:(?:cauli(?:flower)?|broccoli|zucchini|courgette|cabbage|kelp|palmini|lettuce|lauki|doodhi|bottle[\s-]+gourd|hearts?[\s-]+of[\s-]+palm)[\s-]+(?:rice|noodles?|pasta|spaghetti|couscous|roti|rotis|chapati|chapatis|naan|bread|tortillas?|pizza|upma|poha)|(?:chickpea|chana|lentil|masoor|moong|mung|bean|beans|edamame|soy|soya)[\s-]+(?:flour[\s-]+)?(?:pasta|noodles?|spaghetti|penne|fusilli)|(?:konjac|shirataki|keto|low[\s-]?carb|carb[\s-]?free|zero[\s-]?carb|no[\s-]?carb|grain[\s-]?free|no[\s-]?grain|cloud|oopsie|miracle|sabudana|sago|tapioca|singhara|singhare|water[\s-]+chestnut|flax|flaxseed|(?:almond|coconut|lupin|psyllium)[\s-]+(?:flour|meal|husk|atta)))(?![a-z])/i;
+function isGrain(t){
+  return String(t||"").replace(/[‘’“”"']/g,"").split(/\s+(?:with|and|plus|or)\s+|[,;+&\/]|\s+-\s+/i)
+    .some(function(part){return GRAINW.test(part)&&!STANDIN.test(part);});
+}
 function wordRx(list){return new RegExp("\\b("+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")\\b","i");}
 function badWords(p){
   var bad=[];
@@ -111,13 +116,22 @@ function supp(text){return wordRx(SUPPW).test(String(text).toLowerCase());}
 
 /* ---------- cleaning ---------- */
 /* The owner's banned words (handoff rule 13). Text the model writes in its own voice is dropped when it uses one; the prompts ask for
-   none. Names the model copies from a menu or from what the person typed keep their words (quoted()). */
+   none. Dish names the model copies letter for letter from a menu keep their words (quoted(), checked against the typed menu); a name the
+   model writes for what the person typed keeps a word only when the person typed it (own()). */
 var BANW=["real","quiet","quietly","simply","seamlessly","effortlessly","exactly","just works","journey","unlock","empower","smart","magic","game-changer",
   "revolutionary","transform","curated","tailored","personalised","holistic","wellness journey"];
-var BANRX=new RegExp("(^|[^a-z])("+BANW.concat(["seamless","effortless","journeys","unlocks","unlocking","empowers","empowering","magical","game changer",
-  "transforms","transformed","transforming","transformative","personalized"]).map(function(w){return w.replace(/[\s-]/g,"[\\s-]");}).join("|")+")(?![a-z])","i");
+/* each of the owner's words with the forms it takes in a sentence (quieter, smartly, unlocked, magically, transformation ...) */
+var BANFORMS=["real","quiet(?:er|est|ly|ness)?","simply","seamless(?:ly)?","effortless(?:ly)?","exactly","just[\\s-]works","journeys?","unlock(?:s|ed|ing)?",
+  "empower(?:s|ed|ing|ment)?","smart(?:er|est|ly)?","magic(?:al|ally)?","game[\\s-]?changers?","revolutionary","transform(?:s|ed|ing|ation|ations|ative)?",
+  "curated","tailored","personali[sz]ed","holistic(?:ally)?","wellness[\\s-]journeys?"];
+var BANRX=new RegExp("(^|[^a-z])("+BANFORMS.join("|")+")(?![a-z])","i");
 function quoted(t,max){if(typeof t!=="string")return "";t=t.replace(EMO,"").replace(/!+/g,".").replace(/\s+/g," ").trim();return t.length>max?t.slice(0,max-1).replace(/\s+\S*$/,"")+"\u2026":t;}
 function clean(t,max){t=quoted(t,max);return BANRX.test(t)?"":t;}
+/* A name the model writes for something the person typed (the Rescue dish, the log's title and foods) keeps one of the words only when the
+   person typed that word themselves (a dish they named that way); otherwise the name is dropped. */
+function own(t,max,typed){var q=quoted(t,max),low=String(typed||"").toLowerCase(),re=new RegExp(BANRX.source,"ig"),m;
+  while((m=re.exec(q))){if(!new RegExp("(^|[^a-z])"+m[2].toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?![a-z])").test(low))return "";}
+  return q;}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
 function delta(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):0;}
@@ -174,17 +188,18 @@ function checkReply(r,p){
 
 /* ---------- Rescue ([S] DELIVERY_DISHES) ---------- */
 var HACKKIND=["sequence","portion","swap","order","move"];
-function checkRescue(r,p){
+function checkRescue(r,p,c){
+  var typed=c&&typeof c.text==="string"?c.text:"",dn=own(r&&r.dish&&r.dish.name,80,typed)||(typed?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),80):"");
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer")return {status:"refer",read:SAFETY};
   var d=r.dish||{},n={kcal:num(d.kcal,40,4000),protein:num(d.protein,0,300),carbs:num(d.carbs,0,500),fats:num(d.fats,0,300),fiber:num(d.fiber,0,80)};
-  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!quoted(d.name,80))return {status:"empty"};
+  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!dn)return {status:"empty"};
   var hacks=(Array.isArray(r.hacks)?r.hacks:[]).slice(0,4).map(function(h){
     return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
     .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.title,p);});
   if(!hacks.length)return {status:"empty"};
   var warn=clean(d.warning,80),br=clean(d.breakdown,180);if(CLAIM.test(warn)||supp(warn))warn="";if(CLAIM.test(br)||supp(br))br="";
-  return {status:"ok",dish:{name:quoted(d.name,80),portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
+  return {status:"ok",dish:{name:dn,portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
 }
 
 /* ---------- prompts. Built only from validated fields; the server builds them itself ---------- */
@@ -313,6 +328,6 @@ function plan(kind,body){
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
   c.target=mealTargets(dayTargets(p),c.meal,c.appetite||5);
   if(kind==="meals")return {prompt:buildMealPrompt(p,c),schema:SCH.meals,image:false,check:function(d){return checkReply(d,p);}};
-  if(kind==="rescue"){c.photo=!!(body&&body.image);return {prompt:buildRescuePrompt(p,c),schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p);}};}
+  if(kind==="rescue"){c.photo=!!(body&&body.image);return {prompt:buildRescuePrompt(p,c),schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p,c);}};}
   return {error:"bad_request"};
 }

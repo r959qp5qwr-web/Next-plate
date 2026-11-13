@@ -1,6 +1,6 @@
 // Next Plate promo v2: "Show it any menu." A pure function of time: window.seek(t) paints frame t.
 // Clock: seconds (t). The narration (vo.js, the owner's voice, placed by audio/place.py) starts each group on a bar of beats.json.
-// Every app screen is a real capture at 3x (assets/shots); rects below are CSS px in the 390 x 844 phone viewport.
+// Every app screen is a capture of the app at 3x (assets/shots); rects below are CSS px in the 390 x 844 phone viewport.
 // The menu card in scene 1 is set in type from the menu used to test the feature (test/v6/fixture-menu.js). docs/shotlist.md is the plan.
 import * as M from './lib/motion.js';
 import { WORDS } from './vo.js';
@@ -74,7 +74,7 @@ function headline(ctx, t, t0, rows, { x = 84, y = 300, size = 132, fg, acc, gap 
     });
   });
 }
-// the chapter numeral, huge and quiet behind the headline
+// the chapter numeral, huge and faint behind the headline
 function numeral(ctx, t, t0, n, color) {
   const q = sp(t, t0, SOFT); if (q <= 0) return;
   ctx.save(); ctx.globalAlpha = 0.16 * clamp(q); ctx.font = fI(560); ctx.fillStyle = color; ctx.textAlign = 'right'; ctx.fillText(String(n), W - 40 + (1 - q) * 120, 560); ctx.restore();
@@ -86,7 +86,7 @@ function tally(ctx, t, t0, n, color) {
   ctx.globalAlpha = 1;
 }
 
-// ------------------------------------------------------------------ a real screen, cut out as a card with tape
+// ------------------------------------------------------------------ an app screen, cut out as a card with tape
 // rect: CSS px [x, y, w, h] on the 390 x 844 capture; returns a mapper from CSS px to canvas px.
 function card(ctx, img, rect, cx, cy, w, rot, { tape = true, shadow = 0.32, radius = 14 } = {}) {
   const k = w / rect[2], h = rect[3] * k;
