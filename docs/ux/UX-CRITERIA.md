@@ -261,6 +261,28 @@ Measured: all 4,897 combinatorial cases read right; the Critic's round 18 probes
 check holds 833 names that are not a grain and 612 true grains; the round 17 build fails 8 of its checks. D7: tofu fried in rice is read
 the safe way ("fish fried in rice" is a coating).
 
+## Part A, changes after Critic round 19
+Round 19 found that a figure for another food still read as the grain kept on paths round 18 did not cover ("dal 200 g", "paneer (100 g)",
+"you have 150 g dal", "then eat 150 g dal", "0 g"); that a side-dish word before the grain refused true grain dishes ("chicken manchurian
+fried rice", "paneer tikka roll", "fish curry meals"); that puffed rice or murmura dishes with peanuts were read as coatings; and that
+single-word headings under BREADS (rumali, lachha) did not sell their items. Changes:
+1. A figure kept is a figure of the grain, in every sentence: "N g" tied to the grain word, "your N g" or "your portion is N g" only when no
+   other food follows, "you keep N g" only at the end or before "with", "and" or "plus"; "eat the rest" keeps, "the rest of the dal" does
+   not. "Then eat it" keeps only without "tomorrow" or "later". "0 g", "the whole portion" and "skip all of it" remove; "leave all of it to cool" keeps.
+2. Side-dish words before the grain (tikka, masala, curry, fry, korma, kebab, gravy, manchurian, kadai, makhani, butter) name the dish the
+   grain is served with; the exception for a grain after a side word applies only to stand-in bases. A roll, wrap or kathi roll may carry
+   tikka, kebab, seekh or shawarma; "meals" is a grain meal.
+3. Puffed rice, murmura, kurmura and mamra are crusts only on a protein; with peanuts, in a chaat, bhel, chivda, cutlet or tikki they are the
+   grain.
+4. Under BREADS, lachha, pudina, aloo, gobi and paneer read as parathas, tandoori, butter, missi and rumali as rotis; a heading with no price
+   followed by another heading (DESSERTS, DRINKS, STARTERS) sells nothing.
+Measured: the Critic's round 19 probes give 0 removals offered in 14 groups and 0 keeps held; 0 of 22 coatings and stand-ins count; 6 of 6
+headings sell their items and 0 of 5 non-selling headings do; menu removals 0 of 9 offered; the 4,032-name grid counts 3,843 names and loses
+none the round 18 build counted; all 4,897 combinatorial cases read right; its earlier probes hold; on recorded live replies 65 of 2,005
+one-tap notes are held, the same 65 as before; with diabetes the menu replay offers 88 orders (was 87) and drops 6 (was 9), none of which
+add a grain; its round 12 menu now offers 43 of 43 keeps (the paneer tikka wrap counts).
+D7: Roti (lauki), Pasta (broccoli) and crispy noodle chicken salad are read the safe way.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -319,3 +341,6 @@ the safe way ("fish fried in rice" is a coating).
   grain-free versions and "atta" alone is not a serving, so they are read the safe way.
   Round 17 listed curd rice fried chillies as a grain meal; "<grain dish> fried <food>" also names a coating (noodle fried prawns), so it is
   read the safe way.
+  Round 18 listed tofu fried in rice as a grain dish; "fish fried in rice" is a coating, so it is read the safe way.
+  Round 19 listed Roti (lauki), Pasta (broccoli) and crispy noodle chicken salad as grains; a vegetable in brackets after the grain also
+  names a stand-in (lauki roti, broccoli pasta) and "crispy noodle" also names a crust on a salad, so they are read the safe way.
