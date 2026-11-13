@@ -11,7 +11,7 @@
 | Apple | Show, don't tell; minimal copy; the product in use by people like you. | Calm demonstration; few words. |
 | Dollar Shave Club launch film | Founder's own voice; jokes built on customers' actual pain; addresses the obvious objection; shareable. | The coach's voice; name the pain. |
 | CRED, "Indiranagar ka gunda" | One unexpected inversion, a meme-able line, released on social first. | One remarkable moment. |
-| Noom, HealthifyMe | Category talks weight loss, transformation, celebrities, psychology, user stories. | Our convention to avoid: before/after, calorie counting, guilt. |
+| Noom, HealthifyMe | Category talks weight loss, before-and-after change, celebrities, psychology, user stories. | Our convention to avoid: before/after, calorie counting, guilt. |
 
 ## Sources
 - Bernbach: https://brandingstrategyinsider.com/10-principles-of-advertising-bill-bernbach/ ; https://brandingstrategyinsider.com/the-advertising-wisdom-of-bill-bernbach/

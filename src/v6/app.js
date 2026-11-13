@@ -73,12 +73,12 @@ function api(path,body,cb){
 }
 function makePlates(text){
   if(UI.busy)return;refresh();var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey();
-  UI.busy=text?"ask":"plates";UI.err="";UI.eretry=true;render();if(text)logEv("asked",{text:text.slice(0,120)});
+  UI.busy=text?"ask":"plates";UI.err="";UI.eretry=true;UI.lastAsk=text||"";render();if(text)logEv("asked",{text:text.slice(0,120)});
   api("/api/meals",{profile:profileOut(),ctx:ctxOut(text),file:fileOut()},function(s,j){
     UI.busy="";
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
-      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
+      UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";}
     else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);}
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});
@@ -324,6 +324,7 @@ function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
   var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));
+  if(UI.err&&UI.lastAsk)i.value=UI.lastAsk;   /* after a failed ask the words stay in the box */
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();makePlates(t);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
 }
@@ -340,14 +341,16 @@ function renderPlate(){
     else{
       var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));
       add(c,i,el("h2",null,UI.err?UI.err:"Your day has moved on. Plan fresh plates?"));
-      if(!UI.err||UI.eretry!==false){var b=btn(UI.err?"btn":"btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates("");});c.appendChild(b);}
+      if(!UI.err||UI.eretry!==false){var b=btn(UI.err?"btn":"btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
   }else if(r.status==="refer"){
     var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));
     var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);v.appendChild(e);
   }else{
-    if(UI.err){var en=el("div","note");en.appendChild(ic("info"));en.appendChild(el("p",null,UI.err+" Showing your last plates."));v.appendChild(en);}
+    if(UI.err){var en=el("div","note");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.err+" Showing your last plates."));
+      if(UI.eretry!==false){var ar=btn("btn","Try again","refresh","ask-retry");ar.addEventListener("click",function(){var x=UI.lastAsk||"";UI.err="";makePlates(x);});et.appendChild(ar);}
+      en.appendChild(et);v.appendChild(en);}
     if(asked){var rl=el("div","readline");rl.appendChild(el("p","asked","“"+r.ask+"”"));if(r.read)rl.appendChild(el("p","ans-read",r.read));
       var back=btn("linkbtn","Back to my plates",null,"back");back.addEventListener("click",function(){STORE.shown[C.meal]=null;UI.sel=0;UI.alc={};render();});rl.appendChild(back);v.appendChild(rl);}
     var m=curMeal(),vw=viewOf(m);

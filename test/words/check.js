@@ -6,7 +6,10 @@ const fs = require('fs'), path = require('path'), { execSync } = require('child_
 const ROOT = path.resolve(__dirname, '../..');
 const BANNED = ['real', 'quiet', 'quietly', 'simply', 'seamlessly', 'effortlessly', 'exactly', 'just works', 'journey', 'unlock', 'empower', 'smart',
   'magic', 'game-changer', 'revolutionary', 'transform', 'curated', 'tailored', 'personalised', 'holistic', 'wellness journey'];
-const RX = new RegExp('(^|[^a-z])(' + BANNED.map(w => w.replace(/[-\s]/g, m => m === '-' ? '-' : '\\s+')).join('|') + ')(?![a-z])', 'ig');
+// each word with the forms it takes in a sentence (comparatives, adverbs, past tenses, nouns), as the app's own screen reads them
+const FORMS = ['real', 'quiet(?:er|est|ly|ness)?', 'simply', 'seamless\\w*', 'effortless\\w*', 'exactly', 'just\\s+works', 'journey\\w*', 'unlock\\w*', 'empower\\w*',
+  'smart(?:er|est|ly|ness)?', 'magic(?:al|ally)?', 'game-?\\s*chang\\w*', 'revolutionary', 'transform\\w*', 'curat\\w*', 'tailor\\w*', 'personali[sz]\\w*', 'holistic\\w*', 'wellness\\s+journeys?'];
+const RX = new RegExp('(^|[^a-z])(' + FORMS.join('|') + ')(?![a-z])', 'ig');
 const allow = JSON.parse(fs.readFileSync(path.join(__dirname, 'allow.json'), 'utf8'));
 const files = execSync('git ls-files -co --exclude-standard', { cwd: ROOT }).toString().split('\n').filter(f => /\.(md|txt)$/i.test(f) && !/^node_modules\//.test(f));
 const APP = ['src/v6/app.js', 'src/v5/app.js', 'src/v6/params.js', 'src/v6/plate.js', 'src/v5/markup.html', 'src/v6/engine.js', 'src/v5/core.js', 'src/v5/server.ts'];
@@ -17,7 +20,7 @@ const CODE = execSync('git ls-files -co --exclude-standard', { cwd: ROOT }).toSt
 let hits = [], used = new Set();
 function scan(f, text, onlyStrings) {
   text.split('\n').forEach((line, i) => { const orig = line;
-    if (!onlyStrings && /\.(js|mjs|ts|css|html|py)$/.test(f)) line = line.replace(/(?:text-)?transform(?:-origin|-box|-style)?(?=["']?\s*[:=])|\.transform\b|["']transform["']/gi, '');   // the CSS and SVG property, not the word
+    if (!onlyStrings && /\.(js|mjs|ts|css|html|py)$/.test(f)) line = line.replace(/(?:text-)?transform(?:-origin|-box|-style)?(?=["']?\s*[:=])|\.transform\b|["']transform["']|\btransform(?=[A-Z])\w*/g, '').replace(/(?:text-)?transform(?:-origin|-box|-style)?(?=["']?\s*[:=])|\.transform\b|["']transform["']/gi, '');   // the CSS and SVG property, not the word
     const parts = onlyStrings ? (line.match(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|>[^<>{}]+</g) || []).filter(s => !/^["'](translate|rotate|scale|matrix)|:\s*[^;]+;/.test(s)) : [line];
     parts.forEach(s => { let m; RX.lastIndex = 0; while ((m = RX.exec(s))) {
       const a = allow.findIndex(x => x.file === f && orig.includes(x.contains));

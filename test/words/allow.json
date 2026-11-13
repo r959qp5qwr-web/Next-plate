@@ -125,16 +125,6 @@
   "why": "the rule itself: each of the owner's words with the forms it takes in a sentence, used to drop model text"
  },
  {
-  "file": "src/v5/core.js",
-  "contains": "\"empower(?:s|ed|ing|ment)?\"",
-  "why": "the rule itself, second line of the word forms"
- },
- {
-  "file": "src/v5/core.js",
-  "contains": "\"curated\",\"tailored\",\"personali[sz]ed\"",
-  "why": "the rule itself, third line of the word forms"
- },
- {
   "file": "demo/reel/promo/audio/place.py",
   "contains": "Real food, in real amounts",
   "why": "rejected narration (promo v1, voice v2) quoted word for word in the rejected film's own source, kept as the record of what the owner rejected"
@@ -183,5 +173,40 @@
   "file": "demo/reel/promo2/vo.js",
   "contains": "export const WORDS = [[\"Show\"",
   "why": "rejected narration (promo v2) word timings, quoted from the rejected take, kept as the record"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "\"empower\\\\w*\",\"smart(?:er|est|ly|ness)?\"",
+  "why": "the rule itself, second line of the word forms"
+ },
+ {
+  "file": "src/v5/core.js",
+  "contains": "\"curat\\\\w*\",\"tailor\\\\w*\"",
+  "why": "the rule itself, third line of the word forms"
+ },
+ {
+  "file": "test/words/check.js",
+  "contains": "const FORMS = ['real'",
+  "why": "the rule itself: the sweep's word forms"
+ },
+ {
+  "file": "test/words/check.js",
+  "contains": "'smart(?:er|est|ly|ness)?', 'magic(?:al|ally)?'",
+  "why": "the rule itself, second line of the sweep's word forms"
+ },
+ {
+  "file": "test/rules/check.js",
+  "contains": "'|quieter|smartly|unlocked|empowered",
+  "why": "the rule itself: the check's word forms (its oracle)"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "\"Don't use Sunita. Don't personalize. Don't do all those",
+  "why": "the owner's own words, quoted as the rule they set"
+ },
+ {
+  "file": "handoff-next-plate.md",
+  "contains": "| \"Don't use Sunita. Don't personalize.\" Research what makes",
+  "why": "the owner's own words, quoted in the correction log"
  }
 ]
