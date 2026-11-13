@@ -355,6 +355,27 @@ its names refuse 0 and count 0 stand-ins; its menus offer 0 of 14 non-selling an
 the same as on the round 21 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held
 (the same 65), with diabetes the menu replay offers 88 and drops 6.
 
+## Part A, changes after Critic round 23
+Round 23 found a regression from round 22: a priced grain line marked sold out ("Roti (sold out) 30", "Rice 30 (finished)") sold the
+grain again, and an unpriced sold-out line made the next item a roti ("Roti - sold out" then "Paneer 220"); unpriced colon sections on a
+priced menu ("Rice: Jeera / Plain") were refused. It also found that later meals outside the round 22 word list ("with nashta", "with
+your dabba", "after midnight", "after college") still read as the grain kept, and that a grain named and then removed by another name or
+number ("have 2 rotis; skip the phulka", "have 150 g rice; skip the chawal") kept it. Changes:
+1. A sold-out mark ends the line on any line, priced or not, and ends a grain section: sold out, finished, over, not available, not today,
+   not served, out of stock, no stock, closed, N/A, NA, weekends only, ask the waiter. The section rules run as one chain again, so a
+   priced grain line or a colon section sells its items and nothing else is undone.
+2. "Then eat, have, serve or reheat it" is now read by an allow-list: it keeps the grain only when every word after it in its clause is a
+   food on the plate, a person at the table after "with" ("with the kids", "with my mother"), or a same-meal word (last, first, slowly,
+   hot, now, together). Anything else holds the note, including "after gym", "with chai" and "with breakfast".
+3. Grain words are compared through one name each (rotis, phulka, chapati are roti; chawal, bhaat, basmati are rice), and a removal that
+   names any grain the keep named removes it ("have 150 g rice; skip the rice and the roti"). Removing a different grain while another
+   is kept ("2 rotis: no rice at all", "rice 150 g: skip the phulka") still keeps a grain and stays on offer.
+Measured: the Critic's 220 sold-out menus and 72 other wordings offer 0 (the round 22 build offered 170 and 60); its 15 colon sections are
+all offered; its 192 later-meal notes and the same-grain removals are all held; its keeps stay on offer except "keep 2 rotis; skip the
+naan" (held on the safe side, as before) and two notes held by the sweets rule for "sugar". Every earlier Critic probe reads the same as
+on the round 22 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65),
+with diabetes the menu replay offers 88 and drops 6.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

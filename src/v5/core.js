@@ -291,8 +291,26 @@ function keepsAmount0(t){t=String(t).replace(/(?:\u2248|~|\babout|\baround|\bapp
 var PRIORREM=new RegExp("\\b(?:skip|skipping|drop|omit|avoid|remove|ditch|without|leave\\s+(?:it\\s+|them\\s+)?out|cut\\s+(?:it\\s+|them\\s+)?out)\\b(?!\\s+(?:\\d|half|a\\s+(?:third|quarter|little|bit)|some|part|one\\b|two\\b|the\\s+(?:extra|second|other|rest)|\\w+\\s+by\\b|the\\s+\\w+\\s+by\\b))"+
   "|\\bkeep\\s+(?:the\\s+)?(?:[a-z]+\\s+)?(?:"+GRAINT+")\\s+off\\b|\\bno\\s+(?:"+GRAINT+")\\b|\\b(?:"+GRAINT+")\\s+(?:goes\\s+back|is\\s+(?:off|out))\\b"+
   "|\\b(?:"+GRAINT+")\\s*[:?,]\\s*(?:skip|drop|leave|hold|cut|save|pack|box|omit|refrigerate|freeze|store)\\s+(?:it|them)\\b(?!\\s+(?:all\\s+)?(?:to\\b|so\\b|for\\s+(?:\\d|a\\s+few|an?\\s+(?:hour|minute|bit)|ten|five|two|the\\s+(?:end|last|second))|aside\\s+(?:for|to|so)|overnight|in\\s+the\\s+(?:cooker|pot|fridge)\\s+(?:to|for|overnight|so)|warm|on\\s+the\\s+(?:tawa|stove|side)|after|last|first|till|until|slowly))","g");
-function sameGrain(a,b){var q=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);});},qa=q(a),qb=q(b);
-  return qb.length>0&&qb.every(function(y){return qa.indexOf(y)>=0;});}
+/* Round 23: "then eat, have, serve or reheat it" keeps the grain in this meal only when the clause ends there, or every word after it is a
+   food on the plate, a person at the table or a same-meal word ("with the dal", "with the kids", "after the salad", "last", "hot").
+   Any other word ("with nashta", "with your dabba", "after midnight", "with breakfast") holds the note. */
+var THEN_FOOD=/^(?:dal|daal|sabzi|sabji|subzi|curry|raita|salad|sambar|rasam|curd|dahi|yogurt|yoghurt|pickle|achar|chutney|papad|kadhi|rajma|chole|chana|paneer|ghee|gravy|soup|veg|vegetables?|veggies|sprouts|egg|eggs|chicken|fish|mutton|tofu|bhaji|bhurji|korma|kurma|poriyal|thoran|stew|main|mains|course|starter|starters|plate|meal|rest)$/;
+var THEN_PEOPLE=/^(?:kids|children|family|husband|wife|son|daughter|guests?|mother|father|parents|mom|mum|dad|everyone|us|others|table)$/;
+var THEN_SAME=/^(?:last|first|slowly|hot|warm|now|right|straight|away|immediately|together|too|also|fresh|then)$/;
+function thenKeeps(t){var re=new RegExp("(?:^|[^.!?]\\s)then\\s+(?:eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b([^.;,!?]*)","g"),m;
+  while((m=re.exec(t))){var w=words(m[1]),ok=true,mode="";
+    for(var k=0;k<w.length;k++){var x=w[k];
+      if(/^(?:the|your|my|a|some|his|her|our|of|and|plus)$/.test(x))continue;
+      if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";continue;}
+      if(THEN_SAME.test(x)&&mode!=="after")continue;
+      if(THEN_FOOD.test(x)||MAT_RX.test(x)||COATW.test(x)||VEGW.test(x)||PARTFOOD_W.test(x))continue;
+      if(THEN_PEOPLE.test(x)&&mode==="with")continue;
+      ok=false;break;}
+    if(ok)return true;}
+  return false;}
+function grainCanon(y){return /^(?:rice|chawal|bhaat|bhat|basmati|sadam|annam)$/.test(y)?"rice":/^(?:rotis?|phulkas?|fulkas?|chapatis?|chapathis?|chappatis?|chapattis?|rotlis?)$/.test(y)?"roti":y.replace(/s$/,"");}   /* round 23: rotis, phulka and chapati are one roti; chawal and bhaat are rice */
+function sameGrain(a,b){var q=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);}).map(grainCanon);},qa=q(a),qb=q(b);
+  return qb.length>0&&qb.some(function(y){return qa.indexOf(y)>=0&&!/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);})&&!qb.some(function(y){return qa.indexOf(y)<0&&/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);});}
 function priorRemoval(s){var re=new RegExp(PRIORREM.source,"g"),m;while((m=re.exec(s))){var pre=words(s.slice(0,m.index)).slice(-3).join(" ");
     if(/\b(?:half|most|some|part|rest|remaining|leftover|extra|excess|second|other|one)\b/.test(pre+" "+m[0].split(/\s+/).slice(0,3).join(" ")))continue;   /* "the extra rice goes back to the kitchen" is a part */
     if(/\b(?:after|once|when)\s+you\b/.test(s.slice(m.index).split(/[.;]/)[0]))continue;   /* "rice goes back to the pot after you take 150 g" */
@@ -300,9 +318,9 @@ function priorRemoval(s){var re=new RegExp(PRIORREM.source,"g"),m;while((m=re.ex
 function keepsAmount(t){var s=String(t||"").toLowerCase();
   if(AMTGONE.test(s)||ZERO_G.test(s)||new RegExp("\\b(?:none\\s+of|not\\s+(?:even\\s+)?(?:one|a)\\s+(?:bit|grain|spoon)|zero\\s+(?:"+GRAINT+"))\\b").test(s))return false;   /* round 22: read on the whole note */
   var pr=priorRemoval(s);if(!pr)return keepsAmount0(s);
-  var bef=s.slice(0,pr.index),GQ=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra)$/.test(y);});};
+  var bef=s.slice(0,pr.index),GQ=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra)$/.test(y);}).map(grainCanon);};
   if(/\b(?:keep|have|eat|take|your|yours|you)\b/.test(bef)&&keepsAmount0(bef)){var rc=GQ(s.slice(pr.index).split(/[.;,?!]/)[0]),bc=GQ(bef);
-    if(rc.length&&!rc.every(function(x){return bc.indexOf(x)>=0;}))return true;}   /* round 22: "have 150 g brown rice; skip the white rice"; not "rice was 150 g; skip it" */
+    if(rc.length&&!rc.some(function(x){return bc.indexOf(x)>=0&&!/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra)$/.test(x);}))return true;}   /* round 23: "have 150 g rice; skip the rice and the roti" removes the rice */   /* round 22: "have 150 g brown rice; skip the white rice"; not "rice was 150 g; skip it" */
   return !ZERO_G.test(s)&&new RegExp("\\b\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:brown\\s+|white\\s+|red\\s+|jowar\\s+|millet\\s+)?(?:"+GRAINT+")\\b").test(s.slice(pr.index));}
 /* round 20: "eat the rest" keeps the grain only after a share of it is set apart ("pack half the rice; eat the rest", "leave 50 g for the
    family; eat the rest"); "rice: skip it; eat the rest" and "the rest of the chole" do not */
@@ -357,7 +375,7 @@ function removesGrain(text){
   u.replace(OBJV,function(m0,v,off,str){var rest=str.slice(off+m0.length).split(/[.;,?!]/)[0],w=words(rest),o=[],pre=str.slice(0,off);
     if(/[,;:?]\s*(?:but\s+|so\s+|and\s+)?$/.test(pre)){var seg0=pre.replace(/[,;:?]\s*(?:but\s+|so\s+|and\s+)?$/,"").split(/[.!;]/).pop(),before=/^\s*(?:about\s+)?\d+\s*g\s*$/.test(lastClause(seg0))?seg0:lastClause(seg0),first=w.filter(function(x){return !/^(?:the|a|an|for|at|this|that|thanks|thank|you|please|at|all|really|more)$/.test(x);})[0]||"";
       if(hasGrainWord(before)&&/^(?:leave|cut|take|drop|skip|hold|save|pack|box|parcel|store|freeze|send|refrigerate|wrap|give|tiffin|keep|set)$/.test(v)&&/^\s*(?:it|them)\b/.test(rest)){
-        if(!/^\s*(?:it|them)\s+(?:a\s+(?:stir|mix|toss|minute|few|moment|rest)\b|\d+\s*(?:min|mins|minutes?|secs?|seconds?)\b|aside\s+(?:for|while)\s+the\s+[a-z]+\s+(?:to|cools?)\b|after|last|first|next|second|with|warm|soft|into|in\s+(?:half|a\s+cloth|quarters)|on\s+the\s+side|for\s+(?:the\s+)?(?:end|last|second)|(?:aside\s+|out\s+(?:on\s+the\s+counter\s+)?)?(?:to|so\s+it)\s+(?:cool|rest|set|soak|steam|warm|cools)|aside\s+for\s+(?:an?\s+)?(?:hour|few|\d))/.test(rest)&&!keepsAmount(t)&&!new RegExp("(?:^|[^.!?]\\s)then\\s+(?:eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b(?=\\s*(?:$|[.;,!?]|(?:with\\s+(?:the\\s+|your\\s+|some\\s+|a\\s+)?[a-z]+(?:\\s+[a-z]+)?|next\\s+to\\s+(?:the\\s+)?[a-z]+|after\\s+(?:the\\s+)?[a-z]+|last|first|slowly|hot|warm|now|right\\s+away|straight\\s+away|immediately)\\s*(?:$|[.;,!?])))(?![^.;,!?]*\\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tea|tiffin|snack|work|school|office|sunset|sunrise|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next|another)\\b)").test(t)&&
+        if(!/^\s*(?:it|them)\s+(?:a\s+(?:stir|mix|toss|minute|few|moment|rest)\b|\d+\s*(?:min|mins|minutes?|secs?|seconds?)\b|aside\s+(?:for|while)\s+the\s+[a-z]+\s+(?:to|cools?)\b|after|last|first|next|second|with|warm|soft|into|in\s+(?:half|a\s+cloth|quarters)|on\s+the\s+side|for\s+(?:the\s+)?(?:end|last|second)|(?:aside\s+|out\s+(?:on\s+the\s+counter\s+)?)?(?:to|so\s+it)\s+(?:cool|rest|set|soak|steam|warm|cools)|aside\s+for\s+(?:an?\s+)?(?:hour|few|\d))/.test(rest)&&!keepsAmount(t)&&!thenKeeps(t)&&
           !(/^(?:take|have|eat)$/.test(v)&&/^\s*(?:it|them)\s+on\s+the\s+side/.test(rest))||/^\s*(?:it|them)\s+(?:with|to)\s+(?:the\s+|your\s+|my\s+)?(?:kids|children|family|husband|wife|son|daughter|guests?|others|maid|neighbou?r|friend|leftovers)\b/.test(rest)||(/^(?:leave|save|hold)$/.test(v)&&/^\s*(?:it|them)\s+on\s+the\s+side/.test(rest))){hit=true;return m0;}
         return m0;}   /* "rice? leave it for now", "rice, cut it out"; not "rice: take it after the salad", "leave it to cool, then eat 150 g" */
       if(/\b(?:not\s+even|none\s+of(?:\s+the)?|no)\s+\d+\s*g\b/.test(m0+rest)&&hasGrainWord(before)){hit=true;return m0;}   /* "rice, not even 50 g" */

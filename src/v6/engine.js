@@ -408,6 +408,7 @@ function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|cha
    the section when they are not grains on their own ("jeera rice"); a bracket that starts with "with" lists what comes with the dish; a
    section word alone on a line is a heading on a priced menu and an item on an unpriced one; a free-typed list splits on commas and "and".
    An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
+var SOLDOUT=/\b(?:not\s+available|unavailable|sold\s+out|finished|over|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na)\b/;
 var MENUSEC=/^(?:breads?|indian\s+breads?|rice|naans?|parathas?|kulchas?|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
 var NOTSOLD=/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps|cutlets?|kanji|meetha|cakes?|sweet|pani|sev|bhel|golgappa|chaat|dahi\s+puri)\b/;
 function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lines=orig.map(function(x){return x.toLowerCase();}),anyPrice=/\d/.test(text||"");
@@ -420,9 +421,10 @@ function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lin
     var head=line.split(/[(\[]|\s-\s|:/)[0].trim().replace(/[\s\-\u2013:]+$/,""),rest=line.slice(line.indexOf(head)+head.length);
     var list=head.split(/,|\band\b|\//).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
     var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(function(x){return /[a-z]/.test(x);});
-    if(MENUSEC.test(head)){
-      if(/\b(?:not\s+available|unavailable|sold\s+out|finished|over|not\s+today|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter)\b/.test(rest))list=[];   /* "Rice - sold out", "ROTI (ask the waiter)" */
-      else if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});}   if(priced&&isGrain(head))list.push(head);   /* "Rice: Jeera / Plain"; round 22: "Roti (today) 25" sells roti */
+    if(SOLDOUT.test(rest)){list=[];cur="";}   /* round 23: "Roti (sold out) 30", "Rice - out of stock", "Roti - N/A" sell nothing, on any line */
+    else if(MENUSEC.test(head)){
+      if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});if(priced&&isGrain(head))list.push(head);}   /* "Rice: Jeera / Plain"; round 22: "Roti (today) 25" sells roti */
+      else if(priced){}                                                            /* "Roti 25": the heading word is the item */
       else if(anyPrice&&!priced){var nhead=nextHead;
         if(/\d/.test(next)&&!MENUSEC.test(next.replace(/[^a-z ]/g," ").trim())){list=[];cur=/^(?:rice|rotis?|naans?|parathas?|kulchas?)$/.test(head)?head.replace(/s$/,""):/^(?:indian\s+)?breads?$/.test(head)?"bread*":"";}
         else if(nhead)list=[];}}   /* a heading over priced items names them ("ROTI" then "Tandoori 30"); a heading followed by another heading ("ROTI" then "ICE CREAM") sells nothing; "Rice" then "Roti" in a list is an item */   /* a heading that names one grain names its items ("ROTI: Tandoori, Butter"); "BREADS" does not */   /* a heading over priced items; "Rice" then "Jeera / Plain 100" is jeera rice */

@@ -929,6 +929,38 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   ok(!refM.length, 'round 22: menu orders whose grain is sold, priced with a note, are offered' + (refM.length ? ' (refused: ' + refM.map(c => c.slice(0, 5).join(' | ')).join('; ') + ')' : ''));
 }
 
+{ // round 23: sold-out marks on any grain line, later meals outside a word list after "then eat it", the same grain under another name
+  const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
+  const tap = (note, after) => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); };
+  const REM = [];
+  for (const g of ['Rice', 'Brown rice']) for (const r of ['save it', 'pack it', 'keep it aside']) for (const v of ['then eat it', 'then have it'])
+    for (const w of ['with nashta', 'with your dabba', 'with your lunchbox', 'with afternoon chai', 'with brekkie', 'with sehri', 'after midnight', 'after class', 'after college', 'after tuition', 'after duty', 'after gym', 'after yoga', 'with the afternoon meal', 'with the noon meal', 'with chai']) REM.push(g + ': ' + r + ', ' + v + ' ' + w + '.');
+  for (const k of ['Have 2 rotis', 'You planned 2 rotis', 'Your 2 rotis', 'Keep 2 rotis', 'Eat 2 rotis']) for (const r of ['skip the roti', 'skip the phulka', 'no roti', 'drop the chapati', 'leave out the chapatis']) REM.push(k + '; ' + r + '.');
+  for (const k of ['Have 150 g rice', 'Your 150 g of rice', 'You were to eat 150 g rice', 'Keep 150 g rice', 'Take 150 g rice']) for (const r of ['skip the chawal', 'no bhaat', 'drop the basmati', 'skip the rice and the roti', 'leave out the rice and dal']) REM.push(k + '; ' + r + '.');
+  for (const k of ['Rotis, 2', 'Roti 2 pieces', '2 rotis']) for (const r of ['no roti', 'skip the phulka']) REM.push(k + ': ' + r + '.');
+  for (const k of ['Rice, 150 g', 'Rice 150 g']) for (const r of ['no chawal', 'not the rice', 'no rice at all']) REM.push(k + ': ' + r + '.');
+  const KEEP = ['Rice: leave it, then eat it with the dal.', 'Rice: set it aside, then have it with sabzi.', 'Rice: hold it, then eat it last.', 'Rice: keep it aside, then eat it after the salad.', 'Rice: leave it to cool, then have it with curd.', 'Rice: save it, then eat it with the paneer.', 'Have 150 g brown rice; skip the white rice.', 'Have 150 g rice; skip the naan.', 'Rice: hold it, then have it with the kids.', '2 rotis: no rice at all.', 'Rice 150 g: skip the phulka.',
+    'Keep 150 g rice; none of the papad.', 'Rice 150 g; not even a bit of pickle.', 'Rice: leave it to cool, 150 g; none of the ghee.', 'Keep 150 g rice; skip the papad; not one bit of the pickle.', 'Have 150 g brown rice; skip the ghee, not even 5 g.', 'Rice, 150 g, but skip the ghee.', 'Rice 150 g; leave out the papad.', 'Your 150 g rice; drop the pickle.', 'Rice: keep 150 g; leave out the extra ghee.', 'Rice 150 g? Yes, but skip the pickle.'];
+  const offO = REM.filter(n => tap(n, 200)), heldO = KEEP.filter(n => !tap(n, 150));
+  ok(!offO.length, 'round 23: no one-tap note that sends the grain to a meal outside the plate, or names the grain and removes it by another name, is offered (' + REM.length + ' notes)' + (offO.length ? ' (offered: ' + offO.slice(0, 20).join(' | ') + ')' : ''));
+  ok(!heldO.length, 'round 23: one-tap notes that eat the grain with food or people at this meal, or remove another grain or a side, stay on offer' + (heldO.length ? ' (held: ' + heldO.join(' | ') + ')' : ''));
+  const order = ([n, por, side, ask, menu]) => { const pl = plan('menu', { profile: Object.assign({}, P, { diet: 'nonveg' }), ctx: { meal: 'lunch', text: menu } });
+    const d = Object.assign({ as_written: n, portion: por, kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask: ask || '', grain_made_of: 'wheat', grain_grams: 80 },
+      side ? { with: side, with_kcal: 90, with_protein: 3, with_carbs: 18, with_fats: 1, with_fiber: 2 } : { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 });
+    const o = (pl.check({ status: 'ok', place: 'Restaurant', dishes: [d], leave: [], tip: '' }).orders || [])[0]; return !!o && (!ask || !!o.ask); };
+  const m = 'MAINS\nDal Tadka 240\nPalak Paneer 300\n', D = (x) => ['Dal Tadka', '1 bowl dal with ' + x + ', about 400 g', '', ''];
+  const NS = [], SO = [];
+  for (const g of [['2 roti', 'Roti'], ['1 plate rice', 'Rice'], ['2 naan', 'Naan'], ['2 paratha', 'Paratha']]) {
+    for (const tag of [' (sold out) 30', ' - sold out 30', ' 30 (finished)', ' 30 - not available', ' (not available) 30', ' 30 (sold out)', ': sold out 30', ' 30 (ask the waiter)', ' (not today) 30', ' 30 - over']) NS.push([...D(g[0]), m + g[1] + tag]);
+    for (const tag of [' - sold out', ' (finished)', ' - not available', ': not today', ' (ask the waiter)']) for (const after of ['Paneer 220', 'Vanilla 60', 'Butter 40', 'Garlic 50', 'Tandoori 30', 'Plain 100', 'Jeera 120', 'Dal 200', 'Mango 120']) NS.push([...D(g[0]), m + g[1] + tag + '\n' + after]); }
+  for (const tag of [' (not served today)', ' - not served today', ' (out of stock)', ' - out of stock', ' (no stock)', ' - N/A', ' (NA)', ' - not in stock', ' (closed)', ' - not served', ' (today not available)', ' (weekends only)']) for (const after of ['Kheer 80', 'Paneer 220', 'Tandoori 30']) for (const pr of ['', ' 30']) NS.push([...D('2 roti'), m + 'Roti' + pr + tag + '\n' + after]);
+  for (const g of [['2 roti', 'Roti', 'Tandoori / Butter'], ['1 plate rice', 'Rice', 'Jeera / Plain'], ['2 naan', 'Naan', 'Butter / Garlic']]) for (const after of ['DESSERTS\nKheer 80', 'Soups\nTomato 90', 'Dal Makhani 260', 'Paneer Tikka 220', 'Beverages\nTea 20']) SO.push([...D(g[0]), m + g[1] + ': ' + g[2] + '\n' + after]);
+  const offM = NS.filter(k => order(k)), refM = SO.filter(k => !order(k));
+  ok(!offM.length, 'round 23: no menu order for a grain marked sold out, not served or not in stock, priced or not, is offered (' + NS.length + ' menus)' + (offM.length ? ' (offered: ' + offM.slice(0, 10).map(c => c[4].split('\n').slice(3).join(' / ')).join('; ') + ')' : ''));
+  ok(!refM.length, 'round 23: unpriced colon sections on a priced menu sell their grain' + (refM.length ? ' (refused: ' + refM.map(c => c[4].split('\n').slice(3).join(' / ')).join('; ') + ')' : ''));
+}
+
 // ---- Rule 4, the owner's banned words, in every field the model writes for the person to read (Critic round 7).
 const WORDS = ['real', 'quiet', 'quietly', 'simply', 'seamlessly', 'effortlessly', 'exactly', 'just works', 'journey', 'unlock', 'empower', 'smart', 'magic',
   'game-changer', 'revolutionary', 'transform', 'curated', 'tailored', 'personalised', 'holistic', 'wellness journey'];
