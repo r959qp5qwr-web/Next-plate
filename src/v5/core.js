@@ -92,7 +92,7 @@ var SAFETY="This one is for your coach and doctor to plan with you.";
    or an oil ("rava-crusted", "rice bran oil"). Coatings are taken out first. With no stand-in and no grain left out, a grain word counts.
    Otherwise only a plain grain counts, as its own component of the name ("quinoa and cauliflower rice", "tapioca with rice", "2 roti"):
    a dish word next to a stand-in may be the stand-in itself, so it does not count. Ambiguous names are read the safe way, as no grain. ---------- */
-var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|chawal|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal|thalipeeth|puri|puris|poori|pooris|bhatura|bhature|idiyappam|bisi bele bath|sorghum|rye|buckwheat|kuttu|samak|sama|wholemeal|chilla|cheela|muthia|muthiya)\b/i;
+var GRAINW=/\b(roti|rotis|phulka|phulkas|chapati|chapatis|paratha|parathas|thepla|bhakri|naan|kulcha|rice|basmati|chawal|pulao|khichdi|biryani|millet|millets|jowar|bajra|ragi|foxtail|kodo|quinoa|dalia|daliya|broken wheat|oats|oatmeal|poha|upma|idli|idlis|dosa|uttapam|bread|toast|pav|noodles|pasta|soba|farro|freekeh|couscous|rava|semolina|vermicelli|sevai|barley|amaranth|rajgira|makki|mudde|appam|puttu|pongal|thalipeeth|puri|puris|poori|pooris|bhatura|bhature|idiyappam|bisi bele bath|sorghum|rye|buckwheat|kuttu|samak|sama|wholemeal|muthia|muthiya)\b/i;
 var GW="roti|rotis|chapati|chapatis|paratha|parathas|phulka|phulkas|naan|bhakri|thepla|rice|chawal|noodles?|pasta|spaghetti|bread|toast|pav|couscous|upma|poha|idli|idlis|dosa|uttapam|tortillas?|pizza|khichdi|pulao|biryani|puri|poori|wraps?|chilla|cheela";
 /* words that turn a grain word into something else: a coating, an oil, a vinegar */
 var COAT=/\b(?:rava|sooji|suji|semolina|bread|panko|oats?|corn(?:flake)?s?)[\s-]*(?:crusted|coated|crumbed|crumbs?|crust)\b|\brava\s+[a-z]+\s+fry\b|\b(?:rice|wheat|corn|gram)\s+(?:flour\s+)?(?:batter|vinegar|bran(?:\s+oil)?|paper|wine)\b|\bbread[\s-]*crumb\w*/gi;
@@ -119,11 +119,15 @@ var STAND=new RegExp([
 var CORE=/^(?:\d+|one|two|three|four|half|a|an|the|of|small|medium|large|thin|cup|cups|bowl|bowls|katori|g|grams?|pieces?|cooked|steamed|boiled|plain|brown|red|black|white|whole|wheat|whole-wheat|wholemeal|multigrain|multi-grain|atta|hand-pounded|hand|pounded|unpolished|parboiled|basmati|sona|masoori|matta|jeera|tawa|tandoori|missi|makki|ki|ka|jowar|bajra|ragi|nachni|foxtail|kodo|little|barnyard|proso|kutki|samak|sama|rajgira|kuttu|millet|millets|broken|rolled|steel-cut|steel|cut|oats|oat|dalia|daliya|quinoa|amaranth|sorghum|pearl|finger|rye|barley|buckwheat|soba|roti|rotis|phulka|phulkas|chapati|chapatis|bhakri|rice|chawal|bread|toast|slices?|thepla|paratha|parathas|naan|kulcha|couscous|farro|freekeh)$/i;
 /* in a dish that names a stand-in or a grain left out, a dish word (khichdi, pulao, noodles ...) may be the stand-in itself; it counts only as its own component */
 var DISHW=/^(?:khichdi|pulao|poha|idli|idlis|dosa|pasta|noodles)$/i;
+var STANDG=new RegExp(STAND.source.split("|\\bmade\\s+(?:with")[0],"gi");   /* the stand-in foods themselves, without the "made with" and "-based" forms */
+var MADEG=/\bmade\s+(?:with|from|of|using)\b[^.;]*\b(?:whole[\s-]+wheat|wheat|atta|jowar|bajra|ragi|nachni|makki|maize|rice\s+flour|oats?|maida|multigrain|millets?|barley|rye)\b/i;
 function coreGrain(part,dish){var w=part.trim().split(/[\s-]+/).filter(Boolean);return w.length>0&&w.every(function(x){return CORE.test(x)||(dish&&DISHW.test(x));})&&GRAINW.test(part);}
 function isGrain(t){
   var s=" "+String(t||"").toLowerCase().replace(/[‘’“”"']/g,"").replace(/[()\[\]]/g," ")+" ";
   s=s.replace(COAT," ");var t2=s.replace(NEGG," "),neg=t2!==s;s=t2;
   if(!STAND.test(s)&&!neg)return GRAINW.test(s);
+  /* made with a grain flour among other things ("missi roti made with besan and whole wheat") is a grain; a stand-in named the same way is not */
+  if(MADEG.test(s.replace(STANDG," ")))return true;
   /* a stand-in is named, or a grain is left out: only a plain grain counts. Split on "and", "or" and commas, a component counts when it
      is a plain grain (dish words allowed: "rice khichdi"); a component that names a stand-in is split on "with", and only a plain grain
      beside it counts ("tapioca with rice" counts; "khichdi with sabudana" does not) */

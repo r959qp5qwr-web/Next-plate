@@ -53,6 +53,7 @@ const STANDINS = ['Cauliflower rice', 'Cauli rice', 'Broccoli rice', 'Zucchini n
   'Sago khichdi', 'Singhare ki roti', 'Water chestnut flour roti', 'Flaxseed roti',
   // round 9: the Critic's probe names (a dish word beside a stand-in, commas and dashes, brackets, riced, legumes, more vegetables, nut and
   // seed breads, fasting dishes, grain words left out or naming a coating), plus 'cauliflower/broccoli fried rice', read the safe way
+  'Moong dal chilla', 'Besan chilla cooked with minimal oil', 'Yellow moong dal cheela batter griddled',
   'Biryani with cauliflower rice', 'Paneer biryani with cauliflower rice', 'Chicken biryani made with cauliflower rice',
   'Pulao made with cauliflower rice', 'Veg pulao with cauliflower rice', 'Khichdi with sabudana', 'Upma made with sabudana',
   'Roti made with almond flour', 'Noodles made with konjac', 'Hakka noodles with zucchini noodles', 'Fried rice with cauliflower rice',
@@ -73,6 +74,8 @@ const STANDINS = ['Cauliflower rice', 'Cauli rice', 'Broccoli rice', 'Zucchini n
 const GRAINS = ['Jowar roti', 'Bajra roti', 'Ragi dosa', 'Hand-pounded brown basmati', 'Foxtail millet khichdi', 'Whole wheat roti', 'Lemon rice', 'Coconut rice',
   'Gobi paratha', 'Cauliflower paratha', 'Methi thepla', 'Vegetable hakka noodles', 'Multigrain bread', 'Oats chilla with 1 phulka', 'Vegetable upma',
   'Rajma chawal', 'Chana pulao', 'Cauliflower rice with 2 roti', 'Kuttu roti', 'Rajgira roti',
+  // round 9: a grain flour among the ingredients (from recorded live replies)
+  'Missi roti made with whole wheat and chickpea flour', 'Missi roti made with besan and whole wheat',
   // round 9: the Critic's true grains (one with egg left out: this profile is vegetarian) and fasting grains
   'Kuttu ki puri', 'Samak rice khichdi', 'Sama ke chawal', 'Brown rice', 'Red rice', 'Matta rice', 'Hand-pounded rice', 'Bajra khichdi',
   'Ragi mudde', 'Jowar bhakri', 'Missi roti', 'Makki ki roti', 'Barley khichdi', 'Dalia', 'Broken wheat upma', 'Quinoa pulao', 'Millet dosa',
