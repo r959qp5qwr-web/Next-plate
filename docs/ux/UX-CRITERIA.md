@@ -215,6 +215,30 @@ D7), 0 of 22 one-tap removals offered and 0 of 26 keeps held, 0 of 6 menu remova
 counted, 0 of 17 selling menus refused, 0 of 23 end-to-end plates accepted. Its round 15 to 12 probes hold. On recorded live replies nothing
 moves. The rule check holds 740 names that are not a grain and 512 true grains; the round 15 build fails 9 of its checks.
 
+## Part A, changes after Critic round 17
+Round 17 found the round 16 fixes had moved the gaps rather than closed them: "<grain>: leave it for now", "one and a half bowls of dal" read
+as an own portion, "out of the plate", "goes back in the pot" without a send-away word; a grain dish named first with its filling read as a
+coating ("Fried Rice (Veg)", "Tawa Paratha (Aloo)"); "go for the brown rice" and "half the rice goes back" held as removals; "mixed dal atta";
+"the potato filling" as the portion; and garlic under BREADS read as garlic bread. It advised generating probes by combination. Changes:
+1. A grain dish is coated only by "<dish> fried/crusted/coated <food>" ("noodle fried prawns"); a frying word just before a dish word is its
+   name ("fried rice", "tawa pulao", "crispy dosa"); a food after the dish is its filling or side ("hakka noodles paneer", "rice fish fry");
+   "<food> fried in <grain>" and "fish fry with rava" are coatings; "crispy rice fish" is a rice crust.
+2. "<grain>: leave/cut/save it" removes unless what follows keeps it (after, last, with, to cool, an amount kept); amounts that take the
+   whole grain remove ("drop the 150 g", "not even 50 g", "none of the 150 g"); an amount kept anywhere in a note keeps it, except a menu
+   portion's own weight.
+3. "Goes", "go", "can go" and "is off/out" remove with a send-away word (back in the pot, into the box, to your husband, out of the meal, till
+   tomorrow, for 2 days) and keep after a part word (half the rice, the rest of, one roti), with an amount kept, or with "go for <grain>".
+   A grain put in the fridge or a box is a removal unless it is reheated or cooled. "Leave the rice to rest for 5 minutes" is cooking.
+4. "Mixed/multi/<pulse> dal atta" is dal flour; "dal atta" as a declared material is dal flour. "The potato filling" is what is eaten.
+5. Under a BREADS heading items name their bread; only a RICE heading names its items; a sweet's bracket sells nothing.
+6. test/rules/combos.js generates 4,588 cases (grain x separator x removal or keep phrase x continuation for one-tap notes and menu asks;
+   dish x filling x bracket for names; coating grain x frying word x food); the rule check fails on any wrong verdict. Each change was run
+   against the round 16 build and every changed verdict reviewed.
+Measured: all 4,588 combinatorial cases read right; the Critic's round 17 probes give 0 removals offered and 0 keeps held in every group,
+62 of 63 dish-first names counted (curd rice fried chillies is read the safe way, D7) and 0 of 59 coatings counted; its round 16 to 12
+probes hold; on recorded live replies nothing moves. The rule check holds 792 names that are not a grain and 592 true grains; the round 16
+build fails 6 of its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -271,3 +295,5 @@ moves. The rule check holds 740 names that are not a grain and 512 true grains; 
   Round 15 listed sattu atta roti as a true grain, round 13 as a stand-in; sattu is mostly roasted gram, so it is read the safe way.
   Round 16 listed coconut atta dosa, sesame atta roti, seeds atta roti and "atta" alone as true grains; coconut, sesame and seed flours have
   grain-free versions and "atta" alone is not a serving, so they are read the safe way.
+  Round 17 listed curd rice fried chillies as a grain meal; "<grain dish> fried <food>" also names a coating (noodle fried prawns), so it is
+  read the safe way.
