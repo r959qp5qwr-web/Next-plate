@@ -237,3 +237,4 @@
 #app .order .gask .gq{margin:0 0 4px;font:600 19px/25px var(--text);color:var(--ink)}
 #app .order .gask .fine{margin:0 0 10px}
 #app .order .gok{margin:10px 0 0}
+#app .note .linkbtn{display:flex;margin-top:4px;padding:0}#app .note .linkbtn,#app .note .linkbtn span{color:#55301A}

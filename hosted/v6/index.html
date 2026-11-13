@@ -1015,6 +1015,7 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .order .gask .gq{margin:0 0 4px;font:600 19px/25px var(--text);color:var(--ink)}
 #app .order .gask .fine{margin:0 0 10px}
 #app .order .gok{margin:10px 0 0}
+#app .note .linkbtn{display:flex;margin-top:4px;padding:0}#app .note .linkbtn,#app .note .linkbtn span{color:#55301A}
 
 </style>
 
@@ -1407,7 +1408,7 @@ function thenKeeps(t){
   var loose=!/\bleave\s+(?:it|them)\b/.test(before)&&!/\b(?:cool|cools|warm|covered|\d+\s*(?:min|mins|minutes?)|a\s+(?:few\s+)?minutes?)\b/.test(bfs);   /* round 29: "let it cool for 10 minutes, then have it" */   /* "set it aside", "keep it aside", "hold it": an anchor is needed */
   if(m[1]==="reheat"&&loose)return false;
   var parts=m[2].replace(/\brest\s+of\s+(?:the\s+)?(?:plate|meal|thali|food)\b/g,"plate").split(/[.!?\n;]/),first=parts[0],later=parts.slice(1).join(" ");
-  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box|pot|kitchen|goes|back|kids|family)\b/.test(later))return false;
+  if(/\b(?:breakfast|lunch|dinner|supper|brunch|tomorrow|tomorrows|later|evening|morning|night|tonight|tiffin|dabba|snack|tea|chai|next|another|weekend|week|day|monday|tuesday|wednesday|thursday|friday|saturday|sunday|pack|freeze|store|fridge|box)\b|\b(?:goes|go|put|send)\s+(?:it\s+|them\s+)?(?:back|in|into|to)\b|\bback\s+(?:in|into|to)\b|\b(?:for|to)\s+(?:the\s+)?(?:kids|family)\b/.test(later))return false;
   var anchor=!loose,clauses=first.split(/[,;]/);
   for(var c=0;c<clauses.length;c++){var w=words(clauses[c]),mode="",needFood=false;
     for(var k=0;k<w.length;k++){var x=w[k];
@@ -2301,11 +2302,13 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
 /* Round 28 (owner decision): with diabetes, an order whose grain is a side or part of the portion carries the grain's name, and the
    order card asks the person "Is roti available now?" before they order it. A menu cannot say everything; the person in the
    restaurant can. A dish that is itself the grain (a biryani, a dosa) needs no question. */
-function grainAsk(name,por,side){if(isGrain(name))return "";var src=side&&isGrain(side)?side:por,nw=words(name),w=words(src),runs=[];
-  /* round 29: the grain as written ("red rice", "makki di roti", "neer dosa"), without the count; two grains are named together */
-  var STOPG=/^(?:\d+|with|and|or|plus|bowl|bowls|plate|plates|piece|pieces|pc|pcs|katori|small|large|medium|half|full|a|an|the|of|about|g|gm|grams|serving|portion|side|extra|one|two|three|four)$/;
-  var span=[];var flush=function(){if(span.some(function(x){return GRAIN_RX.test(x)&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x);})){var r=span.join(" ");if(runs.indexOf(r)<0)runs.push(r);}span=[];};
-  w.forEach(function(x){if(STOPG.test(x)||nw.indexOf(x)>=0||PARTFOOD.test(x)||MAT_RX.test(x))flush();else span.push(x);});flush();
+function grainAsk(name,por,side){if(isGrain(name))return "";
+  /* rounds 29-30: the grain as written, from the side when it names a grain ("1 Jeera Rice (Qtr)", "Roti x2"), else from the portion;
+     only grain words and the words that name a kind of grain are kept ("red rice", "makki di roti"), never counts, cups or notes */
+  var useSide=!!side&&words(side).some(function(x){return GRAIN_RX.test(x);}),src=useSide?side:por,nw=useSide?[]:words(name),w=words(src),runs=[],span=[];
+  var GMOD=/^(?:tandoori|butter|plain|jeera|steamed|missi|rumali|roomali|tawa|garlic|brown|red|white|matta|jowar|bajra|makki|di|ki|ka|lachha|laccha|ragi|neer|masala|coconut|lemon|curd|ghee|kashmiri|basmati|sona|masoori|kolam|millet|multigrain|wheat|whole|phulka|stuffed|aloo|gobi|paneer|methi|pudina|onion|cheese|kerala|malabar|appam|veg)$/;
+  var flush=function(){while(span.length&&!GRAIN_RX.test(span[span.length-1]))span.pop();if(span.some(function(x){return GRAIN_RX.test(x)&&!/^(?:meals|thali|wheat|atta|grain|grains|multigrain)$/.test(x);})){var r=span.join(" ");if(runs.indexOf(r)<0)runs.push(r);}span=[];};
+  w.forEach(function(x){if(nw.indexOf(x)>=0||!(GRAIN_RX.test(x)||GMOD.test(x)))flush();else span.push(x);});flush();
   return runs.join(" and ");}
 function porGrain(name,por,text,meal){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
@@ -2364,7 +2367,7 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
     var lx=x.toLowerCase().replace(/\bno\s+(?:onion|garlic|maida|butter|ghee|oil|cream|sugar|added\s+sugar)\b/g," ").replace(/\b(?:only\s+(?:wheat|whole\s+wheat|atta|millets?|veg|vegetarian|jain))\b/g," ").replace(/\boff\s+the\s+(?:tawa|griddle|grill)\b/g," tawa ").replace(/\b(?:not|less|mild(?:ly)?)\s+spicy\b/g," ");
     if(!(MEALW[meal]&&MEALW[meal].test(lx)))for(var k in MEALW)if(MEALW[k].test(lx)&&k!==meal)return true;   /* "DINNER" at lunch; "LUNCH & DINNER" sells at both */
     var w=window_(lx);if(w&&(!WIN||w[1]<=WIN[0]||w[0]>=WIN[1]))return true;   /* "TANDOOR 7-11 pm" at lunch; "(10 am - 11 pm)" covers lunch */
-    return /\b(?:band|closed|shut|nahi|nil|finished|khatam|unavailable|repair|stopped|tomorrow|kal)\b|\b(?:none\s+(?:left|today|available|now)|over\s*(?:$|\)|today|now|for\s+(?:today|now))|is\s+over|(?:is\s+)?down\s+(?:today|now)|off\s+(?:today|now)|(?:is|are)\s+off)\b|\bnot\s+(?:available|working|today|now|ready|served)\b(?!\s+for\s+(?:parcel|takeaway|take\s+away|delivery|home))/.test(lx);};   /* round 29: weekday names, "none with maida", "served over dal", "not available for parcel" do not close a section */
+    return /\b(?:band|closed|shut|nahi|nil|finished|khatam|unavailable|repair|stopped|tomorrow|kal)\b|\b(?:none\s+(?:left|today|available|now)|over\s*(?:$|\)|today|now|for\s+(?:today|now))|is\s+over|(?:is\s+)?down(?=\s*(?:$|\)|today|now))|off(?=\s*(?:$|\)|today|now))|(?:is|are)\s+off|no\s+(?:tandoor|tandoori|rotis?|naans?|breads?|rice|parathas?)\b)\b|\bnot\s+(?:available|working|today|now|ready|served)\b(?!\s+for\s+(?:parcel|takeaway|take\s+away|delivery|home))/.test(lx);};   /* round 29: weekday names, "none with maida", "served over dal", "not available for parcel" do not close a section */
   var cur="",deadKind="",deadSet=[],deadPerm=[];
   lines.forEach(function(line,li){
     var ni=li+1;while(ni<lines.length&&markOf(ni,true)&&!(/[a-z]/i.test(orig[ni]||"")&&!/[a-z]/.test(orig[ni]||"")))ni++;   /* round 25: look past sold-out items for what a heading heads */
@@ -3130,26 +3133,29 @@ function rescue(text,image){
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
 function readMenu(text,image){
   if(UI.mbusy||UI.rbusy)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
-  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
+  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.mundo=false;UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
-    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainFilter();}
+    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
     else{UI.mretry=s!==200&&RETRY(j.code);UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();});
 }
-/* round 29: the grains the person said are not available; orders that need one of them are not shown again this session */
-function grainParts(g){return String(g||"").split(/\s+and\s+/);}
+/* Rounds 29-30: the grains the person said are not available, kept for this menu and this meal only (a new menu or meal starts afresh);
+   a two-grain order asks about each grain in turn; "Change answer" undoes a No as well as a Yes. */
+function grainParts(g){return String(g||"").split(/\s+and\s+/).filter(Boolean);}
 function grainPlural(g){return / and /.test(g)||/(?:s|bhature)$/.test(g)&&!/(?:rice|dals?)$/.test(g);}
 function grainGone(g){UI.mno=UI.mno||[];return grainParts(g).some(function(x){return UI.mno.indexOf(x)>=0;});}
+function grainKey(meal,t,i){var k=meal+"|"+(t||("photo:"+(i?String(i).length:0)));if(UI.mkey!==k){UI.mkey=k;UI.mno=[];UI.myes={};}}
 function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
   if(keep.length){if(keep.length<r.orders.length){r.orders=keep;UI.msel=0;}return;}
-  grainNone(UI.mno.slice(-1)[0]||"");}
-function grainNone(g){UI.mres=null;UI.mopen=false;
-  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available. No order left on this menu has a grain you can get. Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
-function grainNo(g){UI.mno=UI.mno||[];grainParts(g).forEach(function(x){if(UI.mno.indexOf(x)<0)UI.mno.push(x);});var r=UI.mres;
+  grainNone();}
+function grainNone(){var g=(UI.mno||[]).join(" and ");UI.mres=null;UI.mopen=false;UI.mundo=true;
+  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available, and every order on this menu needs "+(UI.mno.length>1?"one of them":"it")+". Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
+function grainUndo(){UI.mno=[];UI.mundo=false;UI.merr="";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
+function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
   var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
-  if(!keep.length){grainNone(g);render();var i=$("rin");if(i){i.focus();}$("said").textContent=UI.merr;return;}
+  if(!keep.length){grainNone();render();var n=document.querySelector("#v-rescue .note");if(n){n.tabIndex=-1;n.focus();n.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}$("said").textContent=UI.merr;return;}
   r.orders=keep;UI.msel=0;UI.mmoves={};render();var nx=r.orders[0];$("said").textContent="Next order: "+nx.name+(nx["with"]?" with "+nx["with"]:"")+".";
   var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();q.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}}
 function orderView(v,r){
@@ -3182,15 +3188,16 @@ function orderView(v,r){
   /* Round 29: answers are kept by the grain's name for this session, so "Also on this menu" and a fresh read of the menu do not ask
      again or bring back a grain the person said is not there. */
   UI.myes=UI.myes||{};
-  if(o.grain&&!UI.myes[o.grain]){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
-    var gt=el("p","gq",(grainPlural(o.grain)?"Are ":"Is ")+o.grain+" available now?");gt.id="order-grain-q";gt.tabIndex=-1;
+  var gpend=grainParts(o.grain).filter(function(x){return !UI.myes[x];}),gnow=gpend[0];
+  if(gnow){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
+    var gt=el("p","gq",(grainPlural(gnow)?"Are ":"Is ")+gnow+" available now?");gt.id="order-grain-q";gt.tabIndex=-1;
     var gn=el("p","fine","Your plan keeps a grain with this meal. Ask before you order.");
     var gy=btn("btn","Yes","check","order-grain-yes"),gx=btn("btn","No","x","order-grain-no"),ga=el("div","pick-acts");add(ga,gy,gx);
-    gy.addEventListener("click",function(){UI.myes[o.grain]=true;render();var b=$("order-go");if(b)b.focus();});
-    gx.addEventListener("click",function(){grainNo(o.grain);});
+    gy.addEventListener("click",function(){UI.myes[gnow]=true;render();var b=$("order-grain-q")||$("order-go");if(b)b.focus();});
+    gx.addEventListener("click",function(){grainNo(gnow);});
     add(gq,gt,gn,ga);card.appendChild(gq);}
   else{if(o.grain){var gc=el("p","fine gok");gc.id="order-grain-ok";gc.appendChild(document.createTextNode(o.grain.charAt(0).toUpperCase()+o.grain.slice(1)+": available, you checked. "));
-      var gu=btn("linkbtn","Change answer",null,"order-grain-undo");gu.addEventListener("click",function(){delete UI.myes[o.grain];render();var q=$("order-grain-q");if(q)q.focus();});gc.appendChild(gu);card.appendChild(gc);}
+      var gu=btn("linkbtn","Change answer",null,"order-grain-undo");gu.addEventListener("click",function(){grainParts(o.grain).forEach(function(x){delete UI.myes[x];});render();var q=$("order-grain-q");if(q)q.focus();});gc.appendChild(gu);card.appendChild(gc);}
     card.appendChild(go);}
   v.appendChild(card);
   if(r.moves.length){var mh=el("div","sec-h");mh.appendChild(el("h3",null,"The two moves that help most"));v.appendChild(mh);
@@ -3241,6 +3248,7 @@ function renderRescue(){
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
+    if(k===0&&UI.mundo){var ub=btn("linkbtn","Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);}
     if(k===0&&UI.mlast&&UI.mretry&&(UI.mlast.t||UI.mlast.i)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
     n.appendChild(tx);v.appendChild(n);});
   if(UI.mres){orderView(v,UI.mres);return;}

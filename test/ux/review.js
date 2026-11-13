@@ -94,7 +94,11 @@ const STATES = [
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
     await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await h.settle(900); await h.inView(p, '#order-card', 'the next order'); }],
   ['menu-grain-again', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
-    await p.click('#order-grain-no'); await h.settle(400); await p.click('#mtype'); await h.settle(200); await p.click('#mgo'); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(900); }],
+    await p.click('#order-grain-no'); await h.settle(400); if (!(await p.$('#mtext'))) await p.click('#mtype'); await h.settle(200); await p.fill('#mtext', fx.typed);
+    await p.click('#mgo'); await p.waitForSelector('#menu-grain-undo', { timeout: 20000 }); await h.settle(900); }],
+  // round 30: "Change answer" after a No brings the orders back with the question
+  ['menu-grain-undo', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
+    await p.click('#order-grain-no'); await p.waitForSelector('#menu-grain-undo'); await p.click('#menu-grain-undo'); await p.waitForSelector('#order-grain-q'); await h.settle(900); await h.inView(p, '#order-card', 'the order after Change answer'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

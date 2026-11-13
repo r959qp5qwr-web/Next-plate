@@ -517,6 +517,26 @@ Measured: the round 29 rule block holds (grain names, headings, one-tap sentence
 round 28 build except "TANDOOR (Sat & Sun)" and "(weekends)", now offered with the grain question; all 4,897 combinatorial cases read
 right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65) and the recorded menu replay offers 88 orders.
 
+## Part A, changes after Critic round 30
+Round 30 found one MAJOR: a "No" lasted for every menu in the page session and could not be undone, so a different restaurant's menu
+read afterwards showed no order and a note about a grain the person never refused there. It also found grain names that pulled in other
+words ("cup red rice", "tandoori roti plain butter", "roti instead and naan"), one "No" for a two-grain question, a review state that never
+read the menu again, focus moved to the text box (raising the keyboard over the note), heading marks "OFF", "down" and "No Tandoor Today"
+missed, and grain sides with brackets or prices ("1 Jeera Rice (Qtr)", "Roti x2") asking nothing. Changes:
+1. Answers are kept for one menu and one meal: a new menu text, photo or meal starts with no answers. The note after the last "No" names
+   every grain said No to, says every order on this menu needs one of them, and carries "Change answer", which brings the orders back with
+   the question. Focus moves to the note, not the text box.
+2. A two-grain order asks about each grain in turn ("Is steamed rice available now?", then "Is roti available now?"); a No applies to that
+   grain only.
+3. The grain is named from the side whenever the side names a grain, else from the portion, keeping only grain words and the words that
+   name a kind of grain (tandoori, jeera, red, makki di ...): "red rice", "tandoori roti", "phulka", "roti and naan", "jeera rice".
+4. Heading marks: "OFF", "(off)", "- down" at the end and "No Tandoor / Roti / Rice" close a section again.
+5. One-tap: a later sentence holds the note only when it sends the grain somewhere ("goes back in", "put it into", "for the kids").
+Review states: menu-grain-again now types the menu again and reads it; menu-grain-undo checks "Change answer". Contrast of the link on the
+note is 4.5:1 or more. Measured: rules hold with the round 30 cases; every earlier Critic probe reads the same as on the round 29 build
+except "No roti today" as a heading, now refused; all 4,897 combinatorial cases read right; recorded live replies unchanged (65 of 2,005
+held; menu replay 88 orders).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

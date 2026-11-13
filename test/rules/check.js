@@ -1077,7 +1077,9 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
 { // round 29: the grain named as written; headings that only describe the food or the days sell; a send-away sentence after "then eat it" counts
   const fs = require('fs'); const pg = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
   const ga = new Function(pg.slice(pg.indexOf('<script id="np-core">') + 21, pg.indexOf('</script>', pg.indexOf('<script id="np-core">'))) + ';return grainAsk;')();
-  const GA = [['Dal Tadka', '1 bowl dal with 2 tandoori roti, about 400 g', '', 'tandoori roti'], ['Palak Paneer', '1 bowl', '1 Steamed Rice', 'steamed rice'], ['Sarson Saag', '1 bowl with 2 makki di roti', '', 'makki di roti'],
+  const GA = [['Fish Curry', '1 bowl', '1 cup red rice', 'red rice'], ['Dal', '1 bowl', '2 Tandoori Roti (Plain / Butter)', 'tandoori roti'], ['Dal', '1 bowl', '2 phulka no ghee', 'phulka'], ['Dal', '1 bowl with 2 roti without ghee', '', 'roti'],
+    ['Dal', '1 bowl', '2 roti instead and 1 naan', 'roti and naan'], ['Steamed Fish', '1 piece', '1 Steamed Rice', 'steamed rice'], ['Dal', '1 bowl', '1 Jeera Rice (Qtr)', 'jeera rice'], ['Dal', '1 bowl', 'Roti x2', 'roti'], ['Dal', '1 bowl', '1 Tandoori Roti Rs 30', 'tandoori roti'], /* round 30 */
+    ['Dal Tadka', '1 bowl dal with 2 tandoori roti, about 400 g', '', 'tandoori roti'], ['Palak Paneer', '1 bowl', '1 Steamed Rice', 'steamed rice'], ['Sarson Saag', '1 bowl with 2 makki di roti', '', 'makki di roti'],
     ['Fish Curry', '1 bowl', '1 plate Red Rice', 'red rice'], ['Chicken Curry', '1 bowl with 3 neer dosa', '', 'neer dosa'], ['Dal', '1 bowl', 'Steamed Rice and 1 Roti', 'steamed rice and roti'], ['Veg Biryani', '1 plate', '', '']];
   const badG = GA.filter(([n, por, side, want]) => ga(n, por, side) !== want).map(c => c[0] + ' => ' + ga(c[0], c[1], c[2]));
   ok(!badG.length, 'round 29: the question names the grain as written, without the count, and both grains when there are two' + (badG.length ? ' (' + badG.join(' | ') + ')' : ''));
@@ -1087,7 +1089,8 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   const m = 'MAINS\nDal Tadka 240\nPalak Paneer 300\n';
   const SELL = [['2 roti', 'BREADS (Mon to Sun)\nRoti 30'], ['2 roti', 'BREADS (Sat-Sun also)\nRoti 30'], ['2 roti', 'BREADS (none with maida)\nRoti 30'], ['2 roti', 'BREADS (not available for parcel)\nRoti 30'],
     ['1 plate rice', 'RICE (served over dal)\nRice 90'], ['1 plate rice', 'RICE (Down South style)\nRice 90'], ['1 plate rice', 'RICE (Sunday special pulao below)\nRice 90']];
-  const STOP = [['2 roti', 'BREADS (closed)\nRoti 30'], ['2 roti', 'BREADS - not available\nRoti 30'], ['2 roti', 'TANDOOR (under repair)\nTandoori Roti 30\nRoti 30'], ['2 roti', 'BREADS (over for today)\nRoti 30']];
+  const STOP = [['2 tandoori roti', 'TANDOOR OFF\nTandoori Roti 30'], ['2 tandoori roti', 'TANDOOR (off)\nTandoori Roti 30'], ['2 tandoori roti', 'Tandoor - down\nTandoori Roti 30'], ['2 tandoori roti', 'No Tandoor Today\nTandoori Roti 30'], /* round 30 */
+    ['2 roti', 'BREADS (closed)\nRoti 30'], ['2 roti', 'BREADS - not available\nRoti 30'], ['2 roti', 'TANDOOR (under repair)\nTandoori Roti 30\nRoti 30'], ['2 roti', 'BREADS (over for today)\nRoti 30']];
   const badS = SELL.filter(([g, t]) => !q(m + t, g)).map(c => c[1].split('\n')[0]), badT = STOP.filter(([g, t]) => q(m + t, g)).map(c => c[1].split('\n')[0]);
   ok(!badS.length, 'round 29: headings that only describe the food, the days or parcels still sell the grain' + (badS.length ? ' (refused: ' + badS.join(' | ') + ')' : ''));
   ok(!badT.length, 'round 29: headings that say the section is closed or over sell nothing' + (badT.length ? ' (offered: ' + badT.join(' | ') + ')' : ''));

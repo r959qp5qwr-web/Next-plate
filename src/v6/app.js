@@ -448,26 +448,29 @@ function rescue(text,image){
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
 function readMenu(text,image){
   if(UI.mbusy||UI.rbusy)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
-  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
+  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.mundo=false;UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
-    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainFilter();}
+    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
     else{UI.mretry=s!==200&&RETRY(j.code);UI.merr=s!==200?errText(j.code):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the dishes.":"No dish on that menu passed the checks for you. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();});
 }
-/* round 29: the grains the person said are not available; orders that need one of them are not shown again this session */
-function grainParts(g){return String(g||"").split(/\s+and\s+/);}
+/* Rounds 29-30: the grains the person said are not available, kept for this menu and this meal only (a new menu or meal starts afresh);
+   a two-grain order asks about each grain in turn; "Change answer" undoes a No as well as a Yes. */
+function grainParts(g){return String(g||"").split(/\s+and\s+/).filter(Boolean);}
 function grainPlural(g){return / and /.test(g)||/(?:s|bhature)$/.test(g)&&!/(?:rice|dals?)$/.test(g);}
 function grainGone(g){UI.mno=UI.mno||[];return grainParts(g).some(function(x){return UI.mno.indexOf(x)>=0;});}
+function grainKey(meal,t,i){var k=meal+"|"+(t||("photo:"+(i?String(i).length:0)));if(UI.mkey!==k){UI.mkey=k;UI.mno=[];UI.myes={};}}
 function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
   if(keep.length){if(keep.length<r.orders.length){r.orders=keep;UI.msel=0;}return;}
-  grainNone(UI.mno.slice(-1)[0]||"");}
-function grainNone(g){UI.mres=null;UI.mopen=false;
-  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available. No order left on this menu has a grain you can get. Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
-function grainNo(g){UI.mno=UI.mno||[];grainParts(g).forEach(function(x){if(UI.mno.indexOf(x)<0)UI.mno.push(x);});var r=UI.mres;
+  grainNone();}
+function grainNone(){var g=(UI.mno||[]).join(" and ");UI.mres=null;UI.mopen=false;UI.mundo=true;
+  UI.merr="You said "+g+(grainPlural(g)?" are":" is")+" not available, and every order on this menu needs "+(UI.mno.length>1?"one of them":"it")+". Ask which roti or rice they have, then type your dish with it under \u201CAlready chosen? Name the dish\u201D.";}
+function grainUndo(){UI.mno=[];UI.mundo=false;UI.merr="";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
+function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
   var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
-  if(!keep.length){grainNone(g);render();var i=$("rin");if(i){i.focus();}$("said").textContent=UI.merr;return;}
+  if(!keep.length){grainNone();render();var n=document.querySelector("#v-rescue .note");if(n){n.tabIndex=-1;n.focus();n.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}$("said").textContent=UI.merr;return;}
   r.orders=keep;UI.msel=0;UI.mmoves={};render();var nx=r.orders[0];$("said").textContent="Next order: "+nx.name+(nx["with"]?" with "+nx["with"]:"")+".";
   var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();q.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}}
 function orderView(v,r){
@@ -500,15 +503,16 @@ function orderView(v,r){
   /* Round 29: answers are kept by the grain's name for this session, so "Also on this menu" and a fresh read of the menu do not ask
      again or bring back a grain the person said is not there. */
   UI.myes=UI.myes||{};
-  if(o.grain&&!UI.myes[o.grain]){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
-    var gt=el("p","gq",(grainPlural(o.grain)?"Are ":"Is ")+o.grain+" available now?");gt.id="order-grain-q";gt.tabIndex=-1;
+  var gpend=grainParts(o.grain).filter(function(x){return !UI.myes[x];}),gnow=gpend[0];
+  if(gnow){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
+    var gt=el("p","gq",(grainPlural(gnow)?"Are ":"Is ")+gnow+" available now?");gt.id="order-grain-q";gt.tabIndex=-1;
     var gn=el("p","fine","Your plan keeps a grain with this meal. Ask before you order.");
     var gy=btn("btn","Yes","check","order-grain-yes"),gx=btn("btn","No","x","order-grain-no"),ga=el("div","pick-acts");add(ga,gy,gx);
-    gy.addEventListener("click",function(){UI.myes[o.grain]=true;render();var b=$("order-go");if(b)b.focus();});
-    gx.addEventListener("click",function(){grainNo(o.grain);});
+    gy.addEventListener("click",function(){UI.myes[gnow]=true;render();var b=$("order-grain-q")||$("order-go");if(b)b.focus();});
+    gx.addEventListener("click",function(){grainNo(gnow);});
     add(gq,gt,gn,ga);card.appendChild(gq);}
   else{if(o.grain){var gc=el("p","fine gok");gc.id="order-grain-ok";gc.appendChild(document.createTextNode(o.grain.charAt(0).toUpperCase()+o.grain.slice(1)+": available, you checked. "));
-      var gu=btn("linkbtn","Change answer",null,"order-grain-undo");gu.addEventListener("click",function(){delete UI.myes[o.grain];render();var q=$("order-grain-q");if(q)q.focus();});gc.appendChild(gu);card.appendChild(gc);}
+      var gu=btn("linkbtn","Change answer",null,"order-grain-undo");gu.addEventListener("click",function(){grainParts(o.grain).forEach(function(x){delete UI.myes[x];});render();var q=$("order-grain-q");if(q)q.focus();});gc.appendChild(gu);card.appendChild(gc);}
     card.appendChild(go);}
   v.appendChild(card);
   if(r.moves.length){var mh=el("div","sec-h");mh.appendChild(el("h3",null,"The two moves that help most"));v.appendChild(mh);
@@ -559,6 +563,7 @@ function renderRescue(){
   if(UI.rbusy){var w=el("article","inst");w.appendChild(el("p","ans-read wait","Taking apart "+UI.rtext.toLowerCase()));v.appendChild(w);return;}
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
+    if(k===0&&UI.mundo){var ub=btn("linkbtn","Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);}
     if(k===0&&UI.mlast&&UI.mretry&&(UI.mlast.t||UI.mlast.i)){var mb2=btn("btn","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
     n.appendChild(tx);v.appendChild(n);});
   if(UI.mres){orderView(v,UI.mres);return;}
