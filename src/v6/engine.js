@@ -384,17 +384,32 @@ function partOnly(name,por,side){if(isGrain(side)||!isGrain(name))return false;
   /* a curry with its bread: "1 bowl" with no food named is the curry ("Chole Bhature | 1 bowl"); a rice dish in a bowl is the whole dish (round 14) */
   var nw=words(name);if(/\bbowls?\b/.test(p)&&nw.indexOf("bowl")<0&&nw.some(function(x){return /^(?:chole|rajma|kadhi|dal|bhaji|chana|misal|usal|keema|curry)$/.test(x);})&&
     nw.some(function(x){return /^(?:bhature|bhatura|bhatoora|kulche|kulcha|pav|puri|poori|roti|naan|paratha|baati|bati)$/.test(x);}))return true;
-  /* the first part names what is eaten; what follows a comma is an addition or a note ("1 plate, extra onions on the side") */
-  return words(p.split(/,|;/)[0].split(/\bwith\b/)[0]).some(function(x){return PARTFOOD.test(x)||MAT_RX.test(x);});}
+  /* each comma part names what is eaten, unless it is an addition or a note ("extra onions on the side", "veg toppings", "about 300 g");
+     a food named in the first part before "with", or in any later part, with no grain, is the part without the grain (round 15) */
+  var parts=p.split(/[,;]/),food=function(x){return words(x).some(function(y){return PARTFOOD.test(y)||MAT_RX.test(y);});};
+  if(food(parts[0].split(/\bwith\b/)[0]))return true;
+  return parts.slice(1).some(function(x){return !/\b(?:extra|on\s+the\s+side|side\s+of|toppings?|topped|garnish\w*|plus|served\s+with|about|approx\w*|no|without|less)\b/.test(x)&&food(x);});}
 /* a grain the portion adds beyond the dish itself: "Dal Tadka | 1 bowl dal with 1 roti" counts; "Moong Dal Dosa | 2 dosas" does not.
    Round 14: the grain must be an item the typed menu sells, matched by the item's last word ("Tandoori Roti" sells a roti; "Rice Kheer" and
    "Bread Pakora" sell no rice or bread). */
-function porGrain(name,por,items){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
+function porGrain(name,por,text){var nw=words(name).map(function(x){return x.replace(/e?s$/,"");});
   var r=String(por||"").replace(/[a-z]+/gi,function(x){return nw.indexOf(x.toLowerCase().replace(/e?s$/,""))>=0?" ":x;});
   if(!isGrain(r))return false;
-  if(!items||!items.length)return true;
-  var sing=function(x){return x.replace(/(?:es|s)$/,"");},last=items.map(function(it){var w=words(it);return sing(w[w.length-1]||"");});
-  return words(r).filter(function(x){return GRAIN_RX.test(x);}).some(function(x){return last.indexOf(sing(x))>=0;});}
+  if(!text)return true;                                                              /* a photo: the menu text is not typed */
+  var stem=function(x){return x.replace(/(?:es|s)$/,"").replace(/[ae]$/,"");},sold=soldItems(text);
+  return words(r).filter(function(x){return GRAIN_RX.test(x);}).some(function(x){return sold.some(function(it){return words(it).some(function(y){return stem(y)===stem(x);});});});}
+/* Round 15: the items a typed menu sells, for the grain a portion adds. Each line is an item; its head before a bracket, " - " or ":" is
+   the dish ("Kheer (Rice)", "Papad - Rice", "Pakode: Aloo / Bread" sell no rice or bread), unless the head is a section ("Breads: Roti /
+   Naan"); a free-typed list splits on commas and "and". An item sells a grain only when it is itself a grain dish ("Rice Papad", "Roti
+   Pakora" are not); sizes and prices are dropped ("Steamed Rice Half 70 Full 120"). */
+var MENUSEC=/^(?:breads?|indian\s+breads?|rice|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
+function soldItems(text){var out=[];String(text||"").toLowerCase().split(/\n|\s\|\s/).forEach(function(line){   /* menuText() keeps a line break as " | " */
+    var priced=/\d/.test(line);line=line.replace(/\d+(?:\.\d+)?/g," ").replace(/\b(?:rs|inr|half|full|qtr|quarter|small|medium|large|regular|plate|portion|basket|pc|pcs|nos)\b/g," ").replace(/[\u20B9$]/g," ");
+    var head=line.split(/[(\[]|\s-\s|:/)[0].trim(),rest=line.slice(head.length);
+    var list=head.split(/,|\band\b/).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
+    if(MENUSEC.test(head)&&(/^\s*:/.test(rest)||(!priced&&!rest.replace(/[()\[\]\s]/g,"")))){list=[];list=list.concat(rest.replace(/[()\[\]:-]/g," ").split(/\/|,|\band\b/));}   /* a section heading alone sells nothing; what it lists does */
+    list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps)\b/.test(x))out.push(x);});});   /* a snack or sweet made with a grain is not a grain to eat with a curry */
+  return out;}
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}
 /* When nothing fits (rule 7): the two moves whose effect code can measure on the order's own figures. Eating part of it counts only
    if that brings the order closer to the target (and, on diabetes medicine, not under the meal's usual energy); then a walk; eating order last. */
@@ -441,7 +456,7 @@ function checkMenu(r,p,c,pl,hooks){
     por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~\u2248]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"\u2248 $1");   /* a weight is an estimate and says so */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&!sideOnMenu(side,typed)?"side-off-menu":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
-    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por,typed?items:null))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
+    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por,typed?c.text:""))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});

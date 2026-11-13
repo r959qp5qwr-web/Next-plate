@@ -167,6 +167,29 @@ portion-grain orders offered on the kheer and papad menus. Its round 13 and roun
 moves against the round 12 build. The rule check holds 544 names that are not a grain and 393 true grains; the round 13 build fails 8 of
 its checks.
 
+## Part A, changes after Critic round 15
+Round 15 found that coatings of rice flour, rice rava, wheat flour or atta, and rava-fried vegetables outside the material list, still counted
+as the grain; that the own-portion test read "your plate is dal and salad" as keeping the grain; that a menu portion was read by its first part
+only; that "goes", "can go" and "is out" held ordinary keeps; that "atta" was read across commas and by one word; and that a grain in a
+bracket, after a dash or in a slash list on a typed menu counted as sold. Changes:
+1. With no grain dish named, a frying or crusting word, or rava, sooji, semolina or maida, beside a food word is a coating, whatever the
+   grain; "rice flour" and "rice rava" are materials, not rice; a grain flour named in its own part counts as a serving unless the name also
+   has a frying word and a food. "Fried rice", "egg fried quinoa", grain bowls and chillas stay grains.
+2. "atta" becomes the flour of a pulse, nut, seed, fruit or low-carb word in the same phrase (back to a comma, four words): "soya chunks atta",
+   "gram flour atta", "chana ka bhuna atta"; a vegetable mixed into the dough keeps it wheat ("palak atta roti").
+3. The own portion counts only as an amount of the grain ("your 150 g", "you keep 150 g", "have one"); "a rest" or "a break" is cooking
+   only for minutes; "share ... at the table" is a removal; "<grain>, not for me", "<grain>? leave it" and "<grain>, cut it out" are removals.
+4. "Goes", "can go" and "is out" remove only when they stand alone or with a time word, and not after "once" or "when".
+5. Every comma part of a menu portion is read, except additions and notes (extra, on the side, toppings, about ...).
+6. The items a typed menu sells are read by line (kept as " | "); a line's head before a bracket, dash or colon is the dish unless it is a
+   section ("Breads: Roti / Naan"); a free-typed list splits on commas and "and"; an item sells a grain only when it is a grain dish and not a
+   snack or sweet (pakora, kheer, papad).
+Measured: the Critic's round 15 probes give 0 of 120 coated or pulse-atta names counted and 0 of 27 more coatings; 1 of 85 true grains
+refused (sattu atta roti, read the safe way, D7); 0 of 30 one-tap removals offered at 200 g declared and 0 of 20 keeps held; 0 of 17 menu
+removals offered and 0 of 9 keeps refused; no grain counted as sold on its five menus that sell none, and every grain counted on its seven that
+do. Its round 14, 13 and 12 probes hold. On recorded live replies nothing moves against the round 12 build. The rule check holds 677 names
+that are not a grain and 463 true grains; the round 14 build fails 9 of its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -220,3 +243,4 @@ its checks.
   as a grain); round 12 stands. A paneer burger, a bread omelette and a gobi pulao count; a paneer bun burger and a pizza omelette do not.
   Round 13 reads cucumber sandwich, coconut roti and urad dal dosa the safe way, as not grains: each has a common grain-free version.
   Rajgira (amaranth) still counts as a grain, as kuttu and samak do, in both the name test and the declared material.
+  Round 15 listed sattu atta roti as a true grain, round 13 as a stand-in; sattu is mostly roasted gram, so it is read the safe way.
