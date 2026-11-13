@@ -121,7 +121,7 @@
  },
  {
   "file": "src/v5/core.js",
-  "contains": "var BANFORMS=[\"real\"",
+  "contains": "var BANFORMS=[\"real(?:ness)?\"",
   "why": "the rule itself: each of the owner's words with the forms it takes in a sentence, used to drop model text"
  },
  {
@@ -176,7 +176,7 @@
  },
  {
   "file": "src/v5/core.js",
-  "contains": "\"empower\\\\w*\",\"smart(?:er|est|ly|ness)?\"",
+  "contains": "\"empower\\\\w*\",\"smart(?:er|est|ly|ness|s)?\"",
   "why": "the rule itself, second line of the word forms"
  },
  {

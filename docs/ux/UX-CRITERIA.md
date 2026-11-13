@@ -70,6 +70,17 @@ the Critic's 196 probe names and the builder's own, with no mismatch outside fou
 as stand-ins; gobi rice and the fasting grains kuttu, rajgira and samak as grains). One-tap changes and menu orders are held to the same rule.
 The menu side line is screened after its menu name. A failed ask keeps its words in the box and offers Try again where it can help (A13).
 
+## Part A, changes after Critic round 10
+Rounds 6 to 10 each found a new way to write a grain-free plate past a list of the ways seen so far. From round 10 the grain test fails
+closed: a name counts as a grain only when every word in it is a known grain or grain-dish word, an amount, a way of cooking or a known
+companion of a grain dish, and it names no stand-in; an unknown word means "not shown to be a grain". The word lists were built from the
+recorded live replies in eval/ (477 meals, 655 base swaps, 986 one-tap notes) and the Critic's probes, and are judged against them: 391 of
+the 477 live meals hold a grain (383 under the round 9 test, which missed bulgur, sourdough and suji); the two live plates no longer counted
+had only a dusting of flour. One-tap changes and menu portions are read for what a "skip", "avoid", "not", "instead of", "set aside",
+"save for later" or "only" applies to; 33 of the 986 live one-tap notes are held back with diabetes, nearly all of them dropping or
+swapping a roti or the rice. The rule check holds 220 names that are not a grain and 216 true grains, and the previous build fails 12 of
+its checks.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
@@ -114,3 +125,6 @@ The menu side line is screened after its menu name. A failed ask keeps its words
 - D6 The 30 s film keeps the owner-approved soundtrack, taken unchanged from the approved cut (git b890035). Its music rises in two voice
   gaps (17 s, 24 s): that is the ducking letting go between lines, part of the mix the owner approved. Re-mixing would change approved work;
   the 51 s film, mixed here, sets the music beat by beat instead.
+- D7 Where the Critic's rounds disagreed, the later round stands: round 9 listed paneer, egg and cheese roti as stand-ins, round 10 as wheat
+  rotis with a filling; they count as grains. Names that can be read either way are read the safe way, as not a grain (cauliflower and broccoli
+  fried rice, flaxseed roti, cauliflower upma, besan roti); gobi rice, kuttu, rajgira and samak count as grains.
