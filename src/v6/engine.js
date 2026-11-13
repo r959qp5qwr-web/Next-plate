@@ -408,11 +408,12 @@ function grainKey(x){x=String(x).toLowerCase();if(/^(?:rotis?|rotti|phulkas?|cha
    the section when they are not grains on their own ("jeera rice"); a bracket that starts with "with" lists what comes with the dish; a
    section word alone on a line is a heading on a priced menu and an item on an unpriced one; a free-typed list splits on commas and "and".
    An item sells a grain only when it is itself a grain dish and not a snack or sweet ("Rice Papad", "Pani Puri", "Rice cake"). */
-var SOLDOUT=/\b(?:not\s+available|unavailable|sold\s+out|finished|over|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na)\b/;
+var SOLDOUT=/\b(?:nahi\s+hai|khatam|not\s+available|unavailable|sold\s+out|finished|over(?!\s+\d)|not\s+today|today\s+not\s+available|ask\s+the\s+waiter|ask\s+(?:at\s+)?(?:the\s+)?counter|out\s+of\s+stock|no\s+stock|not\s+in\s+stock|not\s+served|closed|weekends?\s+only|n\s*\/\s*a|na)\b/;
+var QUALW=/^(?:with|and|or|per|each|piece|pieces|nos|plate|half|full|small|large|regular|extra|add|on|of|the|a|an|veg|non|nonveg|jain|special|house|chef|chefs|fresh|hot|ghee|butter|garlic|plain|jeera|tandoori|tawa|masala|stuffed|onion|tomato|mint|pudina|methi|missi|lachha|laccha|rumali|roomali|kashmiri|green|peas|steamed|fried|boiled|cumin|curd|today|todays|available|in|ask|for|cheese|chilli|chili|aloo|gobi|paneer|mix|mixed|multigrain|wheat|atta|maida|bajra|jowar|makki|ragi|brown|white|red|basmati|soft|crispy|thin|thick|desi|homestyle|home|style|bowl|serving|portion|cup|katori|qty|unit|units|pc|pcs|kg|gm|gms|g|ml|only|also|served|serves|people|over|persons|person|dry|gravy|lemon|coconut|tamarind|sweet|salted|plus|bread|breads|kulcha|naan|roti|rotis|paratha|rice|combos?|sides?|mains?|staples?|accompaniments?|indian)$/;
 var MENUSEC=/^(?:breads?|indian\s+breads?|rice|naans?|parathas?|kulchas?|rice\s+and\s+breads?|rotis?|sides?|staples?|accompaniments?|main\s+course|mains?|combos?|meals?)$/;
 var NOTSOLD=/\b(?:pakoras?|pakode|pakodas?|bhajji|bhajias?|fritters?|kheer|phirni|payasam|halwa|ladoo|laddu|pudding|papad|chips|crisps|cutlets?|kanji|meetha|cakes?|sweet|pani|sev|bhel|golgappa|chaat|dahi\s+puri)\b/;
 function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lines=orig.map(function(x){return x.toLowerCase();}),anyPrice=/\d/.test(text||"");
-  var cur="";
+  var cur="",deadKind="";
   lines.forEach(function(line,li){
     var priced=/\d/.test(line),next=(lines[li+1]||"").trim(),onext=(orig[li+1]||"").trim();
     if(anyPrice&&!priced)cur="";
@@ -421,7 +422,8 @@ function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lin
     var head=line.split(/[(\[]|\s-\s|:/)[0].trim().replace(/[\s\-\u2013:]+$/,""),rest=line.slice(line.indexOf(head)+head.length);
     var list=head.split(/,|\band\b|\//).map(function(x){return x.replace(/^\s*(?:they\s+have|we\s+have|menu|today)\s*/,"").trim();});
     var restItems=rest.replace(/[()\[\]:]/g," ").replace(/\s-\s/g," ").replace(/^\s*with\b/," ").split(/\/|,|\band\b/).map(function(x){return x.trim();}).filter(function(x){return /[a-z]/.test(x);});
-    if(SOLDOUT.test(rest)){list=[];cur="";}   /* round 23: "Roti (sold out) 30", "Rice - out of stock", "Roti - N/A" sell nothing, on any line */
+    var soldOut=SOLDOUT.test(rest)||SOLDOUT.test(list.slice(1).join(" "));if(anyPrice&&!priced&&!soldOut)deadKind="";   /* round 23: "Roti (sold out) 30", "Rice - out of stock", "Roti - N/A" sell nothing, on any line */
+    if(soldOut){if(!priced&&(MENUSEC.test(head)||isGrain(head))){deadKind=/^(?:indian\s+)?breads?$/.test(head)?"bread*":grainCanon(words(head).pop()||"");cur="";}list=[];}   /* round 24: a sold-out item inside a grain section keeps the section; a sold-out heading covers its items */
     else if(MENUSEC.test(head)){
       if(/^\s*(?::|-|\(|\[)/.test(rest)&&restItems.length){var sec=head.replace(/s$/,"");list=restItems.map(function(x){return isGrain(x)?x:x+" "+sec;});if(priced&&isGrain(head))list.push(head);}   /* "Rice: Jeera / Plain"; round 22: "Roti (today) 25" sells roti */
       else if(priced){}                                                            /* "Roti 25": the heading word is the item */
@@ -433,6 +435,11 @@ function soldItems(text){var out=[],orig=String(text||"").split(/\n|\s\|\s/),lin
     else if(cur&&list.length)list=list.map(function(x){return x&&!isGrain(x)&&words(x).length<=3&&!(words(x).length>1&&words(x).some(function(y){return MAT_RX.test(y)||PARTFOOD.test(y);}))?x+" "+cur:x;});   /* round 22: "Paneer Tikka 220" under "Roti" is not a roti */
     else if(/^\s*[(\[]\s*with\b/.test(rest)&&!NOTSOLD.test(head))list=list.concat(restItems);              /* "Dal Tadka (with Jeera Rice)" */
     if(anyPrice&&!priced&&nextHead&&list.length&&list.every(function(x){return /^(?:rice|rotis?|naans?|parathas?|kulchas?|breads?|chapatis?|phulkas?)$/.test(x.trim());}))list=[];   /* "Roti / Naan" then "DESSERTS": a heading with nothing under it */
+    /* round 24: a priced grain line sells its grain only when every other word on it is a dish, grain, food or plain qualifier word
+       ("Roti 30 - khatam", "Naan 30 (nahi hai)", "Roti, sold out", "~~Roti~~ 30" sell nothing) */
+    if(priced&&list.length&&(isGrain(head)||MENUSEC.test(head))){var iw=words(head);
+      if(/~~/.test(orig[li])||words(line).some(function(x){return iw.indexOf(x)<0&&!QUALW.test(x)&&!GRAIN_RX.test(x)&&!MAT_RX.test(x)&&!PARTFOOD.test(x)&&!VEGW.test(x);}))list=[];}
+    if(deadKind&&list.length)list=list.filter(function(x){return !words(x).some(function(y){return GRAIN_RX.test(y)&&(grainCanon(y)===deadKind||deadKind==="bread*");});});   /* "ROTI (SOLD OUT)" then "Roti 30" */
     list.forEach(function(x){x=x.trim();if(x&&isGrain(x)&&!NOTSOLD.test(x))out.push(x);});});
   return out;}
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}

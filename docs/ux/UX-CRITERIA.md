@@ -376,6 +376,23 @@ naan" (held on the safe side, as before) and two notes held by the sweets rule f
 on the round 22 build; all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65),
 with diabetes the menu replay offers 88 and drops 6.
 
+## Part A, changes after Critic round 24
+Round 24 found that "then eat it" was read only up to the next comma or full stop ("then eat it with the dal, later", "then eat it.
+Lunch tomorrow", "then eat it after."), and that a priced grain line marked sold out in words outside the round 23 list still sold the
+grain ("Roti 30 - khatam", "Naan 30 (nahi hai)", "Roti, sold out", "~~Roti~~ 30", "(dinner only)", "- nil"). Changes:
+1. "Then eat, have, serve or reheat it" is read to the end of the note; "after" or "before" must be followed by a food ("after the
+   salad"), so "then eat it after." holds the note. "Then reheat it and eat it with the dal" keeps.
+2. A priced line whose item is a grain sells it only when every other word on the line is the item's own name, a grain, a food or a
+   plain qualifier (half, full, plain, butter, tandoori, jeera, per piece, today, available ...); any other word ("khatam", "x", "nil",
+   "dinner only", "not ready") or a strike-through sells nothing. "Khatam" and "nahi hai" join the sold-out marks.
+3. A sold-out heading ("ROTI (SOLD OUT)") covers the items of its grain under it until the next heading; a sold-out item inside a grain
+   section ("Butter - sold out" under ROTI) no longer ends the section.
+Measured: the Critic's round 24 later-meal notes offer 0 of 156 and its keeps stay on offer (11 of 11); its 96 sold-out menus offer 0
+(the round 23 build offered 66); its sections with a sold-out item sell the rest. Held on the safe side: "Roti 30 (over 2 people)",
+"(serves over 2)", "(na)" and two notes with "no" in another sense. Every earlier Critic probe reads the same as on the round 23 build;
+all 4,897 combinatorial cases read right; on recorded live replies 65 of 2,005 one-tap notes are held (the same 65), with diabetes the
+menu replay offers 88 and drops 6.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

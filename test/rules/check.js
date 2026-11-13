@@ -961,6 +961,33 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   ok(!refM.length, 'round 23: unpriced colon sections on a priced menu sell their grain' + (refM.length ? ' (refused: ' + refM.map(c => c[4].split('\n').slice(3).join(' / ')).join('; ') + ')' : ''));
 }
 
+{ // round 24: "then eat it" read to the end of the note; sold-out words outside a list on priced grain lines; sold-out headings
+  const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
+  const tap = (note, after) => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); };
+  const REM = [];
+  for (const r of ['save it', 'pack it', 'set it aside']) for (const v of ['then eat it', 'then have it']) for (const w of [' after.', ' before.', ', after gym.', '; at lunch.', ', tomorrow.', ', with breakfast.', ' - with breakfast.', ' (at lunch).', '. Lunch tomorrow.', ' with the meal after this.', ' with the next meal.', ' with your evening meal.', ' with milk at night.', ' with the rest tomorrow.', ' with dal for lunch.', ' with the dal, later.', ' with the kids at school.', ' with the family after school.', ' with the curd in the evening.', " with the dal and tomorrow's sabzi.", ' with the plate later.', ' with fruit for breakfast.', ' as dinner.', ' with your meal later.', ' first thing tomorrow.', ' hot, at night.']) REM.push('Rice: ' + r + ', ' + v + w);
+  const KEEP = ['Rice: leave it, then eat it with the dal.', 'Rice: set it aside, then have it with your meal.', 'Rice: hold it, then eat it last, with the curd.', 'Rice: keep it aside, then eat it after the salad and dal.', 'Rice: leave it to cool, then have it with the kids.', 'Rice: save it, then eat it slowly with sabzi.', 'Rice: hold it, then eat it with the rest of the plate.', 'Roti: keep it aside, then eat it with the paneer.', 'Rotis: set them aside, then eat them with the dal.', 'Rice: leave it, then reheat it and eat it with the dal.', 'Rice: set it aside, then serve it with the sabzi.'];
+  const offO = REM.filter(n => tap(n, 200)), heldO = KEEP.filter(n => !tap(n, 150));
+  ok(!offO.length, 'round 24: no one-tap note that sends the grain to a later meal anywhere after "then eat it" is offered (' + REM.length + ' notes)' + (offO.length ? ' (offered: ' + offO.slice(0, 20).join(' | ') + ')' : ''));
+  ok(!heldO.length, 'round 24: one-tap notes that eat the grain with food or people at this meal stay on offer' + (heldO.length ? ' (held: ' + heldO.join(' | ') + ')' : ''));
+  const order = ([n, por, side, ask, menu]) => { const pl = plan('menu', { profile: Object.assign({}, P, { diet: 'nonveg' }), ctx: { meal: 'lunch', text: menu } });
+    const d = Object.assign({ as_written: n, portion: por, kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask: ask || '', grain_made_of: 'wheat', grain_grams: 80 },
+      side ? { with: side, with_kcal: 90, with_protein: 3, with_carbs: 18, with_fats: 1, with_fiber: 2 } : { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0 });
+    const o = (pl.check({ status: 'ok', place: 'Restaurant', dishes: [d], leave: [], tip: '' }).orders || [])[0]; return !!o && (!ask || !!o.ask); };
+  const m = 'MAINS\nDal Tadka 240\nPalak Paneer 300\n', D = (x) => ['Dal Tadka', '1 bowl dal with ' + x + ', about 400 g', '', ''];
+  const NS = [], SO = [];
+  for (const g of [['2 roti', 'Roti'], ['1 plate rice', 'Rice'], ['2 naan', 'Naan']]) {
+    for (const tag of [' \u2014 sold out', ' \u2013 sold out', ' 30 \u2014 sold out', ' \u2014 sold out 30', ' sold out', ' 30 sold out', ' sold out 30', ', sold out', ' 30, sold out', ' / sold out', ' 30 / not available', ' 30 x', ' 30 (x)', ' 30 *sold out*', ' 30 - khatam', ' (khatam) 30', ' - nahi hai', ' 30 (nahi hai)', ' 30 - none left', ' 30 - all gone', ' 30 - not there', ' 30 - not ready', ' 30 (dinner only)', ' 30 (evening only)', ' 30 (after 7 pm)', ' 30 (sundays only)', ' 30 - no', ' 30 - nil', ' 30 - not making today', ' 30 (not now)']) NS.push([...D(g[0]), m + g[1] + tag]);
+    NS.push([...D(g[0]), m + '~~' + g[1] + '~~ 30']); NS.push([...D(g[0]), m + g[1].toUpperCase() + ' (SOLD OUT)\n' + g[1] + ' 30']); }
+  SO.push([...D('2 garlic roti'), m + 'ROTI\nTandoori 30\nButter - sold out\nGarlic 50']); SO.push([...D('1 plate jeera rice'), m + 'RICE\nPlain 100\nVeg Pulao (sold out)\nJeera 120']);
+  SO.push([...D('2 garlic naan'), m + 'NAAN\nButter 40\nCheese (finished)\nGarlic 50']); SO.push([...D('2 tandoori roti'), m + 'BREADS\nButter Naan (over) 40\nTandoori Roti 30']);
+  for (const t of ['Dal Tadka 240\nRoti 30', 'Dal tadka, paneer, roti', 'Dal tadka\nPaneer\nRoti']) SO.push([...D('2 roti'), t]);
+  const offM = NS.filter(k => order(k)), refM = SO.filter(k => !order(k));
+  ok(!offM.length, 'round 24: no menu order for a grain line with any word that is not a dish, food or plain qualifier, or under a sold-out heading, is offered (' + NS.length + ' menus)' + (offM.length ? ' (offered: ' + offM.slice(0, 10).map(c => c[4].split('\n').slice(3).join(' / ')).join('; ') + ')' : ''));
+  ok(!refM.length, 'round 24: a sold-out item inside a grain section leaves the rest of the section on sale' + (refM.length ? ' (refused: ' + refM.map(c => c[4].split('\n').slice(3).join(' / ')).join('; ') + ')' : ''));
+}
+
 // ---- Rule 4, the owner's banned words, in every field the model writes for the person to read (Critic round 7).
 const WORDS = ['real', 'quiet', 'quietly', 'simply', 'seamlessly', 'effortlessly', 'exactly', 'just works', 'journey', 'unlock', 'empower', 'smart', 'magic',
   'game-changer', 'revolutionary', 'transform', 'curated', 'tailored', 'personalised', 'holistic', 'wellness journey'];

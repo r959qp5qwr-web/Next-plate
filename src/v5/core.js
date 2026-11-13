@@ -297,17 +297,17 @@ var PRIORREM=new RegExp("\\b(?:skip|skipping|drop|omit|avoid|remove|ditch|withou
 var THEN_FOOD=/^(?:dal|daal|sabzi|sabji|subzi|curry|raita|salad|sambar|rasam|curd|dahi|yogurt|yoghurt|pickle|achar|chutney|papad|kadhi|rajma|chole|chana|paneer|ghee|gravy|soup|veg|vegetables?|veggies|sprouts|egg|eggs|chicken|fish|mutton|tofu|bhaji|bhurji|korma|kurma|poriyal|thoran|stew|main|mains|course|starter|starters|plate|meal|rest)$/;
 var THEN_PEOPLE=/^(?:kids|children|family|husband|wife|son|daughter|guests?|mother|father|parents|mom|mum|dad|everyone|us|others|table)$/;
 var THEN_SAME=/^(?:last|first|slowly|hot|warm|now|right|straight|away|immediately|together|too|also|fresh|then)$/;
-function thenKeeps(t){var re=new RegExp("(?:^|[^.!?]\\s)then\\s+(?:eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b([^.;,!?]*)","g"),m;
-  while((m=re.exec(t))){var w=words(m[1]),ok=true,mode="";
-    for(var k=0;k<w.length;k++){var x=w[k];
-      if(/^(?:the|your|my|a|some|his|her|our|of|and|plus)$/.test(x))continue;
-      if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";continue;}
-      if(THEN_SAME.test(x)&&mode!=="after")continue;
-      if(THEN_FOOD.test(x)||MAT_RX.test(x)||COATW.test(x)||VEGW.test(x)||PARTFOOD_W.test(x))continue;
-      if(THEN_PEOPLE.test(x)&&mode==="with")continue;
-      ok=false;break;}
-    if(ok)return true;}
-  return false;}
+function thenKeeps(t){var re=new RegExp("(?:^|[^.!?]\\s)then\\s+(?:eat|have|reheat|serve)\\s+(?:it|them|the\\s+(?:"+GRAINT+")|\\d+\\s*g\\s+(?:of\\s+)?(?:the\\s+)?(?:"+GRAINT+"))\\b([\\s\\S]*)$"),m=re.exec(t);
+  if(!m)return false;   /* round 24: every word to the end of the note is read, past commas and full stops */
+  var w=words(m[1]),mode="",needFood=false;
+  for(var k=0;k<w.length;k++){var x=w[k];
+    if(/^(?:the|your|my|a|some|his|her|our|of|and|plus|it|them|eat|have|serve|reheat)$/.test(x))continue;
+    if(x==="with"||x==="beside"){mode="with";continue;}if(x==="next"&&w[k+1]==="to"){mode="with";k++;continue;}if(x==="after"||x==="before"){mode="after";needFood=true;continue;}
+    if(THEN_SAME.test(x)&&mode!=="after")continue;
+    if(THEN_FOOD.test(x)||MAT_RX.test(x)||COATW.test(x)||VEGW.test(x)||PARTFOOD_W.test(x)){needFood=false;continue;}
+    if(THEN_PEOPLE.test(x)&&mode==="with")continue;
+    return false;}
+  return !needFood;}
 function grainCanon(y){return /^(?:rice|chawal|bhaat|bhat|basmati|sadam|annam)$/.test(y)?"rice":/^(?:rotis?|phulkas?|fulkas?|chapatis?|chapathis?|chappatis?|chapattis?|rotlis?)$/.test(y)?"roti":y.replace(/s$/,"");}   /* round 23: rotis, phulka and chapati are one roti; chawal and bhaat are rice */
 function sameGrain(a,b){var q=function(x){return words(x).filter(function(y){return GRAIN_RX.test(y)||/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);}).map(grainCanon);},qa=q(a),qb=q(b);
   return qb.length>0&&qb.some(function(y){return qa.indexOf(y)>=0&&!/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);})&&!qb.some(function(y){return qa.indexOf(y)<0&&/^(?:white|brown|red|refined|polished|maida|jowar|millet|ragi|bajra|tandoori|butter|plain|jeera)$/.test(y);});}
