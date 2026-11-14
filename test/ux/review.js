@@ -208,7 +208,15 @@ const STATES = [
   ['plate-tune-failed', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-off', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['.tbtn[disabled]'] }, 'One-tap changes that are not offered'); }, (p) => p.route('**/api/tune', J(502, '{"code":"upstream_error"}'))],
   ['plate-swapped', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle(); }],
   ['plate-reopened', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900); await p.click('#slot-change'); await h.settle(250); }],
-  ['plate-last-meal', seed(), async (p, h) => { await h.plate(p); await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(900); }],
+  ['plate-last-meal', seed(), async (p, h) => { await h.plate(p); await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(900);
+    // second screen review, R2-B3 037: dinner logged while lunch is open offers lunch, and the day is not called over
+    const r = await p.evaluate(() => ({ go: ((document.getElementById('slot-next') || {}).textContent || '').trim(), d: (document.getElementById('directive') || {}).textContent || '' }));
+    if (r.go !== 'Plan lunch' || /every meal for today/.test(r.d)) throw new Error('after dinner, with lunch open, the card offers "' + r.go + '"' + (/every meal/.test(r.d) ? ' and the day is called over' : '')); }],
+  // R2-B3 037: "That is every meal for today" only when all four meals are logged or skipped
+  ['plate-day-done', seed({ ev: week.concat([bf, { t: NOW - 1.5 * H, type: 'had', meal: 'lunch', title: 'Rajma, jeera rice and salad', kcal: 520, protein: 22, carbs: 70, fats: 14, fiber: 12 }, { t: NOW - 0.5 * H, type: 'skipped', meal: 'snack' }]) }),
+    async (p, h) => { await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(900);
+    const r = await p.evaluate(() => ({ go: !!document.getElementById('slot-next'), d: (document.getElementById('directive') || {}).textContent || '' }));
+    if (r.go || !/That is every meal for today\./.test(r.d)) throw new Error('with every meal logged or skipped the day is not closed (' + r.d.slice(0, 80) + ')'); }],
   ['plate-bp', seed({ p: Object.assign({}, P, { health: 'bp' }) }), async (p, h) => { await h.plate(p); }],
   ['plate-ask-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', SLOW); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(600); }],
   ['plate-refer', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(200, { status: 'refer', read: 'This one is for your coach and doctor to plan with you.', meals: [] })); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await p.waitForSelector('.empty-card #back', { timeout: 20000 }); await h.settle(); }],

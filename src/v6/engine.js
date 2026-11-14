@@ -139,7 +139,7 @@ function directive(p,pl,hooks,meal,done){
   /* a figure stays with its unit (no-break space) when the line wraps (screen review B1) */
   function kp(k,g){return k+"\u00A0kcal and "+g+"\u00A0g protein";}
   var s="Today: about "+kp(pl.day.kcal,pl.day.protein)+". ";
-  if(done)return s+"So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". That is every meal for today.";
+  if(done)return s+"So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". That is every meal for today.";   /* done: all four meals logged or skipped (the page decides, R2-B3 037) */
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
   var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;

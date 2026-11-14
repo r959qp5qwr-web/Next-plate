@@ -133,7 +133,10 @@ function curMeal(){var r=curRes();if(!r||!r.meals||!r.meals.length)return null;i
 function clearSlot(meal){var d=DAY;EV=EV.filter(function(e){return !(dayOf(e.t)===d&&e.meal===meal&&(isMealEv(e)||e.type==="skipped"));});save();}
 /* an asked plate, once the meal is logged, gives way so the logged card shows (screen review B2) */
 function unAsk(){if(STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0)STORE.shown[C.meal]=null;}
-function nextOpen(){var i=SLOTS.indexOf(C.meal);for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return SLOTS[j];return null;}
+/* the next meal still open: a later one first, then an earlier main meal, then an earlier snack; none only when all four are logged or
+   skipped (second screen review, R2-B3 037: dinner logged early must not close a day whose lunch is still open) */
+function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return SLOTS[j];
+  for(j=0;j<i;j++)if(SLOTS[j]!=="snack"&&!slotOf(SLOTS[j]))return SLOTS[j];for(j=0;j<i;j++)if(!slotOf(SLOTS[j]))return SLOTS[j];return null;}
 /* the meal to plan next: when under 120 kcal is left for the snack, the next main meal still open comes first (owner, 14 Nov, option survey).
    What is left for the snack is the day's kcal left after the meals eaten, less what the main meals still open after it usually take; the
    snack's own target is small by design, so it is not the test (second screen review, R2-B2 021-1). After a skipped meal on insulin or sugar
