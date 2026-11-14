@@ -1114,6 +1114,9 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .empty-card .asked{margin:0 0 4px;font:italic 400 17px/24px var(--text);color:var(--ink2)}
 #app .fine.hidden{color:var(--ink);margin:12px 0 4px}
 #app #v-build .card.bigplate:has(~ .stick){padding-bottom:64px}                                          /* the held button never sits on the last stepper row (R2-B5 074-2) */
+#app .meal{flex-direction:row;gap:0}   /* the skipped mark stays beside its meal (Critic round 36) */
+#app .dateline>*{text-align:center}                                         /* the date line sits under the centred name at 340-379 px (Critic round 36) */
+#app #sheet .sheet-h{background:inherit}                                     /* the sticky sheet header takes the sheet's own paper (Critic round 36) */
 
 </style>
 
@@ -3109,7 +3112,7 @@ function ctxBlock(host){
   function pill(key,icon,label,value){var b=el("button","pillsel");b.type="button";b.id="dial-"+key;b.setAttribute("aria-expanded",UI.open===key?"true":"false");b.appendChild(ic(icon));if(label)b.appendChild(el("span",null,label));b.appendChild(el("b",null,value));b.appendChild(ic("chevd"));
     b.addEventListener("click",function(){UI.open=UI.open===key?"":key;render();});return b;}
   add(rail,pill("goal",GOALICON[P.goal],"",lab("goal",P.goal)),pill("mode",MODEICON[C.mode],"",lab("mode",C.mode)),pill("appetite","flame","Appetite",ap+"/10"),pill("cuisine","thali","",lab("cuisine",C.cuisine)),
-    pill("mood",MOODICON[C.mood],"",lab("mood",C.mood)),pill("cook",C.prep==="out"?"store":"pan","",(C.prep==="out"?"Ordering":"Cooking")+" · "+(C.oil==="min"?"less oil":"usual oil")),
+    pill("mood",MOODICON[C.mood],C.mood==="best"?"Mood":"",lab("mood",C.mood))   /* "No preference" says what it is about (Critic round 36) */,pill("cook",C.prep==="out"?"store":"pan","",(C.prep==="out"?"Ordering":"Cooking")+" · "+(C.oil==="min"?"less oil":"usual oil")),
     pill("focus","target","More of",P.focus==="none"?"no nutrient":lab("focus",P.focus)));
   host.appendChild(rail);
   /* the open setting's panel goes right under its pill, with the question it answers (second screen review, R2-B2 027-1) */
@@ -3321,7 +3324,9 @@ function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}
-  if(!UI.ratio)UI.ratio=C.ratio||MODEPLATE[C.mode];
+  if(!UI.ratio){UI.ratio=C.ratio||MODEPLATE[C.mode];
+    /* a saved share marks the preset it matches, or none (Critic round 36) */
+    if(C.ratio){var same=function(a){return a&&["protein","greens","carbs","fats"].every(function(k){return a[k]===C.ratio[k];});};UI.preset=same(MODEPLATE[C.mode])?"mode":same(PRESETS.balanced)?"balanced":same(PRESETS.steady)?"steady":"";}}
   v.appendChild(el("p","lede","Choose how much of the plate each part takes. Then plan your meal with it."));
   var pr=el("div","presets three");pr.setAttribute("role","radiogroup");
   [["mode",lab("mode",C.mode),MODEPLATE[C.mode]],["balanced","Balanced",PRESETS.balanced],["steady","Steady sugar",PRESETS.steady]].forEach(function(x){
@@ -3380,7 +3385,9 @@ function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(
 function rescue(text,image){
   if(UI.rbusy||UI.mbusy||UI.lock)return;UI.rbusy=true;UI.rerr="";UI.rkeep="";UI.rretry=false;UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image,appetite:appetite()},file:fileOut()};if(image)body.image=image;
+  var sent=askedFor();   /* a reply made for answers changed during the wait is not shown; it is asked for again (Critic round 36) */
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
+    if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||""};}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, for example \u201Cmasala dosa, 1 plate\u201D.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
@@ -3392,7 +3399,9 @@ function readMenu(text,image){
   if(UI.mbusy||UI.rbusy||UI.lock)return;refresh();UI.mnone=false;var meal=C.meal,tg=PL?PL.target:null;
   UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.mfix="";UI.mundo=false;UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
+  var sent=askedFor();
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
+    if(askedFor()!==sent){if(!blocked()&&C.meal===meal)readMenu(text,image);else render();return;}
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
     else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.mnone=s===200&&j.status!=="unreadable";UI.merr=s!==200?(j.code==="upstream_error"&&image?"Next Plate couldn't read your menu just now. Your photo is kept.":errText(j.code,"menu")):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
@@ -3590,7 +3599,9 @@ function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var
 function logOther(text,image){
   if(UI.lbusy||UI.lock)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
+  var sent=askedFor();
   api("/api/log",body,function(s,j){UI.lbusy=false;
+    if(askedFor()!==sent){if(!blocked())logOther(text,image);else renderSheet();return;}
     if(s===200&&j.status==="ok")UI.lres=j;else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. For example: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;
     if(UI.sheet==="log")renderSheet();});

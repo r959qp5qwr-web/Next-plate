@@ -377,6 +377,23 @@ const STATES = [
     if (r.q < r.h - 1) throw new Error('the health question opens under the sheet header (' + Math.round(r.q) + ' < ' + Math.round(r.h) + ')'); }],
   ['plate-no-body-add', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await p.click('#add-body-top'); await h.settle(600);
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'body-age') throw new Error('Add your age, height and weight does not open at the age box (' + f + ')'); }],
+  // ---- Critic round 36: replies made for answers changed during the wait are asked for again; the Builder preset after a reload ----
+  ['menu-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/menu')) sent.push(JSON.parse(r.postData() || '{}')); });
+    await p.route('**/api/menu', async r => { await new Promise(x => setTimeout(x, 2500)); try { await r.continue(); } catch (e) {} });
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(300);
+    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300);
+    await p.waitForFunction(() => !document.querySelector('#v-rescue .wait'), null, { timeout: 30000 }); await h.settle(900);
+    if (sent.length < 2 || !sent[sent.length - 1].profile || !/diabetes/.test(JSON.stringify(sent[sent.length - 1].profile))) throw new Error('a menu read for the old answers was shown after Diabetes was ticked (' + sent.length + ' requests)'); }],
+  ['rescue-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/rescue')) sent.push(JSON.parse(r.postData() || '{}')); });
+    await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 2500)); try { await r.continue(); } catch (e) {} });
+    await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Rajma chawal'); await p.press('#rin', 'Enter'); await h.settle(300);
+    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300);
+    await p.waitForFunction(() => !document.querySelector('#v-rescue .wait'), null, { timeout: 30000 }); await h.settle(900);
+    if (sent.length < 2 || !/diabetes/.test(JSON.stringify(sent[sent.length - 1].profile))) throw new Error('a Rescue answer for the old answers was shown after Diabetes was ticked (' + sent.length + ' requests)'); }],
+  ['builder-ratio-reload', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#preset-steady'); await p.click('#make-ratio'); await h.plate(p);
+    await p.reload({ waitUntil: 'domcontentloaded' }); await h.plate(p); await p.click('#tab-build'); await h.settle();
+    const on = await p.evaluate(() => ['mode', 'balanced', 'steady'].filter(k => (document.querySelector('#preset-' + k) || {}).getAttribute && document.querySelector('#preset-' + k).getAttribute('aria-checked') === 'true'));
+    if (on.join() !== 'steady') throw new Error('after a reload the Builder marks ' + (on.join() || 'nothing') + ' while the share in use is Steady sugar'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

@@ -91,9 +91,9 @@ MAJOR in B1-B6 and R2-B1..B8 has its fix in the code. I spot-checked 20 MINOR ro
   Only recorded or mocked replies were seen.
 - The owner's own phone and its system text size; WhatsApp's in-app browser and whether its storage is shared with Chrome. If it is not,
   "this phone remembers it" may not hold.
-- TalkBack and VoiceOver reading of the tick-all tiles and the referral note; the real keypad on the height box.
+- TalkBack and VoiceOver reading of the tick-all tiles and the referral note; the phone keypad on the height box.
 - The 375, 393 and 430 px widths (the full set was not run); 412 px was measured but I did not view it.
 - I viewed by eye the new and changed states at 320 light and dark, 360 light and 360 at 130 %. The rest I checked by the measured report
   only.
 - The film audio by ear; the films are not in this diff.
-- Behaviour at the real daily limit and midnight reset on the server (mocked codes only).
+- Behaviour at the server daily limit and midnight reset on the server (mocked codes only).

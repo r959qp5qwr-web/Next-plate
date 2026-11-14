@@ -10,7 +10,10 @@ without changing what a client sees. The v6 screens are built (`hosted/v6/index.
 ## To put the v6 screens live (only on the owner's word "Deploy.")
 1. Railway, service next-plate, Variables: set `PAGE_PATH=hosted/v6/index.min.html` and `PAGE_REF=<commit>`. No code change.
 2. Check `GET /health`, then `node eval/v6/run.js https://<app> <code> live`.
-Rollback: remove `PAGE_PATH` (back to the v5 screens), or set `PAGE_REF` to an earlier commit.
+Rollback: set `PAGE_REF` back to the commit that was live before (for the deploy after 14 Nov, `9998595`), keeping `PAGE_PATH`.
+That commit carries its own pages, so the old screens and the old core return together. Do not roll back by removing `PAGE_PATH`
+at a newer `PAGE_REF`: from 14 Nov the v5 page there carries the new core under the old v5 screens, and its day-type pill and Builder
+do not work (Critic round 36).
 
 ## Build
 `ESBUILD=<path to node_modules/esbuild> node build5.js && ESBUILD=... node build6.js`

@@ -336,3 +336,6 @@
 #app .empty-card .asked{margin:0 0 4px;font:italic 400 17px/24px var(--text);color:var(--ink2)}
 #app .fine.hidden{color:var(--ink);margin:12px 0 4px}
 #app #v-build .card.bigplate:has(~ .stick){padding-bottom:64px}                                          /* the held button never sits on the last stepper row (R2-B5 074-2) */
+#app .meal{flex-direction:row;gap:0}   /* the skipped mark stays beside its meal (Critic round 36) */
+#app .dateline>*{text-align:center}                                         /* the date line sits under the centred name at 340-379 px (Critic round 36) */
+#app #sheet .sheet-h{background:inherit}                                     /* the sticky sheet header takes the sheet's own paper (Critic round 36) */
