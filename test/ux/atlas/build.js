@@ -11,7 +11,7 @@ const NAMES = require('./names.js');
   const known = new Set(NAMES.map(s => s.id)), extra = [...new Set(files.map(f => f.replace(/-\d+\.png$/, '')))].filter(n => !known.has(n));
   if (missing.length || extra.length) { console.error('names.js and the screens differ. No screens: ' + missing.join(', ') + '. Not named: ' + extra.join(', ')); process.exit(1); }
   const cache = path.join(require('os').tmpdir(), 'np-atlas-' + DIR); fs.mkdirSync(cache, { recursive: true });
-  const img = (f) => { const j = path.join(cache, f.replace(/png$/, 'jpg')); if (!fs.existsSync(j)) require('child_process').execFileSync('convert', [path.join(shots, f), '-resize', '600x', '-quality', '80', j]); return 'file://' + j; };
+  const img = (f) => { const j = path.join(cache, f.replace(/png$/, 'jpg')); if (!fs.existsSync(j)) require('child_process').execFileSync('convert', [path.join(shots, f), '-resize', '480x', '-quality', '72', j]); return 'file://' + j; };
   let sec = '', idx = '', group = '';
   NAMES.forEach((s, i) => {
     const n = String(i + 1).padStart(2, '0');
