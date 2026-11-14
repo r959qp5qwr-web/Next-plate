@@ -126,11 +126,14 @@ function swapDelta(s,kind){var d=kind==="protein"?[[s.deltaProtein,"protein","g"
 function viewOf(m){
   var n={kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber},title=m.title,notes=[],minutes=m.minutes,items=m.items.map(function(i){return {food:i.food,grams:i.grams,group:i.group};});
   function apply(d){n.kcal+=d.deltaKcal;n.protein+=d.deltaProtein;n.carbs+=d.deltaCarbs;n.fats+=d.deltaFats;n.fiber+=d.deltaFiber;}
-  function swapIn(list,idx,group){var s=list[idx];if(!s||!idx)return;apply(s);for(var i=0;i<items.length;i++)if(items[i].group===group){items[i]={food:s.food,grams:s.grams||null,group:group,tag:"swapped"};return;}}
+  var swapped=[];
+  function swapIn(list,idx,group){var s=list[idx];if(!s||!idx)return;apply(s);for(var i=0;i<items.length;i++)if(items[i].group===group){swapped.push({from:items[i].food,to:s.food,group:group});items[i]={food:s.food,grams:s.grams||null,group:group,tag:"swapped"};return;}}
   swapIn(m.swaps.protein,UI.swp,"protein");swapIn(m.swaps.base,UI.swb,"carbs");
   var suffix=[];ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food)for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
   ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.max(0,Math.round(n[k]));});
-  return {title:m.title+(suffix.length?", with "+suffix.join(", ").toLowerCase():""),suffix:suffix.length?"with "+suffix.join(", ").toLowerCase():"",n:n,notes:notes,minutes:minutes,items:items};
+  /* a swap is named in the title and in what is logged: "..., with tofu bhurji in place of paneer tikka" (second screen review, R2-B2 025-1) */
+  var parts=swapped.map(function(x){return x.to.toLowerCase()+" in place of "+x.from.toLowerCase().replace(/,.*$/,"");}).concat(suffix.map(function(x){return x.toLowerCase();}));
+  return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped};
 }
 function curMeal(){var r=curRes();if(!r||!r.meals||!r.meals.length)return null;if(UI.sel>=r.meals.length)UI.sel=0;return r.meals[UI.sel];}
 function clearSlot(meal){var d=DAY;EV=EV.filter(function(e){return !(dayOf(e.t)===d&&e.meal===meal&&(isMealEv(e)||e.type==="skipped"));});save();}
@@ -336,7 +339,11 @@ function heroCard(m,v,r){
   var gb=gramsBy(v.items),lg=el("ul","prlegend");lg.setAttribute("aria-hidden","true");
   NUTORDER.forEach(function(k){if(!gb[k])return;var li=el("li","n-"+NUTC[k]);add(li,el("i"),el("span",null,NUTNAME[k]),el("b",null,gb[k]+" g"));lg.appendChild(li);});
   if(lg.firstChild)txt.appendChild(lg);
-  if(m.taste&&m.taste.length){var ts=el("p","taste");ts.setAttribute("aria-label","Tastes "+m.taste.join(", "));m.taste.forEach(function(w){ts.appendChild(el("span",null,w));});txt.appendChild(ts);}
+  /* taste words and pairing lines that speak of a food swapped off the plate are not shown (R2-B2 025-1); a new main protein changes the taste */
+  var gone=[];(v.swapped||[]).forEach(function(x){gone=gone.concat(String(x.from).toLowerCase().match(/[a-z]{4,}/g)||[]);if(x.group==="protein"&&/tikka|tandoori|kebab|grill|roast|bake|charr/i.test(x.from))gone.push("marinade","marinated");});
+  function speaksOf(t){t=String(t).toLowerCase();return gone.some(function(w){return new RegExp("\\b"+w+"\\b").test(t);});}
+  var protSwap=(v.swapped||[]).some(function(x){return x.group==="protein";}),tastes=protSwap?[]:(m.taste||[]).filter(function(w){return !speaksOf(w);});
+  if(tastes.length){var ts=el("p","taste");ts.setAttribute("aria-label","Tastes "+tastes.join(", "));tastes.forEach(function(w){ts.appendChild(el("span",null,w));});txt.appendChild(ts);}
   txt.appendChild(el("h2",m.title.length>34?"long":null,m.title));if(v.suffix)txt.appendChild(el("p","suffix",v.suffix));
   txt.appendChild(el("p","sub",m.subtitle));
   var tags=(m.planned||[]).map(function(id){return r.hooks&&r.hooks[id];}).filter(Boolean);
@@ -372,15 +379,16 @@ function heroCard(m,v,r){
     if(it.grams){qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));}else qy.textContent="—";
     var f=el("span","food");f.appendChild(el("b",null,it.food));if(it.tag)f.appendChild(el("span","tag",it.tag));add(li,qy,f);ul.appendChild(li);});
   sv.appendChild(ul);card.appendChild(sv);
-  if(m.why.length){var pr=el("div","pairs"),ph=el("p","ph");ph.id="pairs";add(ph,el("b",null,"Pair it"),el("small",null,"to take up more from this plate"));pr.appendChild(ph);
-    var pu=el("ul");m.why.forEach(function(w){var li=el("li"),when=/\b(later|after|before|hours?|apart|gap|wait)\b/i.test(w.pair),pl=el("span","plus"+(when?" when":""),when?"":"+"),tx=el("span");if(when)pl.appendChild(ic("clock"));pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
+  var whys=m.why.filter(function(w){return !speaksOf(w.pair+" "+w.effect);});
+  if(whys.length){var pr=el("div","pairs"),ph=el("p","ph");ph.id="pairs";add(ph,el("b",null,"Pair it"),el("small",null,"to take up more from this plate"));pr.appendChild(ph);
+    var pu=el("ul");whys.forEach(function(w){var li=el("li"),when=/\b(later|after|before|hours?|apart|gap|wait)\b/i.test(w.pair),pl=el("span","plus"+(when?" when":""),when?"":"+"),tx=el("span");if(when)pl.appendChild(ic("clock"));pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
     pr.appendChild(pu);card.appendChild(pr);}
   var acts=el("div","acts two");
   var total=r.meals.length,nx=btn("btn",total>1?"Next\u00A0plate ("+(UI.sel+1)+"/"+total+")":"New plates","refresh","next");
   nx.addEventListener("click",function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
   var tr=btn("btn","Change the mix","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
-  hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});unAsk();render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
+  hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});unAsk();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
   add(acts,hv,nx,tr);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){
     /* opened again for the same meal, the words, a wait or an estimate not yet counted stay (second screen review, R2-B4 055-2, 057-1) */

@@ -212,7 +212,14 @@ const STATES = [
   ['plate-goal-toast', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-goal'); await p.click('#goal-hold'); await h.settle(250); }],
   ['plate-tune-wait', seed(), async (p, h) => { await h.plate(p); }, (p) => p.route('**/api/tune', SLOW)],
   ['plate-tune-failed', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-off', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['.tbtn[disabled]'] }, 'One-tap changes that are not offered'); }, (p) => p.route('**/api/tune', J(502, '{"code":"upstream_error"}'))],
-  ['plate-swapped', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle(); }],
+  ['plate-swapped', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle();
+    // second screen review, R2-B2 025-1: the swap is named under the title, and no taste or pairing line speaks of the food swapped off
+    const r = await p.evaluate(() => ({ suf: (document.querySelector('#plate-card .suffix') || {}).textContent || '', taste: !!document.querySelector('#plate-card .taste'), pairs: [...document.querySelectorAll('#plate-card .pairs li')].map(l => l.textContent).join(' | ') }));
+    if (!/in place of paneer tikka/.test(r.suf) || r.taste || /paneer|tikka|marinade/i.test(r.pairs)) throw new Error('after the swap the plate still speaks of the food swapped off (suffix "' + r.suf + '", taste ' + r.taste + ', pairs: ' + r.pairs + ')'); }],
+  // R2-B2 025-1: the meal logged after a swap names the swap
+  ['plate-swapped-logged', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle(300); await p.click('#have'); await h.settle(900);
+    const t = await p.evaluate(() => (document.querySelector('#v-plate .logged .dish') || {}).textContent || '');
+    if (!/in place of paneer tikka/.test(t)) throw new Error('the meal logged after a swap does not name it (' + t + ')'); }],
   ['plate-reopened', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900); await p.click('#slot-change'); await h.settle(250); }],
   ['plate-last-meal', seed(), async (p, h) => { await h.plate(p); await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(900);
     // second screen review, R2-B3 037: dinner logged while lunch is open offers lunch, and the day is not called over

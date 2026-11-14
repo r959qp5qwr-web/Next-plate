@@ -69,6 +69,7 @@ module.exports = [
   S(P, 'plate-tune-wait', 'Plate: one-tap changes getting ready', 'Just after the plate shows.'),
   S(P, 'plate-tune-failed', 'Plate: no one-tap changes for this plate', 'The one-tap changes could not be made.'),
   S(P, 'plate-swapped', 'Plate: a part swapped', 'Adjust, then pick a swap.'),
+  S(P, 'plate-swapped-logged', 'Plate: a swapped plate, logged', 'Swap the main protein, then I’ll have this.'),
   S(P, 'plate-bp', 'Plate: with high BP', 'Health: High BP.'),
   S(P, 'plate-dial-goal', 'Plate: goal panel', 'Tap the goal pill.'),
   S(P, 'plate-goal-toast', 'Plate: goal changed', 'Pick another goal.'),
