@@ -361,7 +361,8 @@ function heroCard(m,v,r){
   var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
-var PROMPTS=["Craving chaat at 6 pm","Heavy leg day: a high-protein dinner","Trek tomorrow: food to carry","What to order at a restaurant tonight","Post-workout, under 600 kcal","Only eggs, spinach and bread at home"];
+/* the example asks (owner, 14 Nov, option survey); a diet or a food left out still removes an ask that crosses it */
+var PROMPTS=["Only dal, rice and curd at home","A light dinner after a heavy lunch","Guests at home tonight","Tired, something quick"];
 function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
   if(UI.lock){var lk=el("p","fine asklock",/^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":"Asks open once your coach's link is opened on this phone.");lk.id="ask-lock";host.appendChild(lk);return;}

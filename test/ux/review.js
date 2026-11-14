@@ -37,6 +37,10 @@ const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]) }, o || {
 // owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate, menu order, the other orders, Rescue)
 const closeTo = async (p, sels) => { const r = await p.evaluate((sels) => ({ fit: /\bFit\s*\d/.test(document.body.innerText), miss: sels.filter(s => !/Close to your target: \d+\s\/\s100/.test((document.querySelector(s) || {}).innerText || '')) }), sels);
   if (r.fit || r.miss.length) throw new Error('the score is not worded "Close to your target" (' + (r.fit ? '"Fit" shown; ' : '') + r.miss.join(', ') + ')'); };
+// owner, 14 Nov: the example asks are these four; a diet or a food left out still removes one that crosses it
+const asks = async (p, want) => { const got = await p.evaluate(() => [...document.querySelectorAll('.prompts .prompt')].map(b => b.textContent.replace(/[\u201C\u201D]/g, '').trim()));
+  if (got.join('|') !== want.join('|')) throw new Error('the example asks are not the owner\'s (' + got.join(' | ') + ')'); };
+const ASKS = ['Only dal, rice and curd at home', 'A light dinner after a heavy lunch', 'Guests at home tonight', 'Tired, something quick'];
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -51,12 +55,12 @@ const STATES = [
   ['setup-2-health', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
-  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); }],
+  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
     async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
-  ['plate-leave-two', seed({ p: Object.assign({}, P, { leave: ['dairy', 'nut'] }) }), async (p, h) => { await h.plate(p); }],
+  ['plate-leave-two', seed({ p: Object.assign({}, P, { leave: ['dairy', 'nut'] }) }), async (p, h) => { await h.plate(p); await asks(p, ASKS.slice(1)); }],
   ['plate-dial-open', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-appetite'); await h.settle(); if (await p.$eval('#dial-appetite', b => b.getBoundingClientRect().right > innerWidth)) throw new Error('the appetite pill that closes the panel is off the screen'); }],
   ['plate-swap-open', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await h.next(p, { text: '(on your plate)' }, 'Swap: the option on the plate'); }],
   ['plate-one-tap-on', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.click('#alc-glucose'); await h.settle();
