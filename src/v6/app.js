@@ -88,11 +88,15 @@ function api(path,body,cb){
     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:{}};});})
     .then(function(x){clearTimeout(t);if(!done){done=true;cb(x.s,x.j||{});}},function(){clearTimeout(t);if(!done){done=true;cb(0,{code:"network"});}});
 }
-function makePlates(text){
-  if(UI.busy)return;refresh();var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey();
-  UI.busy=text?"ask":"plates";UI.err="";UI.eretry=true;UI.lastAsk=text||"";render();if(text)logEv("asked",{text:text.slice(0,120)});
+/* what a plate request was made for: the answers in My food and the settings on the Plate. A reply made for answers or settings that have
+   changed since it was sent is not shown; the plates are asked for again (second screen review, R2-B1 011) */
+function askedFor(){return JSON.stringify([profileOut(),C.mode,C.mood,C.cuisine,C.prep,C.oil,C.ratio,APP]);}
+function makePlates(text,again){
+  if(UI.busy)return;refresh();var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey(),sent=askedFor();
+  UI.busy=text?"ask":"plates";UI.err="";UI.eretry=true;UI.lastAsk=text||"";render();if(text&&!again)logEv("asked",{text:text.slice(0,120)});
   api("/api/meals",{profile:profileOut(),ctx:ctxOut(text),file:fileOut()},function(s,j){
     UI.busy="";
+    if(askedFor()!==sent){if(C.meal===meal&&!blocked())makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);

@@ -8,6 +8,7 @@ module.exports = [
   S(A, 'setup-2-health', 'Set-up 2 of 3: health', 'Step 1: Lose weight, Vegetarian, North, Next. Then Diabetes.'),
   S(A, 'setup-3-body', 'Set-up 3 of 3: body', 'Step 1, Next, step 2 None, Next.'),
   S(P, 'plate-loading', 'Plate: making the plate', 'After set-up, or on opening, while the plate is made.'),
+  S(P, 'plate-loading-changed', 'Plate: food rules changed while the plate is made', 'While the first plate is made, open My food, tick Nuts, Done.'),
   S(P, 'plate-hero', 'Plate: the plate for this meal', 'Opening the app after set-up.'),
   S(P, 'plate-old-saved', 'Plate: a plate kept from earlier today', 'Reopening the app later the same day.'),
   S(P, 'plate-leave-two', 'Plate: two foods left out', 'My food: leave out dairy and nuts.'),

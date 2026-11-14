@@ -89,6 +89,14 @@ const STATES = [
   ['setup-2-health', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
+  // second screen review, R2-B1 011: a My food answer changed while the first plate loads is not dropped; the reply made for the old answers
+  // is not shown, and the plates are asked for again with the new answers
+  ['plate-loading-changed', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await p.click('#myfood'); await h.settle(300); await p.click('#leave-nut'); await p.click('#sheet-done');
+    await p.waitForSelector('#plate-card:not(.wait)', { timeout: 30000 }); await h.settle(600);
+    const sent = (p.__calls || []).map(b => (b.profile.leave || []).join('+') || '-');
+    if (sent.length < 2 || sent[sent.length - 1] !== 'nut') throw new Error('the plate shown was not asked for with the new answers (requests: ' + sent.join(', ') + ')');
+    if (!/No nuts/.test(await p.textContent('#plate-card .hero-top'))) throw new Error('the plate does not show the new food rule'); },
+    (p) => p.route('**/api/meals', async r => { (p.__calls = p.__calls || []).push(JSON.parse(r.request().postData() || '{}')); if (p.__calls.length === 1) await new Promise(x => setTimeout(x, 3500)); try { await r.continue(); } catch (e) {} })],
   ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); await scrollAway(p); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
