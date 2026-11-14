@@ -216,7 +216,11 @@ const STATES = [
   // ---- every other screen a client can reach (screen inventory, 14 Nov) ----
   ['setup-2-none', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await h.settle(); }],
   ['plate-dial-goal', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-goal'); await h.settle(); }],
-  ['plate-dial-mode', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-mode'); await h.settle(); }],
+  // owner, 14 Nov, option survey: three day types; a phone that kept "trek" (or "strength") from before reads it as an active day
+  ['plate-dial-mode', seed({ c: { mode: 'trek' } }), async (p, h) => { await h.plate(p); await p.click('#dial-mode'); await h.settle();
+    const r = await p.evaluate(() => ({ pill: document.getElementById('dial-mode').innerText.trim(), opts: [...document.querySelectorAll('[role=radio][id^="mode-"]')].map(b => b.id + ':' + b.innerText.replace(/\s+/g, ' ').trim() + ':' + b.getAttribute('aria-checked')) }));
+    const want = ['mode-active:Active day A long walk or housework:true', 'mode-desk:Desk day:false', 'mode-rest:Rest day:false'];
+    if (r.pill !== 'Active day' || r.opts.join('|') !== want.join('|')) throw new Error('the day types are not the owner\'s three, or a kept "trek" is not read as an active day (' + r.pill + ' / ' + r.opts.join(' | ') + ')'); }],
   ['plate-dial-cuisine', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-cuisine'); await h.settle(); }],
   ['plate-dial-mood', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-mood'); await h.settle(); }],
   ['plate-dial-cook', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-cook'); await h.settle(); }],
@@ -274,10 +278,12 @@ const STATES = [
     if (w.v !== '2 aloo paratha with curd' || !w.off) throw new Error('opened again at the limit, the sheet lost the words or turned Count it on (' + JSON.stringify(w) + ')'); }, () => {}],
   ['sheet-log-offline', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', OFF); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.next(p, { has: ['#log-retry'], text: 'Check your signal' }, 'Log offline'); }, () => {}],
   ['plate-log-counted', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 20000 }); await p.click('#log-ok'); await h.settle(250); }],
-  ['builder-ratio-set', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#preset-post'); await p.click('#make-ratio'); await h.plate(p);
+  ['builder-ratio-set', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#preset-steady'); await p.click('#make-ratio'); await h.plate(p);
     // R2-B5 076: the chosen share is kept after a reload, and the way back is in plain words
     await p.reload({ waitUntil: 'domcontentloaded' }); await h.plate(p); await p.click('#tab-build'); await h.settle();
-    const t = await p.evaluate(() => ({ link: ((document.getElementById('clear-ratio') || {}).textContent || '').trim(), sel: (document.querySelector('#preset-post') || {}).getAttribute && document.querySelector('#preset-post').getAttribute('aria-checked') }));
+    const t = await p.evaluate(() => ({ link: ((document.getElementById('clear-ratio') || {}).textContent || '').trim(), presets: [...document.querySelectorAll('.presets .preset')].map(b => b.textContent.trim()) }));
+    // owner, 14 Nov, option survey: the post-training preset went with Strength day; the day type, Balanced and Steady sugar stay
+    if (t.presets.join('|') !== 'Desk day|Balanced|Steady sugar') throw new Error('the Builder presets are not the day type, Balanced and Steady sugar (' + t.presets.join(' | ') + ')');
     if (t.link !== 'Go back to the usual plate (Desk day)') throw new Error('after a reload the share is not kept, or the way back is unclear (' + t.link + ')'); }],
   ['builder-habits', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#hab-veg'); await p.click('#hab-walk'); await h.settle(); }],
   ['builder-no-body', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();

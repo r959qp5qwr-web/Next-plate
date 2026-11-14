@@ -1222,5 +1222,23 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   for (const [k, b] of ks) { const pl = plan(k, Object.assign({ profile: Object.assign({}, P) }, b));
     ok(pl.prompt && /Never use any of these words: real, quiet/.test(pl.prompt), k + ': the prompt asks for none of the banned words'); } // planted on purpose: checks the prompt carries the list
 }
+{ // owner, 14 Nov, option survey: the day type is Active day ("a long walk or housework"), Desk day or Rest day; Strength day and Trek day are gone
+  ok(JSON.stringify(OPT.mode) === JSON.stringify([['active', 'Active day'], ['desk', 'Desk day'], ['rest', 'Rest day']]), 'day type: the three options are Active day, Desk day and Rest day (' + JSON.stringify(OPT.mode) + ')');
+  ok(OPT.mode.every(o => MODEPLATE[o[0]] && MODEFOCUS[o[0]]) && Object.keys(MODEPLATE).length === 3 && Object.keys(MODEFOCUS).length === 3, 'day type: every option has its Builder share and its prompt line, and no other day type has one');
+  ok(JSON.stringify(Object.keys(PRESETS)) === '["balanced","steady"]', 'Builder: the post-training preset went with Strength day; Balanced and Steady sugar stay (' + Object.keys(PRESETS).join(', ') + ')');
+  // stored or old values are read as today's options, on the server too
+  const was = { strength: 'active', trek: 'active', focus: 'desk', rest: 'rest', active: 'active', desk: 'desk', nonsense: 'desk' };
+  for (const k of Object.keys(was)) { const c = readCtx({ meal: 'dinner', mode: k }, 'meals'); ok(c && c.mode === was[k], `day type: "${k}" is read as ${was[k]} (${c && c.mode})`); }
+  // the trek hook, with its salt and fluid words, and the strength hook went with their day types; an active day asks for nothing beyond the old trek line
+  const bp = Object.assign({}, P, { health: 'bp' });
+  for (const m of ['trek', 'strength', 'active']) {
+    const pr = plan('meals', { profile: bp, ctx: { meal: 'dinner', mode: m } }).prompt || '';
+    ok(!/trek|strength-training|strength day|endurance|enough salt|fluid/i.test(pr) && /\[mode_active\] Today is an active day, with a long walk or housework/.test(pr), `day type "${m}": the prompt plans an active day, with no trek, strength, salt or fluid words`);
+  }
+  const dk = plan('meals', { profile: Object.assign({}, P), ctx: { meal: 'dinner', mode: 'desk' } }).prompt;
+  ok(/Today is a desk day/.test(dk) && !/mode_/.test(dk), 'day type: a desk day keeps its prompt line and adds no hook');
+  const rs = plan('meals', { profile: Object.assign({}, P), ctx: { meal: 'dinner', mode: 'rest' } }).prompt;
+  ok(/Today is a rest day: light and easy to digest/.test(rs) && !/wind-down/i.test(rs), 'day type: a rest day is called a rest day in the prompt');
+}
 console.log(bad ? `${bad} rule check(s) failed` : 'every rule check holds');
 process.exit(bad ? 1 : 0);

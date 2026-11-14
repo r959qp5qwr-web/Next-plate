@@ -285,7 +285,7 @@
   ]
  },
  {
-  "id": "strength-day-build",
+  "id": "active-day-build",
   "kind": "meals",
   "p": {
    "goal": "build",
@@ -298,13 +298,13 @@
   "c": {
    "meal": "dinner",
    "hour": 20.0,
-   "mode": "strength",
+   "mode": "active",
    "dayNo": 320
   },
   "file": {},
   "want": [
    "goal_build",
-   "mode_strength"
+   "mode_active"
   ],
   "tune": true
  },

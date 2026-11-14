@@ -7,7 +7,7 @@ const pages = process.argv.length > 2 ? process.argv.slice(2) : ['hosted/v5/inde
 
 const MENU = ['Paneer Tikka 320', 'Chicken Tikka 360', 'Dal Tadka 240', 'Palak Paneer 300', 'Butter Chicken 380', 'Veg Biryani 280', 'Tandoori Roti 30', 'Butter Naan 60', 'Cucumber Raita 90', 'Green Salad 80'].join('\n');
 const BASE = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 62, act: 'light' };
-const CTX = { meal: 'dinner', time: '8:30 pm', hour: 20.5, dayNo: 316, mode: 'focus', appetite: 5, text: MENU };
+const CTX = { meal: 'dinner', time: '8:30 pm', hour: 20.5, dayNo: 316, mode: 'desk', appetite: 5, text: MENU };
 const NOSIDE = { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: '', grain_grams: 0 };
 const RICE = { grain_made_of: 'rice', grain_grams: 200 };                          // the grain the model declares for a rice dish (Critic round 12)
 const ROTI2 = { with: '2 Tandoori Roti', with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6, grain_made_of: 'wheat', grain_grams: 80 };

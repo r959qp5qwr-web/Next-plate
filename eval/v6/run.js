@@ -4,7 +4,7 @@ const fs = require('fs'), path = require('path');
 const [,, BASE, CODE = '', LABEL = 'run'] = process.argv;
 const sc = JSON.parse(fs.readFileSync(path.join(__dirname, 'scenarios.json'), 'utf8')).filter(c => !process.env.ONLY || process.env.ONLY.split(',').includes(c.id));
 const baseP = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 68, act: 'low' };
-const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'focus', mood: 'best', cuisine: 'indian', prep: 'home', oil: 'min', appetite: 5 };
+const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'desk', mood: 'best', cuisine: 'indian', prep: 'home', oil: 'min', appetite: 5 };
 (async () => {
   const out = [];
   for (const s of sc) {

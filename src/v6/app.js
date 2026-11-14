@@ -4,10 +4,10 @@
 var now=new Date(),hr=now.getHours()+now.getMinutes()/60;
 var CLOCK=hr<4?"dinner":hr<11?"breakfast":hr<15.5?"lunch":hr<18.5?"snack":"dinner";
 var MEALS=[["breakfast","Breakfast","sunrise"],["lunch","Lunch","sun"],["snack","Snack","cup"],["dinner","Dinner","moon"]];
-var MODEICON={strength:"dumbbell",trek:"mountain",focus:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
+var MODEICON={active:"walk",desk:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
 var DAY=dayOf(now.getTime());
 var P={goal:null,focus:"none",meds:"",diet:null,health:null,conds:[],region:null,leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
-var C={meal:CLOCK,mode:"focus",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
+var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
@@ -22,7 +22,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   /* health is tick-all-that-apply (owner decision, 14 Nov): conds holds the ticks; health is derived, a kidney condition or pregnancy first */
   P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
-  var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){if(lab(k,rc[k]))C[k]=rc[k];});
+  var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
   var rr=rc.ratio;if(rr&&typeof rr==="object"&&["protein","greens","carbs","fats"].every(function(k){return +rr[k]>=5&&+rr[k]<=65;})&&Math.abs(rr.protein+rr.greens+rr.carbs+rr.fats-100)<=2)C.ratio={protein:+rr.protein,greens:+rr.greens,carbs:+rr.carbs,fats:+rr.fats};   /* the chosen share is kept on the phone (R2-B5 076-3) */
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
@@ -299,7 +299,7 @@ function ctxBlock(host){
   var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What style of food?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
   if(TT[UI.open])title(TT[UI.open][0],TT[UI.open][1]);
   if(UI.open==="goal")radios(OPT.goal.map(function(o){return {id:"goal-"+o[0],v:o[0],t:o[1]};}),function(v){return P.goal===v;},function(v){P.goal=v;changed();},function(v){return GOALICON[v];});
-  if(UI.open==="mode")radios(OPT.mode.map(function(o){return {id:"mode-"+o[0],v:o[0],t:o[1],s:{strength:"Gym or sport today",trek:"A long hike or climb",focus:"Mostly sitting",rest:"Light and easy"}[o[0]]};}),function(v){return C.mode===v;},function(v){C.mode=v;UI.ratio=null;changed();},function(v){return MODEICON[v];});
+  if(UI.open==="mode")radios(OPT.mode.map(function(o){return {id:"mode-"+o[0],v:o[0],t:o[1],s:{active:"A long walk or housework"}[o[0]]};}),function(v){return C.mode===v;},function(v){C.mode=v;UI.ratio=null;changed();},function(v){return MODEICON[v];});
   if(UI.open==="cuisine")radios(OPT.cuisine.map(function(o){return {id:"cuisine-"+o[0],v:o[0],t:o[1]};}),function(v){return C.cuisine===v;},function(v){C.cuisine=v;changed();},null,"lows");   /* the labels wrap; "Mediterranean" no longer runs past its pill (R2-B2 030-1) */
   if(UI.open==="mood")radios(OPT.mood.map(function(o){return {id:"mood-"+o[0],v:o[0],t:o[1]};}),function(v){return C.mood===v;},function(v){C.mood=v;changed();},function(v){return MOODICON[v];});
   if(UI.open==="focus")radios(OPT.focus.map(function(o){return {id:"focus-"+o[0],v:o[0],t:o[0]==="none"?"Nothing":o[1]};}),function(v){return P.focus===v;},function(v){P.focus=v;changed();},null,"lows");
@@ -500,8 +500,8 @@ function renderBuild(){
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}
   if(!UI.ratio)UI.ratio=C.ratio||MODEPLATE[C.mode];
   v.appendChild(el("p","lede","Choose how much of the plate each part takes. Then plan your meal with it."));
-  var pr=el("div","presets four");pr.setAttribute("role","radiogroup");
-  [["mode",lab("mode",C.mode),MODEPLATE[C.mode]],["balanced","Balanced",PRESETS.balanced],["post","More protein",PRESETS.post],["steady","Steady sugar",PRESETS.steady]].forEach(function(x){
+  var pr=el("div","presets three");pr.setAttribute("role","radiogroup");
+  [["mode",lab("mode",C.mode),MODEPLATE[C.mode]],["balanced","Balanced",PRESETS.balanced],["steady","Steady sugar",PRESETS.steady]].forEach(function(x){
     var b=btn("preset",x[1],null,"preset-"+x[0]);b.setAttribute("role","radio");b.setAttribute("aria-checked",UI.preset===x[0]?"true":"false");
     b.addEventListener("click",function(){UI.preset=x[0];UI.ratio=x[2];render();});pr.appendChild(b);});
   v.appendChild(pr);

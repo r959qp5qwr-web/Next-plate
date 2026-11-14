@@ -111,8 +111,7 @@ function hooksFor(p,file,c,pl,par){
   if(lateNow)add("late_now","a late dinner","It is late for dinner. Keep it light and easy to digest, with a smaller grain portion"+(p.health==="diabetes"?" (but keep the grain)":"")+".");
   if(file.slotProtein){var low=null;SLOTS.forEach(function(m){var v=file.slotProtein[m];if(v!=null&&(low==null||v<file.slotProtein[low]))low=m;});
     if(low===meal&&Object.keys(file.slotProtein).length>=2)add("low_protein_meal","protein at "+mn,mn.charAt(0).toUpperCase()+mn.slice(1)+" has been their lowest-protein meal this week (about "+file.slotProtein[low]+" g). Lead with protein.");}
-  if(c.mode==="strength")add("mode_strength","strength day","Today is a strength-training day: protein leads, with enough carbohydrate to refuel.");
-  if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, "+(p.bp?"enough fluid":"enough salt and fluid")+" with the meal, easy to digest.");   /* with high BP the salt words go (R2-B2 029-2) */
+  if(c.mode==="active")add("mode_active","an active day","Today is an active day, with a long walk or housework: steady carbohydrate for energy and enough protein.");   /* Strength day and Trek day went (owner, 14 Nov); no salt or fluid words */
   if(p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))add("steady_carbs","steady grain (diabetes medicine)","They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.");
   if(p.health==="diabetes")add("diabetes_grain","the grain stays (diabetes)","Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.");
   if(p.bp)add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");

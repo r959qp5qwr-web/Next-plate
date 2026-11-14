@@ -6,7 +6,7 @@ const fs = require('fs'), path = require('path');
 const [,, BASE, CODE = '', LABEL = 'run'] = process.argv;
 const sc = JSON.parse(fs.readFileSync(path.join(__dirname, 'scenarios-menu.json'), 'utf8')).filter(c => !process.env.ONLY || process.env.ONLY.split(',').includes(c.id));
 const baseP = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 68, act: 'low' };
-const baseC = { meal: 'dinner', time: '8:30 pm', mode: 'focus', appetite: 5 };
+const baseC = { meal: 'dinner', time: '8:30 pm', mode: 'desk', appetite: 5 };
 const words = t => ' ' + String(t || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
 const GRAIN = /roti|phulka|rice|millet|jowar|bajra|ragi|dalia|oats|poha|upma|idli|dosa|uttapam|khichdi|paratha|bread|toast|quinoa|chapati|thepla|pulao|biryani|naan|kulcha|noodles|pasta|pongal|pav/i;
 (async () => {

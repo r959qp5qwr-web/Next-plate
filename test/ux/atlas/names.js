@@ -75,7 +75,7 @@ module.exports = [
   S(P, 'plate-bp', 'Plate: with high BP', 'Health: High BP.'),
   S(P, 'plate-dial-goal', 'Plate: goal panel', 'Tap the goal pill.'),
   S(P, 'plate-goal-toast', 'Plate: goal changed', 'Open the goal pill and choose Hold steady.'),
-  S(P, 'plate-dial-mode', 'Plate: day-type panel', 'Tap the day-type pill.'),
+  S(P, 'plate-dial-mode', 'Plate: day-type panel', 'On a phone that kept Trek day from before (read as Active day), tap the day-type pill.'),
   S(P, 'plate-dial-cuisine', 'Plate: cuisine panel', 'Tap the cuisine pill.'),
   S(P, 'plate-dial-mood', 'Plate: mood panel', 'Tap the mood pill.'),
   S(P, 'plate-dial-cook', 'Plate: cooking panel', 'Tap the cooking pill.'),

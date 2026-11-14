@@ -75,10 +75,10 @@
 #app .tab{font-size:15px;min-height:56px}
 #app input[type=range]{min-height:44px}
 
-/* --- Builder: four presets as a 2 x 2 grid, labels never wrap --- */
-#app .presets.four{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0}
-#app .presets.four .preset{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:0 10px;background:var(--surface)}
-#app .presets.four .preset[aria-checked="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+/* --- Builder: three presets as pills in a row that wraps, labels never wrap (the fourth went with Strength day, owner, 14 Nov) --- */
+#app .presets.three{display:flex;flex-wrap:wrap;gap:8px;border:0}
+#app .presets.three .preset{flex:1 1 auto;white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:0 14px;background:var(--surface)}
+#app .presets.three .preset[aria-checked="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 #app .stp b{font-size:17px}
 #app .inst-lg{font-size:15px}
 

@@ -9,8 +9,8 @@ var OPT={
   leave:[["dairy","Dairy"],["nut","Nuts"],["wheat","Wheat"],["soya","Soya"]],
   sex:[["f","Female"],["m","Male"]],
   act:[["low","Mostly sitting"],["light","Light activity"],["mod","Exercise 3 to 5 days"],["high","Hard training most days"]],
-  /* one-tap state, from [S] BIO_MODES; plain names, no invented biometrics */
-  mode:[["strength","Strength day"],["trek","Trek day"],["focus","Desk day"],["rest","Wind-down"]],
+  /* the kind of day (owner, 14 Nov, option survey: three day types for these clients; Strength day and Trek day dropped) */
+  mode:[["active","Active day"],["desk","Desk day"],["rest","Rest day"]],
   /* [P] MOOD_FILTERS */
   mood:[["best","No preference"],["quick","Quick, 15\u00A0min"],["protein","High protein"],["comfort","Comforting"],["light","Light"]],
   /* [P] CUISINES */
@@ -20,18 +20,21 @@ var OPT={
   meal:[["breakfast","Breakfast"],["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"]]
 };
 function lab(k,v){var l=OPT[k]||[];for(var i=0;i<l.length;i++)if(l[i][0]===v)return l[i][1];return "";}
+/* values kept on phones and sent by older pages before the owner's 14 Nov decisions, read as today's options */
+var OPTWAS={mode:{strength:"active",trek:"active",focus:"desk"}};
+function optNow(k,v){var m=OPTWAS[k];return m&&typeof v==="string"&&m.hasOwnProperty(v)?m[v]:v;}
 
-/* [S] defaultPortions per mode; the plate builder starts here */
-var MODEPLATE={strength:{protein:42,greens:23,carbs:25,fats:10},trek:{protein:32,greens:23,carbs:35,fats:10},focus:{protein:36,greens:40,carbs:12,fats:12},rest:{protein:34,greens:42,carbs:14,fats:10}};
-/* what each mode asks of the plate, rewritten from [S] clinicalFocus in plain words */
+/* [S] defaultPortions per day type; the plate builder starts here. An active day keeps the old trek share, a desk day the old desk
+   share, a rest day the old wind-down share */
+var MODEPLATE={active:{protein:32,greens:23,carbs:35,fats:10},desk:{protein:36,greens:40,carbs:12,fats:12},rest:{protein:34,greens:42,carbs:14,fats:10}};
+/* what each day type asks of the plate, rewritten from [S] clinicalFocus in plain words */
 var MODEFOCUS={
-  strength:"after strength training: protein leads the plate, with enough carbohydrate to refuel",
-  trek:"a long trek or endurance day: steady carbohydrate for energy, enough protein, easy to digest on the move",
-  focus:"a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate",
-  rest:"a wind-down day or evening: light and easy to digest, vegetables and protein, little heavy or fried food"
+  active:"an active day, with a long walk or housework: steady carbohydrate for energy and enough protein",
+  desk:"a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate",
+  rest:"a rest day: light and easy to digest, vegetables and protein, little heavy or fried food"
 };
-/* [P] builder presets */
-var PRESETS={balanced:{protein:35,greens:35,carbs:20,fats:10},post:{protein:40,greens:25,carbs:25,fats:10},steady:{protein:35,greens:45,carbs:10,fats:10}};
+/* [P] builder presets; the post-training one went with Strength day (owner, 14 Nov, option survey) */
+var PRESETS={balanced:{protein:35,greens:35,carbs:20,fats:10},steady:{protein:35,greens:45,carbs:10,fats:10}};
 
 /* ---------- targets ----------
    kcal: Mifflin-St Jeor BMR x the standard activity factor. Protein: kg x PROTEIN_G_PER_KG (default 0.83, ICMR-NIN 2020 adult RDA; the owner may change it).
@@ -713,7 +716,8 @@ function readCtx(x,kind){
   if(!x||typeof x!=="object")return null;
   var c={meal:okOpt("meal",x.meal)?x.meal:"lunch",time:/^\d{1,2}:\d{2} (am|pm)$/.test(x.time)?x.time:"unknown",text:plainText(x.text,240),photo:false};
   if(kind==="rescue"){if(!c.text&&!x.photo)return null;return c;}
-  c.mode=okOpt("mode",x.mode)?x.mode:"focus";c.mood=okOpt("mood",x.mood)?x.mood:"best";c.cuisine=okOpt("cuisine",x.cuisine)?x.cuisine:"indian";
+  var md=optNow("mode",x.mode);c.mode=okOpt("mode",md)?md:"desk";   /* older values are read as today's options (owner, 14 Nov) */
+  c.mood=okOpt("mood",x.mood)?x.mood:"best";c.cuisine=okOpt("cuisine",x.cuisine)?x.cuisine:"indian";
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   var r=x.ratio;if(r&&typeof r==="object"){var q={protein:num(r.protein,5,70),greens:num(r.greens,5,70),carbs:num(r.carbs,5,70),fats:num(r.fats,5,40)};
