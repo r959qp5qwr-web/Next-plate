@@ -579,6 +579,13 @@ ended, so a reload or a closed tab during set-up lost it. The app now stores it 
 setup-from-link opens the page with a code, checks the code is stored and not left in the address bar, reloads, and checks again. It fails
 on a build without the fix. Record: the v5 page (rollback only, not live) keeps the old wording; build6 refreshes only its shared core.
 
+## Part A, screen-by-screen review of every screen (owner request, 14 Nov)
+The owner asked for every screen, from the first load, to be gathered in one book and judged one at a time. test/ux/atlas builds the book;
+test/ux/screen-review/B1-B6.md hold the six reviews of the first 55 screens. A source inventory found 51 more screens (dials, errors per
+surface, offline, referrals, logged-card variants); they are review states now. Owner decisions from it: health is tick-all-that-apply;
+a grain side shows count and grams; Rescue moves start off. Blockers fixed: combined conditions not referred; the low-sugar warning
+missing without height and weight; the sugar one-tap change not changing the grain grams; My food closed without Done keeping old plates.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|
