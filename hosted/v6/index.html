@@ -3064,7 +3064,8 @@ function heroCard(m,v,r){
   function chip(t,cls,icon){var c=el("span","hchip"+(cls?" "+cls:""));if(icon)c.appendChild(ic(icon));c.appendChild(el("span",null,t));return c;}
   top.appendChild(chip(lab("diet",P.diet),"fit","check"));
   P.leave.forEach(function(k){top.appendChild(chip("No "+lab("leave",k).toLowerCase(),"fit","check"));});
-  if(fit!=null)top.appendChild(chip("Fit\u00A0"+fit+"\u00A0/\u00A0100","fit","target"));
+  /* "Close to your target" in place of "Fit", on the plate, the menu orders and Rescue (owner, 14 Nov, option survey) */
+  if(fit!=null)top.appendChild(chip("Close to your target: "+fit+"\u00A0/\u00A0100","fit","target"));
   top.appendChild(chip(v.minutes>0?v.minutes+"\u00A0min":(C.prep==="out"?"Order it":"Ready"),"time","clock"));
   var main=el("div","hero-main"),txt=el("div");
   var pb=el("div","platebox");pb.appendChild(thali(v.items,0,"Your "+mealName(C.meal).toLowerCase()+" plate: "+v.items.map(function(i){return i.food;}).join(", "),C.meal));main.appendChild(pb);
@@ -3308,7 +3309,7 @@ function orderView(v,r){
   var top=el("div","hero-top");
   function chip(t,icon){var c=el("span","hchip fit");c.appendChild(ic(icon));c.appendChild(el("span",null,t));return c;}
   top.appendChild(chip(lab("diet",P.diet),"check"));P.leave.forEach(function(k){top.appendChild(chip("No "+lab("leave",k).toLowerCase(),"check"));});
-  if(o.fit!=null)top.appendChild(chip("Fit\u00A0"+o.fit+(fit!==o.fit?"\u00A0→\u00A0"+fit:"")+"\u00A0/\u00A0100","target"));
+  if(o.fit!=null)top.appendChild(chip("Close to your target: "+o.fit+(fit!==o.fit?"\u00A0→\u00A0"+fit:"")+"\u00A0/\u00A0100","target"));
   add(card,top,el("h3","dish",o.name));
   if(o.portion)card.appendChild(el("p","por",o.portion));
   if(o["with"]){var w=el("p","owith");w.appendChild(el("span","cap","with"));w.appendChild(document.createTextNode(" "+o["with"]));card.appendChild(w);}
@@ -3348,7 +3349,7 @@ function orderView(v,r){
     v.appendChild(mv);}
   if(r.orders.length>1){var ah=el("div","sec-h");ah.appendChild(el("h3",null,"Also on this menu"));v.appendChild(ah);
     var wrap=el("div","alts");r.orders.forEach(function(x,i){if(i===UI.msel)return;var b=el("button","alt menu");b.type="button";b.id="order-alt-"+i;
-      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+" · ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal · ≈\u00A0"+x.n.protein+"\u00A0g protein"+(x.fit!=null?" · Fit\u00A0"+x.fit+"\u00A0/\u00A0100":"")));
+      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+" · ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal · ≈\u00A0"+x.n.protein+"\u00A0g protein"+(x.fit!=null?" · Close to your target: "+x.fit+"\u00A0/\u00A0100":"")));
       add(b,tx,ic("chev"));b.addEventListener("click",function(){logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(r.leave.length){var lh=el("div","sec-h");lh.appendChild(el("h3",null,"Leave for another day"));v.appendChild(lh);
@@ -3419,7 +3420,7 @@ function renderRescue0(){
   row("Energy",d.kcal,a.kcal,"kcal",mx,true);row("Protein",d.protein,a.protein,"g",Math.max(d.protein,a.protein,1));row("Carbs",d.carbs,a.carbs,"g",Math.max(d.carbs,a.carbs,1),true);row("Fats",d.fats,a.fats,"g",Math.max(d.fats,a.fats,1),true);
   inst.appendChild(cmp);
   var sumr=el("p","tsub");sumr.appendChild(document.createTextNode("Rise: "));sumr.appendChild(el("b",bandCls(r0.band),r0.band));if(r1.band!==r0.band){sumr.appendChild(document.createTextNode(" → "));sumr.appendChild(el("b",bandCls(r1.band),r1.band));}
-  if(f0!=null){sumr.appendChild(document.createTextNode(" · Fit\u00A0"+f0+(f1!==f0?"\u00A0→\u00A0"+f1:"")+"\u00A0/\u00A0100"));}
+  if(f0!=null){sumr.appendChild(document.createTextNode(" · Close to your target: "+f0+(f1!==f0?"\u00A0→\u00A0"+f1:"")+"\u00A0/\u00A0100"));}
   inst.appendChild(sumr);v.appendChild(inst);
   var mh=el("div","sec-h");mh.appendChild(el("h3",null,"Moves you can make"));v.appendChild(mh);
   var mv=el("div","moves");r.hacks.forEach(function(h,k){var b=el("button","move");b.type="button";b.id="move-"+k;setPressed(b,!!UI.rmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
