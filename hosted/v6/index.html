@@ -3387,7 +3387,7 @@ function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.m
   if(ent){if(UI.mres||UI.rres){var hd=el("h3","again-h","Another menu or dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
 function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
-  panelHead(v,"03 · Rescue","Eating out anyway");
+  panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
   if(blocked()){v.appendChild(blockedCard());return;}
   var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in"),wait=UI.mbusy||UI.rbusy;
   /* what Rescue gives, first and at body size (screen review B4, B5) */
