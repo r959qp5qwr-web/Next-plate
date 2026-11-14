@@ -1045,7 +1045,7 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .card.logged .dish{margin-bottom:0}
 #app .toast{pointer-events:none;font-style:normal}
 #app .tip .linkbtn{text-decoration:underline;text-underline-offset:3px}
-#app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled{opacity:.5;cursor:default}
+#app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled,#app .linkbtn:disabled{opacity:.5;cursor:default}
 #app .asklock{margin:0 0 10px}
 #app .sheet-h{position:sticky;top:-10px;z-index:2;background:var(--bg);padding:8px 0;margin-top:-8px}               /* Done stays in reach on a long sheet */
 #app .sheet-h h2{font-weight:600;text-wrap:balance}
@@ -2863,12 +2863,15 @@ var ERRS={not_set_up:"Meal planning isn't switched on yet.",bad_request:"Next Pl
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
 var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_image","bad_request"];
 function RETRY(code){return NORETRY.indexOf(code)<0;}
+/* a limit, the link or meal planning switched off stops every request until it changes: Plate, Rescue, the menu and the log sheet all turn
+   their send controls off and keep what was typed (second screen review, R2-B6 083, R2-B7 104 and 106, R2-B4 057, R2-B5 068) */
+function lockOn(code){if(/^limit_/.test(code)||code==="bad_key"||code==="not_set_up")UI.lock=code;}
 /* the daily limit resets at midnight UTC on the server; say when in the phone's own clock */
 function resetAt(){var n=new Date(),r=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+1)),h=r.getHours(),m=r.getMinutes();return (h%12||12)+(m?":"+(m<10?"0":"")+m:"")+(h<12?"\u00A0am":"\u00A0pm");}
 function errText(code,where){
   if(code==="limit_day"||code==="limit_ip"){var ph=code==="limit_ip"?" on this phone":"";
     if(where==="plate")return "You have used today's new plates"+ph+". They open again at "+resetAt()+".";
-    return "You have used today's requests for Next Plate"+ph+". They open again at "+resetAt()+"."+(where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab still stand.");}
+    return "You have used today's requests for Next Plate"+ph+". They open again at "+resetAt()+"."+(where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.");}
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
   body.key=KEYCODE;
@@ -2890,7 +2893,7 @@ function makePlates(text,again){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="Nothing that came back fit your food rules. Try again, or change a choice above.";if(text)UI.askDraft=text;}
-    else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;if(/^limit_/.test(j.code)||j.code==="bad_key")UI.lock=j.code;}
+    else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);}
     UI.errAsk=UI.err?text||"":"";
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});if(UI.err)$("said").textContent=UI.err;
   });
@@ -3168,7 +3171,9 @@ function heroCard(m,v,r){
   var hv=btn("btn primary","I'll have this","check","have");
   hv.addEventListener("click",function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});unAsk();render();$("scroll").scrollTop=0;toast("Saved for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
   add(acts,hv,nx,tr);card.appendChild(acts);
-  var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){UI.ltext="";UI.lres=null;UI.lerr="";openSheet("log");});
+  var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){
+    /* opened again for the same meal, the words, a wait or an estimate not yet counted stay (second screen review, R2-B4 055-2, 057-1) */
+    if(UI.lmeal!==C.meal){UI.ltext="";UI.lres=null;UI.lbusy=false;}UI.lmeal=C.meal;UI.lerr=UI.lock?errText(UI.lock,"log"):"";UI.lretry=false;openSheet("log");});
   var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
@@ -3176,7 +3181,7 @@ function heroCard(m,v,r){
 var PROMPTS=["Only dal, rice and curd at home","A light dinner after a heavy lunch","Guests at home tonight","Tired, something quick"];
 function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
-  if(UI.lock){var lk=el("p","fine asklock",/^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":"Asks open once your coach's link is opened on this phone.");lk.id="ask-lock";host.appendChild(lk);return;}
+  if(UI.lock){var lk=el("p","fine asklock",/^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":UI.lock==="not_set_up"?"Asks open once your coach switches meal planning on.":"Asks open once your coach's link is opened on this phone.");lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
   var pr=el("div","prompts");PROMPTS.filter(function(t){return !crosses(t,P);}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
@@ -3302,24 +3307,24 @@ function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(
   for(var j=0;j<kids.length;j++){var k=kids[j];if(/(^| )(panel-h|lede|entries|sits|sitbox|menu-box|again-h)( |$)/.test(k.className))continue;t=k;break;}
   if(!t)return;var r=t.getBoundingClientRect(),sr=s.getBoundingClientRect();if(r.top<sr.top+8||r.top>sr.top+sr.height*0.5)s.scrollTo({top:Math.max(0,s.scrollTop+r.top-sr.top-12),behavior:RM?"auto":"smooth"});},60);}
 function rescue(text,image){
-  if(UI.rbusy||UI.mbusy)return;UI.rbusy=true;UI.rerr="";UI.rkeep="";UI.rretry=false;UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();revealOut();
+  if(UI.rbusy||UI.mbusy||UI.lock)return;UI.rbusy=true;UI.rerr="";UI.rkeep="";UI.rretry=false;UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image,appetite:appetite()},file:fileOut()};if(image)body.image=image;
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"){UI.rres=j;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read};}
     else if(s===200){UI.rerr="That didn't come back as a dish that fits your food rules. Try naming it differently.";UI.rkeep=text||"";}
-    else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);}
+    else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
     render();if(UI.rerr)$("said").textContent=UI.rerr;});
 }
 /* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
 function readMenu(text,image){
-  if(UI.mbusy||UI.rbusy)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
+  if(UI.mbusy||UI.rbusy||UI.lock)return;refresh();var meal=C.meal,tg=PL?PL.target:null;
   UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.mfix="";UI.mundo=false;UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
   var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
-    else{UI.mretry=s!==200&&RETRY(j.code);UI.mfix=j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.merr=s!==200?errText(j.code,"menu"):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
+    else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.merr=s!==200?errText(j.code,"menu"):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();if(UI.merr)$("said").textContent=UI.merr;});
 }
 /* Rounds 29-30: the grains the person said are not available, kept for this menu and this meal only (a new menu or meal starts afresh);
@@ -3420,26 +3425,26 @@ function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
   if(blocked()){v.appendChild(blockedCard());return;}
-  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in"),wait=UI.mbusy||UI.rbusy;
+  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in"),busy=UI.mbusy||UI.rbusy,wait=busy||!!UI.lock;   /* at a limit or without the link nothing is sent */
   /* what Rescue gives, first and at body size (screen review B4, B5) */
-  if(!(UI.mres||UI.rres||UI.merr||UI.rerr||wait||UI.mopen)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Photograph the menu for the order that fits your "+mn+" best, or name the dish you chose to see what you can do about it.");ld.id="rescue-lede";v.appendChild(ld);}
+  if(!(UI.mres||UI.rres||UI.merr||UI.rerr||busy||UI.mopen)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Photograph the menu for the order that fits your "+mn+" best, or name the dish you chose to see what you can do about it.");ld.id="rescue-lede";v.appendChild(ld);}
   me.appendChild(el("p","cap","At a restaurant or a function"));
-  var mb=btn(UI.mopen?"btn":"btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";mb.disabled=wait;   /* nothing looks ready that a wait would drop */
+  var mb=btn(UI.mopen||UI.lock?"btn":"btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";mb.disabled=wait;   /* nothing looks ready that a wait would drop */
   mb.addEventListener("click",function(){mf.click();});
   mf.addEventListener("change",function(){var file=mf.files&&mf.files[0];if(!file)return;shrink(file,function(b){if(!b){UI.merr=errText("bad_image");UI.mretry=false;UI.mfix="both";render();$("said").textContent=UI.merr;return;}readMenu("",b);},1600);});
-  var mt=btn("linkbtn",UI.mopen?"Hide the typed menu":"or type the menu",null,"mtype");mt.disabled=wait;mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
+  var mt=btn("linkbtn",UI.mopen?"Hide the typed menu":"or type the menu",null,"mtype");mt.disabled=busy||!!UI.lock&&!UI.mopen;mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
   mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
   var pn=el("p","fine","The photo goes to Google Gemini to read the dishes.");pn.id="photo-note";
   add(me,mb);if(!UI.mopen)me.appendChild(pn);add(me,mt,mf);
   var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="for example, chole bhature";
   var go=el("button","send");go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)rescue(t,null);});
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,null);});
   var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;add(ent,me);v.appendChild(ent);
   if(UI.mopen&&!UI.mbusy){
     var bx=el("form","menu-box"),ta=el("textarea");ta.id="mtext";ta.maxLength=2000;ta.rows=7;ta.placeholder="Paste or type the menu. One dish per line.";var tn=el("p","fine","The menu goes to Google Gemini to read the dishes.");ta.value=UI.mtext||"";ta.setAttribute("aria-label","The menu, typed or pasted");
     ta.addEventListener("input",function(){UI.mtext=ta.value;});
-    var rdm=btn(UI.merr&&UI.mretry?"btn":"btn primary","Read this menu for "+mn,"spark","mgo");rdm.type="submit";   /* with a Try again on screen, that is the one main button */
-    bx.addEventListener("submit",function(e){e.preventDefault();var t=ta.value.trim();if(t.length>2)readMenu(t,null);});
+    var rdm=btn(UI.merr&&UI.mretry||UI.lock?"btn":"btn primary","Read this menu for "+mn,"spark","mgo");rdm.type="submit";rdm.disabled=!!UI.lock;   /* with a Try again on screen, that is the one main button */
+    bx.addEventListener("submit",function(e){e.preventDefault();var t=ta.value.trim();if(t.length>2&&!UI.lock)readMenu(t,null);});
     add(bx,ta,tn,rdm);me.appendChild(bx);
   }else{
     var sb=el("div","sitbox"),ch=el("div","sits"),chc=el("p","cap","Or tap a common dish");chc.id="dish-cap";add(sb,chc,ch);DISHES.filter(function(d){return !crosses(d,P);}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.disabled=wait;b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d,null);});ch.appendChild(b);});
@@ -3448,6 +3453,7 @@ function renderRescue0(){
   ent.appendChild(f);
   if(UI.mbusy){v.appendChild(waitCard("Reading the menu for your "+mn,"The menu is being read",true,UI.mlast&&UI.mlast.t?"Your menu stays here if it doesn't work.":""));return;}
   if(UI.rbusy){v.appendChild(waitCard("Working out "+UI.rtext.toLowerCase(),"The dish is being worked out",true));return;}
+  if(UI.lock&&!UI.merr&&!UI.rerr){var ln=el("div","note");ln.id="rescue-lock";ln.setAttribute("role","note");ln.appendChild(ic("info"));ln.appendChild(el("p",null,errText(UI.lock,"rescue")));v.appendChild(ln);}   /* why the tools are off */
   [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
     if(k===0&&UI.mundo){var ub=btn("linkbtn",UI.mno&&UI.mno.length>1?"Change answers":"Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);
@@ -3499,10 +3505,10 @@ function closeSheet(){var fd=UI.sheet==="food"&&answers()!==ANS0;UI.sheet="";UI.
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text,image){
-  if(UI.lbusy)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;renderSheet();
+  if(UI.lbusy||UI.lock)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
   api("/api/log",body,function(s,j){UI.lbusy=false;
-    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Say it the way you'd tell a friend: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");}
+    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Say it the way you'd tell a friend: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;
     if(UI.sheet==="log")renderSheet();});
 }
@@ -3519,8 +3525,9 @@ function renderSheet(){
     if(!UI.lres){
       var f=el("form","rin login");f.autocomplete="off";var i=el("textarea");i.id="login";i.rows=2;i.maxLength=200;i.placeholder="2 aloo paratha with curd";i.value=UI.ltext||"";i.setAttribute("aria-label","What you ate");
       i.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event("submit",{cancelable:true}));}});
-      var go=btn(UI.lerr&&UI.lretry?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy;   /* a worded button; the box shows the whole meal (screen review B3) */
-      f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)logOther(t,null);});add(f,i,go);c.appendChild(f);
+      var go=btn(UI.lerr&&UI.lretry||UI.lock?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy||!!UI.lock;   /* a worded button; the box shows the whole meal (screen review B3) */
+      f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();UI.ltext=i.value;if(t&&!UI.lock)logOther(t,null);});
+      i.addEventListener("input",function(){UI.ltext=i.value;});   /* the words stay when the sheet is closed and opened again */add(f,i,go);c.appendChild(f);
       if(UI.lbusy)c.appendChild(el("p","ans-read wait","Working out what that adds up to"));
       if(UI.lerr){var n=el("div","note err"),nt=el("div");n.id="log-note";n.tabIndex=-1;n.appendChild(ic("info"));nt.appendChild(el("p",null,UI.lerr));
         if(UI.ltext&&UI.lretry){var lb=btn("btn primary","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
@@ -3533,7 +3540,7 @@ function renderSheet(){
     c.appendChild(el("p","tsub",r.protein+"\u00A0g protein · "+r.carbs+"\u00A0g carbs · "+r.fats+"\u00A0g fats · "+r.fiber+"\u00A0g fibre (an estimate)"));
     if(r.assumed)c.appendChild(el("p","fine","Assumed: "+r.assumed));
     var row=el("div","pick-acts"),fix=btn("btn","Change it",null,"log-fix");fix.addEventListener("click",function(){UI.lres=null;renderSheet();});
-    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;closeSheet();render();$("scroll").scrollTop=0;toast("Counted. Your next meals adjust to it.");});
+    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
   sheetHead(c,"My food","Done",function(){save();closeSheet();render();});

@@ -267,7 +267,7 @@
 #app .card.logged .dish{margin-bottom:0}
 #app .toast{pointer-events:none;font-style:normal}
 #app .tip .linkbtn{text-decoration:underline;text-underline-offset:3px}
-#app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled{opacity:.5;cursor:default}
+#app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled,#app .linkbtn:disabled{opacity:.5;cursor:default}
 #app .asklock{margin:0 0 10px}
 #app .sheet-h{position:sticky;top:-10px;z-index:2;background:var(--bg);padding:8px 0;margin-top:-8px}               /* Done stays in reach on a long sheet */
 #app .sheet-h h2{font-weight:600;text-wrap:balance}
