@@ -1,0 +1,607 @@
+[
+ {
+  "id": "lose-diabetes-dinner",
+  "expect": "ok",
+  "got": "ok",
+  "ok": true,
+  "ms": 11979,
+  "issues": [],
+  "dropped": {},
+  "reply": {
+   "status": "ok",
+   "read": "A balanced, home-cooked North Indian dinner with measured whole grains and ample fibre will keep your evening steady after a day spent mostly sitting.",
+   "meals": [
+    {
+     "title": "Low Fat Paneer Bhurji with Phulka",
+     "subtitle": "Spiced crumbled low-fat paneer cooked with tomatoes, onions, spinach, and a single whole wheat phulka",
+     "cuisine": "North Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Low-fat paneer bhurji",
+       "grams": 140,
+       "group": "protein"
+      },
+      {
+       "food": "Whole wheat phulka",
+       "grams": 35,
+       "group": "carbs"
+      },
+      {
+       "food": "Steamed spinach and onions",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Cucumber and radish salad",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Mustard oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 376,
+     "protein": 24,
+     "carbs": 33,
+     "fats": 16,
+     "fiber": 7,
+     "why": [
+      {
+       "pair": "Spinach + lemon juice",
+       "effect": "The vitamin C in lemon juice improves iron uptake from the spinach greens."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "grain": {
+      "food": "Whole wheat phulka",
+      "made_of": "whole wheat",
+      "grams": 35
+     },
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "You get ample protein from paneer along with high-fibre vegetables and one measured whole-wheat roti to keep your evening steady.",
+     "taste": [
+      "savoury",
+      "tangy",
+      "soft"
+     ],
+     "tuned": false
+    },
+    {
+     "title": "Soya Chunks Matar Curry with Jowar Roti",
+     "subtitle": "Tender soya chunks and green peas in light onion-tomato gravy with one jowar roti",
+     "cuisine": "North Indian Home",
+     "minutes": 25,
+     "items": [
+      {
+       "food": "Soya chunks and matar curry",
+       "grams": 180,
+       "group": "protein"
+      },
+      {
+       "food": "Jowar roti",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Kachumber salad",
+       "grams": 120,
+       "group": "greens"
+      },
+      {
+       "food": "Ghee",
+       "grams": 4,
+       "group": "fats"
+      }
+     ],
+     "kcal": 372,
+     "protein": 25,
+     "carbs": 44,
+     "fats": 10,
+     "fiber": 11,
+     "why": [
+      {
+       "pair": "Soya curry + fresh coriander",
+       "effect": "Fresh herbs add plant compounds that aid digestion of protein-dense soya."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "grain": {
+      "food": "Jowar roti",
+      "made_of": "jowar",
+      "grams": 40
+     },
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "High-protein soya chunks paired with millet roti and crisp kachumber give you generous satiety while keeping energy releases steady.",
+     "taste": [
+      "spicy",
+      "earthy",
+      "hearty"
+     ],
+     "tuned": false
+    },
+    {
+     "title": "Sprouted Moong Usal with Bajra Roti",
+     "subtitle": "Warm tempered green gram sprouts cooked with tomatoes and mild spices, served with bajra roti",
+     "cuisine": "Western Indian Home",
+     "minutes": 20,
+     "items": [
+      {
+       "food": "Sprouted moong usal",
+       "grams": 200,
+       "group": "protein"
+      },
+      {
+       "food": "Bajra roti",
+       "grams": 40,
+       "group": "carbs"
+      },
+      {
+       "food": "Grated cabbage and carrot salad",
+       "grams": 100,
+       "group": "greens"
+      },
+      {
+       "food": "Groundnut oil",
+       "grams": 5,
+       "group": "fats"
+      }
+     ],
+     "kcal": 384,
+     "protein": 21,
+     "carbs": 53,
+     "fats": 10,
+     "fiber": 12,
+     "why": [
+      {
+       "pair": "Moong usal + squeeze of lemon",
+       "effect": "Lemon juice helps your body take up more plant iron from the sprouted moong."
+      }
+     ],
+     "swaps": {
+      "protein": [],
+      "base": []
+     },
+     "alchemy": {},
+     "grain": {
+      "food": "Bajra roti",
+      "made_of": "bajra",
+      "grams": 40
+     },
+     "planned": [
+      "goal_lose",
+      "diabetes_grain"
+     ],
+     "forYou": "Sprouted pulses and a modest millet roti provide generous fibre to support gradual absorption after a sedentary afternoon.",
+     "taste": [
+      "crunchy",
+      "warm",
+      "nutty"
+     ],
+     "tuned": false
+    }
+   ],
+   "dropped": {},
+   "hooks": {
+    "goal_lose": "gentle weight loss",
+    "diabetes_grain": "the grain stays (diabetes)"
+   },
+   "raw": {
+    "status": "ok",
+    "read": "A balanced, home-cooked North Indian dinner with measured whole grains and ample fibre will keep your evening steady after a day spent mostly sitting.",
+    "meals": [
+     {
+      "title": "Low Fat Paneer Bhurji with Phulka",
+      "subtitle": "Spiced crumbled low-fat paneer cooked with tomatoes, onions, spinach, and a single whole wheat phulka",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Low-fat paneer bhurji",
+        "grams": 140,
+        "group": "protein"
+       },
+       {
+        "food": "Whole wheat phulka",
+        "grams": 35,
+        "group": "carbs"
+       },
+       {
+        "food": "Steamed spinach and onions",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Cucumber and radish salad",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Mustard oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "grain": {
+       "food": "Whole wheat phulka",
+       "made_of": "whole wheat",
+       "grams": 35
+      },
+      "kcal": 376,
+      "protein": 24,
+      "carbs": 33,
+      "fats": 16,
+      "fiber": 7,
+      "why": [
+       {
+        "pair": "Spinach + lemon juice",
+        "effect": "The vitamin C in lemon juice improves iron uptake from the spinach greens."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "You get ample protein from paneer along with high-fibre vegetables and one measured whole-wheat roti to keep your evening steady.",
+      "taste": [
+       "savoury",
+       "tangy",
+       "soft"
+      ]
+     },
+     {
+      "title": "Soya Chunks Matar Curry with Jowar Roti",
+      "subtitle": "Tender soya chunks and green peas in light onion-tomato gravy with one jowar roti",
+      "cuisine": "North Indian Home",
+      "prepMinutes": 25,
+      "items": [
+       {
+        "food": "Soya chunks and matar curry",
+        "grams": 180,
+        "group": "protein"
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Kachumber salad",
+        "grams": 120,
+        "group": "greens"
+       },
+       {
+        "food": "Ghee",
+        "grams": 4,
+        "group": "fats"
+       }
+      ],
+      "grain": {
+       "food": "Jowar roti",
+       "made_of": "jowar",
+       "grams": 40
+      },
+      "kcal": 372,
+      "protein": 25,
+      "carbs": 44,
+      "fats": 10,
+      "fiber": 11,
+      "why": [
+       {
+        "pair": "Soya curry + fresh coriander",
+        "effect": "Fresh herbs add plant compounds that aid digestion of protein-dense soya."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "High-protein soya chunks paired with millet roti and crisp kachumber give you generous satiety while keeping energy releases steady.",
+      "taste": [
+       "spicy",
+       "earthy",
+       "hearty"
+      ]
+     },
+     {
+      "title": "Sprouted Moong Usal with Bajra Roti",
+      "subtitle": "Warm tempered green gram sprouts cooked with tomatoes and mild spices, served with bajra roti",
+      "cuisine": "Western Indian Home",
+      "prepMinutes": 20,
+      "items": [
+       {
+        "food": "Sprouted moong usal",
+        "grams": 200,
+        "group": "protein"
+       },
+       {
+        "food": "Bajra roti",
+        "grams": 40,
+        "group": "carbs"
+       },
+       {
+        "food": "Grated cabbage and carrot salad",
+        "grams": 100,
+        "group": "greens"
+       },
+       {
+        "food": "Groundnut oil",
+        "grams": 5,
+        "group": "fats"
+       }
+      ],
+      "grain": {
+       "food": "Bajra roti",
+       "made_of": "bajra",
+       "grams": 40
+      },
+      "kcal": 384,
+      "protein": 21,
+      "carbs": 53,
+      "fats": 10,
+      "fiber": 12,
+      "why": [
+       {
+        "pair": "Moong usal + squeeze of lemon",
+        "effect": "Lemon juice helps your body take up more plant iron from the sprouted moong."
+       }
+      ],
+      "planned_around": [
+       "goal_lose",
+       "diabetes_grain"
+      ],
+      "for_you": "Sprouted pulses and a modest millet roti provide generous fibre to support gradual absorption after a sedentary afternoon.",
+      "taste": [
+       "crunchy",
+       "warm",
+       "nutty"
+      ]
+     }
+    ]
+   },
+   "prompt": "You are the dietitian inside Next Plate, a pocket-dietitian app. You plan the person's next meal in everyday food, with honest numbers, around how their day is actually going.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n- Today is a desk day: keep the after-meal rise gentle, vegetables and protein first, a modest portion of slow carbohydrate.\n\nTHIS MEAL\n- Meal: Dinner (their local time 1:10 pm)\n- Target for this meal: about 380 kcal and at least 23 g protein. The first plate should land within 10 percent of the kcal target.\n- Appetite: 5 of 10.\n- Mood: Best fit. Cuisine: Indian regional (North Indian home style first, other Indian regions welcome).\n- Cooking at home, minimal oil.\n\nTODAY SO FAR\n- Day target: about 1360 kcal and 75 g protein. Left to plan from this meal on: about 381 kcal, 23 g protein. (Earlier meals that were not logged are assumed eaten as usual.)\n- Nothing logged today.\n\nWHAT TO PLAN AROUND (each line has an id; these are the only reasons you may cite)\n- [goal_lose] Goal: lose weight gently. Vegetables fill about half the plate, the grain is measured, nothing fried, no sugary drinks.\n- [diabetes_grain] Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.\n\nVARIETY\n- Plate 1 is built on paneer (today's turn in the rotation). Plates 2 and 3 each use a different main ingredient.\n- Vary the cooking style across the three plates (not three bhurjis or three curries).\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- No exclamation marks, no emojis, no hype words.\n- Plain, calm English in every field. Never use any of these words: real, quiet, quietly, simply, seamlessly, effortlessly, exactly, just works, journey, unlock, empower, smart, magic, game-changer, revolutionary, transform, curated, tailored, personalised, holistic, wellness journey.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.\n\nWHAT TO RETURN\n- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and 3 meals (no more, no fewer), best first, clearly different from each other (different main ingredient in each).\n- Each meal: title (at most 8 words), subtitle (what is in it, at most 18 words), cuisine (2 to 4 words), prepMinutes (0 if ordered or ready), 3 to 6 items each with food, grams and group (protein, greens, carbs, fats or other), kcal, protein, carbs, fats, fiber.\n- why: 0 to 3 food pairings for this plate that help the body take up a nutrient, each a pair (e.g. \"Palak + a squeeze of lemon\") and a plain effect (e.g. \"The lemon helps the body take up the iron in the palak.\"; at most 16 words, no numbers). Food and drink only. A pairing may name something to keep away from the meal (e.g. tea with an iron-rich meal). Give none rather than a weak one.\n- taste: 2 or 3 single words for how this dish tastes or feels to eat (e.g. smoky, tangy, crunchy). Taste words only, never health words.\n- grain: the meal's whole-grain or millet item: food copied letter for letter from items, made_of what that grain is made of (for example \"whole wheat\", \"brown rice\", \"foxtail millet\", \"jowar\"; never a vegetable, pulse, nut or seed), and its grams. A meal with no grain gives food \"\", made_of \"\" and grams 0.\n- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).\n- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.",
+   "ms": 11714,
+   "tune": {
+    "status": "ok",
+    "swaps": {
+     "protein": [
+      {
+       "food": "Low-fat paneer bhurji",
+       "made_of": "",
+       "grams": 140,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Spiced tofu scramble",
+       "made_of": "",
+       "grams": 150,
+       "deltaKcal": -15,
+       "deltaProtein": -2,
+       "deltaCarbs": 0,
+       "deltaFats": -1,
+       "deltaFiber": 1
+      },
+      {
+       "food": "Soya chunk bhurji",
+       "made_of": "",
+       "grams": 120,
+       "deltaKcal": 10,
+       "deltaProtein": 3,
+       "deltaCarbs": 2,
+       "deltaFats": -1,
+       "deltaFiber": 3
+      }
+     ],
+     "base": [
+      {
+       "food": "Whole wheat phulka",
+       "made_of": "whole wheat flour",
+       "grams": 35,
+       "deltaKcal": 0,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": 0,
+       "deltaFiber": 0
+      },
+      {
+       "food": "Jowar roti",
+       "made_of": "sorghum millet flour",
+       "grams": 40,
+       "deltaKcal": 12,
+       "deltaProtein": 0,
+       "deltaCarbs": 3,
+       "deltaFats": 0,
+       "deltaFiber": 1
+      },
+      {
+       "food": "Bajra roti",
+       "made_of": "pearl millet flour",
+       "grams": 40,
+       "deltaKcal": 18,
+       "deltaProtein": 1,
+       "deltaCarbs": 3,
+       "deltaFats": 0,
+       "deltaFiber": 1
+      }
+     ]
+    },
+    "alchemy": {
+     "protein": {
+      "suffix": "+ Roasted Chana and Curd",
+      "note": "Add 30 g roasted chana and 100 g plain low-fat curd alongside the plate.",
+      "deltaKcal": 172,
+      "deltaProtein": 13,
+      "deltaCarbs": 20,
+      "deltaFats": 4,
+      "deltaFiber": 4,
+      "minutes": 20
+     },
+     "glucose": {
+      "suffix": "+ Double Salad & Flaxseed",
+      "note": "Double the cucumber and radish salad and add 5 g ground flaxseed over the greens.",
+      "deltaKcal": 42,
+      "deltaProtein": 2,
+      "deltaCarbs": 4,
+      "deltaFats": 2,
+      "deltaFiber": 3,
+      "minutes": 22
+     },
+     "express": {
+      "suffix": "(Raw Paneer Toss)",
+      "note": "Toss raw paneer cubes directly with chopped vegetables, lemon, and spices without cooking.",
+      "deltaKcal": -25,
+      "deltaProtein": 0,
+      "deltaCarbs": 0,
+      "deltaFats": -3,
+      "deltaFiber": 0,
+      "minutes": 10
+     },
+     "gut": {
+      "suffix": "+ Cooling Curd Raita",
+      "note": "Reduce cooking spices and mustard oil; stir cucumber into 80 g low-fat curd with roasted cumin.",
+      "deltaKcal": 15,
+      "deltaProtein": 3,
+      "deltaCarbs": 4,
+      "deltaFats": -2,
+      "deltaFiber": 0,
+      "minutes": 20
+     }
+    },
+    "raw": {
+     "swaps": {
+      "protein": [
+       {
+        "food": "Low-fat paneer bhurji",
+        "grams": 140,
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Spiced tofu scramble",
+        "grams": 150,
+        "deltaKcal": -15,
+        "deltaProtein": -2,
+        "deltaCarbs": 0,
+        "deltaFats": -1,
+        "deltaFiber": 1
+       },
+       {
+        "food": "Soya chunk bhurji",
+        "grams": 120,
+        "deltaKcal": 10,
+        "deltaProtein": 3,
+        "deltaCarbs": 2,
+        "deltaFats": -1,
+        "deltaFiber": 3
+       }
+      ],
+      "base": [
+       {
+        "food": "Whole wheat phulka",
+        "grams": 35,
+        "made_of": "whole wheat flour",
+        "deltaKcal": 0,
+        "deltaProtein": 0,
+        "deltaCarbs": 0,
+        "deltaFats": 0,
+        "deltaFiber": 0
+       },
+       {
+        "food": "Jowar roti",
+        "grams": 40,
+        "made_of": "sorghum millet flour",
+        "deltaKcal": 12,
+        "deltaProtein": 0,
+        "deltaCarbs": 3,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       },
+       {
+        "food": "Bajra roti",
+        "grams": 40,
+        "made_of": "pearl millet flour",
+        "deltaKcal": 18,
+        "deltaProtein": 1,
+        "deltaCarbs": 3,
+        "deltaFats": 0,
+        "deltaFiber": 1
+       }
+      ]
+     },
+     "alchemy": {
+      "protein": {
+       "titleSuffix": "+ Roasted Chana and Curd",
+       "note": "Add 30 g roasted chana and 100 g plain low-fat curd alongside the plate.",
+       "minutes": 20,
+       "grain_grams_after": 35,
+       "deltaKcal": 172,
+       "deltaProtein": 13,
+       "deltaCarbs": 20,
+       "deltaFats": 4,
+       "deltaFiber": 4
+      },
+      "glucose": {
+       "titleSuffix": "+ Double Salad & Flaxseed",
+       "note": "Double the cucumber and radish salad and add 5 g ground flaxseed over the greens.",
+       "minutes": 22,
+       "grain_grams_after": 35,
+       "deltaKcal": 42,
+       "deltaProtein": 2,
+       "deltaCarbs": 4,
+       "deltaFats": 2,
+       "deltaFiber": 3
+      },
+      "express": {
+       "titleSuffix": "(Raw Paneer Toss)",
+       "note": "Toss raw paneer cubes directly with chopped vegetables, lemon, and spices without cooking.",
+       "minutes": 10,
+       "grain_grams_after": 35,
+       "deltaKcal": -25,
+       "deltaProtein": 0,
+       "deltaCarbs": 0,
+       "deltaFats": -3,
+       "deltaFiber": 0
+      },
+      "gut": {
+       "titleSuffix": "+ Cooling Curd Raita",
+       "note": "Reduce cooking spices and mustard oil; stir cucumber into 80 g low-fat curd with roasted cumin.",
+       "minutes": 20,
+       "grain_grams_after": 35,
+       "deltaKcal": 15,
+       "deltaProtein": 3,
+       "deltaCarbs": 4,
+       "deltaFats": -2,
+       "deltaFiber": 0
+      }
+     }
+    },
+    "prompt": "You are the dietitian inside Next Plate. Here is a plate you planned. Give the ways it can be changed, keeping the person's rules.\n\nTHE PERSON\n- 46 years, female, 68 kg, mostly sitting\n- Eats: Vegetarian. Home food: North Indian.\n- Health flag: Diabetes\n\nTHE PLATE: Low Fat Paneer Bhurji with Phulka (Spiced crumbled low-fat paneer cooked with tomatoes, onions, spinach, and a single whole wheat phulka)\n- 140 g Low-fat paneer bhurji [protein]; 35 g Whole wheat phulka [carbs]; 100 g Steamed spinach and onions [greens]; 100 g Cucumber and radish salad [greens]; 5 g Mustard oil [fats]\n- As written: 376 kcal, 24 g protein, 33 g carbs, 16 g fats, 7 g fibre. Prep 20 minutes.\n\nHARD RULES\n- Diet is absolute: Vegetarian (no egg, meat or fish).\n- Never use: (no extra exclusions).\n- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.\n- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.\n- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.\n- No exclamation marks, no emojis, no hype words.\n- Plain, calm English in every field. Never use any of these words: real, quiet, quietly, simply, seamlessly, effortlessly, exactly, just works, journey, unlock, empower, smart, magic, game-changer, revolutionary, transform, curated, tailored, personalised, holistic, wellness journey.\n- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.\n\nWHAT TO RETURN\n- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.\n- Each base swap also gives made_of: what it is made of, as for grain (never a vegetable, pulse, nut or seed). Each one-tap change also gives grain_grams_after: the grams of the plate's grain item after the change (0 if it takes the grain off). With diabetes every change keeps the grain item, at least half of it.\n- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:\n  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch, but keep the grain portion); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides).",
+    "ms": 7329
+   },
+   "tuneMs": 7375
+  }
+ }
+]

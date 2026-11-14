@@ -29,7 +29,7 @@ const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'focus', mood:
     }
     if (s.kind === 'meals' && got === 'ok' && s.tune && j.meals[0]) {     // the follow-up call: swaps and one-tap changes for the plate on screen
       const m = j.meals[0], t1 = Date.now();
-      let tj = {}; try { const r = await fetch(BASE + '/api/tune', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: CODE, profile: p, slot: c.meal, meal: { title: m.title, subtitle: m.subtitle, cuisine: m.cuisine, prepMinutes: m.minutes, minutes: m.minutes, items: m.items, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats, fiber: m.fiber, why: [] } }) }); tj = await r.json(); } catch (e) { tj = { code: String(e) }; }
+      let tj = {}; try { const r = await fetch(BASE + '/api/tune', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: CODE, profile: p, slot: c.meal, meal: { title: m.title, subtitle: m.subtitle, cuisine: m.cuisine, prepMinutes: m.minutes, minutes: m.minutes, items: m.items, grain: m.grain, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats, fiber: m.fiber, why: [] } }) }); tj = await r.json(); } catch (e) { tj = { code: String(e) }; }
       j.tune = tj; j.tuneMs = Date.now() - t1;
       if (tj.status !== 'ok') issues.push('tune failed: ' + (tj.status || tj.code));
       else { if (Object.keys(tj.alchemy).length < 4) issues.push('one-tap changes ' + Object.keys(tj.alchemy).length + '/4'); if (tj.swaps.protein.length < 2) issues.push('protein swaps ' + tj.swaps.protein.length); }
