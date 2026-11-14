@@ -586,6 +586,21 @@ surface, offline, referrals, logged-card variants); they are review states now. 
 a grain side shows count and grams; Rescue moves start off. Blockers fixed: combined conditions not referred; the low-sugar warning
 missing without height and weight; the sugar one-tap change not changing the grain grams; My food closed without Done keeping old plates.
 
+## Part A, owner decisions on the screen review's open questions (option survey, 14 Nov)
+The 13 questions the screen review left to the owner are decided; each change has a review guard that fails on the page built before it.
+After "Skipped it" on insulin or sugar tablets, the warning ends "If you feel shaky, sweaty or dizzy, have something sweet now, such as a
+glass of juice or 3 teaspoons of sugar in water, and call your doctor." on the card and in the spoken line (plate-skipped-meds). The score
+reads "Close to your target: N / 100" on the plate, the menu orders and Rescue (plate-hero, rescue-menu-order, rescue-result). The example
+asks are "Only dal, rice and curd at home", "A light dinner after a heavy lunch", "Guests at home tonight", "Tired, something quick", still
+filtered by diet and foods left out (plate-hero, plate-leave-two). The masthead has no tagline. On scroll the date line and the food line go
+up with the page; the name, the meal tabs and the ask bar stay (plate-hero). Under 120 kcal left for the snack after a logged meal, the card
+offers the next main meal with "Little is left for a snack today." (plate-logged). A phone that never opened the coach's link sees the
+coach's-link card before set-up (setup-no-code; every other state is seeded with a code). In the Builder, once a share is changed, the plan
+button holds above the tab bar and covers nothing at the end of the page (builder-adjusted). Rescue is titled "Eating out" (rescue-entry).
+Error notes carry a thin clay rule on the left, info notes do not (A5 contrast unchanged; the rule is 3.6:1 or more as a graphic). On a menu,
+Yes to rice then No to roti sets the order aside and the trace line says why (menu-grain-yes-then-no-next). Kept as they are: the referral
+card (plate-blocked-kidney now checks it gains no line) and the icons on goal tiles only.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

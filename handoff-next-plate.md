@@ -100,6 +100,19 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 | A grain side on a menu order shows its count and its grams ("with 1 tandoori roti, ≈ 60 g") | owner, 14 Nov, option survey: "Count plus grams (Recommended)" |
 | Rescue moves all start off; the client ticks the ones they will do, and only those are logged | owner, 14 Nov, option survey: "All moves off (Recommended)" |
 | With diabetes, a menu order whose grain is a side or part of the portion asks "Is <grain> available now?" (Yes / No) before ordering; the menu text is only a first filter (`docs/ux/UX-CRITERIA.md` Part A after round 28) | owner, 13 Nov, option survey after Critic round 28: "Ask with one tap (Recommended)" |
+| Low-sugar warning after "Skipped it" on insulin or sugar tablets adds: "If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor." (card and spoken line) | owner, 14 Nov, option survey: skipped-meal warning |
+| Referral card (kidney, pregnancy) stays as it is: heading, one paragraph, "Change my answers"; no added line | owner, 14 Nov, option survey: referral card |
+| Menu, diabetes, Yes to rice and No to roti on one order: the order is set aside and the next offered; the trace line says why ("Dal Tadka needs roti too, so it is set aside.") | owner, 14 Nov, option survey: grain Yes then No |
+| The score reads "Close to your target: N / 100" (plate, menu orders, other orders, Rescue), never "Fit" | owner, 14 Nov, option survey: fit score wording |
+| Plate example asks: "Only dal, rice and curd at home", "A light dinner after a heavy lunch", "Guests at home tonight", "Tired, something quick"; the diet filter still applies | owner, 14 Nov, option survey: example asks |
+| Masthead tagline "your daily plate, journalled" dropped from the v6 app | owner, 14 Nov, option survey: masthead tagline |
+| On scroll the date line and the food line scroll away; NEXT PLATE, the meal tabs and the ask bar stay; same look | owner, 14 Nov, option survey: fixed header on scroll |
+| Under 120 kcal left for the snack after a logged meal: offer the next main meal still open ("Plan dinner") with "Little is left for a snack today." | owner, 14 Nov, option survey: little left for a snack |
+| A phone with no code (no ?k=, none kept) sees the coach's-link message before set-up, on the plate's no-code card; a phone that opened the link once is unaffected | owner, 14 Nov, option survey: no code before set-up |
+| Builder: once a share is changed, "Plan <meal> with this plate" holds above the tab bar; otherwise it stays in the page | owner, 14 Nov, option survey: Builder plan button |
+| Rescue title "Eating out" (was "Eating out anyway") | owner, 14 Nov, option survey: Rescue title |
+| Error notes carry a thin clay rule on the left edge (class err); tips and info notes unchanged | owner, 14 Nov, option survey: error notes |
+| Goal tiles keep their icons; diet tiles have none | owner, 14 Nov, option survey: set-up tile icons |
 | After the look is revised, re-make the same 30 s film with the revised look; same structure, script, voice, music | owner: "the video will have to be the exact same video... freshly made with the look of the app revised" |
 
 Claude's working defaults, not yet confirmed: the five target choices in `docs/RESEARCH-parameters.md` (1200 kcal floor for women, obesity line 27.5 vs 25, activity factor 1.3 for sitting, protein counted on the weight at BMI 25, bedtime 11:30 pm).

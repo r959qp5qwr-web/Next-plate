@@ -5,9 +5,11 @@ bbe6c52 and 392dfe1 (blockers, majors and owner decisions, before this pass), cd
 Rescue, menu), and the commit that adds this file (wait wording). A guard is a review state or check in test/ux/review.js, or a rule in
 test/rules/check.js; each guard added in this pass was run against the page built before its fix (hosted/v6/index.html at 392dfe1) and failed there.
 
-Outcomes, all severities: FIXED 157, FIXED in part 3, NEEDS-OWNER 13, NOT-A-DEFECT 7, MOCK-ONLY 3.
-MINOR and COSMETIC only: FIXED 143, FIXED in part 3, NEEDS-OWNER 13, NOT-A-DEFECT 7, MOCK-ONLY 3.
-3 fixed rows also carry an owner question for the part that is a product choice.
+Outcomes, all severities: FIXED 157, FIXED in part 3, DECIDED 13 (were NEEDS-OWNER), NOT-A-DEFECT 7, MOCK-ONLY 3.
+MINOR and COSMETIC only: FIXED 143, FIXED in part 3, DECIDED 13, NOT-A-DEFECT 7, MOCK-ONLY 3.
+3 fixed rows also carried an owner question for the part that is a product choice; those are DECIDED too.
+Owner decisions, 14 Nov (option survey), on every NEEDS-OWNER row: commits 70080d1, 88265e4, ebcb75c, 388013c, be6bc7b, c697d3b, 7d4c209,
+f5f0d78, b46de32, 5278f9b, 3ba356d, 14ce1ce. Each guard listed with them was run against the page built just before its change and failed there.
 
 Also done in this pass: plate-moved-on (Plan my plates now comes into view after a change) and menu-closest (a move on the closest order brings
 the note and the changed card into view) are fixed in the app; screen book entries 48 and 50 (and 49 and 23) are renamed in test/ux/atlas/names.js.
@@ -19,8 +21,8 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B1 | 01 setup-1-goal-food | MINOR | "Kept on this phone" leaves out what goes to Gemini | FIXED cd75c34: intro says the answers, never the name, go to Google Gemini; the body step no longer says "Kept on this phone" |  |
 | B1 | 01 setup-1-goal-food | MINOR | Disclaimer and Gemini line in grey italic 15 px | FIXED cd75c34: the footnote on set-up and Plate and the set-up intro are upright, 16 px, ink2 |  |
 | B1 | 01 setup-1-goal-food | COSMETIC | Leave-out pills do not say several can be chosen | FIXED cd75c34: "Leave out completely (choose any)" |  |
-| B1 | 01 setup-1-goal-food | COSMETIC | Goal tiles have icons, diet tiles do not | NEEDS-OWNER: a visual choice inside the confirmed look. Q: give the diet tiles icons, or drop the goal icons? Recommend: leave as is |  |
-| B1 | 01-08 every screen | COSMETIC | Masthead tagline "your daily plate, journalled" | NEEDS-OWNER: brand wording of the confirmed masthead. Q: keep the tagline? Recommend: drop it and let "Next Plate" stand alone |  |
+| B1 | 01 setup-1-goal-food | COSMETIC | Goal tiles have icons, diet tiles do not | DECIDED (owner, 14 Nov, option survey): keep as is, icons on goal tiles only. No change | |
+| B1 | 01-08 every screen | COSMETIC | Masthead tagline "your daily plate, journalled" | DECIDED (owner, 14 Nov, option survey): drop the tagline. Done c697d3b: build6.js leaves it out of the v6 page | plate-hero, setup-1-goal-food |
 | B1 | 02 setup-from-link | COSMETIC | Nothing confirms the coach's link was kept | FIXED cd75c34: "Your coach's link is saved on this phone." on step 1 | setup-from-link |
 | B1 | 03 setup-2-health | BLOCKER | Health was one choice, so a referral could be skipped | FIXED bbe6c52 (owner decision: tick all that apply) | setup-2-two-conditions, plate-two-conditions-referred |
 | B1 | 03 setup-2-health | MINOR | Kidney or pregnancy still asks the body step, then shows no plate | FIXED cd75c34: the referral line shows on step 2 and the button reads Done | setup-2-referred |
@@ -33,17 +35,17 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B1 | 04 setup-3-body | MINOR | "Activity" sits 10 px under the boxes | FIXED cd75c34: spaced as its own question (22 px) |  |
 | B1 | 05 plate-loading | MINOR | Asks look live while busy, taps dropped | FIXED cd75c34: prompts and send are off with "Wait for this plate first." | plate-loading-asks |
 | B1 | 05 plate-loading | MINOR | No sign of how long the wait is | FIXED cd75c34, wording in the final commit: "It can take a minute or so." under every wait line (the request may run up to 95 s, so no shorter figure is promised) |  |
-| B1 | 05-08 | MINOR | Example asks do not fit these clients | NEEDS-OWNER: the asks are the owner's words. Q: which everyday asks should Plate offer? Recommend: "Only dal, rice and curd at home", "A light dinner after a heavy lunch", "Guests at home tonight", "Tired, something quick"; drop the gym, trek and restaurant ones |  |
+| B1 | 05-08 | MINOR | Example asks do not fit these clients | DECIDED (owner, 14 Nov, option survey): "Only dal, rice and curd at home", "A light dinner after a heavy lunch", "Guests at home tonight", "Tired, something quick"; gym, trek and restaurant asks dropped; the diet filter still applies. Done be6bc7b | plate-hero, plate-leave-two |
 | B1 | 05-08 | MINOR | Today line splits figures from units at 130 % | FIXED cd75c34: no-break spaces in directive() (engine) |  |
 | B1 | 05 plate-loading | COSMETIC | Rim words run together at 130 % | NOT-A-DEFECT: ornament under owner decision D5; the meal tabs above say the same at full size |  |
 | B1 | 05-08 | COSMETIC | "planned around:" in lower case | FIXED cd75c34: "Planned around:" |  |
 | B1 | 05 plate-loading | COSMETIC | "Lunch carries about 480 kcal" | FIXED cd75c34: "Lunch: about 480 kcal and 31 g protein" |  |
 | B1 | 06 plate-hero | MAJOR | One-tap changes styled as main buttons, on by colour only | FIXED bbe6c52 |  |
 | B1 | 06 plate-hero | MINOR | Two sets of grams in the same colours | FIXED 6a0d9aa: the tiles are headed "Nutrients in this plate" |  |
-| B1 | 06 plate-hero | MINOR | "Fit 90 / 100" and "Rise" unexplained | FIXED cd75c34 for Rise: the tile reads "Sugar rise". NEEDS-OWNER for Fit. Q: keep the Fit score, reword it, or drop it? Recommend: "Close to your target: 90 / 100" on Plate, Rescue and the menu |  |
+| B1 | 06 plate-hero | MINOR | "Fit 90 / 100" and "Rise" unexplained | FIXED cd75c34 for Rise: the tile reads "Sugar rise". DECIDED for Fit (owner, 14 Nov, option survey): "Close to your target: 90 / 100" on the plate, the menu orders, the other orders and Rescue. Done 388013c | plate-hero, rescue-menu-order, rescue-result |
 | B1 | 06 plate-hero | MINOR | "Try it" reads like "try eating it" | FIXED cd75c34: "Change the mix" |  |
 | B1 | 05-08 | MINOR | Day tiles and setting pills hidden off the right edge | FIXED cd75c34: pills wrap, tiles sit three across | plate-dial-open |
-| B1 | 05-08, B4 29 | MINOR | Fixed header, ask bar and tabs take about 35-40 % of the screen | NEEDS-OWNER: layout of the confirmed look. Q: let the date line and food chip scroll away, keeping brand line and tabs fixed? Recommend: yes, and show the ask bar only at the end of Plate |  |
+| B1 | 05-08, B4 29 | MINOR | Fixed header, ask bar and tabs take about 35-40 % of the screen | DECIDED (owner, 14 Nov, option survey): the date line and the food line scroll away; NEXT PLATE, the meal tabs and the ask bar stay; same look. Done 7d4c209 | plate-hero |
 | B1 | 05-08 | MINOR | Nothing says the food line opens My food | FIXED cd75c34: "My food: Vegetarian · North" |  |
 | B1 | 06 plate-hero | COSMETIC | Sixth dot cut off under the dish title | FIXED cd75c34: 60 px, five whole dots |  |
 | B1 | 06 plate-hero | COSMETIC | "+" before a pair that means "later" | FIXED cd75c34: a pair that names a time (later, after, hour) gets a clock mark |  |
@@ -57,7 +59,7 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B2 | 09 plate-no-body | MINOR | Only sign the plate is not sized is at frame 5 | FIXED cd75c34: a note above the plate, "These portions are not yet sized for you.", with a link | plate-no-body |
 | B2 | 09 plate-no-body | MINOR | "Add them now" opens My food at the top | FIXED cd75c34: My food opens at the first missing answer, focused | plate-no-body-add |
 | B2 | 09 plate-no-body | MINOR | Note asks only for height and weight | FIXED cd75c34: names what is missing (age, height, weight, sex, activity) | plate-no-body |
-| B2 | 09 plate-no-body | MINOR | Suggested asks do not fit these clients | NEEDS-OWNER (the same question as B1 05-08, example asks) |  |
+| B2 | 09 plate-no-body | MINOR | Suggested asks do not fit these clients | DECIDED (as B1 05-08, example asks). Done be6bc7b | plate-hero, plate-leave-two |
 | B2 | 10 plate-dial-open | MINOR | Tapped pill scrolls away; panel has no name | FIXED cd75c34: pills wrap; "How hungry are you for lunch?" | plate-dial-open |
 | B2 | 10 plate-dial-open | MINOR | Moving the slider changes nothing | FIXED cd75c34: a change re-plans like every other choice, and Plan my plates comes into view | plate-appetite-moved |
 | B2 | 10 plate-dial-open | MINOR | Slider top line squeezed at 130 % | FIXED cd75c34: the value on its own line, the two ends under the slider |  |
@@ -71,7 +73,7 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B2 | 12 plate-one-tap-on | MINOR | On state by colour only; no undo hint | FIXED bbe6c52 (tick) and cd75c34 ("Tap a change again to undo it.") |  |
 | B2 | 12 plate-one-tap-on | COSMETIC | Wrapped labels away from icons | FIXED cd75c34 (as B1 06-10) |  |
 | B2 | 13 plate-logged | MINOR | "Change" does not say it reopens the meal | FIXED cd75c34: "Reopen lunch" |  |
-| B2 | 13 plate-logged | MINOR | "Plan snack" leads to a 40 kcal target | NEEDS-OWNER: a threshold and wording only the owner can set. Q: when little is left for the next meal, offer the meal after it? Recommend: under 120 kcal, offer "Plan dinner" first with one line "Little is left for a snack today." |  |
+| B2 | 13 plate-logged | MINOR | "Plan snack" leads to a 40 kcal target | DECIDED (owner, 14 Nov, option survey): under 120 kcal left for the snack, the card offers the next main meal still open ("Plan dinner") with "Little is left for a snack today." Done f5f0d78 | plate-logged |
 | B2 | 13 plate-logged | MINOR | Today line splits figures at 130 % | FIXED cd75c34 (as B1 05-4) |  |
 | B2 | 13 plate-logged | COSMETIC | Gap between dish and figures | FIXED cd75c34: no margin under the dish name |  |
 | B2 | 14 toast | MINOR | Toast covers and blocks the next actions | FIXED cd75c34: taps pass through it |  |
@@ -80,7 +82,7 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B2 | 15 plate-skipped-meds | BLOCKER | Warning missing without body data | FIXED bbe6c52 (as 09-1) | plate-skipped-meds-no-body |
 | B2 | 15 plate-skipped-meds | MAJOR | Warning looks like fine print | FIXED bbe6c52 |  |
 | B2 | 15 plate-skipped-meds | MINOR | Warning toast too short | FIXED bbe6c52: the card leads with the warning; no duplicate toast; a warning toast lasts 7 s |  |
-| B2 | 15 plate-skipped-meds | MINOR | Warning gives no step for now | NEEDS-OWNER: clinical wording. Q: what one line should follow "Follow your doctor's advice"? Recommend: a line from the owner or a clinician on what to watch for and when to eat |  |
+| B2 | 15 plate-skipped-meds | MINOR | Warning gives no step for now | DECIDED (owner, 14 Nov, option survey): the warning adds "If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor." on the card and in the spoken line. Done 70080d1 | plate-skipped-meds |
 | B2 | 15 plate-skipped-meds | COSMETIC | "Lunch –" tab and "skipped" twice | FIXED cd75c34: the tab is spoken "Lunch, skipped"; the caption no longer repeats "skipped" |  |
 | B2 | 16 plate-asked | MINOR | Logged card never appears for an asked plate | FIXED cd75c34 | plate-asked-logged |
 | B2 | 16 plate-asked | MINOR | Cannot show whether the answer honours the ask | MOCK-ONLY: the stand-in answer is fixed |  |
@@ -124,12 +126,12 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B3 | 26 plate-ask-busy | COSMETIC | "your last plates" | FIXED cd75c34: "the plates from before" | plate-ask-empty |
 | B3 | 27 plate-ask-limit | MINOR | Typed ask beside a live send | FIXED cd75c34 (as 25-1) | plate-ask-limit |
 | B3 | 27 plate-ask-limit | MINOR | Note does not name the ask | FIXED cd75c34 (as 26-1) |  |
-| B3 | 28 plate-no-code | MINOR | Lock met only after set-up | NEEDS-OWNER: the app learns a code is needed only when the server says so. Q: show the coach-link message before set-up when no code is on the phone? Recommend: yes, once the live server always needs the code (it would need the review states to carry a code) |  |
+| B3 | 28 plate-no-code | MINOR | Lock met only after set-up | DECIDED (owner, 14 Nov, option survey): a phone with no code (no ?k=, none kept) sees the coach's-link message before set-up, on the plate's no-code card; a phone that opened the link once is unaffected. Done b46de32; every other review state is seeded with a code | setup-no-code, setup-from-link |
 | B3 | 28 plate-no-code | MINOR | Prompts, composer, Builder and Rescue stay live and fail | FIXED in part cd75c34: on Plate the prompts give way to one line and send is off; Builder and Rescue still say the same message on use (part of the 28-1 question) |  |
 | B4 | 29 builder | MINOR | Screen does not say what it is for; "Slow carbs" | FIXED 6a0d9aa: "Choose how much of the plate each part takes. Then plan your meal with it."; "Grains (roti, rice, millet)" |  |
-| B4 | 29 builder | MINOR | Plan button below the fold | NEEDS-OWNER: layout. Q: a sticky "Plan lunch with this plate" above the tabs, or a smaller ring? Recommend: sticky button once a share is changed |  |
+| B4 | 29 builder | MINOR | Plan button below the fold | DECIDED (owner, 14 Nov, option survey): once a share is changed, the button holds above the tab bar; otherwise it stays in the page; nothing is under it at the end of the page at 320 px or 130 % text. Done 5278f9b | builder, builder-adjusted |
 | B4 | 29 builder | MINOR | Curve legend unclear | FIXED 6a0d9aa: "this plate" alone with no habit ticked; "with the habits you ticked" and "if you eat carbs first and sit after" when one is |  |
-| B4 | 29 builder | MINOR | Fixed masthead takes 27 % | NEEDS-OWNER (as B1 06-6) |  |
+| B4 | 29 builder | MINOR | Fixed masthead takes 27 % | DECIDED (as B1 05-08, fixed header). Done 7d4c209: the date line and the food line scroll away in the Builder too | plate-hero |
 | B4 | 29 builder | COSMETIC | Habit tiles uneven | FIXED in part 6a0d9aa: lines start at the top of each tile; the third tile alone in its row stays (two columns at 360 px) |  |
 | B4 | 29 builder | COSMETIC | Ring centre fills the hole at 130 % | FIXED 6a0d9aa: figure 26 px |  |
 | B4 | 30 builder-adjusted | MAJOR | Curve caption claims it follows the shares | FIXED 392dfe1 |  |
@@ -138,13 +140,13 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B4 | 32 rescue-entry | MINOR | Dish chips unlabelled; pressed state unstyled | FIXED 6a0d9aa: "Or tap a common dish"; pressed chip in ink | rescue-entry |
 | B4 | 32 rescue-entry | COSMETIC | Mixed alignment | FIXED 6a0d9aa: all left-aligned |  |
 | B4 | 32 rescue-entry | COSMETIC | Tab underline cuts "Rescue" at 130 % | FIXED 6a0d9aa: mark moved to 2 px from the bottom |  |
-| B4 | 32 rescue-entry | COSMETIC | "Eating out anyway" may read as a scolding | NEEDS-OWNER: title wording. Q: "Eating out" instead? Recommend: yes |  |
+| B4 | 32 rescue-entry | COSMETIC | "Eating out anyway" may read as a scolding | DECIDED (owner, 14 Nov, option survey): "Eating out". Done 3ba356d | rescue-entry |
 | B4 | 33 rescue-wait | MINOR | Controls live during the wait, taps dropped | FIXED 6a0d9aa: camera, send and chips are off during a wait | rescue-wait |
 | B4 | 33 rescue-wait | MINOR | "Taking apart", no time | FIXED 6a0d9aa: "Working out masala dosa with chutney" and the wait time line |  |
 | B4 | 33 rescue-wait | COSMETIC | Dots wrap onto their own line | FIXED 6a0d9aa: the dots stay with the last word |  |
 | B4 | 33 rescue-wait | COSMETIC | Two different Rescue wait cards | FIXED 6a0d9aa: both use the plate wait card |  |
 | B4 | 34 rescue-result | MAJOR | "Moves that make it fit" over a pre-ticked move that makes it worse | FIXED bbe6c52 (owner decision: moves start off) and 6a0d9aa ("Moves you can make") | rescue-result |
-| B4 | 34 rescue-result | MINOR | Bars have no legend; Fit unexplained | FIXED 6a0d9aa: "As served, then with the moves you tick". Fit wording: NEEDS-OWNER (as B1 06-3) |  |
+| B4 | 34 rescue-result | MINOR | Bars have no legend; Fit unexplained | FIXED 6a0d9aa: "As served, then with the moves you tick". Fit wording DECIDED (as B1 06-3): "Close to your target". Done 388013c | rescue-result |
 | B4 | 34 rescue-result | MINOR | A portion move dropped for naming the typed dish | FIXED 6a0d9aa: a portion move keeps the words the person typed (core checkRescue) | rule check "Rescue: a portion move that names the typed dish stays" |
 | B4 | 34 rescue-result | MINOR | Review state shows text no client sees | MOCK-ONLY: fixture dish and breakdown |  |
 | B4 | 34 rescue-result | MINOR | Energy row breaks, arrow hanging, at 130 % | FIXED 6a0d9aa: the arrow stays with the new figure |  |
@@ -170,7 +172,7 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B5 | 41 menu-nothing-fits | MINOR | "passed the checks" | FIXED 392dfe1 |  |
 | B5 | 41 menu-nothing-fits | MINOR | Note in the wrong place; guide repeats | FIXED 392dfe1 (note first) and 6a0d9aa (guide gone) |  |
 | B5 | 41 menu-nothing-fits | COSMETIC | Menu box has no border; half line cut | FIXED 6a0d9aa: ink border; box grows with its text |  |
-| B5 | 41 menu-nothing-fits | COSMETIC | Error note on the same paper as a tip | NEEDS-OWNER: visual choice in the confirmed look. Q: a clay rule on the left of error notes? Recommend: yes, keep the tan paper for tips |  |
+| B5 | 41 menu-nothing-fits | COSMETIC | Error note on the same paper as a tip | DECIDED (owner, 14 Nov, option survey): a thin clay rule on the left of every error note (class err: plate, ask, log, Rescue, menu); tips and info notes unchanged; contrast stays AA. Done 14ce1ce | plate-error, plate-ask-busy, sheet-log-busy, rescue-error, menu-error, menu-nothing-fits |
 | B5 | 42 menu-unreadable | MINOR | Note names two steps with no control | FIXED 6a0d9aa: "Take another photo" and "Type the menu" in the note | menu-unreadable |
 | B5 | 42 menu-unreadable | COSMETIC | "type the dishes" vs "type the menu" | FIXED 6a0d9aa |  |
 | B5 | 43 menu-unparsed | MINOR | "came back cut off" | FIXED 392dfe1 | menu-unparsed |
@@ -191,9 +193,9 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B6 | 49 menu-grain-undo | COSMETIC | "now?" alone on a line | FIXED 6a0d9aa: balanced question |  |
 | B6 | 50 menu-grain-other | MINOR | Screen book name and route wrong | FIXED 6a0d9aa: "a different menu after a No" |  |
 | B6 | 51 menu-grain-two | MINOR | After Yes to rice nothing records it | FIXED 6a0d9aa: "Steamed rice: available, you checked." above the second question | menu-grain-two |
-| B6 | 51 menu-grain-two | MINOR | Yes then No drops the order and the note forgets the Yes | FIXED 6a0d9aa: the note names the Yes. NEEDS-OWNER: Q: offer the order with only the confirmed grain? Recommend: no, the plan was made with both grains | menu-grain-yes-then-no |
+| B6 | 51 menu-grain-two | MINOR | Yes then No drops the order and the note forgets the Yes | FIXED 6a0d9aa: the note names the Yes. DECIDED (owner, 14 Nov, option survey): the order is still set aside and the next one offered; the trace line says why ("Dal Tadka needs roti too, so it is set aside."). Done ebcb75c | menu-grain-yes-then-no, menu-grain-yes-then-no-next |
 | B6 | 52 plate-blocked-kidney | MINOR | "This one is…" heading | FIXED cd75c34: "Plan your meals with your coach and doctor" | plate-blocked-kidney |
-| B6 | 52 plate-blocked-kidney | MINOR | No next step for a person with the condition | NEEDS-OWNER: referral wording. Q: add a next-step line? Recommend: "Send your coach a WhatsApp message to plan your meals together." |  |
+| B6 | 52 plate-blocked-kidney | MINOR | No next step for a person with the condition | DECIDED (owner, 14 Nov, option survey): keep the referral card as it is; no added line. Nothing to restore. Guard added 88265e4 | plate-blocked-kidney |
 | B6 | 52 plate-blocked-kidney | MINOR | Change my answers opens My food at the top | FIXED cd75c34: opens at the health question, the ticked answer focused | plate-blocked-change |
 | B6 | 53 plate-blocked-preg | COSMETIC | "nursing" | FIXED cd75c34: "breastfeeding" in set-up and the card |  |
 | B6 | 54 builder-blocked | COSMETIC | "Build the plate" over a referral | FIXED 6a0d9aa: no title when referred | builder-blocked |
