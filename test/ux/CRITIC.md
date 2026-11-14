@@ -46,7 +46,7 @@ What holds: the round 34 finding is resolved in aceb504 (measured on a snapshot,
   checks again; it throws on failure.
 - Mutation, my own: I copied aceb504's hosted/v6/index.html with only `save();` removed from that line and ran setup-from-link on
   the full set. Result: 15 of 15 runs failed with "the code from the link is not kept on the phone before set-up ends ({"q":""})". On
-  the real page: 15 of 15 clean. On hosted/v6/index.min.html (the live page): setup-from-link and plate-no-code are clean on 15 of 15
+  the actual page: 15 of 15 clean. On hosted/v6/index.min.html (the live page): setup-from-link and plate-no-code are clean on 15 of 15
   runs (30 checks).
 - Measured on aceb504 (before the tree moved, or on the git-archive snapshot of aceb504):
   npm run rules: every rule check holds, on all three built pages (exit 0).
@@ -71,7 +71,7 @@ Not inspected:
 - Everything after aceb504: commits 14483c1, caab525, bbe6c52, 392dfe1, e592fb1 (core, engine, app, CSS, rules check, review
   states, built pages, UX-CRITERIA and decision records). No code, screen or measured review of them by me.
 - A full-set review that is clean on the current tree (my one full run overlapped the edits).
-- The setup-from-link fix on a real phone: Android dropping a background tab, WhatsApp's in-app browser, private or incognito mode
+- The setup-from-link fix on a physical phone: Android dropping a background tab, WhatsApp's in-app browser, private or incognito mode
   where storage fails (save() then fails silently, as before), storage cleared by the phone.
 - The owner's own phone model; live Gemini replies (the review uses the mock engine); the films by ear.
 - Paths: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/full/report.md,
