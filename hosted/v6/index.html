@@ -1088,6 +1088,8 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 /* error notes (owner, 14 Nov, option survey): a thin clay rule on the left edge; tips and info notes keep the tan paper alone */
 #app .note.err{box-shadow:inset 3px 0 0 var(--clay-t);padding-left:17px}
 #app .empty-card.err{border-left:3px solid var(--clay-t)}
+/* second screen review, R2-B7 098: a figure changed by a move shows the as-served figure above it */
+#app .tcard .was{margin:8px 0 -2px;font:400 15px/20px var(--text);color:var(--ink2);white-space:nowrap}
 
 </style>
 
@@ -2521,8 +2523,8 @@ function menuMoves(n,pl){
 }
 function menuNote(n,t,mn){
   var s="Nothing on this menu fits your "+mn+" well. This is the closest.";
-  if(n.kcal>t.kcal*1.15)s+=" As served it runs \u2248 "+Math.round((n.kcal-t.kcal)/10)*10+" kcal over what this "+mn+" should carry.";
-  else if(n.kcal<t.kcal*.85)s+=" It is a small meal, \u2248 "+Math.round((t.kcal-n.kcal)/10)*10+" kcal under what this "+mn+" should carry.";
+  if(n.kcal>t.kcal*1.15)s+=" As served it runs \u2248 "+Math.round((n.kcal-t.kcal)/10)*10+" kcal more than this "+mn+" should have.";
+  else if(n.kcal<t.kcal*.85)s+=" It is a small meal, \u2248 "+Math.round((t.kcal-n.kcal)/10)*10+" kcal less than this "+mn+" should have.";
   if(n.protein<t.protein)s+=" It is \u2248 "+(t.protein-n.protein)+" g short on protein.";
   return s;
 }
@@ -3348,7 +3350,8 @@ function orderView(v,r){
   if(UI.msel>=r.orders.length)UI.msel=0;
   var mn=mealName(r.meal).toLowerCase(),o=r.orders[UI.msel],a={},hab={veg:false,walk:false,lemon:false},moved=false;
   MENUK.forEach(function(k){a[k]=o.n[k];});
-  r.moves.forEach(function(m,k){if(!UI.mmoves[k])return;moved=true;if(m.kind==="portion")a=scaleN(a,m.scale);if(m.kind==="sequence")hab.veg=true;if(m.kind==="move")hab.walk=true;});
+  var share="";   /* a portion move changes the figures: the card says so after the portion, and the logged title carries it (second screen review, R2-B7 098) */
+  r.moves.forEach(function(m,k){if(!UI.mmoves[k])return;moved=true;if(m.kind==="portion"){a=scaleN(a,m.scale);share={0.5:"eating half",0.67:"eating two thirds",0.75:"eating three quarters",2:"a double portion"}[m.scale]||"a changed portion";}if(m.kind==="sequence")hab.veg=true;if(m.kind==="move")hab.walk=true;});
   var fit=moved?fitOf(a,r.target):o.fit,band=moved?riseOf(a,hab).band:o.rise;
   if(UI.mno&&UI.mno.length){var gn0=UI.mno.join(" and "),gl=el("p","fine gno");gl.id="order-grain-said";gl.appendChild(document.createTextNode("You said "+gn0+(grainPlural(gn0)?" are":" is")+" not available. "+asideText()));
     var gu0=btn("linkbtn",UI.mno.length>1?"Change answers":"Change answer",null,"order-grain-redo");gu0.addEventListener("click",grainUndo);gl.appendChild(gu0);v.appendChild(gl);}   /* round 31: a No leaves a trace and can be undone */
@@ -3359,16 +3362,19 @@ function orderView(v,r){
   top.appendChild(chip(lab("diet",P.diet),"check"));P.leave.forEach(function(k){top.appendChild(chip("No "+lab("leave",k).toLowerCase(),"check"));});
   if(o.fit!=null)top.appendChild(chip("Close to your target: "+o.fit+(fit!==o.fit?"\u00A0→\u00A0"+fit:"")+"\u00A0/\u00A0100","target"));
   add(card,top,el("h3","dish",o.name));
-  if(o.portion)card.appendChild(el("p","por",o.portion));
+  if(o.portion||share)card.appendChild(el("p","por",(o.portion||"")+(share?(o.portion?" ":"")+"("+share+")":"")));
   if(o["with"]){var w=el("p","owith");w.appendChild(el("span","cap","with"));w.appendChild(document.createTextNode(" "+o["with"]));card.appendChild(w);}
   if(o.ask){var oa=el("p","oask");oa.appendChild(el("b",null,"Ask the waiter: "));oa.appendChild(document.createTextNode(o.ask));card.appendChild(oa);}
   var rd=el("div","read4 six");
-  function cell(cap,val,unit,cls){var d=el("div","tcard");d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));if(unit)x.appendChild(el("i","apx","≈"));x.appendChild(el("span","mono",val));if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
-  add(rd,cell("Energy",String(a.kcal),"kcal"),cell("Protein",String(a.protein),"g"),cell("Rise",band,null,bandCls(band)));var rw=el("div","rw ord");rw.appendChild(rd);card.appendChild(rw);
+  function cell(cap,val,unit,cls,was){var d=el("div","tcard");d.appendChild(el("p","cap",cap));
+    if(was!=null&&String(was)!==String(val)){var w=el("p","was",was+(unit?"\u00A0"+unit:"")+"\u00A0\u2192");w.setAttribute("aria-label","as served "+was+(unit?" "+unit:"")+", now");d.appendChild(w);}   /* as served, then after the move */
+    var x=el("span","v"+(cls?" "+cls:""));if(unit)x.appendChild(el("i","apx","≈"));x.appendChild(el("span","mono",val));if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
+  /* with a move ticked each figure shows the change, as the score does: as served, then after the move */
+  add(rd,cell("Energy",String(a.kcal),"kcal",null,o.n.kcal),cell("Protein",String(a.protein),"g",null,o.n.protein),cell("Sugar rise",band,null,bandCls(band),o.rise));var rw=el("div","rw ord");rw.appendChild(rd);card.appendChild(rw);
   var tags=(o.planned||[]).map(function(id){return r.hooks[id];}).filter(Boolean);
   if(tags.length){var pa=el("p","planned");pa.id="order-planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode(" · "));pa.appendChild(el("span",null,t));});card.appendChild(pa);}
   var go=btn("btn primary","I'll order this","check","order-go");
-  go.addEventListener("click",function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+o["with"]:""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
+  go.addEventListener("click",function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+o["with"]:"")+(share?" ("+share+")":""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
     UI.mres=null;UI.mtext="";C.meal=r.meal;show("plate");toast("Counted for "+mn+". Your next meals adjust to it.");});
   /* Round 28 (owner decision): with diabetes the plan keeps a grain. When the grain is a side or part of the portion, the person
      confirms it is available before ordering; "No" moves to the next order with another grain, or back to the menu. */

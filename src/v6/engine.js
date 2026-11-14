@@ -526,8 +526,8 @@ function menuMoves(n,pl){
 }
 function menuNote(n,t,mn){
   var s="Nothing on this menu fits your "+mn+" well. This is the closest.";
-  if(n.kcal>t.kcal*1.15)s+=" As served it runs \u2248 "+Math.round((n.kcal-t.kcal)/10)*10+" kcal over what this "+mn+" should carry.";
-  else if(n.kcal<t.kcal*.85)s+=" It is a small meal, \u2248 "+Math.round((t.kcal-n.kcal)/10)*10+" kcal under what this "+mn+" should carry.";
+  if(n.kcal>t.kcal*1.15)s+=" As served it runs \u2248 "+Math.round((n.kcal-t.kcal)/10)*10+" kcal more than this "+mn+" should have.";
+  else if(n.kcal<t.kcal*.85)s+=" It is a small meal, \u2248 "+Math.round((t.kcal-n.kcal)/10)*10+" kcal less than this "+mn+" should have.";
   if(n.protein<t.protein)s+=" It is \u2248 "+(t.protein-n.protein)+" g short on protein.";
   return s;
 }

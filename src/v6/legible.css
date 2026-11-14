@@ -310,3 +310,5 @@
 /* error notes (owner, 14 Nov, option survey): a thin clay rule on the left edge; tips and info notes keep the tan paper alone */
 #app .note.err{box-shadow:inset 3px 0 0 var(--clay-t);padding-left:17px}
 #app .empty-card.err{border-left:3px solid var(--clay-t)}
+/* second screen review, R2-B7 098: a figure changed by a move shows the as-served figure above it */
+#app .tcard .was{margin:8px 0 -2px;font:400 15px/20px var(--text);color:var(--ink2);white-space:nowrap}

@@ -115,6 +115,7 @@ module.exports = [
   S(M, 'menu-no-grain', 'Menu: what to order, no diabetes', 'Typed menu, health none.'),
   S(M, 'menu-other-order', 'Menu: another order picked', 'Pick another order from the list.'),
   S(M, 'menu-closest', 'Menu: the closest order, with a move', 'A menu where nothing fits well; tick a move.'),
+  S(M, 'menu-closest-ordered', 'Menu: the closest order, ordered after Eat about half', 'Closest order, tick Eat about half, then I’ll order this.'),
   S(M, 'menu-photo-order', 'Menu: what to order, from a photo', 'Read the menu with a photo.'),
   S(M, 'menu-photo-error', 'Menu: photo, could not reach', 'Send a photo while the service fails.'),
   S(M, 'menu-photos-off', 'Menu: photos switched off', 'Send a photo while photos are off.'),
