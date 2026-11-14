@@ -26,6 +26,7 @@ var PARAM={
   proteinMaxEnergyShare:.30,                 /* protein stays within 30 % of the day's energy (upper end of AIIMS-DST's weight-loss range, S13) */
   refBmi:25,               /* engine convention: above BMI 25, protein is set on the weight at BMI 25 for the person's height.
                               No guideline for general adults was found; ICMR's diabetes guideline uses ideal body weight (S8) */
+  mealProteinEnergyMax:.35,/* engine rule: a meal's protein carries at most 35 % of its energy, so a small catch-up meal stays a whole-food meal (second screen review) */
   mealProteinMax:.55,      /* g/kg in one meal: the upper figure in the per-meal review (S30) */
   /* --- fibre --- */
   fibrePer1000:15,         /* ICMR-NIN 2020: about 30 g per 2000 kcal (S2) */

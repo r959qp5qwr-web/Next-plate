@@ -14,7 +14,7 @@
 /* --- captions: upright, readable, no small caps at 12 px --- */
 #app .cap,#app .eyebrow,#app .tsub.cap,#app .stp small,#app .cmp-row .lab{font:var(--cap);font-variant:normal;text-transform:none;letter-spacing:.01em;color:var(--ink2)}
 #app .eyebrow{color:var(--clay-t)}
-#app .fine,#app .privacy{font:italic 400 15px/22px var(--text);color:var(--fine)}
+#app .fine,#app .privacy{font:400 16px/23px var(--text);font-style:normal;color:var(--ink2)}   /* small print upright at 16 px, as set-up and Plate (second screen review) */
 #app .tsub,#app .sub,#app .dish-s,#app .alt small,#app .move small,#app .tile2 .v small,#app .read4 .v small,#app .ringmid small,#app .hab small{font-size:15px;line-height:21px;color:var(--ink2)}
 #app .hchip{font-size:15px;color:var(--ink2)}
 #app .tag{font-size:14px}
@@ -285,7 +285,7 @@
 #app .sitbox .cap{margin:6px 0 4px}
 #app .sit[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
 #app .menu-in .fine{text-align:left}#app .menu-in .linkbtn{align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
-#app .ans-read.wait::after{content:none}
+#app .ans-read.wait::after{content:none;animation:none}   /* the old animation set content and drew a second, stray set of dots (R2-B5 080-2) */
 #app .ans-read.wait .lw{white-space:nowrap}
 #app .ans-read.wait .lw::after{content:"";display:inline-block;width:1.2em;animation:dots 1.4s steps(4,end) infinite}
 #app .order .oask{font:400 17px/24px var(--text);font-style:normal;color:var(--ink)}#app .order .oask b{font-weight:600}
@@ -293,7 +293,7 @@
 #app .order .gok,#app .gno{font:400 16.5px/24px var(--text);font-style:normal;color:var(--ink)}
 #app .order .gok .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
 #app .order .gask .gq{text-wrap:balance}
-#app .menu-box textarea{field-sizing:content;max-height:50vh;box-shadow:inset 0 0 0 1px var(--ink3)}  /* the box grows with the menu and looks like a box */
+#app .menu-box textarea{field-sizing:content;max-height:32vh;box-shadow:inset 0 0 0 1px var(--ink3)}  /* the box grows with the menu and looks like a box */
 @media (max-height:600px){#app .menu-box textarea{min-height:110px}}
 #app .note .btn{min-height:44px}
 #app .tab[aria-current="page"]::before{bottom:2px}                                                 /* the mark under the open tab clears its word at large text */
@@ -312,3 +312,27 @@
 #app .empty-card.err{border-left:3px solid var(--clay-t)}
 /* second screen review, R2-B7 098: a figure changed by a move shows the as-served figure above it */
 #app .tcard .was{margin:8px 0 -2px;font:400 15px/20px var(--text);color:var(--ink2);white-space:nowrap}
+/* ===== second screen review, shared causes (test/ux/screen-review/FIXES2.md) ===== */
+#app .tbtn{text-shadow:none}                                                                        /* the v4 shadow smudged the one-tap labels (R2-B2 017-1) */
+#app .card.logged .pick-acts .btn,#app .pick-acts .btn{white-space:nowrap;flex:1 1 auto}            /* "Plan dinner" stays on one line; the row wraps instead (R2-B3 041-1) */
+#app .linkbtn:not(:has(svg)){text-decoration:underline;text-underline-offset:3px}                   /* a text link looks like one (R2-B2 022-1, R2-B5 065-1, 076-1) */
+#app .rail .panel{flex:1 0 100%;margin:4px 0 6px}                                                    /* a setting's panel opens under its own pill, with its question (R2-B2 027-1) */
+#app .rail .panel>.cap{margin:0 0 6px}#app .rail .panel>.fine{margin:-2px 0 8px}
+#app .empty-card h2{text-wrap:balance}#app .lede{text-wrap:pretty}                                   /* R2-B3 034-2, R2-B5 073-3 */
+#app .tile .tick{flex:none;width:22px;height:22px;margin-left:auto;border-radius:5px;box-shadow:inset 0 0 0 1.5px currentColor;display:inline-flex;align-items:center;justify-content:center}
+#app .tile .tick svg.i{width:16px;height:16px}
+#app .meal svg.skipx{display:inline-block;width:13px;height:13px;margin-left:4px;vertical-align:-1px}   /* a skipped meal's tab (R2-B2 021-2) */
+#app .bpcook{margin:8px 0 0}
+#app #sheet .sheet-h h2{font-weight:700;font-size:24px}                                               /* the sheet's title leads its questions (R2-B3 046-2) */
+#app #sheet .qs{scroll-margin-top:76px}                                                               /* a question the sheet opens on clears the sticky header (R2-B8 122-1) */
+#app .rin-row input{font-style:normal}                                                               /* typed words upright, the hint italic (R2-B6 082-2) */
+#app .send.send-off{background:transparent;color:var(--clay-t);box-shadow:inset 0 0 0 1.5px var(--clay-t)}   /* Try again is the one strong control (R2-B6 082-1) */
+#app .again-h{margin-bottom:10px}                                                                     /* the heading sits with the tools it heads (R2-B6 081-5) */
+#app .sits,#app #v-rescue .sits{flex-wrap:wrap;overflow:visible;margin:0;padding:2px 0 4px}          /* every common dish in view (R2-B5 079-1, R2-B7 097-3) */
+#app .sits .sit{white-space:normal;text-align:left;max-width:100%}
+#app .move i{border-radius:6px}                                                                       /* moves can be ticked together: a box, not a radio circle (R2-B6 081-4) */
+#app .verdict{margin:6px 0 2px;font:400 17px/24px var(--text);color:var(--ink)}
+#app .gno .linkbtn,#app .order .gok .linkbtn{display:flex;width:max-content}                       /* the link sits on its own line at every width, so the sentence keeps its spacing (R2-B7 110-2) */
+#app .empty-card .asked{margin:0 0 4px;font:italic 400 17px/24px var(--text);color:var(--ink2)}
+#app .fine.hidden{color:var(--ink);margin:12px 0 4px}
+#app #v-build .card.bigplate:has(~ .stick){padding-bottom:64px}                                          /* the held button never sits on the last stepper row (R2-B5 074-2) */

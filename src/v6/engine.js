@@ -3,7 +3,7 @@
    Code counts, Gemini cooks: every target, pattern and hook below is computed here; the model only plans food. ===== */
 
 OPT.goal=[["lose","Lose weight gently"],["hold","Hold steady"],["build","Build strength"]];
-OPT.focus=[["none","Nothing in particular"],["iron","Iron"],["b12","B12"],["cal","Calcium and vitamin D"],["pro","Protein"],["fib","Fibre"]];
+OPT.focus=[["none","Nothing in particular"],["iron","Iron"],["b12","Vitamin B12"],["cal","Calcium and vitamin D"],["pro","Protein"],["fib","Fibre"]];
 var SLOTS=["breakfast","lunch","snack","dinner"];
 var SLOTHOUR={breakfast:8.5,lunch:13.25,snack:16.75,dinner:20.25};          /* middle of each window, used until the person's own timing is learned */
 
@@ -69,6 +69,7 @@ function planDay(p,file,meal,appetite,par){
   var k=remK*par.split[meal]/wk,pr=remP*par.proteinSplit[meal]/wp;
   k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));
   pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein,Math.max(usualP,par.mealProteinMax*day.refKg)));
+  pr=Math.min(pr,Math.max(usualP*par.mealFloor,k*(0.85+0.03*Math.max(1,Math.min(10,Math.round(appetite||5))))*par.mealProteinEnergyMax/4));   /* a meal's protein stays within what whole food at that energy can carry (R2-B3 043-1) */
   var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling */
   var t=file.today,mine=by[meal]&&by[meal].kind!=="skipped"?by[meal]:null;
   return {day:day,eaten:{kcal:Math.round(ek+(mine?mine.kcal:0)),protein:Math.round(ep+(mine?mine.protein:0)),fiber:Math.round(t.fiber)},left:{kcal:Math.round(remK),protein:Math.round(remP)},
@@ -77,8 +78,8 @@ function planDay(p,file,meal,appetite,par){
 /* Appetite, suggested from the day so far instead of asked ([S] "zero-input"): the person can always move it. */
 function suggestAppetite(file,meal){
   var h=file.today.lastHoursAgo;if(h==null)return {v:5,why:""};
-  if(h>=6)return {v:8,why:Math.round(h)+" h since you last ate"};
-  if(h>=4)return {v:6,why:Math.round(h)+" h since you last ate"};
+  if(h>=6)return {v:8,why:Math.round(h)+" hours since you last ate"};   /* hours in words (R2-B1 016-2) */
+  if(h>=4)return {v:6,why:Math.round(h)+" hours since you last ate"};
   if(h<2&&file.today.lastKcal>=400)return {v:3,why:"you ate not long ago"};
   return {v:5,why:""};
 }
@@ -101,7 +102,7 @@ function hooksFor(p,file,c,pl,par){
     if(m.kind==="skipped")add("skipped_"+m.meal,"skipped "+nm,"They skipped "+nm+" today. Do not make up for it with an oversized plate; a normal, protein-led meal.");
     else if(m.kind==="rescued"||m.kind==="ordered")add("ate_out","after eating out","They ate out earlier today ("+m.title+"). Balance it: a simple home plate, more vegetables, less oil and salt.");
     else if(m.title)add("had_"+m.meal,"different from "+nm,"For "+nm+" they had "+m.title+". Lead with a different main ingredient now.");});
-  if(t.lastHoursAgo!=null&&t.lastHoursAgo>=par.hookLongGap)add("long_gap",Math.round(t.lastHoursAgo)+" h since the last meal","It is "+Math.round(t.lastHoursAgo)+" hours since they last ate. Expect strong hunger: give volume from vegetables and protein, not extra grain.");
+  if(t.lastHoursAgo!=null&&t.lastHoursAgo>=par.hookLongGap)add("long_gap",Math.round(t.lastHoursAgo)+" hours since the last meal","It is "+Math.round(t.lastHoursAgo)+" hours since they last ate. Expect strong hunger: give volume from vegetables and protein, not extra grain.");
   var rep=0,lateNow=meal==="dinner"&&c.hour!=null&&(c.hour>=par.lateDinnerHour||c.hour<4);
   file.patterns.forEach(function(x){
     if(x.id==="late_dinner"&&meal==="dinner"&&!lateNow)add("late_dinner","dinners run late","Their dinner was late on "+x.n+" of the last "+x.of+" dinners logged. Keep dinner lighter and easy to digest.");
@@ -111,7 +112,7 @@ function hooksFor(p,file,c,pl,par){
   if(file.slotProtein){var low=null;SLOTS.forEach(function(m){var v=file.slotProtein[m];if(v!=null&&(low==null||v<file.slotProtein[low]))low=m;});
     if(low===meal&&Object.keys(file.slotProtein).length>=2)add("low_protein_meal","protein at "+mn,mn.charAt(0).toUpperCase()+mn.slice(1)+" has been their lowest-protein meal this week (about "+file.slotProtein[low]+" g). Lead with protein.");}
   if(c.mode==="strength")add("mode_strength","strength day","Today is a strength-training day: protein leads, with enough carbohydrate to refuel.");
-  if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, enough salt and fluid with the meal, easy to digest.");
+  if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, "+(p.bp?"enough fluid":"enough salt and fluid")+" with the meal, easy to digest.");   /* with high BP the salt words go (R2-B2 029-2) */
   if(p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))add("steady_carbs","steady grain (diabetes medicine)","They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.");
   if(p.health==="diabetes")add("diabetes_grain","the grain stays (diabetes)","Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.");
   if(p.bp)add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
@@ -141,6 +142,7 @@ function directive(p,pl,hooks,meal,done){
   var s="Today: about "+kp(pl.day.kcal,pl.day.protein)+". ";
   if(done)return s+"So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". That is every meal for today.";   /* done: all four meals logged or skipped (the page decides, R2-B3 037) */
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
+  var over=pl.eaten.kcal-pl.day.kcal;if(over>=50)s+="That is about "+Math.round(over/10)*10+"\u00A0kcal over today's "+pl.day.kcal+"\u00A0kcal. ";   /* the day over its target is said in words (R2-B3 044-1) */
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
   var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
   pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
@@ -222,7 +224,7 @@ lite?null:TUNETEXT(p)
 function TUNETEXT(p){return [
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
 "- Each base swap also gives made_of: what it is made of, as for grain (never a vegetable, pulse, nut or seed). Each one-tap change also gives grain_grams_after: the grams of the plate's grain item after the change (0 if it takes the grain off)."+(p.health==="diabetes"?" With diabetes every change keeps the grain item, at least half of it.":"")+"",
-"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
+"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words; a food the change adds is named with its grams, such as \"add 50 g sprouted moong\"), minutes (new prep time) and deltas versus the meal as written:",
 "  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
 function buildTunePrompt(p,m){
   return [

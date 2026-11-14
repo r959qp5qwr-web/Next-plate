@@ -4,7 +4,7 @@
 /* ---------- option lists (validated on both sides) ---------- */
 var OPT={
   diet:[["veg","Vegetarian"],["egg","Veg and egg"],["nonveg","Non-veg"],["jain","Jain"],["vegan","Vegan"]],
-  health:[["none","Nothing to flag"],["diabetes","Diabetes"],["bp","High BP"],["kidney","Kidney condition"],["preg","Pregnant or breastfeeding"]],
+  health:[["none","None of these"],["diabetes","Diabetes"],["bp","High BP"],["kidney","Kidney condition"],["preg","Pregnant or breastfeeding"]],
   region:[["n","North"],["s","South"],["w","West"],["e","East"]],
   leave:[["dairy","Dairy"],["nut","Nuts"],["wheat","Wheat"],["soya","Soya"]],
   sex:[["f","Female"],["m","Male"]],
@@ -12,11 +12,11 @@ var OPT={
   /* one-tap state, from [S] BIO_MODES; plain names, no invented biometrics */
   mode:[["strength","Strength day"],["trek","Trek day"],["focus","Desk day"],["rest","Wind-down"]],
   /* [P] MOOD_FILTERS */
-  mood:[["best","Best fit"],["quick","Quick 15-min"],["protein","High protein"],["comfort","Comforting"],["light","Light"]],
+  mood:[["best","No preference"],["quick","Quick, 15\u00A0min"],["protein","High protein"],["comfort","Comforting"],["light","Light"]],
   /* [P] CUISINES */
   cuisine:[["indian","Indian regional"],["med","Mediterranean"],["express","High-protein express"]],
   prep:[["home","Cooking at home"],["out","Ordering out"]],
-  oil:[["min","Minimal oil"],["std","Standard oil"]],
+  oil:[["min","Less oil"],["std","Usual oil"]],
   meal:[["breakfast","Breakfast"],["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"]]
 };
 function lab(k,v){var l=OPT[k]||[];for(var i=0;i<l.length;i++)if(l[i][0]===v)return l[i][1];return "";}
@@ -84,7 +84,7 @@ var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","w
 var CLAIM=/%|\bmg\s*\/\s*dl\b|\bmtor\b|\bleucine\b|\bglut4\b|\bcortisol\b|\bmelatonin\b|\binsulin\b|\bdetox|\bcures?\b|\bcured\b|\btreat(ment|ing|ed)\b|\btreats?\s+(your|the|it|this|that|diabetes|anaemia|anemia|deficienc|blood|sugar|pain|weight|pcos|thyroid)|\bguarantee|\bheal(s|ing)?\b|\bhrv\b|\bmyofibrillar\b|\binflammat|\bimmun/i;
 var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(added\s+|extra\s+)?[a-z]+(\s+(or|and)\s+[a-z]+)?/g;
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
-var SAFETY="This one is for your coach and doctor to plan with you.";
+var SAFETY="Your coach and doctor should plan this with you.";   /* says what it answers; the card quotes the ask above it (second screen review, R2-B5 072, R2-B7 107) */
 
 /* ---------- the grain test (owner rule 3: with diabetes the grain stays). Critic rounds 6 to 10.
    Rounds 6 to 9 listed the ways a grain-free plate can be named, and each round found another. From round 10 a grain is identified, not
@@ -667,7 +667,7 @@ profileText(p,null),
 c.target?"- Their target for this meal: about "+c.target.kcal+" kcal and at least "+c.target.protein+" g protein.":null,
 "",
 rulesText(p),
-"- If this is not food, or asks about symptoms or medicines, return status \"refer\".",
+"- If this is not a food or a drink, return status \"ok\" with an empty dish and no hacks. If it asks about symptoms or medicines, return status \"refer\".",
 "",
 "WHAT TO RETURN",
 "- status \"ok\" and dish: name, portion (one order as usually served, in pieces or grams, at most 8 words, such as \"2 naan and 1 bowl, about 300 g\"; no household units such as katori), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).",

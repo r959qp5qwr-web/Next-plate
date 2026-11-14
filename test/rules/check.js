@@ -1210,6 +1210,12 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const pr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
   ok(/in pieces or grams/.test(pr) && /no household units such as katori/.test(pr), 'Rescue: the prompt asks for the portion in pieces or grams, with no katori');
 }
+{ // second screen review, R2-B2 018-2: a one-tap change names a food it adds with its grams; R2-B6 088-1: non-food goes to "no dish", not a referral
+  const t = plan('tune', { profile: Object.assign({}, P), slot: 'dinner', meal: Object.assign({}, meal, { minutes: 18 }) }).prompt;
+  ok(/a food the change adds is named with its grams/.test(t), 'tune: the prompt asks for an added food with its grams');
+  const r = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
+  ok(/If this is not a food or a drink, return status "ok" with an empty dish/.test(r), 'Rescue: the prompt sends non-food to "no dish", keeping referral for symptoms and medicines');
+}
 { // every prompt carries the word rule
   const ks = [['meals', { ctx: { meal: 'dinner' } }], ['rescue', { ctx: { meal: 'dinner', text: 'dosa' } }], ['menu', { ctx: { meal: 'dinner', text: fxm.typed } }],
     ['log', { ctx: { meal: 'lunch', text: 'dosa' } }], ['tune', { slot: 'dinner', meal: Object.assign({}, meal, { minutes: 18 }) }]];
