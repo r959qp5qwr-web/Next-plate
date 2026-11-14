@@ -134,5 +134,9 @@ module.exports = [
   S(X, 'plate-two-conditions-referred', 'Plate: diabetes and a kidney condition, referred', 'Health: Diabetes and Kidney condition.'),
   S(X, 'plate-blocked-change', 'Referred: change my answers', 'On the referral, tap Change my answers.'),
 ];
+module.exports.push(
+  S(M, 'menu-health-changed', 'Menu: Diabetes ticked while the menu is read', 'Read a menu, tick Diabetes in My food during the wait.'),
+  S(R, 'rescue-health-changed', 'Rescue: Diabetes ticked while a dish is worked out', 'Name a dish, tick Diabetes in My food during the wait.'),
+  S(B, 'builder-ratio-reload', 'Builder: the saved share after a reload', 'Plan with Steady sugar, open the app again, tap Builder.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);
