@@ -45,7 +45,8 @@ var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",s
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
 function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
-var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice.";
+/* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
+var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
 function bodyMissing(){var m=[[!P.age,"age","body-age"],[!P.cm,"height","body-cm"],[!P.kg,"weight","body-kg"],[!P.sex,"sex","sex-f"],[!P.act,"activity","act-low"]].filter(function(x){return x[0];});
   var w=m.map(function(x){return x[1];});return {text:w.length>1?w.slice(0,-1).join(", ")+" and "+w[w.length-1]:w[0]||"details",at:m.length?m[0][2]:"body-age"};}
