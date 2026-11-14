@@ -1,80 +1,99 @@
 VERDICT: FAIL
-BUILD: f8addc45f45fba729e322a570c9c88e02601ecaa1ebe87ae1e395e789617ab6a
+BUILD: 92382be5bb75c7c720e4cb0d61f2f232b13be0eadadf39be9f26571111f0a8c7
 
-Round 35. Scope asked: git diff 9998595..HEAD, focus aceb504 (fingerprint 0b4f9482...). The fingerprint above is the
-working tree when I finished measuring (HEAD e592fb1). The two are not the same, and that is the reason for this FAIL.
+Round 36. Scope: git diff 9998595..HEAD (HEAD 950bfa0, 55 commits, 43 files). The tree did not change during the round: HEAD and the
+fingerprint were the same at the start and the end.
 
-Findings, most serious first
+Measured by the Critic on this tree:
+- Build: build6.js run in a scratch copy gives byte-identical hosted/v6/index.html, hosted/v6/index.min.html and hosted/v5/index.min.html.
+- npm run rules: every rule check holds on all three pages. npm run words: no banned words (42 listed exceptions; both allow lists are
+  unchanged in this diff, and test/ux/allow.json is still []). npm run films: 4 files ok, about -16.7 dB, no decode errors.
+- npm run review (gate set): 9 runs, 130 states, 1170 checks, no violations, exit 0. npm run drill: every planted fault was caught.
+- Probes of my own on the built np-core: Rescue moves with diabetes (29 titles, one at a time), the protein cap per meal, and combined
+  conditions (kidney or pregnancy with BP or diabetes are referred; diabetes with BP gets both rules).
+- Two Playwright probes of my own on hosted/v6/index.html with mocked replies (finding 1).
 
-1. BLOCKER (process; gate integrity). The tree changed while I was reviewing it. I cannot pass the current state.
-   What happened: at the start, HEAD was aceb504 and the manifest was 0b4f9482... (I checked this at about 02:20 UTC, after my
-   gate-set review). While my full-set review ran, five commits landed on top of aceb504, plus uncommitted edits at various points:
-   14483c1 (02:20), caab525 (02:30), bbe6c52 (02:37), 392dfe1, e592fb1. They touch 20 files (+1644 / -102), including
-   src/v5/core.js (the shared core: BP rule now `p.bp`, a new grainAfter field on one-tap changes, readProfile), src/v6/engine.js
-   (taste-word filter by left-out foods, menu side line now carries "≈ N g", BP hook), src/v6/app.js (93 lines changed),
-   src/v6/legible.css, test/rules/check.js (a rule oracle loosened and a new one added), test/ux/review.js (+76 lines),
-   docs/ux/UX-CRITERIA.md, and all three built pages (hosted/v6/index.html, index.min.html, hosted/v5/index.min.html).
-   None of this was in the round 35 brief and I did not review it. Some of it is engine and safety-adjacent behaviour (the BP
-   salt rule, the grain grams after a one-tap change, a changed rule-check oracle), which by the Critic's brief needs its own review.
-   Why it matters: the gate binds a PASS to the exact fingerprint. A PASS on the present fingerprint would certify engine, rule-check
-   and screen changes nobody independent has looked at. A PASS on 0b4f9482... would refer to a state that no longer exists in the tree.
-   Evidence: `git log --oneline aceb504..HEAD` (5 commits); file times hosted/v6/index.html 02:39:35, src/v6/engine.js 02:37:10,
-   test/ux/review.js 02:40:46 (taken while my runs were in progress); `ps` at 02:39 showed a second review.js run
-   (`--only setup-2-two-conditions,...,rescue-result,...`) running alongside mine.
-   Smallest correction: stop changing the tree, then ask for a new Critic round with the scope `git diff 9998595..HEAD` (or
-   aceb504..HEAD), naming the screen-review fixes and owner decisions, and let the Critic measure a state that is still.
+What holds: kidney and pregnancy are referred, alone or ticked with anything else (set-up note, Plate, Builder and Rescue cards, server
+plan()). With diabetes the grain stays across plates, one-tap changes (the grain grams now follow the change), base swaps, the menu, and
+Rescue moves: "skip", "leave out", "without", stand-ins and "only the vegetables" are dropped; half portions and grain swaps stay; the snack
+is exempt as everywhere else. Grams and kcal only: katori, phulka and a vessel with no grams are dropped from Rescue portions and moves.
+No supplements were found. Every owner decision of 14 Nov in the handoff table is in the code and on screen as recorded. Every BLOCKER and
+MAJOR in B1-B6 and R2-B1..B8 has its fix in the code. I spot-checked 20 MINOR rows and all of them hold, except 076-3 (finding 2).
 
-2. MAJOR (measured; most likely a side effect of 1, but not clean). My full-set review on the live tree
-   (node test/ux/review.js --pool 6, 15 runs, 55 states, 825 checks) ended with 1 violation: feedback-hidden, rescue-result @375 dark
-   ("the Rescue wait line or answer is not in view after the tap"). That run overlapped the edits and a second review process.
-   Rerunning rescue-result on the live tree at 02:38 and 02:40 gave 15 of 15 "state could not be reached" (waitForSelector 20 s
-   timeout) twice, then a clean run; the page was rebuilt at 02:39:35 in between. On a clean aceb504 snapshot (see below),
-   rescue-result passed 15 of 15 twice. So I attribute it to load and the moving tree, not to aceb504, but the full-set run on the
-   tree as it now stands has not been done clean by me.
-   Evidence: scratchpad full/report.md, rr1/report.md, rr2/report.md, arr1, arr2 (paths below).
-   Smallest correction: part of the next round; no code change asked.
+## Findings, most serious first
 
-What holds: the round 34 finding is resolved in aceb504 (measured on a snapshot, not on the builder's word)
-- Code: src/v6/app.js:31 (at aceb504) calls save() right after KEYCODE is taken from ?k= and the address bar is cleared. load() has
-  already run, and P, C, EV, STORE, DAY, APP and KEYCODE are all defined above it, so save() writes what was stored plus the code;
-  P.done stays as loaded (false on a first visit), so set-up still shows. A returning client who opens a new link keeps their profile
-  and gets the new code. The built pages carry the same call (index.html line 2724; index.min.html `...history.replaceState(...),he()`).
-  One clarification of the builder's summary: set-up answers are still saved only at the end of set-up (app.js:181). A reload during
-  set-up keeps the code, not the answers already tapped. The message promises only the code, so it is now true; the answers are not
-  a finding.
-- review.js state setup-from-link: opens /?k=LINKCODE1 with empty storage, checks np6.k and an empty location.search, reloads, and
-  checks again; it throws on failure.
-- Mutation, my own: I copied aceb504's hosted/v6/index.html with only `save();` removed from that line and ran setup-from-link on
-  the full set. Result: 15 of 15 runs failed with "the code from the link is not kept on the phone before set-up ends ({"q":""})". On
-  the actual page: 15 of 15 clean. On hosted/v6/index.min.html (the live page): setup-from-link and plate-no-code are clean on 15 of 15
-  runs (30 checks).
-- Measured on aceb504 (before the tree moved, or on the git-archive snapshot of aceb504):
-  npm run rules: every rule check holds, on all three built pages (exit 0).
-  npm run words: no banned words outside the 42 listed exceptions (exit 0); test/words/allow.json and test/ux/allow.json ([])
-  were not touched by 9998595..aceb504.
-  npm run films: 4 films ok, -16.7 / -16.8 dB, no decode errors, no freeze (exit 0). Films are not in the diff.
-  npm run review (gate set, live tree at 0b4f9482...): 9 runs, 55 states, 495 checks, no violations (exit 0); drill: every
-  planted fault caught.
-  npm run drill on the aceb504 snapshot: every planted fault was caught (exit 0).
-- Rendered: setup-from-link frames 1 and 2 at 320, 360, 390 and 412 px, light and dark, and 360 at 130 % text are byte-identical to
-  setup-1-goal-food. Opening from the link looks the same as normal set-up; no code shows on screen. Read at 320 light, 360 dark and
-  360 at 130 % text: Raw Linen paper, EB Garamond, three-step bar, no clipping. plate-no-code at 320 dark is unchanged from round 34.
-- docs/ux/UX-CRITERIA.md: the round 34 note matches what the code does; "their own phone" is fixed; the v5 record item is there.
-  No banned word in it.
-- Carried cosmetic items from round 34 (still open on aceb504): the craving cards and the craving field stay active under the
-  no-code message; next question under the tab bar at 320 after No; 'or' grains in the answer line; a left-out grain still asked;
-  a 'no roti' description line; the v5 rollback page keeps the old no-code wording.
+1. MAJOR (owner rule 3; B6 truthful). A menu or Rescue reply made for answers that changed during the wait is still shown. This is the
+   same cause as R2-B1 011 (a BLOCKER), but the fix was applied to plates only.
+   - Where: Rescue and the menu, any width. src/v6/app.js:112 drops a stale plate reply (askedFor). The callbacks for /api/rescue
+     (app.js:560), /api/menu (app.js:572) and /api/log (app.js:770) have no such check. closeSheet (app.js:764) clears UI.rres and UI.mres
+     when the sheet closes, which is before the reply arrives.
+   - Evidence, probe 1 (menu): a person without diabetes types a menu. During the 4 s wait they open My food, tick Diabetes and tap Done.
+     The request went out with health "none". The order card then shows "Paneer Tikka, 6 pieces ≈ 180 g" for breakfast, with no grain and
+     no grain question. Screenshot: scratchpad race-menu.png.
+   - Evidence, probe 2 (Rescue): the same steps on "Rajma chawal". The card then offers "Skip the rice, eat the rajma with salad" to a
+     person who now has diabetes ticked. That is the exact move the R2-B6 081 BLOCKER removed.
+   - Why it matters: a client who adds a condition or a food they leave out while the menu is being read gets an order or a move checked
+     against their old answers. With diabetes that breaks rule 3. The trigger is narrow (an answer changed during a 20 to 60 s wait), but it
+     is reachable.
+   - Smallest correction: take the askedFor() snapshot in rescue(), readMenu() and logOther() as makePlates does. If it differs when the
+     reply arrives, drop the reply and ask again, or show "Your answers changed. Read the menu again."
+   - Add a review state for each, as plate-loading-changed does for plates.
 
-If the tree had stayed at aceb504, I would have had no findings above cosmetic for this round.
+2. MINOR (B: control state visible; a regression introduced by this diff). After a reload, the Builder shows the day-type preset as
+   chosen while the share in use is another one.
+   - Where: Builder, every width, after a reload with a share chosen.
+   - Cause: R2-B5 076-3 now saves C.ratio and reads it back (app.js:26). UI.preset still starts at "mode" (app.js:44), and app.js:501 takes
+     UI.ratio from C.ratio.
+   - Evidence: test/ux/out/screens/320-light/builder-ratio-set-1..3.png. Steady sugar was chosen and the review reloads. The screen then
+     shows "Desk day" filled, steppers at 35/45/10/10 (the Steady sugar share), "Your plates use this share", and the link "Go back to the
+     usual plate (Desk day)". The share in use is not the one marked as chosen.
+   - I reject the record note that "it was so before these changes". At 9998595, C.ratio was not saved, so after a reload the Desk day
+     preset and its share agreed.
+   - Why it matters: a client with diabetes who chose Steady sugar is shown that Desk day is in use.
+   - Smallest correction: when UI.ratio is taken from C.ratio, set UI.preset to the preset whose shares equal it, or "" if none. Add that
+     check to builder-ratio-set.
 
-Not inspected:
-- Everything after aceb504: commits 14483c1, caab525, bbe6c52, 392dfe1, e592fb1 (core, engine, app, CSS, rules check, review
-  states, built pages, UX-CRITERIA and decision records). No code, screen or measured review of them by me.
-- A full-set review that is clean on the current tree (my one full run overlapped the edits).
-- The setup-from-link fix on a physical phone: Android dropping a background tab, WhatsApp's in-app browser, private or incognito mode
-  where storage fails (save() then fails silently, as before), storage cleared by the phone.
-- The owner's own phone model; live Gemini replies (the review uses the mock engine); the films by ear.
-- Paths: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/full/report.md,
-  .../scratchpad/rr1/report.md, .../scratchpad/rr2/report.md, .../scratchpad/a1, a2, a3 (fixed, min and mutant runs on aceb504),
-  .../scratchpad/arr1, arr2 (rescue-result on aceb504), .../scratchpad/mut/nosave-aceb.html (the mutant page),
-  .../scratchpad/aceb (git archive of aceb504).
+3. MINOR (operations; record). I confirm the record item about the rollback page. hosted/v5/index.min.html now carries the new core under
+   the old v5 screens, and it breaks.
+   - The v5 app starts with C.mode "focus" and cuisine "indian" (src/v5/app.js:21). Its Builder reads MODEPLATE[C.mode] and PRESETS.post
+     (src/v5/app.js:467, 469), which no longer exist. So the day-type pill is empty, and the Builder fails on undefined.
+   - hosted/v6/README.md:13 still gives "remove PAGE_PATH (back to the v5 screens)" as the first rollback. No file in the repo records the
+     rollback by PAGE_REF=9998595 that the coordinator describes.
+   - npm run rules passes on this page because it checks the core only.
+   - Smallest correction: either stop build6 rewriting hosted/v5/index.min.html, or change the README rollback line to "PAGE_REF=9998595
+     (or earlier) only". Also correct the build6.js comment, which says the v5 page "is what PAGE_REF serves".
+
+4. COSMETIC (B: alignment). The skipped-meal mark sits on its own line under "Lunch" ("Lunch" with "×" below it), while "Breakfast ✓" is on
+   one line. The tab is taller and its word sits off the line of its neighbours. 320-light, 360-light and 360-light-big
+   plate-skipped-meds-1.png.
+
+5. COSMETIC (B: alignment). With the tagline gone, the date line at 340 to 379 px holds the date alone, left-aligned, under a centred
+   masthead (the issue number is hidden below 380 px). 360-light/plate-hero-1.png.
+
+6. COSMETIC (B: plain words). The mood pill reads "No preference" with nothing saying what it is about; the question shows only when the
+   panel is open. 320-light/plate-dial-cuisine-8.png.
+
+7. COSMETIC (B: look). The sticky "My food" sheet header has a band that is a shade off the sheet behind it. 320-dark/sheet-my-food-2.png.
+
+8. COSMETIC (record). The handoff decisions row says "Pregnant or nursing"; the app says "Pregnant or breastfeeding" (src/v5/core.js:7;
+   FIXES B6 53). src/data.js:8 still has the old option list. It does not appear to be in the build path, but it is stale.
+
+9. COSMETIC (record; films not in this diff). Both films still show what the owner has since dropped: the tagline "your daily plate,
+   journalled", the asks "Heavy leg day" and "Trek tomorrow", and the old masthead. A frame contact sheet confirms it. The film re-make is
+   already an open owner item.
+
+10. COSMETIC (screen book, mock only). Some mocked text does not fit the person: "10-Min Miso Glazed Tofu & Buckwheat Soba" for a North
+    Indian client on My home food, and a vegetarian's Rescue of mutton biryani. These are fixtures, not engine output, but the owner sees
+    them in the book.
+
+## Not inspected
+- Live Gemini replies under the new prompts: My home food by region, Active day, Rescue portions in pieces or grams, and the side counts.
+  Only recorded or mocked replies were seen.
+- The owner's own phone and its system text size; WhatsApp's in-app browser and whether its storage is shared with Chrome. If it is not,
+  "this phone remembers it" may not hold.
+- TalkBack and VoiceOver reading of the tick-all tiles and the referral note; the real keypad on the height box.
+- The 375, 393 and 430 px widths (the full set was not run); 412 px was measured but I did not view it.
+- I viewed by eye the new and changed states at 320 light and dark, 360 light and 360 at 130 %. The rest I checked by the measured report
+  only.
+- The film audio by ear; the films are not in this diff.
+- Behaviour at the real daily limit and midnight reset on the server (mocked codes only).
