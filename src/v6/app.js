@@ -70,7 +70,8 @@ function dayNo(){return Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
 function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
 /* ---------- talking to the server ---------- */
-var ERRS={not_set_up:"Meal planning isn't switched on.",bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
+var ERRS={not_set_up:"Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so.",   /* owner, 14 Nov, option survey (R2-B5 068) */
+  bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
   bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",photos_off:"Next Plate can't read photos at the moment. Type the menu instead.",bad_image:"That file couldn't be read as a photo. Take a new photo of the menu, or type it.",
   busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",timeout:"Next Plate took too long to answer. Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
@@ -84,6 +85,8 @@ function resetAt(){var n=new Date(),r=new Date(Date.UTC(n.getUTCFullYear(),n.get
 /* the server counts limit_ip per network address, not per phone (src/v5/server.ts), so the words say "on this network" (R2-B5 067);
    a refused code kept on the phone gets its own words, and a phone with no code keeps the first-visit words (R2-B5 071, R2-B4 063-1) */
 var REFUSED="This link's code was not accepted. Ask your coach to send the link again.";
+/* under the no-code message, before set-up and on the Plate card (owner, 14 Nov, option survey, R2-B1 002); the refused-code words stay */
+var LOSTIT="Lost it? Ask your coach to send it again.";
 function errText(code,where){
   if(code==="limit_day"||code==="limit_ip"){var tail=where==="plate"?"":where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.";
     if(code==="limit_ip")return (where==="plate"?"Today's limit of new plates on this network is reached. They open again at ":"Today's limit of requests on this network is reached. They open again at ")+resetAt()+"."+tail;
@@ -254,7 +257,7 @@ function renderSetup(){
 /* a phone that never opened the coach's link (no code in the address, none kept) is told so before set-up, on the card the plate shows
    for a missing code (owner, 14 Nov, option survey); a phone that opened the link once keeps its code and goes on as before */
 function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card err"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
-  add(c,i,el("h2",null,ERRS.bad_key));v.appendChild(c);}
+  add(c,i,el("h2",null,ERRS.bad_key),el("p",null,LOSTIT));v.appendChild(c);}
 function blockedCard(){
   var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("shield"));
   add(c,i,el("h2",null,"Plan your meals with your coach and doctor"),el("p",null,"You said "+(has("kidney")&&has("preg")?"you have a kidney condition and are pregnant or breastfeeding.":has("preg")?"you are pregnant or breastfeeding.":"you have a kidney condition.")+" For this, your meals are best planned with your coach and doctor, so Next Plate suggests none for now."));
@@ -446,6 +449,7 @@ function renderPlate(){
       var c=el("div","empty-card"+(UI.err?" err":"")),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));   /* "err": an error note, with the clay rule (owner, 14 Nov, option survey) */
       /* the heading says why the plate went: a choice the person changed, or the day moving on (R2-B2 028-1, R2-B3 034-1, 035-1) */
       add(c,i,el("h2",null,UI.err?UI.err:UI.moved==="appetite"&&PL?"You changed your appetite. Plan plates for about "+PL.target.kcal+"\u00A0kcal?":UI.moved?"Your choices changed. Plan plates for them?":"Your day has moved on. Plan fresh plates?"));
+      if(UI.err===ERRS.bad_key)c.appendChild(el("p",null,LOSTIT));
       if(UI.err)c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* every error that leaves no plate (second screen review, R2-B4 059-1) */   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
       if(last&&UI.err)c.appendChild(el("p",null,"Your plates from before are kept."));   /* R2-B5 065-2 */

@@ -34,6 +34,8 @@ const SLOW = async r => { await new Promise(x => setTimeout(x, 60000)); try { aw
 const OFF = r => r.abort('internetdisconnected');
 // every seeded phone has opened the coach's link once, so it carries the code (owner, 14 Nov: a phone with no code is told so before set-up)
 const CODE = 'REVIEWCODE', NEW = { p: {}, k: CODE };
+// owner, 14 Nov, option survey (R2-B5 068): what every surface says when meal planning is not switched on
+const NS = "Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so.";
 const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]), k: CODE }, o || {});
 
 // owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate, menu order, the other orders, Rescue)
@@ -92,6 +94,8 @@ const STATES = [
   // owner, 14 Nov: a phone that never opened the coach's link (empty storage, no code in the address) sees the no-code card, not set-up
   ['setup-no-code', null, async (p, h) => { const r = await p.evaluate(() => ({ t: document.getElementById('v-setup').innerText, card: !!document.querySelector('#v-setup #no-code.empty-card'), setup: !!document.getElementById('setup-next') || !!document.getElementById('goal-lose'), tabs: !document.getElementById('tabs').hidden }));
     if (!r.card || !/Open the link your coach sent you on WhatsApp once\. After that, this phone remembers it\./.test(r.t)) throw new Error('a phone with no code is not told to open the coach\'s link');
+    // owner, 14 Nov, option survey (R2-B1 002): a line under the message says what to do when the link is lost
+    if (!/remembers it\.\s*Lost it\? Ask your coach to send it again\./.test(r.t)) throw new Error('the no-code card has no line for a lost link');
     if (r.setup || r.tabs) throw new Error('a phone with no code still shows set-up'); }],
   ['setup-2-health', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
@@ -133,8 +137,11 @@ const STATES = [
   ['plate-error', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); }, (p, h) => h.failApi(p)],
   // the page opened without the code from the coach's link (owner, 14 Nov: clearer message)
   // second screen review, R2-B5 071 and R2-B4 063-1: a code kept on the phone and refused by the server gets its own words
+  // owner, 14 Nov, option survey (R2-B1 002): a set-up phone with no code kept gets the no-code message on the Plate card, with the lost-link line
+  ['plate-no-code-never', seed({ k: '' }), async (p, h) => { await p.waitForSelector('text=remembers it', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], text: 'Lost it? Ask your coach to send it again.' }, 'Plate with no code kept');
+    if (!/Open the link your coach sent you on WhatsApp once\. After that, this phone remembers it\.\s*Lost it\? Ask your coach to send it again\./.test(await p.innerText('#v-plate .empty-card'))) throw new Error('the Plate no-code card has no lost-link line under the message'); }, (p) => p.route('**/api/meals', J(401, '{"code":"bad_key"}'))],
   ['plate-no-code', seed(), async (p, h) => { await p.waitForSelector('text=code was not accepted', { timeout: 20000 }); await h.settle(); await h.next(p, { text: "This link's code was not accepted. Ask your coach to send the link again." }, 'A kept code refused');
-    if (/remembers it/.test(await p.textContent('#v-plate'))) throw new Error('a refused code is told to open the link once'); }, (p) => p.route('**/api/meals', r => r.fulfill({ status: 401, contentType: 'application/json', body: '{"code":"bad_key"}' }))],
+    if (/remembers it|Lost it\?/.test(await p.textContent('#v-plate'))) throw new Error('a refused code is told to open the link once, or gets the lost-link line'); }, (p) => p.route('**/api/meals', r => r.fulfill({ status: 401, contentType: 'application/json', body: '{"code":"bad_key"}' }))],
   ['plate-blocked-kidney', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); await h.next(p, { text: 'Plan your meals with your coach and doctor' }, 'Referred');
     // owner, 14 Nov: the referral card stays as it is, a heading, one paragraph and "Change my answers", with no added line
     const k = await p.evaluate(() => [...document.querySelector('#v-plate .empty-card').children].map(e => e.tagName + (e.tagName === 'BUTTON' ? ':' + e.textContent.trim() : '')).join(','));
@@ -244,10 +251,18 @@ const STATES = [
   ['plate-offline', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); await h.next(p, { has: ['#remake'], text: 'Check your signal' }, 'Plate offline'); }, (p) => p.route('**/api/meals', OFF)],
   ['plate-limit-phone', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], text: 'limit of new plates on this network' }, 'Plate at the network limit');
     if (/on this phone/.test(await p.textContent('#v-plate'))) throw new Error('the network limit is called the phone\'s (R2-B5 067)'); }, (p) => p.route('**/api/meals', J(429, '{"code":"limit_ip"}'))],
-  ['plate-not-set-up', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], has: ['#ask-lock'], text: "Meal planning isn't switched on." }, 'Plate not set up');
-    if (/switched on yet/.test(await p.textContent('#v-plate'))) throw new Error('the card still says "yet" (R2-B5 068)'); }, (p) => p.route('**/api/meals', J(503, '{"code":"not_set_up"}'))],
+  ['plate-not-set-up', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], has: ['#ask-lock'], text: NS }, 'Plate not set up');
+    if (/switched on yet/.test(await p.textContent('#v-plate'))) throw new Error('the card still says "yet" (R2-B5 068)');
+    // owner, 14 Nov, option survey (R2-B5 068): the same words wherever not_set_up shows: the plate, an ask, Rescue, the menu and the log
+    await p.click('#tab-rescue'); await h.settle(300); const w = (await p.innerText('#rescue-lock')).trim(); await p.click('#tab-plate'); await h.settle(300);   // Rescue and the menu share this note
+    if (w !== NS) throw new Error('Rescue and the menu do not word not_set_up the owner\'s way (' + w + ')'); }, (p) => p.route('**/api/meals', J(503, '{"code":"not_set_up"}'))],
   ['plate-ask-empty', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}')); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { has: ['#ask-retry'], value: [['#askin', 'Something light with paneer']], text: 'Showing the plates from before' }, 'Ask with nothing that fit'); }],
   ['plate-ask-offline', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', OFF); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { has: ['#ask-retry'], text: 'Check your signal' }, 'Ask offline'); }, () => {}],
+  // owner, 14 Nov, option survey (R2-B5 068): an ask and the meal log word not_set_up the same way as the Plate card
+  ['plate-ask-not-set-up', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(503, '{"code":"not_set_up"}')); await p.route('**/api/log', J(503, '{"code":"not_set_up"}'));
+    await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { hasNot: ['#ask-retry'], has: ['#ask-lock'], text: NS }, 'Ask while meal planning is off');
+    await p.click('#log-other'); await h.settle(300); const w = (await p.innerText('#log-note')).trim(); await p.click('#sheet-done'); await h.settle(300);
+    if (w !== NS) throw new Error('the meal log does not word not_set_up the owner\'s way (' + w + ')'); }, () => {}],
   ['plate-ask-no-code', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(401, '{"code":"bad_key"}')); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { hasNot: ['#ask-retry'], text: "This link's code was not accepted" }, 'Ask with a refused code'); }, () => {}],
   ['sheet-log-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', SLOW); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(400); }],
   ['sheet-log-not-meal', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', J(200, '{"status":"empty"}')); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.next(p, { hasNot: ['#log-retry'], value: [['#login', '2 aloo paratha with curd']], text: "didn't read as a meal" }, 'Log not read as a meal'); }],
