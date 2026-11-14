@@ -113,6 +113,12 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 | Rescue title "Eating out" (was "Eating out anyway") | owner, 14 Nov, option survey: Rescue title |
 | Error notes carry a thin clay rule on the left edge (class err); tips and info notes unchanged | owner, 14 Nov, option survey: error notes |
 | Goal tiles keep their icons; diet tiles have none | owner, 14 Nov, option survey: set-up tile icons |
+| Meal planning switched off reads "Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so." on the Plate, an ask, Rescue, the menu and the log | owner, 14 Nov, option survey: not switched on card |
+| The no-code card (before set-up and on the Plate) adds "Lost it? Ask your coach to send it again." under the message; the refused-code message is unchanged | owner, 14 Nov, option survey: no-code card line |
+| Day types: "Active day" (a long walk or housework), "Desk day", "Rest day"; Strength day, Trek day, their hooks and the post-training Builder preset dropped; kept values read as the new ones | owner, 14 Nov, option survey: day types |
+| The food pill is today's region: "My home food" (default, follows the region in My food), "North Indian", "South Indian", "West: Gujarati / Maharashtrian", "East: Bengali / Odia"; Mediterranean and High-protein express dropped; the panel asks "What food today?" | owner, 14 Nov, option survey: Today's region (Recommended), after the owner asked for a relook for mostly Indian clients |
+| Rescue at the daily limit: no extra line; the current note stays | owner, 14 Nov, option survey: Rescue at the limit |
+| A meal's protein stays within 35 % of its energy (mealProteinEnergyMax 0.35) | owner, 14 Nov, option survey: protein cap kept |
 | After the look is revised, re-make the same 30 s film with the revised look; same structure, script, voice, music | owner: "the video will have to be the exact same video... freshly made with the look of the app revised" |
 
 Claude's working defaults, not yet confirmed: the five target choices in `docs/RESEARCH-parameters.md` (1200 kcal floor for women, obesity line 27.5 vs 25, activity factor 1.3 for sitting, protein counted on the weight at BMI 25, bedtime 11:30 pm).

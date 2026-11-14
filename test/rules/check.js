@@ -1250,5 +1250,7 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const mk = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'dinner', text: fxm.typed, cuisine: 'med' } }).prompt || '';
   ok(!/Mediterranean|High-protein express/.test(mk), 'food today: no dropped choice reaches the menu prompt');
 }
+// owner, 14 Nov, option survey: a meal's protein stays within 35 % of its energy (kept as set in the second screen review, R2-B3 043)
+ok(PARAM.mealProteinEnergyMax === 0.35, 'protein cap: a meal\'s protein carries at most 35 % of its energy (' + PARAM.mealProteinEnergyMax + ')');
 console.log(bad ? `${bad} rule check(s) failed` : 'every rule check holds');
 process.exit(bad ? 1 : 0);

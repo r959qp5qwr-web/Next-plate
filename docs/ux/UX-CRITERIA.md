@@ -601,6 +601,17 @@ Error notes carry a thin clay rule on the left, info notes do not (A5 contrast u
 Yes to rice then No to roti sets the order aside and the trace line says why (menu-grain-yes-then-no-next). Kept as they are: the referral
 card (plate-blocked-kidney now checks it gains no line) and the icons on goal tiles only.
 
+## Part A, owner decisions on the second screen review's open questions (option survey, 14 Nov)
+Meal planning switched off reads "Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so." on the
+Plate, an ask, Rescue, the menu and the meal log (plate-not-set-up, plate-ask-not-set-up). The no-code card, before set-up and on the
+Plate, adds "Lost it? Ask your coach to send it again." under the message; a refused code keeps its own words (setup-no-code,
+plate-no-code-never, plate-no-code). The day types are Active day ("A long walk or housework"), Desk day and Rest day; Strength day and
+Trek day go with their hooks and the post-training Builder preset (plate-dial-mode, builder-ratio-set, rules: day type). The food pill
+is today's region: My home food, following the region in My food, then North Indian, South Indian, West and East; the panel asks "What
+food today?" and the prompt asks for that region's everyday home dishes (plate-dial-cuisine, rules: food today). Values kept on a phone
+from before are read as the new ones, on the phone and on the server. Kept as they are: the Rescue note at the limit, and the 35 % cap
+on a meal's protein energy (rules: protein cap).
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

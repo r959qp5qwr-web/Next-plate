@@ -3,28 +3,32 @@
 One row per finding in test/ux/screen-review/R2-B1.md to R2-B8.md (build 9274da67, 122 screens). A finding the reviewers counted once
 and referred to on other screens has one row; where they listed it again under another screen, that row says "as" the first.
 Branch claude/nice-hawking-307ljy. Commits: 031e712, 24281f8, c76f6eb, cc61fea (blockers), 04ad652, b7327cf, 858a147, 8a33ea7,
-f727b42 (majors), 20d7606 (minors and cosmetics). A guard is a review state or check in test/ux/review.js or a rule in
+f727b42 (majors), 20d7606 (minors and cosmetics); a516eba, bd99f8d, f94d57d (owner decisions, 14 Nov). A guard is a review state or check in test/ux/review.js or a rule in
 test/rules/check.js. Each guard added in this pass was run with --page against the page built before its fix (hosted/v6/index.html at
-a289486) and failed there; plate-day-done is a regression guard for the full day and passes on both.
+a289486) and failed there; plate-day-done is a regression guard for the full day and passes on both. The guards for the owner decisions
+were run against the page built at 983eb2c and failed there.
 
-Outcomes (164 rows): FIXED 158, NEEDS-OWNER 3, FIXED in part 1, MOCK-ONLY 1, NOT-A-DEFECT 1
+Outcomes (164 rows): FIXED 158, DECIDED 3, FIXED in part 1, MOCK-ONLY 1, NOT-A-DEFECT 1
 By severity: MINOR 84, COSMETIC 71, MAJOR 6, BLOCKER 3
 
-## Owner questions (NEEDS-OWNER)
-1. 068 plate-not-set-up: what should the card ask the client to do? Recommendation: "Meal planning isn't switched on for this link. Send
-   your coach a WhatsApp message to say so." ("yet" is already dropped.)
-2. 002 setup-no-code: add a line under the no-code card? Recommendation: "Lost it? Ask your coach to send it again." (with the brand line).
-3. 029 day types: "Strength day", "Trek day" and "Wind-down" fit these clients poorly. Recommendation: "Active day: a long walk or
-   housework", "Desk day", "Rest day". (The trek hook already drops the salt words with high BP.)
-4. 030 cuisines: "High-protein express" is not a cuisine and "Indian regional" names no region. Recommendation: "Indian home food" and
-   "Mediterranean", with protein left to the mood pill.
-5. 083 rescue-limit: a step for this meal without a new figure. Recommendation: "For this meal, choose a dish with dal, paneer or
-   vegetables and one roti or a small rice, or message your coach."
+## Owner questions (DECIDED: owner, 14 Nov, option survey)
+1. 068 plate-not-set-up: what should the card ask the client to do? Decided as recommended: "Meal planning isn't switched on for this
+   link. Send your coach a WhatsApp message to say so.", the same words on the Plate, an ask, Rescue, the menu and the log (a516eba).
+2. 002 setup-no-code: add a line under the no-code card? Decided as recommended: "Lost it? Ask your coach to send it again." under the
+   message, before set-up and on the Plate card; the refused-code message stays (a516eba).
+3. 029 day types: decided as recommended: "Active day" (subtitle "a long walk or housework"), "Desk day", "Rest day". Strength day and
+   Trek day are dropped, with the trek and strength hooks and the post-training Builder preset; kept values strength and trek read as
+   active, focus as desk (bd99f8d).
+4. 030 cuisines: decided "Today's region (Recommended)", after the owner asked for a relook for mostly Indian clients: "My home food"
+   (the default; it follows the region in My food), "North Indian", "South Indian", "West: Gujarati / Maharashtrian", "East: Bengali /
+   Odia". Mediterranean and High-protein express are dropped; kept values indian, med and express read as home (f94d57d).
+5. 083 rescue-limit: decided: no extra line; the current note stays.
+6. 043 plate-log-counted: the 35 % protein cap (mealProteinEnergyMax 0.35, src/v6/params.js) is kept (owner decision).
 
 | Batch | Screen | Severity | Finding | Outcome | Commit | Guard |
 |---|---|---|---|---|---|---|
 | B1 | 001 setup-1-goal-food | COSMETIC | Reason Next is off is 15 px grey italic | FIXED: all small print (.fine) is upright 16 px ink2, as the set-up and Plate disclaimers | 20d7606 |  |
-| B1 | 002 setup-no-code | COSMETIC | No-code card has no next step for a lost link and no brand line | NEEDS-OWNER: the wording is the owner's (14 Nov). Question: add a line under the card? Recommendation: "Lost it? Ask your coach to send it again." |  |  |
+| B1 | 002 setup-no-code | COSMETIC | No-code card has no next step for a lost link and no brand line | DECIDED (owner, 14 Nov, option survey): "Lost it? Ask your coach to send it again." under the message, before set-up and on the Plate card | a516eba | setup-no-code, plate-no-code-never |
 | B1 | 004 setup-2-health | MINOR | Tick-all tiles look like one-choice tiles | FIXED: tick-all-that-apply tiles carry a box, ticked when on (set-up and My food) | 20d7606 | setup-2-health (screens) |
 | B1 | 004 setup-2-health | COSMETIC | "Nothing to flag" | FIXED: "None of these" | 20d7606 |  |
 | B1 | 004 setup-2-health | COSMETIC | "B12" alone | FIXED: "Vitamin B12" | 20d7606 |  |
@@ -62,10 +66,10 @@ By severity: MINOR 84, COSMETIC 71, MAJOR 6, BLOCKER 3
 | B2 | 028 plate-goal-toast | MINOR | "Your day has moved on" after a goal change | FIXED: "Your choices changed. Plan plates for them?" after a setting; the old line stays for the clock | 20d7606 | plate-goal-toast, plate-moved-on |
 | B2 | 028 plate-goal-toast | MINOR | Toast covers Plan my plates at 320 px | FIXED: the goal toast is gone; the panel and the card say what changed | 20d7606 |  |
 | B2 | 028 plate-goal-toast | COSMETIC | "Hold steady." reads as a command | FIXED: the toast is gone (above) | 20d7606 |  |
-| B2 | 029 plate-dial-mode | MINOR | Day types fit these clients poorly; trek and BP salt hooks can clash | FIXED for the salt: the trek hook drops "salt" with high BP. NEEDS-OWNER for the day types (see questions) | 20d7606 |  |
+| B2 | 029 plate-dial-mode | MINOR | Day types fit these clients poorly; trek and BP salt hooks can clash | FIXED for the salt: the trek hook drops "salt" with high BP. DECIDED for the day types (owner, 14 Nov, option survey): Active day, Desk day, Rest day; the trek hook goes with Trek day | 20d7606, bd99f8d | plate-dial-mode, builder-ratio-set, rules: day type |
 | B2 | 029-032 plate-dial-* | MINOR | Panel placement, no title (029-1, 030-3, 031-1, 032-3) | FIXED (as 027-1) | 20d7606 |  |
 | B2 | 030 plate-dial-cuisine | MINOR | "Mediterranean" runs past its pill | FIXED: the cuisine panel uses wrapping pills | 20d7606 | plate-dial-cuisine |
-| B2 | 030 plate-dial-cuisine | MINOR | "High-protein express" is not a cuisine; "Indian regional" vague | NEEDS-OWNER (see questions) |  |  |
+| B2 | 030 plate-dial-cuisine | MINOR | "High-protein express" is not a cuisine; "Indian regional" vague | DECIDED (owner, 14 Nov, option survey): today's region, My home food first, then North, South, West and East Indian | f94d57d | plate-dial-cuisine, rules: food today |
 | B2 | 031 plate-dial-mood | COSMETIC | "Quick 15-min" splits at 320 px | FIXED: "Quick, 15 min" with a no-break space | 20d7606 |  |
 | B2 | 031 plate-dial-mood | COSMETIC | "Best fit" unclear | FIXED: "No preference" | 20d7606 |  |
 | B2 | 032 plate-dial-cook | MINOR | Two choices in one grid; Ordering out does not lead on | FIXED: "Cook or order" and "Oil" headings; Ordering out closes the panel and brings Plan my plates into view | 20d7606 | plate-dial-cook |
@@ -83,7 +87,7 @@ By severity: MINOR 84, COSMETIC 71, MAJOR 6, BLOCKER 3
 | B3 | 040 plate-ask-wait | MINOR | The wait does not say what was asked | FIXED: "Planning plates for “...”" | 20d7606 |  |
 | B3 | 040 plate-ask-wait | COSMETIC | A dot alone on a second line | FIXED (as 011-2) | 20d7606 |  |
 | B3 | 041 plate-asked-logged | MINOR | "Plan dinner" wraps inside its pill (041, 043, 044, 045) | FIXED once: the labels stay on one line and the row wraps | 20d7606 |  |
-| B3 | 043 plate-log-counted | MINOR | Catch-up protein beyond what the meal's energy can carry | FIXED: a meal's protein stays within 35 % of its energy (new parameter mealProteinEnergyMax, src/v6/params.js) | 20d7606 |  |
+| B3 | 043 plate-log-counted | MINOR | Catch-up protein beyond what the meal's energy can carry | FIXED: a meal's protein stays within 35 % of its energy (new parameter mealProteinEnergyMax, src/v6/params.js); kept by the owner (14 Nov, option survey) | 20d7606 | rules: protein cap |
 | B3 | 043 plate-log-counted | MINOR | Button wrap | FIXED (as 041-1) | 20d7606 |  |
 | B3 | 043 plate-log-counted | COSMETIC | Four toast wordings | FIXED: "Counted for <meal>. Your next meals adjust to it." everywhere | 858a147, 8a33ea7 |  |
 | B3 | 044 plate-rescued | MINOR | Day over target, not said | FIXED: the Today line says "That is about N kcal over today's N kcal." | 20d7606 |  |
@@ -112,7 +116,7 @@ By severity: MINOR 84, COSMETIC 71, MAJOR 6, BLOCKER 3
 | B5 | 065 plate-error-last | MINOR | "Show my last plates" does not look tappable | FIXED (as 022-1) | 20d7606 |  |
 | B5 | 065 plate-error-last | COSMETIC | Card does not say the earlier plates are kept | FIXED: "Your plates from before are kept." | 20d7606 | plate-error-last |
 | B5 | 067 plate-limit-phone | MINOR | "on this phone" for a per-address limit | FIXED: "Today's limit of new plates on this network is reached." | f727b42 | plate-limit-phone |
-| B5 | 068 plate-not-set-up | MAJOR | No next step on "isn't switched on yet" | NEEDS-OWNER for the step (see questions); "yet" dropped now | f727b42 | plate-not-set-up |
+| B5 | 068 plate-not-set-up | MAJOR | No next step on "isn't switched on yet" | "yet" dropped; DECIDED for the step (owner, 14 Nov, option survey): "Send your coach a WhatsApp message to say so." on every surface | f727b42, a516eba | plate-not-set-up, plate-ask-not-set-up |
 | B5 | 068 plate-not-set-up | MINOR | Asks stay live | FIXED: not_set_up locks the asks with "Asks open once your coach switches meal planning on." | 858a147 | plate-not-set-up |
 | B5 | 069 plate-ask-empty | MINOR | "above" and "didn't go through" contradict | FIXED: "Nothing for “...” fit your food rules. Change a choice under Your day, or tap Try again." | 20d7606 |  |
 | B5 | 069 plate-ask-empty | COSMETIC | "Try again" in the text and the button | FIXED with the line above | 20d7606 |  |
@@ -139,7 +143,7 @@ By severity: MINOR 84, COSMETIC 71, MAJOR 6, BLOCKER 3
 | B6 | 081 rescue-result | COSMETIC | "Another menu or dish" spacing | FIXED: tighter under the heading | 20d7606 |  |
 | B6 | 082 rescue-busy | COSMETIC | Two filled controls | FIXED: the send arrow is outlined while a note offers Try again | 20d7606 |  |
 | B6 | 082 rescue-busy | COSMETIC | Typed dish italic like the hint | FIXED: upright | 20d7606 |  |
-| B6 | 083 rescue-limit | MAJOR | Entry tools live at the limit | FIXED: camera, type link, send and chips off; the note keeps the step (a meal step without a figure is an owner question) | 858a147 | rescue-limit |
+| B6 | 083 rescue-limit | MAJOR | Entry tools live at the limit | FIXED: camera, type link, send and chips off; the note keeps the step. DECIDED (owner, 14 Nov, option survey): no extra line | 858a147 | rescue-limit |
 | B6 | 084 rescue-error | COSMETIC | Named "could not reach" | FIXED in names.js (Rescue and menu) | 20d7606 |  |
 | B6 | 085 rescue-empty | MINOR | Mixed causes, no Try again | FIXED: "Next Plate couldn't work out that dish. Try again, or name it another way..." with Try again | 20d7606 | rescue-empty |
 | B6 | 085 rescue-empty | COSMETIC | Route does not lead here | FIXED in names.js | 20d7606 |  |
