@@ -18,7 +18,13 @@ const js = a5.slice(0, s0) + a5.slice(s1, s2) + rd('src/v6/plate.js') + '\n' + r
 // The v6 masthead has no tagline (owner, 14 Nov, option survey): the date line keeps the date and the issue number.
 const markup = rd('src/v5/markup.html'), TAG = '<em>your daily plate, journalled</em>';
 if (!markup.includes(TAG)) throw new Error('masthead tagline moved in src/v5/markup.html');
-const body = markup.replace(TAG, '').replace('/*CORE*/', () => core).replace('/*APP*/', () => js);
+// On scroll the date line and the food line go up with the page; the name, the meal tabs and the ask bar stay (owner, 14 Nov, option
+// survey). The two lines move from the fixed header to the top of the scrolling area, in the same order and with the same rules.
+const MAST = markup.match(/\n\s*<p class="mast"[^\n]*<\/p>/), FOOD = markup.match(/\n\s*<button type="button" class="myfood" id="myfood"[^\n]*<\/button>/);
+if (!MAST || !FOOD || !markup.includes('<main class="scroll" id="scroll">')) throw new Error('masthead lines moved in src/v5/markup.html');
+const body = markup.replace(MAST[0], '').replace(FOOD[0], '')
+  .replace('<main class="scroll" id="scroll">', () => '<main class="scroll" id="scroll">\n    <div class="dateline" id="dateline">' + MAST[0].replace(TAG, '') + FOOD[0] + '\n    </div>')
+  .replace('/*CORE*/', () => core).replace('/*APP*/', () => js);
 const shell = headLight + '\n' + rd('src/v5/extra.css') + '\n' + rd('src/v6/extra.css') + '\n' + rd('src/v6/legible.css') + '\n' + icons + '\n' + body;
 const top = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#F2ECE1"><meta name="color-scheme" content="only light"><style>body{margin:0}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style></head><body>';
 const page = top + shell + '</body></html>';

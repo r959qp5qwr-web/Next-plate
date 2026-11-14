@@ -1077,6 +1077,13 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .tab[aria-current="page"]::before{bottom:2px}                                                 /* the mark under the open tab clears its word at large text */
 #app .rw .rcap{margin:0 0 6px}
 
+/* ===== owner, 14 Nov (option survey): on scroll the date line and the food line go up with the page; the name, the meal tabs and the ask bar stay ===== */
+#app .top{border-bottom:1px solid var(--ink);padding-bottom:4px}
+#app .dateline{display:flex;flex-wrap:wrap;justify-content:center;gap:0 12px;border-bottom:3px double var(--ink);padding-bottom:6px;margin-bottom:8px}
+#app .dateline .mast{border-top:0;margin-top:0;padding-top:5px}
+#app .meals{position:sticky;top:-2px;z-index:5;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .29 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3Cg fill='%237a5c3e' fill-opacity='.35'%3E%3Ccircle cx='23' cy='41' r='.9'/%3E%3Ccircle cx='181' cy='17' r='.6'/%3E%3Ccircle cx='97' cy='133' r='1.1'/%3E%3Ccircle cx='211' cy='201' r='.7'/%3E%3Ccircle cx='51' cy='229' r='.8'/%3E%3Ccircle cx='147' cy='83' r='.5'/%3E%3Ccircle cx='239' cy='121' r='.9'/%3E%3C/g%3E%3C/svg%3E")}
+#app #scroll:has(#v-plate:not([hidden])){scroll-padding-top:64px}
+
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1128,10 +1135,12 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 <div class="app" id="app" data-layout="phone">
   <header class="top">
     <div class="brand"><span>Next Plate</span></div>
-    <p class="mast" aria-hidden="true"><span id="mastdate"></span><span id="issue"></span></p>
-    <button type="button" class="myfood" id="myfood" aria-haspopup="dialog" hidden><span id="myfoodtxt"></span><svg class="i"><use href="#i-chevd"/></svg></button>
   </header>
   <main class="scroll" id="scroll">
+    <div class="dateline" id="dateline">
+    <p class="mast" aria-hidden="true"><span id="mastdate"></span><span id="issue"></span></p>
+    <button type="button" class="myfood" id="myfood" aria-haspopup="dialog" hidden><span id="myfoodtxt"></span><svg class="i"><use href="#i-chevd"/></svg></button>
+    </div>
     <section class="view" id="v-setup" hidden></section>
     <section class="view panel" id="v-plate" hidden></section>
     <section class="view panel" id="v-build" hidden></section>

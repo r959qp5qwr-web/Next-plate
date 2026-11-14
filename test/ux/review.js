@@ -43,6 +43,15 @@ const asks = async (p, want) => { const got = await p.evaluate(() => [...documen
 const ASKS = ['Only dal, rice and curd at home', 'A light dinner after a heavy lunch', 'Guests at home tonight', 'Tired, something quick'];
 // owner, 14 Nov: the masthead has no tagline
 const noTagline = async (p) => { if (await p.evaluate(() => !!document.querySelector('.mast em') || /journalled/i.test(document.body.textContent))) throw new Error('the masthead still carries the tagline'); };
+// owner, 14 Nov: on scroll the date line and the food line go up with the page; the name, the meal tabs and the ask bar stay
+const scrollAway = async (p) => { const r = await p.evaluate(() => { const s = document.getElementById('scroll'), y0 = s.scrollTop; s.scrollTop = 700; const q = (x) => { const e = document.querySelector(x); return e ? e.getBoundingClientRect() : null; };
+  const st = s.getBoundingClientRect(), out = { brand: q('.top .brand'), food: q('#myfood'), date: q('#dateline'), meals: q('#v-plate .meals'), ask: q('.composer'), top: st.top, vh: innerHeight }; s.scrollTop = y0; return out; });
+  const bad = [];
+  if (!r.brand || r.brand.top < 0 || r.brand.bottom > r.top + 1) bad.push('the name is not fixed at the top');
+  if (!r.food || !r.date || r.date.bottom > r.top + 1) bad.push('the date line or the food line stays on screen');
+  if (!r.meals || Math.abs(r.meals.top - r.top) > 4) bad.push('the meal tabs do not stay at the top (' + (r.meals ? Math.round(r.meals.top) : '-') + ' vs ' + Math.round(r.top) + ')');
+  if (!r.ask || r.ask.bottom > r.vh || r.ask.top < r.vh / 2) bad.push('the ask bar is not at the bottom');
+  if (bad.length) throw new Error('on scroll: ' + bad.join('; ')); };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -57,7 +66,7 @@ const STATES = [
   ['setup-2-health', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
-  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); }],
+  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); await scrollAway(p); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
