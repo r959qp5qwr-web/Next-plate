@@ -246,3 +246,26 @@
 #app .tag{color:#8A4A2C;box-shadow:inset 0 0 0 1px #8A4A2C}             /* "swapped", "changed": 5.5:1 on paper */
 #app [role=radiogroup] small{font-size:14px;line-height:18px}             /* day-type and other panel subtitles: 14 px floor */
 #app .fine.err{color:#8A2E1E;font-style:normal}                            /* a line that says what to type: 6.9:1 */
+/* ===== screen-by-screen review, minor and cosmetic fixes (test/ux/screen-review/FIXES.md) ===== */
+#app .fine.disc{font-style:normal;font-size:16px;line-height:23px;color:var(--ink2)}               /* the disclaimer and the Gemini line: upright, 16 px */
+#app .setup-hero p{font-style:normal;font-size:16px;line-height:23px}                               /* the promise of set-up reads upright */
+#app .setup-hero .said-ok{font-weight:600;color:var(--olive-t)}
+#app .fine.refer{font-style:normal;color:var(--ink)}
+#app .qs.act{margin-top:22px}                                                                       /* Activity is its own question, not a caption of the boxes */
+#app .fields input{box-shadow:inset 0 0 0 1px var(--ink3)}                                          /* a box to type in looks like one */
+#app .rail{flex-wrap:wrap;overflow:visible;margin:0;padding:2px 0 4px}                              /* every setting in view: the pills wrap, nothing hides off the edge */
+#app .tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;margin:0;padding:2px 0 4px}
+#app .tiles .tile2{min-width:0}
+#app .hero h2::after{width:60px}                                                                    /* five whole dots */
+#app .tune.alc .tbtn{justify-content:flex-start;text-align:left}                                   /* a wrapped label stays beside its icon */
+#app .tnote .nw,#app .nw{white-space:nowrap}
+#app .fine.undo{margin:4px 0 0}
+#app .pairs .plus.when svg.i{width:14px;height:14px;color:#FFFFFF}
+#app .slide .cap{margin:0}
+#app .slide .slide-v{margin:0}
+#app .drawer .choice{padding-top:8px;padding-bottom:8px;line-height:21px;text-align:left}
+#app .card.logged .dish{margin-bottom:0}
+#app .toast{pointer-events:none;font-style:normal}
+#app .tip .linkbtn{text-decoration:underline;text-underline-offset:3px}
+#app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled{opacity:.5;cursor:default}
+#app .asklock{margin:0 0 10px}

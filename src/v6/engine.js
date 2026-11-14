@@ -3,7 +3,7 @@
    Code counts, Gemini cooks: every target, pattern and hook below is computed here; the model only plans food. ===== */
 
 OPT.goal=[["lose","Lose weight gently"],["hold","Hold steady"],["build","Build strength"]];
-OPT.focus=[["none","Nothing in particular"],["iron","Iron"],["b12","B12"],["cal","Calcium and D"],["pro","Protein"],["fib","Fibre"]];
+OPT.focus=[["none","Nothing in particular"],["iron","Iron"],["b12","B12"],["cal","Calcium and vitamin D"],["pro","Protein"],["fib","Fibre"]];
 var SLOTS=["breakfast","lunch","snack","dinner"];
 var SLOTHOUR={breakfast:8.5,lunch:13.25,snack:16.75,dinner:20.25};          /* middle of each window, used until the person's own timing is learned */
 
@@ -85,13 +85,13 @@ function suggestAppetite(file,meal){
 
 /* ---------- hooks: the only reasons Gemini may cite. Each is true by construction, because code derived it ---------- */
 var FOCUSRULE={iron:"an iron-rich food together with a vitamin C food (lemon, amla, tomato, guava)",b12:"a B12 source the diet allows: dairy, egg, fish or meat",cal:"calcium foods: curd, milk, paneer, ragi, sesame or greens",pro:"a clear protein food at the centre of the plate",fib:"whole grain, legumes and vegetables for fibre"};
-var FOCUSNAME={iron:"iron",b12:"B12",cal:"calcium and D",pro:"protein",fib:"fibre"};
+var FOCUSNAME={iron:"iron",b12:"B12",cal:"calcium and vitamin D",pro:"protein",fib:"fibre"};
 function hooksFor(p,file,c,pl,par){
   par=par||PARAM;var H=[],t=file.today,meal=c.meal,mn=lab("meal",meal).toLowerCase();
   function add(id,tag,brief){H.push({id:id,tag:tag,brief:brief});}
   if(p.goal==="lose")add("goal_lose","gentle weight loss","Goal: lose weight gently. Vegetables fill about half the plate, the grain is measured, nothing fried, no sugary drinks.");
   if(p.goal==="build")add("goal_build","building strength","Goal: build strength. Protein leads the plate and the meal is not undersized.");
-  if(p.focus&&p.focus!=="none"&&FOCUSRULE[p.focus])add("focus_"+p.focus,"minding "+FOCUSNAME[p.focus],"They are minding "+FOCUSNAME[p.focus]+": include "+FOCUSRULE[p.focus]+".");
+  if(p.focus&&p.focus!=="none"&&FOCUSRULE[p.focus])add("focus_"+p.focus,"more "+FOCUSNAME[p.focus],"They want more "+FOCUSNAME[p.focus]+": include "+FOCUSRULE[p.focus]+".");
   if(pl){
     var gap=pl.target.protein-pl.usual.protein;
     if(gap>=par.hookProteinGap)add("protein_gap","protein to catch up","They are behind on protein today: "+pl.left.protein+" g still to go with "+pl.mealsLeft+" meal"+(pl.mealsLeft>1?"s":"")+" left. This meal should carry about "+pl.target.protein+" g.");
@@ -136,10 +136,12 @@ function anchorFor(p,file,c){
 /* One plain sentence for the top of Today, written by code from the plan and the strongest hook ([S] "Live Dietitian Directive") */
 function directive(p,pl,hooks,meal,done){
   if(!pl)return "";
-  var s="Today: about "+pl.day.kcal+" kcal and "+pl.day.protein+" g protein. ";
-  if(done)return s+"So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. That is every meal for today.";
-  if(pl.eaten.kcal>0)s+="So far "+pl.eaten.kcal+" kcal and "+pl.eaten.protein+" g protein. ";
-  s+=lab("meal",meal)+" carries about "+pl.target.kcal+" kcal and "+pl.target.protein+" g protein";
+  /* a figure stays with its unit (no-break space) when the line wraps (screen review B1) */
+  function kp(k,g){return k+"\u00A0kcal and "+g+"\u00A0g protein";}
+  var s="Today: about "+kp(pl.day.kcal,pl.day.protein)+". ";
+  if(done)return s+"So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". That is every meal for today.";
+  if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
+  s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
   var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
   pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
   var tail={late_now:"; it's late, so keep it light",protein_gap:", to catch up on protein",lighter_now:", lighter after earlier meals",ate_out:"; simple and home-style after eating out",long_gap:"; you've gone a while without food, so vegetables and protein first",late_dinner:"; a lighter, earlier dinner helps"};

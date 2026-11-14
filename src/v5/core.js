@@ -4,7 +4,7 @@
 /* ---------- option lists (validated on both sides) ---------- */
 var OPT={
   diet:[["veg","Vegetarian"],["egg","Veg and egg"],["nonveg","Non-veg"],["jain","Jain"],["vegan","Vegan"]],
-  health:[["none","Nothing to flag"],["diabetes","Diabetes"],["bp","High BP"],["kidney","Kidney condition"],["preg","Pregnant or nursing"]],
+  health:[["none","Nothing to flag"],["diabetes","Diabetes"],["bp","High BP"],["kidney","Kidney condition"],["preg","Pregnant or breastfeeding"]],
   region:[["n","North"],["s","South"],["w","West"],["e","East"]],
   leave:[["dairy","Dairy"],["nut","Nuts"],["wheat","Wheat"],["soya","Soya"]],
   sex:[["f","Female"],["m","Male"]],

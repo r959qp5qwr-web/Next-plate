@@ -46,7 +46,7 @@ var PARAM={
   waterGlasses:8           /* about 2 litres a day including beverages (ICMR-NIN 2024, S12) */
 };
 PARAM.lateDinnerHour=PARAM.bedtimeHour-PARAM.dinnerGapHours;
-OPT.meds=[["no","No, neither"],["yes","Yes"],["unsure","Not sure"]];
+OPT.meds=[["no","No"],["yes","Yes"],["unsure","Not sure"]];
 
 function bmiOf(p){return p&&p.kg>0&&p.cm>0?p.kg/Math.pow(p.cm/100,2):null;}
 function refWeight(p,par){par=par||PARAM;var b=bmiOf(p);if(b==null)return null;return b>par.refBmi?par.refBmi*Math.pow(p.cm/100,2):p.kg;}
