@@ -18,6 +18,7 @@ module.exports = [
   S(P, 'plate-logged', 'Plate: eaten, logged', 'Tap I had this.'),
   S(P, 'toast', 'Plate: the short confirmation line', 'Just after I had this.'),
   S(P, 'plate-skipped-meds', 'Plate: meal skipped while on medicines', 'With medicines set, tap Skipped.'),
+  S(P, 'plate-logged-room', 'Plate: eaten, logged, with room left for a snack', 'Goal Hold steady, then I’ll have this at lunch.'),
   S(P, 'plate-asked', 'Plate: made from what is at home', 'Type what is at home in the box and send.'),
   S(PS, 'sheet-my-food', 'Sheet: my food', 'Tap the food line under the name at the top.'),
   S(PS, 'sheet-data-confirm', 'Sheet: remove my data, confirm', 'My food, then Remove my data.'),

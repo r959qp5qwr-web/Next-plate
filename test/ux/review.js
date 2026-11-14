@@ -107,7 +107,14 @@ const STATES = [
     // owner, 14 Nov: the warning ends with what to do now, on the card and in the spoken line
     const r = await p.evaluate(() => ({ card: (document.querySelector('#v-plate .logged .note') || {}).textContent || '', said: document.getElementById('said').textContent }));
     const now = /If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor\./;
-    if (!now.test(r.card) || !now.test(r.said)) throw new Error('the low-sugar warning does not say what to do now (card: ' + now.test(r.card) + ', spoken: ' + now.test(r.said) + ')'); }],
+    if (!now.test(r.card) || !now.test(r.said)) throw new Error('the low-sugar warning does not say what to do now (card: ' + now.test(r.card) + ', spoken: ' + now.test(r.said) + ')');
+    // second screen review, R2-B2 021-1: after a skipped meal on medicines the snack is never passed over, and nothing says little is left
+    const n = await p.evaluate(() => ({ low: !!document.getElementById('snack-low'), go: ((document.getElementById('slot-next') || {}).textContent || '').trim() }));
+    if (n.low || n.go !== 'Plan snack') throw new Error('after a skipped meal on medicines the card offers "' + n.go + '"' + (n.low ? ' and says little is left for a snack' : '')); }],
+  // R2-B2 021-1: "Little is left for a snack" follows the day's kcal left, not the snack's own small target; a day with room offers the snack
+  ['plate-logged-room', seed({ p: Object.assign({}, P, { goal: 'hold' }) }), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900);
+    const n = await p.evaluate(() => ({ low: !!document.getElementById('snack-low'), go: ((document.getElementById('slot-next') || {}).textContent || '').trim(), day: (window.__np6.plan() || {}).day }));
+    if (n.low || n.go !== 'Plan snack') throw new Error('with room left in the day the card offers "' + n.go + '"' + (n.low ? ' and says little is left for a snack' : '')); }],
   ['plate-error', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); }, (p, h) => h.failApi(p)],
   // the page opened without the code from the coach's link (owner, 14 Nov: clearer message)
   ['plate-no-code', seed(), async (p, h) => { await p.waitForSelector('text=this phone remembers it', { timeout: 20000 }); await h.settle(); }, (p) => p.route('**/api/meals', r => r.fulfill({ status: 401, contentType: 'application/json', body: '{"code":"bad_key"}' }))],

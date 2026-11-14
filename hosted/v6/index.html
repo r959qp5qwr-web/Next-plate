@@ -2911,9 +2911,14 @@ function clearSlot(meal){var d=DAY;EV=EV.filter(function(e){return !(dayOf(e.t)=
 /* an asked plate, once the meal is logged, gives way so the logged card shows (screen review B2) */
 function unAsk(){if(STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0)STORE.shown[C.meal]=null;}
 function nextOpen(){var i=SLOTS.indexOf(C.meal);for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return SLOTS[j];return null;}
-/* the meal to plan next: when under 120 kcal is left for the snack, the next main meal still open comes first (owner, 14 Nov, option survey) */
+/* the meal to plan next: when under 120 kcal is left for the snack, the next main meal still open comes first (owner, 14 Nov, option survey).
+   What is left for the snack is the day's kcal left after the meals eaten, less what the main meals still open after it usually take; the
+   snack's own target is small by design, so it is not the test (second screen review, R2-B2 021-1). After a skipped meal on insulin or sugar
+   tablets the snack is never passed over. */
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
-function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};var sp=planFor("snack");if(!sp||sp.target.kcal>=120)return {meal:nx,low:false};
+function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
+function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
+  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
