@@ -2857,7 +2857,7 @@ function dayNo(){return Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
 function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
 /* ---------- talking to the server ---------- */
-var ERRS={not_set_up:"Meal planning isn't switched on yet.",bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
+var ERRS={not_set_up:"Meal planning isn't switched on.",bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
   bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it.",
   busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
@@ -2868,10 +2868,15 @@ function RETRY(code){return NORETRY.indexOf(code)<0;}
 function lockOn(code){if(/^limit_/.test(code)||code==="bad_key"||code==="not_set_up")UI.lock=code;}
 /* the daily limit resets at midnight UTC on the server; say when in the phone's own clock */
 function resetAt(){var n=new Date(),r=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+1)),h=r.getHours(),m=r.getMinutes();return (h%12||12)+(m?":"+(m<10?"0":"")+m:"")+(h<12?"\u00A0am":"\u00A0pm");}
+/* the server counts limit_ip per network address, not per phone (src/v5/server.ts), so the words say "on this network" (R2-B5 067);
+   a refused code kept on the phone gets its own words, and a phone with no code keeps the first-visit words (R2-B5 071, R2-B4 063-1) */
+var REFUSED="This link's code was not accepted. Ask your coach to send the link again.";
 function errText(code,where){
-  if(code==="limit_day"||code==="limit_ip"){var ph=code==="limit_ip"?" on this phone":"";
-    if(where==="plate")return "You have used today's new plates"+ph+". They open again at "+resetAt()+".";
-    return "You have used today's requests for Next Plate"+ph+". They open again at "+resetAt()+"."+(where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.");}
+  if(code==="limit_day"||code==="limit_ip"){var tail=where==="plate"?"":where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.";
+    if(code==="limit_ip")return (where==="plate"?"Today's limit of new plates on this network is reached. They open again at ":"Today's limit of requests on this network is reached. They open again at ")+resetAt()+"."+tail;
+    if(where==="plate")return "You have used today's new plates. They open again at "+resetAt()+".";
+    return "You have used today's requests for Next Plate. They open again at "+resetAt()+"."+tail;}
+  if(code==="bad_key"&&KEYCODE)return REFUSED;
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
   body.key=KEYCODE;
@@ -3185,11 +3190,12 @@ function heroCard(m,v,r){
   var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */});add(lg,o,sk);card.appendChild(lg);
   return card;
 }
+function lockLine(){return /^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":UI.lock==="not_set_up"?"Asks open once your coach switches meal planning on.":KEYCODE?"Asks open once you open the new link from your coach.":"Asks open once your coach's link is opened on this phone.";}
 /* the example asks (owner, 14 Nov, option survey); a diet or a food left out still removes an ask that crosses it */
 var PROMPTS=["Only dal, rice and curd at home","A light dinner after a heavy lunch","Guests at home tonight","Tired, something quick"];
 function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
-  if(UI.lock){var lk=el("p","fine asklock",/^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":UI.lock==="not_set_up"?"Asks open once your coach switches meal planning on.":"Asks open once your coach's link is opened on this phone.");lk.id="ask-lock";host.appendChild(lk);return;}
+  if(UI.lock){var lk=el("p","fine asklock",lockLine());lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
   var pr=el("div","prompts");PROMPTS.filter(function(t){return !crosses(t,P);}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
@@ -3198,7 +3204,8 @@ function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
   var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));go.disabled=!!UI.busy||!!UI.lock;
-  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;});   /* what is typed stays across re-renders; a failed ask stays too */
+  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;});
+  if(UI.lock){i.readOnly=true;i.placeholder=/^limit_/.test(UI.lock)?"Asks open at "+resetAt():"Asks are off for now";}   /* the box says why it is off and keeps what was typed (second screen review, R2-B4 060-1) */   /* what is typed stays across re-renders; a failed ask stays too */
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();UI.askDraft="";makePlates(t);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
 }
@@ -3215,7 +3222,7 @@ function renderPlate(){
     else{
       var c=el("div","empty-card"+(UI.err?" err":"")),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));   /* "err": an error note, with the clay rule (owner, 14 Nov, option survey) */
       add(c,i,el("h2",null,UI.err?UI.err:"Your day has moved on. Plan fresh plates?"));
-      if(UI.lock&&/^limit_/.test(UI.lock))c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* a next step without a new plate (screen review B3) */
+      if(UI.err)c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* every error that leaves no plate (second screen review, R2-B4 059-1) */   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
