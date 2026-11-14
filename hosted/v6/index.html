@@ -1083,6 +1083,8 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .dateline .mast{border-top:0;margin-top:0;padding-top:5px}
 #app .meals{position:sticky;top:-2px;z-index:5;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .29 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3Cg fill='%237a5c3e' fill-opacity='.35'%3E%3Ccircle cx='23' cy='41' r='.9'/%3E%3Ccircle cx='181' cy='17' r='.6'/%3E%3Ccircle cx='97' cy='133' r='1.1'/%3E%3Ccircle cx='211' cy='201' r='.7'/%3E%3Ccircle cx='51' cy='229' r='.8'/%3E%3Ccircle cx='147' cy='83' r='.5'/%3E%3Ccircle cx='239' cy='121' r='.9'/%3E%3C/g%3E%3C/svg%3E")}
 #app #scroll:has(#v-plate:not([hidden])){scroll-padding-top:64px}
+/* Builder (owner, 14 Nov, option survey): once a share is changed, "Plan <meal> with this plate" stays above the tab bar; at its own place in the page it settles there */
+#app #make-ratio.stick{position:sticky;bottom:-16px;z-index:6;box-shadow:0 -6px 16px -6px rgba(60,44,28,.35)}
 
 </style>
 
@@ -3241,6 +3243,7 @@ function renderBuild(){
   add(c,rw,stp);v.appendChild(c);
   if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
+  if(UI.preset==="")mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
   mk.addEventListener("click",function(){C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
   v.appendChild(mk);
   if(C.ratio){var cl=btn("linkbtn","Go back to plates by mode",null,"clear-ratio");cl.addEventListener("click",function(){C.ratio=null;UI.ratio=null;STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}

@@ -54,6 +54,16 @@ const scrollAway = async (p) => { const r = await p.evaluate(() => { const s = d
   if (!r.meals || Math.abs(r.meals.top - r.top) > 4) bad.push('the meal tabs do not stay at the top (' + (r.meals ? Math.round(r.meals.top) : '-') + ' vs ' + Math.round(r.top) + ')');
   if (!r.ask || r.ask.bottom > r.vh || r.ask.top < r.vh / 2) bad.push('the ask bar is not at the bottom');
   if (bad.length) throw new Error('on scroll: ' + bad.join('; ')); };
+// owner, 14 Nov: once a share is changed, the Builder's plan button stays above the tab bar; at the end of the page nothing is under it
+const planBtn = async (p, stuck) => { const r = await p.evaluate(() => { const s = document.getElementById('scroll'), b = document.getElementById('make-ratio'), y0 = s.scrollTop; if (!b) return null;
+  const tabs = document.getElementById('tabs').getBoundingClientRect().top; s.scrollTop = 0; const a = b.getBoundingClientRect(), pos = getComputedStyle(b).position;
+  s.scrollTop = s.scrollHeight; const e = b.getBoundingClientRect(), under = [...document.querySelectorAll('#v-build *')].filter(x => !b.contains(x) && !x.contains(b) && x.offsetParent && [...x.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim()))
+    .filter(x => { const q = x.getBoundingClientRect(); return Math.min(q.right, e.right) - Math.max(q.left, e.left) > 1 && Math.min(q.bottom, e.bottom) - Math.max(q.top, e.top) > 1; }).map(x => x.textContent.trim().slice(0, 30));
+  s.scrollTop = y0; return { pos, top: a.top, bottom: a.bottom, tabs, under }; });
+  if (!r) throw new Error('no plan button in the Builder');
+  if (!stuck && r.pos === 'sticky') throw new Error('the plan button is held above the tab bar before any share is changed');
+  if (stuck && (r.pos !== 'sticky' || r.bottom > r.tabs + 1 || r.bottom < r.tabs - 48)) throw new Error('after a change the plan button is not held above the tab bar (' + r.pos + ', ' + Math.round(r.bottom) + ' vs ' + Math.round(r.tabs) + ')');
+  if (r.under.length) throw new Error('at the end of the page the plan button covers: ' + r.under.join(' | ')); };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -112,8 +122,8 @@ const STATES = [
   ['plate-ask-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { has: ['#ask-retry'], value: [['#askin', 'Something light with paneer']], text: 'busy just now' }, 'Ask that failed with plates on screen'); await h.next(p, { text: 'Your ask \u201CSomething light with paneer\u201D didn\'t go through' }, 'Ask that failed names the ask'); await h.inView(p, '#ask-retry', 'Try again after a failed ask'); }, () => {}],
   ['plate-asked', seed(), async (p, h) => { await h.plate(p); await p.fill('#askin', 'Only eggs, spinach and bread at home'); await p.press('#askin', 'Enter'); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(900); }],
   ['toast', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(250); }],
-  ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); }],
-  ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#st-greens-p'); await p.click('#st-greens-p'); await h.settle(); await h.next(p, { has: ['#ratio-changed'] }, 'Builder after a change not yet used'); }],
+  ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await planBtn(p, false); }],
+  ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#st-greens-p'); await p.click('#st-greens-p'); await h.settle(); await h.next(p, { has: ['#ratio-changed'] }, 'Builder after a change not yet used'); await planBtn(p, true); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await h.inView(p, '#rescue-lede', 'what Rescue gives'); await h.next(p, { has: ['#dish-cap'] }, 'Rescue start'); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); await h.next(p, { text: 'Moves you can make' }, 'Rescue answer'); await closeTo(p, ['#v-rescue .inst']); }],
   ['rescue-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(600); await h.inView(p, '#v-rescue .ans-read', 'the Rescue wait line'); if (!(await p.$eval('#mcam', b => b.disabled))) throw new Error('Read the menu looks ready during a wait'); }],

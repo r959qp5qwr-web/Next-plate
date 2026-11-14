@@ -469,6 +469,7 @@ function renderBuild(){
   add(c,rw,stp);v.appendChild(c);
   if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
+  if(UI.preset==="")mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
   mk.addEventListener("click",function(){C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
   v.appendChild(mk);
   if(C.ratio){var cl=btn("linkbtn","Go back to plates by mode",null,"clear-ratio");cl.addEventListener("click",function(){C.ratio=null;UI.ratio=null;STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}
