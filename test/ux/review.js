@@ -270,7 +270,7 @@ const STATES = [
   // owner, 14 Nov, option survey (R2-B5 068): an ask and the meal log word not_set_up the same way as the Plate card
   ['plate-ask-not-set-up', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(503, '{"code":"not_set_up"}')); await p.route('**/api/log', J(503, '{"code":"not_set_up"}'));
     await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { hasNot: ['#ask-retry'], has: ['#ask-lock'], text: NS }, 'Ask while meal planning is off');
-    await p.click('#log-other'); await h.settle(300); const w = (await p.innerText('#log-note')).trim(); await p.click('#sheet-done'); await h.settle(300);
+    await p.click('#log-other'); await h.settle(300); const w = (await p.innerText('#log-note')).trim(); await p.click('#sheet-done'); await h.settle(1500);   // the plate is captured once the sheet has closed
     if (w !== NS) throw new Error('the meal log does not word not_set_up the owner\'s way (' + w + ')'); }, () => {}],
   ['plate-ask-no-code', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(401, '{"code":"bad_key"}')); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { hasNot: ['#ask-retry'], text: "This link's code was not accepted" }, 'Ask with a refused code'); }, () => {}],
   ['sheet-log-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', SLOW); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(400); }],
