@@ -569,6 +569,12 @@ naan)" selling roti. Changes:
 The rules carry the round 32 grain-name and heading cases. Measured: rules hold; the eight grain review states pass; every earlier Critic
 probe reads the same as on the round 31 build; all 4,897 combinatorial cases read right; recorded live replies unchanged.
 
+## Part A, change after the round 33 deploy (owner decision, 14 Nov)
+Opened without the code from the coach's link, the page used to say "This link needs the code from your coach's message. Open the link
+they sent you." The owner opened bare nextplate.in on his own phone and asked what the screen meant. Decision (owner, option survey):
+keep the lock, make the message plain. It now reads "Open the link your coach sent you on WhatsApp once. After that, this phone remembers
+it." Review state plate-no-code shows it.
+
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
 |---|---|---|

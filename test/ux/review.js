@@ -50,6 +50,8 @@ const STATES = [
   ['plate-logged', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900); }],
   ['plate-skipped-meds', seed({ p: Object.assign({}, P, { meds: 'yes' }) }), async (p, h) => { await h.plate(p); await p.click('#log-skip'); await h.settle(900); }],
   ['plate-error', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); }, (p, h) => h.failApi(p)],
+  // the page opened without the code from the coach's link (owner, 14 Nov: clearer message)
+  ['plate-no-code', seed(), async (p, h) => { await p.waitForSelector('text=this phone remembers it', { timeout: 20000 }); await h.settle(); }, (p) => p.route('**/api/meals', r => r.fulfill({ status: 401, contentType: 'application/json', body: '{"code":"bad_key"}' }))],
   ['plate-blocked-kidney', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); }],
   ['plate-blocked-preg', seed({ p: Object.assign({}, P, { health: 'preg' }) }), async (p, h) => { await h.settle(800); }],
   ['builder-blocked', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(600); await p.click('#tab-build'); await h.settle(); }],

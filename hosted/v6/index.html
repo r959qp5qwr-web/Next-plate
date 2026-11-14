@@ -2748,7 +2748,7 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on yet.",bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
-  bad_key:"This link needs the code from your coach's message. Open the link they sent you.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it.",
+  bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",photos_off:"Photos are switched off. Type it instead.",bad_image:"That photo didn't come through. Try a smaller one, or type it.",
   busy:"Next Plate is busy just now. Try again in a minute.",upstream_error:"Next Plate couldn't get an answer just now. Try again.",unparsed:"The answer came back cut off. Try again."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
 var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_image","bad_request"];

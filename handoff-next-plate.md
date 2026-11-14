@@ -95,6 +95,7 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 | The film = the 30 s cut in `demo/next-plate-film-30s.mp4`; owner: "Most very good"; "it's beautiful as it is" | owner |
 | End line: "Next Plate. Made for you." spoken and shown | owner, after option rounds |
 | Adopt from Gemini's "Kinfolk Raw Linen Edition": 1 portion ring on the plate (coloured arcs: protein, greens, carbs, fats); 2 one colour per nutrient (clay = protein, olive = greens and fibre, ochre #B8862D = carbs, plum #7A4958 = fats) used everywhere; 3 stoneware plate (ceramic depth, speckle); 4 food pairing tips for absorption (e.g. lemon with spinach for iron), food only; 5 taste notes (2–3 words per dish) | owner: "Let's do it" to Claude's recommendation 1, 2, 3, 4, 5; Claude said it would mock them up on screens first |
+| Keep the access lock; the no-code message reads "Open the link your coach sent you on WhatsApp once. After that, this phone remembers it." | owner, 14 Nov, option survey: "Clearer message (Recommended)" |
 | With diabetes, a menu order whose grain is a side or part of the portion asks "Is <grain> available now?" (Yes / No) before ordering; the menu text is only a first filter (`docs/ux/UX-CRITERIA.md` Part A after round 28) | owner, 13 Nov, option survey after Critic round 28: "Ask with one tap (Recommended)" |
 | After the look is revised, re-make the same 30 s film with the revised look; same structure, script, voice, music | owner: "the video will have to be the exact same video... freshly made with the look of the app revised" |
 
