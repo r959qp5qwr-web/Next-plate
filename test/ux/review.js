@@ -156,7 +156,7 @@ const STATES = [
   ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await planBtn(p, false); }],
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
-    const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
+    await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
     if (Math.abs(y1 - y0) > 2) throw new Error('the first change moved the steppers by ' + Math.round(y1 - y0) + ' px'); await p.click('#st-greens-p'); await h.settle(); await h.next(p, { has: ['#ratio-changed'] }, 'Builder after a change not yet used'); await planBtn(p, true); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await h.inView(p, '#rescue-lede', 'what Rescue gives'); await h.next(p, { has: ['#dish-cap'] }, 'Rescue start');
     if ((await p.textContent('#v-rescue .panel-h h2')).trim() !== 'Eating out') throw new Error('the Rescue title is not "Eating out"'); }],

@@ -2246,7 +2246,7 @@ lite?null:TUNETEXT(p)
 function TUNETEXT(p){return [
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
 "- Each base swap also gives made_of: what it is made of, as for grain (never a vegetable, pulse, nut or seed). Each one-tap change also gives grain_grams_after: the grams of the plate's grain item after the change (0 if it takes the grain off)."+(p.health==="diabetes"?" With diabetes every change keeps the grain item, at least half of it.":"")+"",
-"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words), minutes (new prep time) and deltas versus the meal as written:",
+"- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words; a food the change adds is named with its grams, such as \"add 50 g sprouted moong\"), minutes (new prep time) and deltas versus the meal as written:",
 "  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
 function buildTunePrompt(p,m){
   return [
@@ -3264,10 +3264,11 @@ function renderPlate(){
       add(c,i,el("h2",null,UI.err?UI.err:UI.moved==="appetite"&&PL?"You changed your appetite. Plan plates for about "+PL.target.kcal+"\u00A0kcal?":UI.moved?"Your choices changed. Plan plates for them?":"Your day has moved on. Plan fresh plates?"));
       if(UI.err)c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* every error that leaves no plate (second screen review, R2-B4 059-1) */   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
+      if(last&&UI.err)c.appendChild(el("p",null,"Your plates from before are kept."));   /* R2-B5 065-2 */
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
   }else if(r.status==="refer"){
-    var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));
+    var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));e.appendChild(el("h2",null,r.read||SAFETY));   /* the card quotes the ask it answers (R2-B5 072-1) */
     var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);v.appendChild(e);
   }else{
     if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.empty&&UI.errAsk?"Nothing for \u201C"+UI.errAsk+"\u201D fit your food rules. Change a choice under Your day, or tap Try again. Showing the plates from before.":(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));   /* R2-B5 069 */
