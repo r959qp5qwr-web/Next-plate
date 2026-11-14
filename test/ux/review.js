@@ -64,6 +64,13 @@ const planBtn = async (p, stuck) => { const r = await p.evaluate(() => { const s
   if (!stuck && r.pos === 'sticky') throw new Error('the plan button is held above the tab bar before any share is changed');
   if (stuck && (r.pos !== 'sticky' || r.bottom > r.tabs + 1 || r.bottom < r.tabs - 48)) throw new Error('after a change the plan button is not held above the tab bar (' + r.pos + ', ' + Math.round(r.bottom) + ' vs ' + Math.round(r.tabs) + ')');
   if (r.under.length) throw new Error('at the end of the page the plan button covers: ' + r.under.join(' | ')); };
+// owner, 14 Nov: an error note carries a thin clay rule on its left edge; a tip or info note does not
+const ERRNOTE = { 'plate-error': '#v-plate .empty-card', 'plate-ask-busy': '#v-plate .note', 'sheet-log-busy': '#log-note', 'rescue-error': '#v-rescue .note', 'menu-error': '#v-rescue .note', 'menu-nothing-fits': '#v-rescue .note', 'plate-hero': '#v-plate > .note' };
+const errRule = async (p, name) => { const r = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return null; const cs = getComputedStyle(e);
+  return { err: e.classList.contains('err'), rule: /inset/.test(cs.boxShadow) && /3px 0px 0px/.test(cs.boxShadow) || parseFloat(cs.borderLeftWidth) === 3 && cs.borderLeftStyle === 'solid' }; }, ERRNOTE[name]);
+  const want = name !== 'plate-hero';
+  if (!r) throw new Error('no note at ' + ERRNOTE[name]);
+  if (r.err !== want || r.rule !== want) throw new Error(want ? 'the error note has no clay rule (class err: ' + r.err + ', rule: ' + r.rule + ')' : 'an info note carries the error rule'); };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -447,7 +454,7 @@ async function drill(b, base) {
     try {
       if (pre) await pre(p, h);
       await p.goto(srv.base, { waitUntil: 'domcontentloaded' }); await p.evaluate(() => document.fonts.ready); await h.settle(400);
-      await go(p, h);
+      await go(p, h); if (ERRNOTE[name]) await errRule(p, name);
       if (run.big !== 1) { await p.evaluate(bigText, run.big); await h.settle(300); }
       viol = await p.evaluate(audit, C.T); viol = viol.concat(p.__late || []);
       if (run.big !== 1) viol = viol.filter(v => C.BIGTEXT_RULES.includes(v.rule));            // at 130 % only layout breakage counts; sizes and contrast are judged at 100 %

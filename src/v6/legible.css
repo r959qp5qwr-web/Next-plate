@@ -307,3 +307,6 @@
 #app #scroll:has(#v-plate:not([hidden])){scroll-padding-top:64px}
 /* Builder (owner, 14 Nov, option survey): once a share is changed, "Plan <meal> with this plate" stays above the tab bar; at its own place in the page it settles there */
 #app #make-ratio.stick{position:sticky;bottom:-16px;z-index:6;box-shadow:0 -6px 16px -6px rgba(60,44,28,.35)}
+/* error notes (owner, 14 Nov, option survey): a thin clay rule on the left edge; tips and info notes keep the tan paper alone */
+#app .note.err{box-shadow:inset 3px 0 0 var(--clay-t);padding-left:17px}
+#app .empty-card.err{border-left:3px solid var(--clay-t)}

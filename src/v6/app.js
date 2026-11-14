@@ -226,7 +226,7 @@ function renderSetup(){
 }
 /* a phone that never opened the coach's link (no code in the address, none kept) is told so before set-up, on the card the plate shows
    for a missing code (owner, 14 Nov, option survey); a phone that opened the link once keeps its code and goes on as before */
-function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
+function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card err"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
   add(c,i,el("h2",null,ERRS.bad_key));v.appendChild(c);}
 function blockedCard(){
   var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("shield"));
@@ -399,7 +399,7 @@ function renderPlate(){
     var last=lastForMeal(),auto=!STORE.shown.hasOwnProperty(C.meal)&&!UI.err;
     if(auto){STORE.shown[C.meal]=null;setTimeout(function(){makePlates("");},0);v.appendChild(waitCard("Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
     else{
-      var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));
+      var c=el("div","empty-card"+(UI.err?" err":"")),i=el("span","safe-ic");i.appendChild(ic(UI.err?"info":"refresh"));   /* "err": an error note, with the clay rule (owner, 14 Nov, option survey) */
       add(c,i,el("h2",null,UI.err?UI.err:"Your day has moved on. Plan fresh plates?"));
       if(UI.lock&&/^limit_/.test(UI.lock))c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
@@ -409,7 +409,7 @@ function renderPlate(){
     var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));
     var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);v.appendChild(e);
   }else{
-    if(UI.err){var en=el("div","note");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));
+    if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));
       if(UI.eretry!==false){var ar=btn("btn primary","Try again","refresh","ask-retry");ar.addEventListener("click",function(){var x=UI.lastAsk||"";UI.err="";makePlates(x);});et.appendChild(ar);}
       en.appendChild(et);v.appendChild(en);}
     if(asked){var rl=el("div","readline");rl.appendChild(el("p","asked","“"+r.ask+"”"));if(r.read)rl.appendChild(el("p","ans-read",r.read));
@@ -643,7 +643,7 @@ function renderRescue0(){
   ent.appendChild(f);
   if(UI.mbusy){v.appendChild(waitCard("Reading the menu for your "+mn,"The menu is being read",true,UI.mlast&&UI.mlast.t?"Your menu stays here if it doesn't work.":""));return;}
   if(UI.rbusy){v.appendChild(waitCard("Working out "+UI.rtext.toLowerCase(),"The dish is being worked out",true));return;}
-  [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
+  [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
     if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
     if(k===0&&UI.mundo){var ub=btn("linkbtn",UI.mno&&UI.mno.length>1?"Change answers":"Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);
       var nd=btn("btn","Name the dish",null,"menu-name-dish");nd.addEventListener("click",function(){var x=$("rin");if(x){x.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});x.focus({preventScroll:true});}});tx.appendChild(nd);}
@@ -717,7 +717,7 @@ function renderSheet(){
       var go=btn(UI.lerr&&UI.lretry?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy;   /* a worded button; the box shows the whole meal (screen review B3) */
       f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t)logOther(t,null);});add(f,i,go);c.appendChild(f);
       if(UI.lbusy)c.appendChild(el("p","ans-read wait","Working out what that adds up to"));
-      if(UI.lerr){var n=el("div","note"),nt=el("div");n.id="log-note";n.tabIndex=-1;n.appendChild(ic("info"));nt.appendChild(el("p",null,UI.lerr));
+      if(UI.lerr){var n=el("div","note err"),nt=el("div");n.id="log-note";n.tabIndex=-1;n.appendChild(ic("info"));nt.appendChild(el("p",null,UI.lerr));
         if(UI.ltext&&UI.lretry){var lb=btn("btn primary","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
         n.appendChild(nt);c.appendChild(n);}
       c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
