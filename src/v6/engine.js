@@ -544,6 +544,8 @@ function checkMenu(r,p,c,pl,hooks){
   var typed=c.text?menuNorm(c.text):"",items=menuItems(c.text),t=pl?pl.target:null,seen={},list=[];
   function drop(k){out.dropped[k]=(out.dropped[k]||0)+1;}
   function bad(x){return CLAIM.test(x)||supp(x)||crosses(x,p);}
+  /* "Leave for another day" may name a sweet with diabetes: that is the advice (screen review B5); diet and leave-outs still filter it */
+  var pNoSweet=p.health==="diabetes"?Object.assign({},p,{health:"none"}):p;function leaveBad(x){return CLAIM.test(x)||supp(x)||crosses(x,pNoSweet);}
   raw.forEach(function(d,i){
     if(!d||typeof d!=="object")return drop("shape");
     var name=quoted(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=own(d["with"],60,c.text)||own(String(d["with"]||"").split(/[,(;]|\s[-\u2013\u2014]\s/)[0],60,c.text),all=name+" "+por+" "+ask+" "+side,key=menuNorm(name);
@@ -572,7 +574,7 @@ function checkMenu(r,p,c,pl,hooks){
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl);}   /* rule 7 */
   var kept={};out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;delete o.i;delete o.ch;return o;});
   out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){return {name:quoted(l&&l.as_written,60),why:clean(l&&l.why,90)};})
-    .filter(function(l){return l.name&&l.why&&(!typed||onMenu(l.name,typed))&&!bad(l.name+" "+l.why)&&!onlyInBarred(l.name,items,p)&&!FIGTXT.test(l.why)&&!kept[menuNorm(l.name)];}).slice(0,3);
+    .filter(function(l){return l.name&&l.why&&(!typed||onMenu(l.name,typed))&&!leaveBad(l.name+" "+l.why)&&!onlyInBarred(l.name,items,pNoSweet)&&!FIGTXT.test(l.why)&&!kept[menuNorm(l.name)];}).slice(0,3);
   return out;
 }
 

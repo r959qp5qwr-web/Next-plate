@@ -577,6 +577,8 @@ function checkReply(r,p){
 
 /* ---------- Rescue ([S] DELIVERY_DISHES) ---------- */
 var HACKKIND=["sequence","portion","swap","order","move"];
+/* a portion move eats less of the dish the person named; the words they typed for it are theirs, so they do not drop the move (screen review B4) */
+function ownWordsOut(title,typed){var w=String(typed||"").toLowerCase().match(/[a-z]{3,}/g)||[];var t=String(title).toLowerCase();w.forEach(function(x){t=t.replace(new RegExp("\\b"+x+"\\b","g")," ");});return t;}
 function checkRescue(r,p,c){
   var typed=c&&typeof c.text==="string"?c.text:"",dn=own(r&&r.dish&&r.dish.name,80,typed)||(typed&&typed.length<=40&&typed.split(/\s+/).length<=6?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),80):"Your dish");
   if(!r||typeof r!=="object")return {status:"error"};
@@ -585,7 +587,7 @@ function checkRescue(r,p,c){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!dn)return {status:"empty"};
   var hacks=(Array.isArray(r.hacks)?r.hacks:[]).slice(0,4).map(function(h){
     return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
-    .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.title,p);});
+    .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.kind==="portion"?ownWordsOut(h.title,typed):h.title,p);});
   if(!hacks.length)return {status:"empty"};
   var warn=clean(d.warning,80),br=clean(d.breakdown,180);if(CLAIM.test(warn)||supp(warn))warn="";if(CLAIM.test(br)||supp(br))br="";
   return {status:"ok",dish:{name:dn,portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};

@@ -56,7 +56,8 @@ function dayTargets6(p,par){
   if(!p||!(p.kg>0)||!(p.cm>0)||!(p.age>0)||!par.activity[p.act]||(p.sex!=="m"&&p.sex!=="f"))return null;
   var notes=[],bmr=10*p.kg+6.25*p.cm-5*p.age+(p.sex==="m"?5:-161),maint=bmr*par.activity[p.act],bmi=bmiOf(p),goal=p.goal||"hold";
   var r10=function(x){return Math.round(x/10)*10;};
-  notes.push(["Maintenance.","About "+r10(maint)+" kcal a day: your resting need, worked out from your age, sex, height and weight (the Mifflin-St Jeor formula), times "+par.activity[p.act]+" for "+lab("act",p.act).toLowerCase()+". For an individual this estimate can be off by a tenth or more, so your weight trend has the last word."]);
+  /* plain reason first, the source in brackets at the end (screen review B3) */
+  notes.push(["To stay at your weight.","About "+r10(maint)+" kcal a day, from your age, sex, height and weight and how active you are. For one person this can be off by a tenth or more, so your weight over the weeks has the last word. (Mifflin-St Jeor formula, times "+par.activity[p.act]+" for "+lab("act",p.act).toLowerCase()+".)"]);
   var kcal=maint,older=p.age>=par.olderAge,meds=p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"),hold="";
   if(goal==="lose"){
     if(bmi<par.bmiOverweight)hold="Your BMI is about "+bmi.toFixed(1)+", inside the healthy range for Indian adults (under 23), so plates hold your weight steady instead of cutting calories.";
@@ -66,19 +67,19 @@ function dayTargets6(p,par){
     else{
       var def=bmi>=par.bmiObese?par.deficitObese:par.deficitOverweight,cap=maint*par.deficitMaxShare,fl=par.floor[p.sex];
       def=Math.min(def,cap);kcal=Math.max(fl,maint-def);
-      notes.push(["Weight loss.","About "+r10(maint-kcal)+" kcal a day under maintenance, for a BMI of about "+bmi.toFixed(1)+" (Indian guidance: 500 kcal for obesity, less when only overweight; about half a kilo a week is considered safe). Never under "+fl+" kcal a day."]);
+      notes.push(["Weight loss.","About "+r10(maint-kcal)+" kcal a day under what keeps your weight, so about half a kilo a week comes off, which is considered safe. Never under "+fl+" kcal a day. (Indian guidance for a BMI of about "+bmi.toFixed(1)+": 500 kcal less for obesity, less when only overweight.)"]);
     }
   }
   if(goal!=="lose"&&bmi<par.bmiUnder)notes.push(["Weight.","Your BMI is about "+bmi.toFixed(1)+", under 18.5. Please show this to your coach or doctor."]);
-  var rw=refWeight(p,par),gk=par.proteinBase,why="1 g per kg, the ICMR-NIN figure for the cereal-based meals most Indians eat";
-  if(older){gk=p.act==="mod"||p.act==="high"?par.proteinOlderActive:par.proteinOlder;why=gk+" g per kg, the range advised from 65 to protect muscle";}
-  if(goal==="lose"&&!hold||goal==="lose"&&older){if(par.proteinLose>gk){gk=par.proteinLose;why=gk+" g per kg, because more protein helps keep muscle while losing weight";}}
-  if(goal==="build"&&par.proteinBuild>gk){gk=par.proteinBuild;why=gk+" g per kg, the lower end of the range used with strength training";}
+  var rw=refWeight(p,par),gk=par.proteinBase,why="enough for the cereal-based meals most Indians eat (1 g per kg, ICMR-NIN)";
+  if(older){gk=p.act==="mod"||p.act==="high"?par.proteinOlderActive:par.proteinOlder;why="the amount advised from 65 to protect muscle ("+gk+" g per kg)";}
+  if(goal==="lose"&&!hold||goal==="lose"&&older){if(par.proteinLose>gk){gk=par.proteinLose;why="more protein helps keep muscle while losing weight ("+gk+" g per kg)";}}
+  if(goal==="build"&&par.proteinBuild>gk){gk=par.proteinBuild;why="the lower end of what is used with strength training ("+gk+" g per kg)";}
   gk=Math.min(gk,p.health==="diabetes"?par.proteinCapDiabetes:par.proteinCap);
   var protein=rw*gk,pmax=kcal*par.proteinMaxEnergyShare/4;if(protein>pmax)protein=pmax;
-  notes.push(["Protein.","About "+Math.round(protein)+" g a day: "+why+(rw<p.kg-0.5?", counted on "+Math.round(rw)+" kg (a healthy weight for your height, at BMI 25) so the target stays realistic":"")+". Spread evenly over breakfast, lunch and dinner."]);
+  notes.push(["Protein.","About "+Math.round(protein)+" g a day, spread evenly over breakfast, lunch and dinner: "+why+"."+(rw<p.kg-0.5?" It is counted on "+Math.round(rw)+" kg, a healthy weight for your height, so the target stays within reach (BMI 25).":"")]);
   var fibre=p.health==="diabetes"?Math.min(par.fibreDiabetesMax,Math.max(par.fibreDiabetesMin,kcal*par.fibreDiabetesPer1000/1000)):kcal*par.fibrePer1000/1000;
-  notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":", from the figure of India's national nutrition institute (ICMR-NIN): 30 g per 2000 kcal.")]);
+  notes.push(["Fibre.","About "+Math.round(fibre)+" g a day"+(p.health==="diabetes"?", the higher amount Indian diabetes guidelines advise.":". (India's national nutrition institute, ICMR-NIN: 30 g per 2000 kcal.)")]);
   notes.push(["Meals.","Lunch is the largest meal and dinner a lighter one, following the sample day of India's national nutrition institute (ICMR-NIN). A missed meal is spread over the rest of the day; no single meal is asked to make up for it."]);
   if(meds)notes.push(["Diabetes medicine.","Keep meals regular. Skipping a meal on insulin or sugar tablets such as glimepiride or gliclazide can cause low sugar; your doctor's advice comes first."]);
   return {kcal:r10(kcal),protein:Math.round(protein),fiber:Math.round(fibre),maintenance:r10(maint),bmi:bmi,refKg:rw,holds:!!hold,meds:meds,notes:notes};

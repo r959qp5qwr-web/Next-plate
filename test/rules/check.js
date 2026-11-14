@@ -1167,6 +1167,15 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const pl = plan('log', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: '2 aloo paratha with curd' } });
   clear('log: no banned word in the title, the foods or the assumption line', pl.check(r));
 }
+{ // screen review B4-B5 (14 Nov): with diabetes "Leave for another day" may name a sweet; a portion move keeps the words the person typed for their dish
+  const out = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: fxm.typed } }).check(JSON.parse(JSON.stringify(fxm.reply)));
+  ok(out.leave.some(l => /Gulab Jamun/.test(l.name)), 'menu: with diabetes the sweet stays in Leave for another day (' + out.leave.map(l => l.name).join(', ') + ')');
+  ok(!out.leave.some(l => /Mutton/.test(l.name)), 'menu: a dish outside the diet is still not listed to leave');
+  const rx = JSON.parse(JSON.stringify(fx.rescue)); rx.hacks.push({ title: 'Add a chicken kebab on the side', kind: 'order', deltaKcal: 120, deltaProtein: 14, deltaCarbs: 0, deltaFats: 6, deltaFiber: 0 });
+  const rr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'Mutton biryani, full handi' } }).check(rx);
+  ok(rr.hacks.some(h => /keep all the mutton/.test(h.title)), 'Rescue: a portion move that names the typed dish stays (' + rr.hacks.map(h => h.title).join(' | ') + ')');
+  ok(!rr.hacks.some(h => /chicken/.test(h.title)), 'Rescue: a move that adds a food outside the diet still goes');
+}
 { // every prompt carries the word rule
   const ks = [['meals', { ctx: { meal: 'dinner' } }], ['rescue', { ctx: { meal: 'dinner', text: 'dosa' } }], ['menu', { ctx: { meal: 'dinner', text: fxm.typed } }],
     ['log', { ctx: { meal: 'lunch', text: 'dosa' } }], ['tune', { slot: 'dinner', meal: Object.assign({}, meal, { minutes: 18 }) }]];

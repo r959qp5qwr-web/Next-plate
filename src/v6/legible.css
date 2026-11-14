@@ -269,3 +269,32 @@
 #app .tip .linkbtn{text-decoration:underline;text-underline-offset:3px}
 #app .prompt:disabled,#app .send:disabled,#app .sit:disabled,#app .btn:disabled{opacity:.5;cursor:default}
 #app .asklock{margin:0 0 10px}
+#app .sheet-h{position:sticky;top:-10px;z-index:2;background:var(--bg);padding:8px 0;margin-top:-8px}               /* Done stays in reach on a long sheet */
+#app .sheet-h h2{font-weight:600;text-wrap:balance}
+#app .dayhead{font:600 19px/26px var(--text);color:var(--ink);margin:10px 0 6px}
+#app .why-list{margin:0;padding:0 0 0 20px}#app .why-list li{margin:0 0 10px;font-size:16px;line-height:23px;color:var(--ink2)}#app .why-list b{color:var(--ink)}
+#app form.login{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+#app form.login textarea{font-style:normal;min-height:76px;resize:none;padding:10px 12px;border:0;border-radius:4px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--ink3);color:var(--ink);font-family:var(--text);line-height:24px}
+#app form.login .btn{justify-content:center;min-height:48px}
+#app .logk{margin:4px 0 0;font:600 26px/30px var(--text);color:var(--ink)}#app .logk small{font-size:17px;font-weight:500;color:var(--ink2)}
+#app .lede{font:400 17px/25px var(--text);color:var(--ink);margin:10px 0 12px}                     /* what a tab is for, at body size, before its controls */
+#app .tip.chg{margin:0 0 10px}
+#app .curvebox.nohab .c-raw{display:none}
+#app .ringmid b{font-size:26px;line-height:28px}
+#app .hab{justify-content:flex-start}
+#app .sitbox .cap{margin:6px 0 4px}
+#app .sit[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
+#app .menu-in .fine{text-align:left}#app .menu-in .linkbtn{align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
+#app .ans-read.wait::after{content:none}
+#app .ans-read.wait .lw{white-space:nowrap}
+#app .ans-read.wait .lw::after{content:"";display:inline-block;width:1.2em;animation:dots 1.4s steps(4,end) infinite}
+#app .order .oask{font:400 17px/24px var(--text);font-style:normal;color:var(--ink)}#app .order .oask b{font-weight:600}
+#app .cmp-cap{margin:6px 0 2px}
+#app .order .gok,#app .gno{font:400 16.5px/24px var(--text);font-style:normal;color:var(--ink)}
+#app .order .gok .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
+#app .order .gask .gq{text-wrap:balance}
+#app .menu-box textarea{field-sizing:content;max-height:50vh;box-shadow:inset 0 0 0 1px var(--ink3)}  /* the box grows with the menu and looks like a box */
+@media (max-height:600px){#app .menu-box textarea{min-height:110px}}
+#app .note .btn{min-height:44px}
+#app .tab[aria-current="page"]::before{bottom:2px}                                                 /* the mark under the open tab clears its word at large text */
+#app .rw .rcap{margin:0 0 6px}
