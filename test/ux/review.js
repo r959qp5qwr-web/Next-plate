@@ -219,6 +219,16 @@ const STATES = [
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
     if (!/You said steamed rice is available, but roti is not available/.test(await p.textContent('#v-rescue'))) throw new Error('after Yes then No the note forgets the Yes'); }],
+  // owner, 14 Nov: Yes to rice, then No to roti on one order: the order is set aside, the next one offered, and the trace line says why
+  ['menu-grain-yes-then-no-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Rajma', portion: '1 bowl, \u2248 250 g', ask: '', with: 'Steamed Rice', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
+    await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
+    const r = await p.evaluate(() => ({ said: (document.getElementById('order-grain-said') || {}).textContent || '', dish: (document.querySelector('#order-card .dish') || {}).textContent || '' }));
+    if (r.dish !== 'Rajma') throw new Error('after Yes then No the next order is not offered (' + r.dish + ')');
+    if (!/Dal Tadka needs roti too, so it is set aside\./.test(r.said)) throw new Error('the trace line does not say why the order was set aside (' + r.said + ')'); }],
   ['plate-blocked-change', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); await p.click('#v-plate .empty-card .btn'); await h.settle(600);
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'health-kidney') throw new Error('Change my answers does not open at the health question (' + f + ')'); }],
   ['plate-no-body-add', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await p.click('#add-body-top'); await h.settle(600);

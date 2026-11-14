@@ -121,6 +121,7 @@ module.exports = [
   S(M, 'menu-no-code', 'Menu: without the coach’s link', 'Send without the code.'),
   S(M, 'menu-refer', 'Menu: referred', 'A menu the coach and doctor should plan.'),
   S(MG, 'menu-grain-yes-then-no', 'Menu, diabetes: Yes to one grain, No to the other', 'Two grains: Yes, then No.'),
+  S(MG, 'menu-grain-yes-then-no-next', 'Menu, diabetes: Yes to rice, No to roti, the next order offered', 'Two grains on the first order: Yes to rice, then No to roti. The next order has rice only.'),
   S(X, 'plate-two-conditions-referred', 'Plate: diabetes and a kidney condition, referred', 'Health: Diabetes and Kidney condition.'),
   S(X, 'plate-blocked-change', 'Referred: change my answers', 'On the referral, tap Change my answers.'),
 ];
