@@ -579,7 +579,10 @@ function checkReply(r,p){
 var HACKKIND=["sequence","portion","swap","order","move"];
 /* a portion move eats less of the dish the person named; the words they typed for it are theirs, so they do not drop the move (screen review B4) */
 function ownWordsOut(title,typed){var w=String(typed||"").toLowerCase().match(/[a-z]{3,}/g)||[];var t=String(title).toLowerCase();w.forEach(function(x){t=t.replace(new RegExp("\\b"+x+"\\b","g")," ");});return t;}
+/* rule 3 for Rescue (second screen review, R2-B6 081-1): with diabetes a move that leaves out the grain, or puts a grain-free stand-in in
+   its place, is dropped, as the menu drops such a portion or ask (engine.js checkMenu); a move that leaves part of the grain stays */
 function checkRescue(r,p,c){
+  function dropsGrain(t){return p.health==="diabetes"&&p.slot!=="snack"&&(removesGrain(t)||STAND.test(t));}
   var typed=c&&typeof c.text==="string"?c.text:"",dn=own(r&&r.dish&&r.dish.name,80,typed)||(typed&&typed.length<=40&&typed.split(/\s+/).length<=6?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),80):"Your dish");
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer")return {status:"refer",read:SAFETY};
@@ -587,7 +590,7 @@ function checkRescue(r,p,c){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!dn)return {status:"empty"};
   var hacks=(Array.isArray(r.hacks)?r.hacks:[]).slice(0,4).map(function(h){
     return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
-    .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.kind==="portion"?ownWordsOut(h.title,typed):h.title,p);});
+    .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.kind==="portion"?ownWordsOut(h.title,typed):h.title,p)&&!dropsGrain(h.title);});
   if(!hacks.length)return {status:"empty"};
   var warn=clean(d.warning,80),br=clean(d.breakdown,180);if(CLAIM.test(warn)||supp(warn))warn="";if(CLAIM.test(br)||supp(br))br="";
   return {status:"ok",dish:{name:dn,portion:clean(d.portion,60),kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
@@ -664,7 +667,8 @@ rulesText(p),
 "- status \"ok\" and dish: name, portion (as usually served, at most 8 words), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).",
 "- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).",
 "- Each move stands on its own and can be combined with the others: never give two moves that change the same item (not both \"eat one bhatura\" and \"swap the bhature for rotis\"). Together they must still leave a full meal.",
-"- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix."
+"- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix.",
+p.health==="diabetes"?"- Diabetes: never a move that leaves out the roti, rice or other grain, or puts a grain-free stand-in in its place. A portion move may leave part of the grain.":null
   ].filter(function(x){return x!==null;}).join("\n");
 }
 

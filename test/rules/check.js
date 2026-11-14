@@ -1176,6 +1176,23 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   ok(rr.hacks.some(h => /keep all the mutton/.test(h.title)), 'Rescue: a portion move that names the typed dish stays (' + rr.hacks.map(h => h.title).join(' | ') + ')');
   ok(!rr.hacks.some(h => /chicken/.test(h.title)), 'Rescue: a move that adds a food outside the diet still goes');
 }
+{ // second screen review, R2-B6 081-1: with diabetes a Rescue move that leaves out the grain is dropped, as the menu drops such a portion
+  const naan = { status: 'ok', dish: { name: 'Paneer butter masala with 2 butter naan', portion: '1 bowl, about 300 g, and 2 naan', kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6, warning: 'Rich gravy and butter', breakdown: 'Cream and butter make it heavy.' }, hacks: [] };
+  const mv = (title, kind) => ({ title, kind: kind || 'portion', deltaKcal: -200, deltaProtein: 0, deltaCarbs: -40, deltaFats: -4, deltaFiber: 0 });
+  const GONE = ['Skip the naan, eat the paneer with salad', 'Leave out the naan completely', 'Have the paneer on its own, no naan', 'Swap the naan for cauliflower rice'];
+  const KEPT = ['Eat 1 naan and pack the second', 'Swap the butter naan for 2 tandoori roti', 'Eat a 150 g salad first', 'A brisk 15-minute walk after the meal'];
+  const run = (health, slot, list) => { const r = JSON.parse(JSON.stringify(naan)); r.hacks = list.map(t => mv(t, /walk/.test(t) ? 'move' : /salad first/.test(t) ? 'sequence' : /^Swap/.test(t) ? 'swap' : 'portion'));
+    return plan('rescue', { profile: Object.assign({}, P, { health }), ctx: { meal: slot, text: 'Paneer butter masala with 2 butter naan' } }).check(r); };
+  const d = run('diabetes', 'lunch', GONE.slice(0, 2).concat(KEPT.slice(0, 2))), d2 = run('diabetes', 'lunch', GONE.slice(2).concat(KEPT.slice(2))), shown = (d.hacks || []).concat(d2.hacks || []).map(h => h.title);
+  const leaked = GONE.filter(t => shown.includes(t)), lost = KEPT.filter(t => !shown.includes(t));
+  ok(!leaked.length, 'Rescue, diabetes lunch: a move that leaves out the grain is dropped' + (leaked.length ? ' (shown: ' + leaked.join(' | ') + ')' : ''));
+  ok(!lost.length, 'Rescue, diabetes lunch: a move that keeps the grain, or part of it, stays' + (lost.length ? ' (dropped: ' + lost.join(' | ') + ')' : ''));
+  const n = run('none', 'lunch', GONE.slice(0, 3)); ok(GONE.slice(0, 3).every(t => n.hacks.some(h => h.title === t)), 'Rescue, no diabetes: the same moves stay on offer');
+  const fx0 = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'Mutton biryani, full handi' } }).check(JSON.parse(JSON.stringify(fx.rescue)));
+  ok(fx0.hacks.some(h => /Set aside a third of the rice/.test(h.title)), 'Rescue, diabetes: setting aside part of the rice is a move that stays');
+  const pr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
+  ok(/never a move that leaves out the roti, rice or other grain/.test(pr), 'Rescue, diabetes: the prompt asks for no move that leaves out the grain');
+}
 { // every prompt carries the word rule
   const ks = [['meals', { ctx: { meal: 'dinner' } }], ['rescue', { ctx: { meal: 'dinner', text: 'dosa' } }], ['menu', { ctx: { meal: 'dinner', text: fxm.typed } }],
     ['log', { ctx: { meal: 'lunch', text: 'dosa' } }], ['tune', { slot: 'dinner', meal: Object.assign({}, meal, { minutes: 18 }) }]];
