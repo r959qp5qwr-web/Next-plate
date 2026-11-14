@@ -35,6 +35,10 @@ const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]) }, o || {
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
 const STATES = [
   ['setup-1-goal-food', { p: {} }, async () => {}],
+  ['setup-from-link', { p: {} }, async (p, h) => { const u = new URL(p.url()); u.search = '?k=LINKCODE1'; await p.goto(u.href, { waitUntil: 'domcontentloaded' }); await h.settle(400);
+    const read = () => p.evaluate(() => ({ k: (JSON.parse(localStorage.getItem('np6') || 'null') || {}).k, q: location.search }));
+    let r = await read(); if (r.k !== 'LINKCODE1' || r.q) throw new Error('the code from the link is not kept on the phone before set-up ends (' + JSON.stringify(r) + ')');
+    await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(400); r = await read(); if (r.k !== 'LINKCODE1') throw new Error('the code from the link is lost after a reload during set-up'); }],
   ['setup-2-health', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],

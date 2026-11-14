@@ -571,9 +571,13 @@ probe reads the same as on the round 31 build; all 4,897 combinatorial cases rea
 
 ## Part A, change after the round 33 deploy (owner decision, 14 Nov)
 Opened without the code from the coach's link, the page used to say "This link needs the code from your coach's message. Open the link
-they sent you." The owner opened bare nextplate.in on his own phone and asked what the screen meant. Decision (owner, option survey):
+they sent you." The owner opened bare nextplate.in on their own phone and asked what the screen meant. Decision (owner, option survey):
 keep the lock, make the message plain. It now reads "Open the link your coach sent you on WhatsApp once. After that, this phone remembers
 it." Review state plate-no-code shows it.
+Critic round 34 (MINOR): the message promised what a first visit did not do. The code from the link stayed in memory until set-up
+ended, so a reload or a closed tab during set-up lost it. The app now stores it on the phone as soon as the link is opened. Review state
+setup-from-link opens the page with a code, checks the code is stored and not left in the address bar, reloads, and checks again. It fails
+on a build without the fix. Record: the v5 page (rollback only, not live) keeps the old wording; build6 refreshes only its shared core.
 
 ## Part B. Judged on the rendered screens (visual review, then the Critic)
 | ID | Criterion | Sources |
