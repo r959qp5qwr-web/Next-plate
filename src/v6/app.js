@@ -7,7 +7,7 @@ var MEALS=[["breakfast","Breakfast","sunrise"],["lunch","Lunch","sun"],["snack",
 var MODEICON={active:"walk",desk:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
 var DAY=dayOf(now.getTime());
 var P={goal:null,focus:"none",meds:"",diet:null,health:null,conds:[],region:null,leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
-var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
+var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",ratio:null};
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
@@ -296,11 +296,11 @@ function ctxBlock(host){
   function radios(list,isOn,set,iconOf,cls){var g=el("div",cls||"grid2");g.setAttribute("role","radiogroup");
     list.forEach(function(o){var b=el("button",cls==="choice-row"||cls==="lows"?"choice":"tile");b.type="button";b.id=o.id;b.setAttribute("role","radio");b.setAttribute("aria-checked",isOn(o.v)?"true":"false");if(iconOf)b.appendChild(ic(iconOf(o.v)));var tx=el("span",null,o.t);if(o.s)tx.appendChild(el("small",null,o.s));b.appendChild(tx);
       b.addEventListener("click",function(){set(o.v);});g.appendChild(b);});host.appendChild(g);}
-  var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What style of food?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
+  var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What food today?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
   if(TT[UI.open])title(TT[UI.open][0],TT[UI.open][1]);
   if(UI.open==="goal")radios(OPT.goal.map(function(o){return {id:"goal-"+o[0],v:o[0],t:o[1]};}),function(v){return P.goal===v;},function(v){P.goal=v;changed();},function(v){return GOALICON[v];});
   if(UI.open==="mode")radios(OPT.mode.map(function(o){return {id:"mode-"+o[0],v:o[0],t:o[1],s:{active:"A long walk or housework"}[o[0]]};}),function(v){return C.mode===v;},function(v){C.mode=v;UI.ratio=null;changed();},function(v){return MODEICON[v];});
-  if(UI.open==="cuisine")radios(OPT.cuisine.map(function(o){return {id:"cuisine-"+o[0],v:o[0],t:o[1]};}),function(v){return C.cuisine===v;},function(v){C.cuisine=v;changed();},null,"lows");   /* the labels wrap; "Mediterranean" no longer runs past its pill (R2-B2 030-1) */
+  if(UI.open==="cuisine")radios(OPT.cuisine.map(function(o){return {id:"cuisine-"+o[0],v:o[0],t:o[1]};}),function(v){return C.cuisine===v;},function(v){C.cuisine=v;changed();},null,"lows");   /* the labels wrap, so a long region name stays inside its pill (R2-B2 030-1) */
   if(UI.open==="mood")radios(OPT.mood.map(function(o){return {id:"mood-"+o[0],v:o[0],t:o[1]};}),function(v){return C.mood===v;},function(v){C.mood=v;changed();},function(v){return MOODICON[v];});
   if(UI.open==="focus")radios(OPT.focus.map(function(o){return {id:"focus-"+o[0],v:o[0],t:o[0]==="none"?"Nothing":o[1]};}),function(v){return P.focus===v;},function(v){P.focus=v;changed();},null,"lows");
   if(UI.open==="cook"){radios(OPT.prep.map(function(o){return {id:"prep-"+o[0],v:o[0],t:o[1]};}),function(v){return C.prep===v;},function(v){C.prep=v;changed();},function(v){return v==="out"?"store":"pan";});

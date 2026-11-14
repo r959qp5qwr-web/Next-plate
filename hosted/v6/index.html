@@ -1202,16 +1202,20 @@ var OPT={
   mode:[["active","Active day"],["desk","Desk day"],["rest","Rest day"]],
   /* [P] MOOD_FILTERS */
   mood:[["best","No preference"],["quick","Quick, 15\u00A0min"],["protein","High protein"],["comfort","Comforting"],["light","Light"]],
-  /* [P] CUISINES */
-  cuisine:[["indian","Indian regional"],["med","Mediterranean"],["express","High-protein express"]],
+  /* today's region (owner, 14 Nov, option survey: "Today's region", after the owner asked for a relook for mostly Indian clients);
+     "home" follows the region in My food. Mediterranean and High-protein express are dropped */
+  cuisine:[["home","My home food"],["north","North Indian"],["south","South Indian"],["west","West: Gujarati / Maharashtrian"],["east","East: Bengali / Odia"]],
   prep:[["home","Cooking at home"],["out","Ordering out"]],
   oil:[["min","Less oil"],["std","Usual oil"]],
   meal:[["breakfast","Breakfast"],["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"]]
 };
 function lab(k,v){var l=OPT[k]||[];for(var i=0;i<l.length;i++)if(l[i][0]===v)return l[i][1];return "";}
 /* values kept on phones and sent by older pages before the owner's 14 Nov decisions, read as today's options */
-var OPTWAS={mode:{strength:"active",trek:"active",focus:"desk"}};
+var OPTWAS={mode:{strength:"active",trek:"active",focus:"desk"},cuisine:{indian:"home",med:"home",express:"home"}};
 function optNow(k,v){var m=OPTWAS[k];return m&&typeof v==="string"&&m.hasOwnProperty(v)?m[v]:v;}
+/* what a food choice asks the model for: that region's everyday home dishes; "home" is the region in My food */
+var REGIONFOOD={n:"north",s:"south",w:"west",e:"east"},CUISINEFOOD={north:"North Indian",south:"South Indian",west:"Gujarati or Maharashtrian",east:"Bengali or Odia"};
+function cuisineText(c,p){var k=c==="home"?REGIONFOOD[p&&p.region]:c;return "everyday "+(CUISINEFOOD[k]||"Indian")+" home dishes";}
 
 /* [S] defaultPortions per day type; the plate builder starts here. An active day keeps the old trek share, a desk day the old desk
    share, a rest day the old wind-down share */
@@ -1829,7 +1833,7 @@ profileText(p,c),
 "- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
 t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein.":"- No calorie target set; keep portions moderate for an adult.",
 "- Appetite: "+c.appetite+" of 10.",
-"- Mood: "+lab("mood",c.mood)+". Cuisine: "+lab("cuisine",c.cuisine)+(c.cuisine==="indian"?" ("+lab("region",p.region)+" Indian home style first, other Indian regions welcome)":"")+".",
+"- Mood: "+lab("mood",c.mood)+". Food today: "+cuisineText(c.cuisine,p)+".",
 "- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
 c.ratio?"- Plate ratio by volume they asked for: protein "+c.ratio.protein+"%, vegetables and greens "+c.ratio.greens+"%, carbohydrate "+c.ratio.carbs+"%, fats "+c.ratio.fats+"%.":null,
 c.had&&c.had.length?"- Already eaten today: "+c.had.join("; ")+". Do not repeat these; balance them.":null,
@@ -1906,7 +1910,7 @@ function readCtx(x,kind){
   var c={meal:okOpt("meal",x.meal)?x.meal:"lunch",time:/^\d{1,2}:\d{2} (am|pm)$/.test(x.time)?x.time:"unknown",text:plainText(x.text,240),photo:false};
   if(kind==="rescue"){if(!c.text&&!x.photo)return null;return c;}
   var md=optNow("mode",x.mode);c.mode=okOpt("mode",md)?md:"desk";   /* older values are read as today's options (owner, 14 Nov) */
-  c.mood=okOpt("mood",x.mood)?x.mood:"best";c.cuisine=okOpt("cuisine",x.cuisine)?x.cuisine:"indian";
+  c.mood=okOpt("mood",x.mood)?x.mood:"best";var cu=optNow("cuisine",x.cuisine);c.cuisine=okOpt("cuisine",cu)?cu:"home";
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   var r=x.ratio;if(r&&typeof r==="object"){var q={protein:num(r.protein,5,70),greens:num(r.greens,5,70),carbs:num(r.carbs,5,70),fats:num(r.fats,5,40)};
@@ -2225,7 +2229,7 @@ profileText(p,c),
 "- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
 t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein. The first plate should land within 10 percent of the kcal target.":"- No calorie target set; keep portions moderate for an adult.",
 "- Appetite: "+c.appetite+" of 10.",
-"- Mood: "+lab("mood",c.mood)+". Cuisine: "+lab("cuisine",c.cuisine)+(c.cuisine==="indian"?" ("+lab("region",p.region)+" Indian home style first, other Indian regions welcome)":"")+".",
+"- Mood: "+lab("mood",c.mood)+". Food today: "+cuisineText(c.cuisine,p)+".",
 "- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
 c.ratio?"- Plate ratio by volume they asked for: protein "+c.ratio.protein+"%, vegetables and greens "+c.ratio.greens+"%, carbohydrate "+c.ratio.carbs+"%, fats "+c.ratio.fats+"%.":null,
 c.text?"- They wrote: \""+c.text+"\". Answer that with the meals. If it is a craving or a named dish, meal 1 is that food made to fit; meal 2 is a lighter cousin.":null,
@@ -2826,7 +2830,7 @@ var MEALS=[["breakfast","Breakfast","sunrise"],["lunch","Lunch","sun"],["snack",
 var MODEICON={active:"walk",desk:"desk",rest:"moon"},MOODICON={best:"spark",quick:"bolt",protein:"dumbbell",comfort:"flame",light:"leaf"},GOALICON={lose:"down",hold:"scale",build:"dumbbell"};
 var DAY=dayOf(now.getTime());
 var P={goal:null,focus:"none",meds:"",diet:null,health:null,conds:[],region:null,leave:[],sex:"",age:0,cm:0,kg:0,act:"",done:false};
-var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"indian",prep:"home",oil:"min",ratio:null};
+var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",ratio:null};
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
@@ -3115,11 +3119,11 @@ function ctxBlock(host){
   function radios(list,isOn,set,iconOf,cls){var g=el("div",cls||"grid2");g.setAttribute("role","radiogroup");
     list.forEach(function(o){var b=el("button",cls==="choice-row"||cls==="lows"?"choice":"tile");b.type="button";b.id=o.id;b.setAttribute("role","radio");b.setAttribute("aria-checked",isOn(o.v)?"true":"false");if(iconOf)b.appendChild(ic(iconOf(o.v)));var tx=el("span",null,o.t);if(o.s)tx.appendChild(el("small",null,o.s));b.appendChild(tx);
       b.addEventListener("click",function(){set(o.v);});g.appendChild(b);});host.appendChild(g);}
-  var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What style of food?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
+  var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What food today?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
   if(TT[UI.open])title(TT[UI.open][0],TT[UI.open][1]);
   if(UI.open==="goal")radios(OPT.goal.map(function(o){return {id:"goal-"+o[0],v:o[0],t:o[1]};}),function(v){return P.goal===v;},function(v){P.goal=v;changed();},function(v){return GOALICON[v];});
   if(UI.open==="mode")radios(OPT.mode.map(function(o){return {id:"mode-"+o[0],v:o[0],t:o[1],s:{active:"A long walk or housework"}[o[0]]};}),function(v){return C.mode===v;},function(v){C.mode=v;UI.ratio=null;changed();},function(v){return MODEICON[v];});
-  if(UI.open==="cuisine")radios(OPT.cuisine.map(function(o){return {id:"cuisine-"+o[0],v:o[0],t:o[1]};}),function(v){return C.cuisine===v;},function(v){C.cuisine=v;changed();},null,"lows");   /* the labels wrap; "Mediterranean" no longer runs past its pill (R2-B2 030-1) */
+  if(UI.open==="cuisine")radios(OPT.cuisine.map(function(o){return {id:"cuisine-"+o[0],v:o[0],t:o[1]};}),function(v){return C.cuisine===v;},function(v){C.cuisine=v;changed();},null,"lows");   /* the labels wrap, so a long region name stays inside its pill (R2-B2 030-1) */
   if(UI.open==="mood")radios(OPT.mood.map(function(o){return {id:"mood-"+o[0],v:o[0],t:o[1]};}),function(v){return C.mood===v;},function(v){C.mood=v;changed();},function(v){return MOODICON[v];});
   if(UI.open==="focus")radios(OPT.focus.map(function(o){return {id:"focus-"+o[0],v:o[0],t:o[0]==="none"?"Nothing":o[1]};}),function(v){return P.focus===v;},function(v){P.focus=v;changed();},null,"lows");
   if(UI.open==="cook"){radios(OPT.prep.map(function(o){return {id:"prep-"+o[0],v:o[0],t:o[1]};}),function(v){return C.prep===v;},function(v){C.prep=v;changed();},function(v){return v==="out"?"store":"pan";});

@@ -1240,5 +1240,15 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const rs = plan('meals', { profile: Object.assign({}, P), ctx: { meal: 'dinner', mode: 'rest' } }).prompt;
   ok(/Today is a rest day: light and easy to digest/.test(rs) && !/wind-down/i.test(rs), 'day type: a rest day is called a rest day in the prompt');
 }
+{ // owner, 14 Nov, option survey: the food pill is today's region, "My home food" first; Mediterranean and High-protein express are gone
+  ok(JSON.stringify(OPT.cuisine) === JSON.stringify([['home', 'My home food'], ['north', 'North Indian'], ['south', 'South Indian'], ['west', 'West: Gujarati / Maharashtrian'], ['east', 'East: Bengali / Odia']]), 'food today: the five options are My home food and the four regions (' + JSON.stringify(OPT.cuisine) + ')');
+  const was = { indian: 'home', med: 'home', express: 'home', home: 'home', south: 'south', nonsense: 'home' };
+  for (const k of Object.keys(was)) { const c = readCtx({ meal: 'dinner', cuisine: k }, 'meals'); ok(c && c.cuisine === was[k], `food today: "${k}" is read as ${was[k]} (${c && c.cuisine})`); }
+  const line = (region, cuisine) => ((plan('meals', { profile: Object.assign({}, P, { region }), ctx: { meal: 'dinner', cuisine } }).prompt || '').match(/^- Mood: .*$/m) || [''])[0];
+  const want = [['n', 'home', 'North Indian'], ['s', 'home', 'South Indian'], ['w', 'home', 'Gujarati or Maharashtrian'], ['e', 'home', 'Bengali or Odia'], ['n', 'south', 'South Indian'], ['s', 'east', 'Bengali or Odia'], ['e', 'med', 'Bengali or Odia'], ['w', 'express', 'Gujarati or Maharashtrian']];
+  for (const [r, c, w] of want) { const l = line(r, c); ok(l.endsWith('Food today: everyday ' + w + ' home dishes.') && !/Mediterranean|express|Cuisine:/i.test(l), `food today: region ${r}, choice "${c}" asks for everyday ${w} home dishes (${l})`); }
+  const mk = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'dinner', text: fxm.typed, cuisine: 'med' } }).prompt || '';
+  ok(!/Mediterranean|High-protein express/.test(mk), 'food today: no dropped choice reaches the menu prompt');
+}
 console.log(bad ? `${bad} rule check(s) failed` : 'every rule check holds');
 process.exit(bad ? 1 : 0);

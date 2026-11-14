@@ -13,16 +13,20 @@ var OPT={
   mode:[["active","Active day"],["desk","Desk day"],["rest","Rest day"]],
   /* [P] MOOD_FILTERS */
   mood:[["best","No preference"],["quick","Quick, 15\u00A0min"],["protein","High protein"],["comfort","Comforting"],["light","Light"]],
-  /* [P] CUISINES */
-  cuisine:[["indian","Indian regional"],["med","Mediterranean"],["express","High-protein express"]],
+  /* today's region (owner, 14 Nov, option survey: "Today's region", after the owner asked for a relook for mostly Indian clients);
+     "home" follows the region in My food. Mediterranean and High-protein express are dropped */
+  cuisine:[["home","My home food"],["north","North Indian"],["south","South Indian"],["west","West: Gujarati / Maharashtrian"],["east","East: Bengali / Odia"]],
   prep:[["home","Cooking at home"],["out","Ordering out"]],
   oil:[["min","Less oil"],["std","Usual oil"]],
   meal:[["breakfast","Breakfast"],["lunch","Lunch"],["snack","Snack"],["dinner","Dinner"]]
 };
 function lab(k,v){var l=OPT[k]||[];for(var i=0;i<l.length;i++)if(l[i][0]===v)return l[i][1];return "";}
 /* values kept on phones and sent by older pages before the owner's 14 Nov decisions, read as today's options */
-var OPTWAS={mode:{strength:"active",trek:"active",focus:"desk"}};
+var OPTWAS={mode:{strength:"active",trek:"active",focus:"desk"},cuisine:{indian:"home",med:"home",express:"home"}};
 function optNow(k,v){var m=OPTWAS[k];return m&&typeof v==="string"&&m.hasOwnProperty(v)?m[v]:v;}
+/* what a food choice asks the model for: that region's everyday home dishes; "home" is the region in My food */
+var REGIONFOOD={n:"north",s:"south",w:"west",e:"east"},CUISINEFOOD={north:"North Indian",south:"South Indian",west:"Gujarati or Maharashtrian",east:"Bengali or Odia"};
+function cuisineText(c,p){var k=c==="home"?REGIONFOOD[p&&p.region]:c;return "everyday "+(CUISINEFOOD[k]||"Indian")+" home dishes";}
 
 /* [S] defaultPortions per day type; the plate builder starts here. An active day keeps the old trek share, a desk day the old desk
    share, a rest day the old wind-down share */
@@ -640,7 +644,7 @@ profileText(p,c),
 "- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
 t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein.":"- No calorie target set; keep portions moderate for an adult.",
 "- Appetite: "+c.appetite+" of 10.",
-"- Mood: "+lab("mood",c.mood)+". Cuisine: "+lab("cuisine",c.cuisine)+(c.cuisine==="indian"?" ("+lab("region",p.region)+" Indian home style first, other Indian regions welcome)":"")+".",
+"- Mood: "+lab("mood",c.mood)+". Food today: "+cuisineText(c.cuisine,p)+".",
 "- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
 c.ratio?"- Plate ratio by volume they asked for: protein "+c.ratio.protein+"%, vegetables and greens "+c.ratio.greens+"%, carbohydrate "+c.ratio.carbs+"%, fats "+c.ratio.fats+"%.":null,
 c.had&&c.had.length?"- Already eaten today: "+c.had.join("; ")+". Do not repeat these; balance them.":null,
@@ -717,7 +721,7 @@ function readCtx(x,kind){
   var c={meal:okOpt("meal",x.meal)?x.meal:"lunch",time:/^\d{1,2}:\d{2} (am|pm)$/.test(x.time)?x.time:"unknown",text:plainText(x.text,240),photo:false};
   if(kind==="rescue"){if(!c.text&&!x.photo)return null;return c;}
   var md=optNow("mode",x.mode);c.mode=okOpt("mode",md)?md:"desk";   /* older values are read as today's options (owner, 14 Nov) */
-  c.mood=okOpt("mood",x.mood)?x.mood:"best";c.cuisine=okOpt("cuisine",x.cuisine)?x.cuisine:"indian";
+  c.mood=okOpt("mood",x.mood)?x.mood:"best";var cu=optNow("cuisine",x.cuisine);c.cuisine=okOpt("cuisine",cu)?cu:"home";
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   var r=x.ratio;if(r&&typeof r==="object"){var q={protein:num(r.protein,5,70),greens:num(r.greens,5,70),carbs:num(r.carbs,5,70),fats:num(r.fats,5,40)};

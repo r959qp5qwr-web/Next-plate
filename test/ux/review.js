@@ -221,7 +221,12 @@ const STATES = [
     const r = await p.evaluate(() => ({ pill: document.getElementById('dial-mode').innerText.trim(), opts: [...document.querySelectorAll('[role=radio][id^="mode-"]')].map(b => b.id + ':' + b.innerText.replace(/\s+/g, ' ').trim() + ':' + b.getAttribute('aria-checked')) }));
     const want = ['mode-active:Active day A long walk or housework:true', 'mode-desk:Desk day:false', 'mode-rest:Rest day:false'];
     if (r.pill !== 'Active day' || r.opts.join('|') !== want.join('|')) throw new Error('the day types are not the owner\'s three, or a kept "trek" is not read as an active day (' + r.pill + ' / ' + r.opts.join(' | ') + ')'); }],
-  ['plate-dial-cuisine', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-cuisine'); await h.settle(); }],
+  // owner, 14 Nov, option survey: the food pill is today's region; a phone that kept "Mediterranean" from before reads it as My home food
+  ['plate-dial-cuisine', seed({ c: { cuisine: 'med' } }), async (p, h) => { await h.plate(p); await p.click('#dial-cuisine'); await h.settle();
+    const r = await p.evaluate(() => ({ pill: document.getElementById('dial-cuisine').innerText.trim(), title: (document.querySelector('[role=group][aria-label]') || {}).getAttribute('aria-label'),
+      opts: [...document.querySelectorAll('[role=radio][id^="cuisine-"]')].map(b => b.id + ':' + b.innerText.trim() + ':' + b.getAttribute('aria-checked')) }));
+    const want = ['cuisine-home:My home food:true', 'cuisine-north:North Indian:false', 'cuisine-south:South Indian:false', 'cuisine-west:West: Gujarati / Maharashtrian:false', 'cuisine-east:East: Bengali / Odia:false'];
+    if (r.pill !== 'My home food' || r.title !== 'What food today?' || r.opts.join('|') !== want.join('|')) throw new Error('the food panel is not today\'s region, or a kept "med" is not read as My home food (' + r.pill + ' / ' + r.title + ' / ' + r.opts.join(' | ') + ')'); }],
   ['plate-dial-mood', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-mood'); await h.settle(); }],
   ['plate-dial-cook', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-cook'); await h.settle(); }],
   ['plate-dial-focus', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-focus'); await h.settle(); }],
