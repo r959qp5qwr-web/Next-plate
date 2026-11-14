@@ -1159,7 +1159,8 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const pl = plan('menu', { profile: Object.assign({}, P, { health: 'none' }), ctx: { meal: 'dinner', text: fxm.typed } });
   const out = pl.check(r);
   clear('menu: no banned word in the model\'s own fields, the place and the side line included', out, ['.name']);
-  ok(out.orders.some(o => o.with === '1 Tandoori Roti'), 'menu: a side line keeps its menu name when the words after it go');
+  ok(out.orders.some(o => /^1 Tandoori Roti(, \u2248\u00A0\d+\u00A0g)?$/.test(o.with)), 'menu: a side line keeps its menu name when the words after it go');
+  ok(out.orders.some(o => /^1 Tandoori Roti, \u2248\u00A0\d+\u00A0g$/.test(o.with)), 'menu: a grain side shows its count and its grams (owner decision, 14 Nov)');
 }
 { // the meal log: what the person ate keeps their words; the model's assumption line does not carry banned words
   const r = JSON.parse(JSON.stringify(fx.log)); r.assumed = 'Assumed a real, standard home portion.'; r.title = 'Quietly filling aloo paratha'; r.items[1].food = 'Smartly set curd'; // planted on purpose

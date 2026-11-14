@@ -219,7 +219,7 @@ function curve(key,r){
   return s;
 }
 function bandCls(b){return b==="Gentle"?"band-g":b==="Moderate"?"band-m":"band-s";}
-function toast(t){var n=$("toast");$("toasttxt").textContent=t;n.hidden=false;n.style.animation="none";void n.offsetWidth;n.style.animation="";clearTimeout(toast.t);toast.t=setTimeout(function(){n.hidden=true;},2800);$("said").textContent=t;}
+function toast(t,warn){var n=$("toast");$("toasttxt").textContent=t;n.hidden=false;n.style.animation="none";void n.offsetWidth;n.style.animation="";clearTimeout(toast.t);toast.t=setTimeout(function(){n.hidden=true;},warn?7000:2800);$("said").textContent=t;}
 function panelHead(host,eyebrow,title,right){var h=el("div","panel-h"),l=el("div");l.appendChild(el("p","eyebrow",eyebrow));l.appendChild(el("h2",null,title));h.appendChild(l);if(right)h.appendChild(right);host.appendChild(h);}
 
 /* ---------- the meal after the person's taps: swaps ([P]) and 1-tap changes ([S]) ---------- */

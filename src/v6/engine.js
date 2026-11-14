@@ -114,7 +114,7 @@ function hooksFor(p,file,c,pl,par){
   if(c.mode==="trek")add("mode_trek","trek day","Today is a trek or long endurance day: steady carbohydrate, enough salt and fluid with the meal, easy to digest.");
   if(p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))add("steady_carbs","steady grain (diabetes medicine)","They take insulin or sulfonylurea tablets, or are not sure. Keep the carbohydrate portion steady and never very low: a normal measured grain serving at this meal.");
   if(p.health==="diabetes")add("diabetes_grain","the grain stays (diabetes)","Diabetes: the whole-grain or millet portion stays on the plate, paired with protein and fibre.");
-  if(p.health==="bp")add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
+  if(p.bp)add("bp_salt","easy on salt (BP)","High blood pressure: no pickle, papad, namkeen or added salt.");
   return H.slice(0,9);
 }
 /* Variety is decided by code, not left to the model's habits: the lead ingredient rotates through the week, skips anything
@@ -273,16 +273,18 @@ function checkReply6(r,p,hooks){
   out.meals.forEach(function(m){var src=byTitle[m.title]||{};
     m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
     var fy=clean(src.for_you,170);m.forYou=fy&&!CLAIM.test(fy)&&!supp(fy)&&!crosses(fy,p)?fy:"";
-    m.taste=tasteWords(src.taste);
+    m.taste=tasteWords(src.taste,p);
     m.why=m.why.filter(function(w){return !FIGTXT.test(w.effect)&&!/\d/.test(w.pair)&&!crosses(w.pair+" "+w.effect,p);});   /* pairing tips: no figures, nothing the person leaves out */
     m.tuned=Object.keys(m.alchemy).length>0||m.swaps.protein.length>0;});
   out.hooks=tags;return out;
 }
 /* taste notes: 2 or 3 plain taste words; health words, claims and the owner's banned words are dropped, and fewer than 2 shows none */
 var NOTTASTE=/^(healthy|healthier|nutritious|wholesome|balanced|clean|light|lean|guilt|guilt-free|detox|superfood|diet|low-fat|low-carb|protein-rich|high-protein|fibre-rich|fiber-rich|real|quiet|simple|smart|magic|curated|tailored|personalised|personalized|holistic|perfect|delicious|tasty|yummy)$/;
-function tasteWords(a){
+/* a taste word that names a food the person left out, or meat on a vegetarian plate, is dropped (screen review B1) */
+var LEFTTASTE={dairy:/^(creamy|milky|buttery|cheesy|malai)$/,nut:/^(nutty|nutted)$/,wheat:/^(wheaty)$/,soya:/^(soy|soya)$/};
+function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTASTE[k];}).filter(Boolean);if(p&&p.diet&&p.diet!=="nonveg")lt.push(p.diet==="egg"?/^(meaty|fishy)$/:/^(meaty|eggy|fishy)$/);
   var out=(Array.isArray(a)?a:[]).map(function(w){return clean(w,20).toLowerCase().replace(/[.!]+$/,"");})
-    .filter(function(w,i,all){return /^[a-z][a-z-]{1,15}$/.test(w)&&!NOTTASTE.test(w)&&!CLAIM.test(w)&&!supp(w)&&all.indexOf(w)===i;}).slice(0,3);
+    .filter(function(w,i,all){return /^[a-z][a-z-]{1,15}$/.test(w)&&!NOTTASTE.test(w)&&!CLAIM.test(w)&&!supp(w)&&!lt.some(function(r){return r.test(w);})&&all.indexOf(w)===i;}).slice(0,3);
   return out.length>=2?out:[];
 }
 function checkTune(r,p,meal){
@@ -555,7 +557,8 @@ function checkMenu(r,p,c,pl,hooks){
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por,typed?c.text:"",c.meal))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
-    list.push({name:name,portion:por,ask:ask,"with":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,por,side):"",
+    var sg=num(d.grain_grams,0,1500)||0;   /* a grain side shows its count and its grams (owner decision, 14 Nov) */
+    list.push({name:name,portion:por,ask:ask,"with":side&&sg>=10&&isGrain(side)&&!isGrain(name)&&!/\bg\b|gram/i.test(side)?side+", \u2248\u00A0"+Math.round(sg)+"\u00A0g":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,por,side):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place=clean(r.place,40);if(bad(out.place))out.place="";

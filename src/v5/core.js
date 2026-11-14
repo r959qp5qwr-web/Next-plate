@@ -484,7 +484,7 @@ function badWords(p){
   if(p.diet==="vegan")bad=bad.concat(DAIRYW);
   (p.leave||[]).forEach(function(k){bad=bad.concat(LEAVEW[k]||[]);});
   if(p.health==="diabetes")bad=bad.concat(SWEETS);
-  if(p.health==="bp")bad=bad.concat(SALTY);
+  if(p.bp)bad=bad.concat(SALTY);
   return bad;
 }
 var PLANT=/\b(coconut|almond|oat|soy|soya|rice|cashew|peanut)\s+(milk|curd|yogurt|yoghurt|cream|butter)\b/g;
@@ -559,6 +559,7 @@ function checkMeal(m,p){
     if(!x.note||!x.suffix||crosses(txt,p)||supp(txt)||CLAIM.test(txt))return;
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(txt,n.carbs,x.deltaCarbs);CUR_SLOT="";
     if(p.health==="diabetes"&&p.slot!=="snack"&&!kg)return;   /* rule 3: the grain stays, at least half of it, and no wording takes it off */
+    if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     al[k]=x;});
   return {meal:{title:title,subtitle:sub,cuisine:clean(m.cuisine,40),minutes:num(m.prepMinutes,0,180)||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:why,swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0}}};
@@ -597,7 +598,7 @@ function rulesText(p){
 "- Diet is absolute: "+lab("diet",p.diet)+(p.diet==="jain"?" (no egg, meat, fish, onion, garlic, ginger or root vegetables)":p.diet==="vegan"?" (no dairy, egg, meat or fish)":p.diet==="veg"?" (no egg, meat or fish)":p.diet==="egg"?" (eggs allowed; no meat or fish)":"")+".",
 "- Never use: "+((p.leave||[]).length?p.leave.map(function(k){return lab("leave",k).toLowerCase();}).join(", "):"(no extra exclusions)")+".",
 p.health==="diabetes"?"- Diabetes: every breakfast, lunch and dinner lists a measured whole-grain or millet item of its own (roti, rice, millet, dalia, oats, poha, idli or dosa), paired with protein and fibre. If the targets pull against each other, the grain stays and protein may fall a few grams short. No sweets, juice, sugar, honey or jaggery.":null,
-p.health==="bp"?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":null,
+p.bp?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":null,
 "- No supplements, powders, capsules, tablets or doses of any kind (no whey, protein powder, psyllium, collagen, creatine, magnesium). Whole food only.",
 "- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.",
 "- No exclamation marks, no emojis, no hype words.",
@@ -610,7 +611,7 @@ function profileText(p,c){
 "THE PERSON",
 "- "+(p.age?p.age+" years, ":"")+(p.sex==="m"?"male":p.sex==="f"?"female":"")+(p.kg?", "+p.kg+" kg":"")+(p.act?", "+lab("act",p.act).toLowerCase():""),
 "- Eats: "+lab("diet",p.diet)+". Home food: "+lab("region",p.region)+" Indian.",
-"- Health flag: "+(p.health==="none"?"none":lab("health",p.health)),
+"- Health flag: "+(p.health==="none"?"none":lab("health",p.health)+(p.bp&&p.health!=="bp"?", High BP":"")),
 c?"- Today is "+MODEFOCUS[c.mode]+".":null
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -693,7 +694,7 @@ function readProfile(x){
   if(!x||typeof x!=="object")return null;
   if(!okOpt("diet",x.diet)||!okOpt("health",x.health)||!okOpt("region",x.region))return null;
   var p={diet:x.diet,health:x.health,region:x.region,leave:Array.isArray(x.leave)?x.leave.filter(function(k){return okOpt("leave",k);}).slice(0,4):[],
-    sex:okOpt("sex",x.sex)?x.sex:"",act:okOpt("act",x.act)?x.act:"",age:num(x.age,16,95)||0,cm:num(x.cm,120,215)||0,kg:num(x.kg,30,200)||0};
+    bp:x.health==="bp"||x.bp===true,sex:okOpt("sex",x.sex)?x.sex:"",act:okOpt("act",x.act)?x.act:"",age:num(x.age,16,95)||0,cm:num(x.cm,120,215)||0,kg:num(x.kg,30,200)||0};
   return p;
 }
 function readCtx(x,kind){

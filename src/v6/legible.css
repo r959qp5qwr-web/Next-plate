@@ -99,7 +99,8 @@
 /* --- buttons on clay: light text needs the darker clay --- */
 #app .btn.primary,#app .tbtn,#app .send{color:#FFFFFF}
 #app .tbtn,#app .btn.primary,#app .send{background:linear-gradient(180deg,#A85A37,#94492A)}
-#app .tbtn[aria-pressed="true"]{background:linear-gradient(180deg,#5E6D2E,#4E5B26)}
+#app .tbtn{background:var(--paper,#F6F2E6);color:#7E3F22;box-shadow:inset 0 0 0 1.5px #94492A}   /* off: outlined, so it does not compete with "I'll have this" */
+#app .tbtn[aria-pressed="true"]{background:linear-gradient(180deg,#5E6D2E,#4E5B26);color:#FFFFFF;box-shadow:none}
 #app .toast,#app #toasttxt{font-size:16px;line-height:22px}
 
 /* --- fixes from the first measured pass --- */
@@ -239,3 +240,9 @@
 #app .order .gok{margin:10px 0 0}
 #app .note .linkbtn{display:flex;margin-top:4px;padding:0;text-decoration:underline;text-underline-offset:3px}#app .note .linkbtn,#app .note .linkbtn span{color:#55301A}
 #app .gno{margin:0 0 8px}#app .gno .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
+/* screen inventory, 14 Nov: states not captured before */
+#app .hab[aria-pressed="true"]{background:#4F5A2E}                      /* pressed habit: paper text 6.6:1 */
+#app .hab[aria-pressed="true"] small{color:#E4E8CF}                       /* its line under: 5.9:1 (the --ink2 rule above was winning) */
+#app .tag{color:#8A4A2C;box-shadow:inset 0 0 0 1px #8A4A2C}             /* "swapped", "changed": 5.5:1 on paper */
+#app [role=radiogroup] small{font-size:14px;line-height:18px}             /* day-type and other panel subtitles: 14 px floor */
+#app .fine.err{color:#8A2E1E;font-style:normal}                            /* a line that says what to type: 6.9:1 */
