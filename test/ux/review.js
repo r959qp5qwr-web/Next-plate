@@ -41,12 +41,14 @@ const closeTo = async (p, sels) => { const r = await p.evaluate((sels) => ({ fit
 const asks = async (p, want) => { const got = await p.evaluate(() => [...document.querySelectorAll('.prompts .prompt')].map(b => b.textContent.replace(/[\u201C\u201D]/g, '').trim()));
   if (got.join('|') !== want.join('|')) throw new Error('the example asks are not the owner\'s (' + got.join(' | ') + ')'); };
 const ASKS = ['Only dal, rice and curd at home', 'A light dinner after a heavy lunch', 'Guests at home tonight', 'Tired, something quick'];
+// owner, 14 Nov: the masthead has no tagline
+const noTagline = async (p) => { if (await p.evaluate(() => !!document.querySelector('.mast em') || /journalled/i.test(document.body.textContent))) throw new Error('the masthead still carries the tagline'); };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
 const STATES = [
   ['setup-1-goal-food', { p: {} }, async (p) => { const r = await p.evaluate(() => ({ n: document.querySelector('#region-n').getAttribute('aria-checked'), t: document.querySelector('#v-setup').innerText }));
-    if (r.n !== 'false') throw new Error('a home food is chosen for the person before they answer'); if (!/Choose a goal, what you eat and your home food to go on/.test(r.t)) throw new Error('Next is off with no reason given'); }],
+    if (r.n !== 'false') throw new Error('a home food is chosen for the person before they answer'); if (!/Choose a goal, what you eat and your home food to go on/.test(r.t)) throw new Error('Next is off with no reason given'); await noTagline(p); }],
   ['setup-from-link', { p: {} }, async (p, h) => { const u = new URL(p.url()); u.search = '?k=LINKCODE1'; await p.goto(u.href, { waitUntil: 'domcontentloaded' }); await h.settle(400);
     const read = () => p.evaluate(() => ({ k: (JSON.parse(localStorage.getItem('np6') || 'null') || {}).k, q: location.search }));
     let r = await read(); if (r.k !== 'LINKCODE1' || r.q) throw new Error('the code from the link is not kept on the phone before set-up ends (' + JSON.stringify(r) + ')');
@@ -55,7 +57,7 @@ const STATES = [
   ['setup-2-health', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
   ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
-  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); }],
+  ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
