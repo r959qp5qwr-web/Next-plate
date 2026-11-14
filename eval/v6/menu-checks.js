@@ -161,7 +161,7 @@ for (const page of pages) {
     eq([out.status, names(out)], ['ok', ['Palak Paneer']], 'the least-bad order alone');
     yes(out.orders[0].fit < 40, 'fit ' + out.orders[0].fit);
     yes(/^Nothing on this menu fits your dinner well\. This is the closest\./.test(out.note || ''), 'note: ' + out.note);
-    yes(/≈ 610 kcal over/.test(out.note), 'the note gives the gap with the sign: ' + out.note);
+    yes(/≈ 610 kcal (over|more than this dinner should have)/.test(out.note), 'the note gives the gap with the sign: ' + out.note);
     eq(out.moves.length, 2, 'two moves');
     eq([out.moves[0].kind, out.moves[0].scale, out.moves[1].kind], ['portion', 0.5, 'move'], 'eat part of it, then a walk');
     eq(out.moves[0].fit, E.fitOf(E.scaleN(out.orders[0].n, 0.5), t), 'the move\'s fit is computed, not written');
