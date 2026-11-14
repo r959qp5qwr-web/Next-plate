@@ -3,6 +3,7 @@ const S = (group, id, name, how) => ({ group, id, name, how });
 const A = 'Set-up', P = 'Plate', PS = 'Plate: sheets', PE = 'Plate: errors and limits', B = 'Builder', R = 'Rescue', M = 'Rescue: menu', MG = 'Rescue: menu grain question', X = 'Blocked (referred)';
 module.exports = [
   S(A, 'setup-1-goal-food', 'Set-up 1 of 3: goal and food', 'First load on a new phone.'),
+  S(A, 'setup-no-code', 'Before set-up: the coach’s link was never opened', 'First load on a new phone without the link from the coach (no code in the address, none kept).'),
   S(A, 'setup-from-link', 'Set-up 1 of 3, opened from the coach’s link', 'Tap the WhatsApp link with the code. The code is kept; the address bar is cleared.'),
   S(A, 'setup-2-health', 'Set-up 2 of 3: health', 'Step 1: Lose weight, Vegetarian, North, Next. Then Diabetes.'),
   S(A, 'setup-3-body', 'Set-up 3 of 3: body', 'Step 1, Next, step 2 None, Next.'),

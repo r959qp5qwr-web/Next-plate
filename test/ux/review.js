@@ -32,7 +32,9 @@ const bf = { t: NOW - 4.5 * H, type: 'had', meal: 'breakfast', title: 'Vegetable
 const J = (s, b) => r => r.fulfill({ status: s, contentType: 'application/json', body: typeof b === 'string' ? b : JSON.stringify(b) });
 const SLOW = async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} };
 const OFF = r => r.abort('internetdisconnected');
-const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]) }, o || {});
+// every seeded phone has opened the coach's link once, so it carries the code (owner, 14 Nov: a phone with no code is told so before set-up)
+const CODE = 'REVIEWCODE', NEW = { p: {}, k: CODE };
+const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]), k: CODE }, o || {});
 
 // owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate, menu order, the other orders, Rescue)
 const closeTo = async (p, sels) => { const r = await p.evaluate((sels) => ({ fit: /\bFit\s*\d/.test(document.body.innerText), miss: sels.filter(s => !/Close to your target: \d+\s\/\s100/.test((document.querySelector(s) || {}).innerText || '')) }), sels);
@@ -56,15 +58,19 @@ const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
 const STATES = [
-  ['setup-1-goal-food', { p: {} }, async (p) => { const r = await p.evaluate(() => ({ n: document.querySelector('#region-n').getAttribute('aria-checked'), t: document.querySelector('#v-setup').innerText }));
+  ['setup-1-goal-food', NEW, async (p) => { const r = await p.evaluate(() => ({ n: document.querySelector('#region-n').getAttribute('aria-checked'), t: document.querySelector('#v-setup').innerText }));
     if (r.n !== 'false') throw new Error('a home food is chosen for the person before they answer'); if (!/Choose a goal, what you eat and your home food to go on/.test(r.t)) throw new Error('Next is off with no reason given'); await noTagline(p); }],
   ['setup-from-link', { p: {} }, async (p, h) => { const u = new URL(p.url()); u.search = '?k=LINKCODE1'; await p.goto(u.href, { waitUntil: 'domcontentloaded' }); await h.settle(400);
     const read = () => p.evaluate(() => ({ k: (JSON.parse(localStorage.getItem('np6') || 'null') || {}).k, q: location.search }));
     let r = await read(); if (r.k !== 'LINKCODE1' || r.q) throw new Error('the code from the link is not kept on the phone before set-up ends (' + JSON.stringify(r) + ')');
     await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(400); r = await read(); if (r.k !== 'LINKCODE1') throw new Error('the code from the link is lost after a reload during set-up');
     await p.goto(u.href, { waitUntil: 'domcontentloaded' }); await h.settle(400); if (!/link is saved on this phone/.test(await p.textContent('#v-setup'))) throw new Error('nothing says the coach\'s link was saved'); }],
-  ['setup-2-health', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
-  ['setup-3-body', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
+  // owner, 14 Nov: a phone that never opened the coach's link (empty storage, no code in the address) sees the no-code card, not set-up
+  ['setup-no-code', null, async (p, h) => { const r = await p.evaluate(() => ({ t: document.getElementById('v-setup').innerText, card: !!document.querySelector('#v-setup #no-code.empty-card'), setup: !!document.getElementById('setup-next') || !!document.getElementById('goal-lose'), tabs: !document.getElementById('tabs').hidden }));
+    if (!r.card || !/Open the link your coach sent you on WhatsApp once\. After that, this phone remembers it\./.test(r.t)) throw new Error('a phone with no code is not told to open the coach\'s link');
+    if (r.setup || r.tabs) throw new Error('a phone with no code still shows set-up'); }],
+  ['setup-2-health', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await h.settle(); }],
+  ['setup-3-body', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); }],
   ['plate-loading', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); }, (p, h) => h.slowApi(p, 60000)],
   ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); await scrollAway(p); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
@@ -156,7 +162,7 @@ const STATES = [
     await p.click('#order-grain-yes'); await h.settle(300); const q2 = await p.textContent('#order-grain-q'); if (!/^Is roti available now\?$/.test(q2)) throw new Error('second question: ' + q2);
     await h.settle(600); await h.inView(p, '#order-card', 'the second grain question'); await h.next(p, { has: ['#order-grain-ok'] }, 'Second grain question'); }],
   // ---- every other screen a client can reach (screen inventory, 14 Nov) ----
-  ['setup-2-none', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await h.settle(); }],
+  ['setup-2-none', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await h.settle(); }],
   ['plate-dial-goal', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-goal'); await h.settle(); }],
   ['plate-dial-mode', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-mode'); await h.settle(); }],
   ['plate-dial-cuisine', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-cuisine'); await h.settle(); }],
@@ -209,11 +215,11 @@ const STATES = [
   ['menu-no-code', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(401, '{"code":"bad_key"}')); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { hasNot: ['#menu-retry'], text: 'this phone remembers it' }, 'Menu without the code'); }, () => {}],
   ['plate-ordered', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.click('#order-go'); await h.settle(250); }],
   // ---- fixes from the screen-by-screen review (14 Nov) ----
-  ['setup-2-two-conditions', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await p.click('#health-kidney'); await p.click('#meds-yes'); await h.settle();
+  ['setup-2-two-conditions', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await p.click('#health-kidney'); await p.click('#meds-yes'); await h.settle();
     const on = await p.evaluate(() => ['diabetes', 'kidney'].every(k => document.querySelector('#health-' + k).getAttribute('aria-checked') === 'true')); if (!on) throw new Error('two health answers cannot both be ticked'); }],
   ['plate-two-conditions-referred', seed({ p: Object.assign({}, P, { health: 'kidney', conds: ['diabetes', 'kidney'], meds: 'yes' }) }), async (p, h) => { await h.settle(800);
     const t = await p.textContent('#v-plate'); if (!/kidney condition/.test(t) || await p.$('#have')) throw new Error('diabetes with a kidney condition is not referred'); }],
-  ['setup-3-feet', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); await p.fill('#body-cm', '5.4'); await p.press('#body-cm', 'Tab'); await h.settle(300);
+  ['setup-3-feet', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle(); await p.fill('#body-cm', '5.4'); await p.press('#body-cm', 'Tab'); await h.settle(300);
     const m = await p.textContent('#body-cm-msg'); if (!/5 ft 4 in: 163 cm/.test(m)) throw new Error('5.4 is not read as feet and inches (' + m + ')'); }],
   ['plate-skipped-meds-no-body', seed({ p: Object.assign({}, P, { meds: 'yes', kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await p.click('#log-skip'); await h.settle(900);
     const t = await p.textContent('#v-plate'); if (!/a skipped meal can drop your sugar/.test(t)) throw new Error('no low-sugar warning without height and weight'); }],
@@ -222,7 +228,7 @@ const STATES = [
     const a1 = await ats(); if (!a1.length || a1.some(t => a0.includes(t))) throw new Error('answers changed and the sheet closed without Done, but the old plates stay'); }],
   ['sheet-food-done-no-change', seed(), async (p, h) => { await h.plate(p); const ats = () => p.evaluate(() => Object.values((JSON.parse(localStorage.getItem('np6')) || {}).store.res || {}).map(r => r.at).join());
     const a0 = await ats(); await p.click('#myfood'); await h.settle(); await p.click('#sheet-done'); await h.settle(600); if (await ats() !== a0) throw new Error('Done with no change threw away the plates'); }],
-  ['setup-2-referred', { p: {} }, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await p.click('#health-kidney'); await h.settle();
+  ['setup-2-referred', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await p.click('#health-kidney'); await h.settle();
     if ((await p.textContent('#setup-next')).trim() !== 'Done' || !(await p.$('#setup-refer'))) throw new Error('a referred answer still leads to the body step');
     await p.click('#setup-next'); await h.settle(); if (await p.$('#body-age') || !/kidney condition/.test(await p.textContent('#v-plate'))) throw new Error('Done does not end set-up on the referral'); }],
   ['setup-after-remove', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#wipe'); await h.settle();
@@ -423,7 +429,7 @@ async function drill(b, base) {
   const jobs = []; for (const run of runs) for (const st of STATES) jobs.push([run, st]);
   const one = async ([run, [name, sd, go, pre]]) => {
     const ctx = await b.newContext({ viewport: { width: run.w, height: run.h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme: run.scheme, timezoneId: 'Asia/Kolkata', locale: 'en-IN', reducedMotion: 'reduce' });
-    await ctx.addInitScript(([s, now]) => { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('np6', s); sessionStorage.setItem('seeded', '1'); } const D0 = Date; }, [JSON.stringify(sd), NOW]);
+    await ctx.addInitScript(([s, now]) => { if (!sessionStorage.getItem('seeded')) { if (s !== 'null') localStorage.setItem('np6', s); sessionStorage.setItem('seeded', '1'); } const D0 = Date; }, [JSON.stringify(sd), NOW]);
     await ctx.clock.install({ time: new Date(NOW) }); await ctx.clock.resume();
     const p = await ctx.newPage(); p.on('pageerror', e => pageErrors.push(name + ': ' + e)); p.on('console', m => { if (m.type() === 'error' && !/favicon|fonts\.g/.test(m.text()) && !(pre && /Failed to load resource/.test(m.text()))) pageErrors.push(name + ': ' + m.text()); });
     let viol = [], err = '';

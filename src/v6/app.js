@@ -147,6 +147,7 @@ function show(v){UI.view=v;render();$("scroll").scrollTop=0;var sec=$("v-"+v);if
 function render(){
   refresh();renderChrome();
   ["setup","plate","build","rescue"].forEach(function(v){$("v-"+v).hidden=true;});
+  if(!P.done&&!KEYCODE){$("v-setup").hidden=false;renderNoCode();return;}
   if(!P.done){$("v-setup").hidden=false;renderSetup();return;}
   var v=$("v-"+UI.view);v.hidden=false;
   if(UI.view==="plate")renderPlate();else if(UI.view==="build")renderBuild();else renderRescue();
@@ -223,6 +224,10 @@ function renderSetup(){
   row.appendChild(go);v.appendChild(row);
   v.appendChild(el("p","fine disc","Meals are planned by AI (Google Gemini) from your choices and your day. Numbers are estimates. General food guidance, not medical advice."));
 }
+/* a phone that never opened the coach's link (no code in the address, none kept) is told so before set-up, on the card the plate shows
+   for a missing code (owner, 14 Nov, option survey); a phone that opened the link once keeps its code and goes on as before */
+function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
+  add(c,i,el("h2",null,ERRS.bad_key));v.appendChild(c);}
 function blockedCard(){
   var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("shield"));
   add(c,i,el("h2",null,"Plan your meals with your coach and doctor"),el("p",null,"You said "+(has("kidney")&&has("preg")?"you have a kidney condition and are pregnant or breastfeeding.":has("preg")?"you are pregnant or breastfeeding.":"you have a kidney condition.")+" For this, your meals are best planned with your coach and doctor, so Next Plate suggests none for now."));
