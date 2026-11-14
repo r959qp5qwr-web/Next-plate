@@ -32,7 +32,7 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B1 | 04 setup-3-body | MINOR | Boxes do not look like boxes; unit lost once typed | FIXED cd75c34: 1 px ink border; labels "Age (years)", "Height (cm)", "Weight (kg)"; height hint "cm or ft" |  |
 | B1 | 04 setup-3-body | MINOR | "Activity" sits 10 px under the boxes | FIXED cd75c34: spaced as its own question (22 px) |  |
 | B1 | 05 plate-loading | MINOR | Asks look live while busy, taps dropped | FIXED cd75c34: prompts and send are off with "Wait for this plate first." | plate-loading-asks |
-| B1 | 05 plate-loading | MINOR | No sign of how long the wait is | FIXED cd75c34, wording in the final commit: "It can take a minute or so." under every wait line |  |
+| B1 | 05 plate-loading | MINOR | No sign of how long the wait is | FIXED cd75c34, wording in the final commit: "It can take a minute or so." under every wait line (the request may run up to 95 s, so no shorter figure is promised) |  |
 | B1 | 05-08 | MINOR | Example asks do not fit these clients | NEEDS-OWNER: the asks are the owner's words. Q: which everyday asks should Plate offer? Recommend: "Only dal, rice and curd at home", "A light dinner after a heavy lunch", "Guests at home tonight", "Tired, something quick"; drop the gym, trek and restaurant ones |  |
 | B1 | 05-08 | MINOR | Today line splits figures from units at 130 % | FIXED cd75c34: no-break spaces in directive() (engine) |  |
 | B1 | 05 plate-loading | COSMETIC | Rim words run together at 130 % | NOT-A-DEFECT: ornament under owner decision D5; the meal tabs above say the same at full size |  |
@@ -154,9 +154,9 @@ the note and the changed card into view) are fixed in the app; screen book entri
 | B4 | 36 rescue-limit | MINOR | "Today's limit" assumes the client knows | FIXED cd75c34: "You have used today's requests for Next Plate. They open again at 5:30 am." |  |
 | B4 | 37 rescue-error | COSMETIC | "Try again" twice | FIXED cd75c34 |  |
 | B4 | 37 rescue-error | COSMETIC | Bottom paragraph repeats | FIXED 392dfe1 and 6a0d9aa |  |
-| B5 | 38 rescue-menu-typed | MINOR | Main action below the fold at 320 px | FIXED in part 6a0d9aa: the box starts at 110 px on short screens and grows with the menu (to half the screen) |  |
+| B5 | 38 rescue-menu-typed | MINOR | Main action below the fold at 320 px | FIXED in part 6a0d9aa and the final commit: the box starts at 110 px on short screens and the guide line under the title hides once the box is open; with a long pasted menu the box grows to half the screen, so at 320 x 568 the button still needs one scroll |  |
 | B5 | 38 rescue-menu-typed | MINOR | Guide promises "the reason" | FIXED 6a0d9aa: the guide line is rewritten and moved under the title |  |
-| B5 | 38 rescue-menu-typed | COSMETIC | Three Gemini notices and a repeated guide | FIXED 6a0d9aa: the photo note hides while the box is open; the guide is under the title, shown only before an answer |  |
+| B5 | 38 rescue-menu-typed | COSMETIC | Three Gemini notices and a repeated guide | FIXED 6a0d9aa and the final commit: the photo note and the guide line hide while the box is open; the bottom guide paragraph is gone |  |
 | B5 | 38 rescue-menu-typed | COSMETIC | "or type the menu" not underlined, same label when open | FIXED 6a0d9aa: underlined; "Hide the typed menu" when open |  |
 | B5 | 38 rescue-menu-typed | COSMETIC | Box opens scrolled to the end; line cut at 130 % | FIXED 6a0d9aa: the box grows with its text up to half the screen |  |
 | B5 | 39 menu-wait | MINOR | Controls live but do nothing during the read | FIXED 392dfe1 (camera not primary) and 6a0d9aa (camera, send, chips off) | menu-wait |

@@ -279,7 +279,7 @@ function choices(host){
 function waitLine(text){var p=el("p","ans-read wait"),k=text.lastIndexOf(" ");p.appendChild(document.createTextNode(text.slice(0,k+1)));p.appendChild(el("span","lw",text.slice(k+1)));return p;}
 function waitCard(text,label,noHooks,more){
   var c=el("article","plate wait"),h=el("div","hero"),band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);
-  var main=el("div","hero-main");main.appendChild(thali([],0,label||"Your plate is being planned",C.meal));var tx=el("div");tx.appendChild(waitLine(text));tx.appendChild(el("p","tsub","It can take up to a minute."+(more?" "+more:"")));
+  var main=el("div","hero-main");main.appendChild(thali([],0,label||"Your plate is being planned",C.meal));var tx=el("div");tx.appendChild(waitLine(text));tx.appendChild(el("p","tsub","It can take a minute or so."+(more?" "+more:"")));
   if(HOOKS.length&&!noHooks)tx.appendChild(el("p","planned","Planned around: "+HOOKS.slice(0,3).map(function(h){return h.tag;}).join(" · ")));main.appendChild(tx);h.appendChild(main);c.appendChild(h);return c;
 }
 function loggedCard(s){
@@ -598,7 +598,7 @@ function renderRescue0(){
   if(blocked()){v.appendChild(blockedCard());return;}
   var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in"),wait=UI.mbusy||UI.rbusy;
   /* what Rescue gives, first and at body size (screen review B4, B5) */
-  if(!(UI.mres||UI.rres||UI.merr||UI.rerr||wait)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Photograph the menu for the order that fits your "+mn+" best, or name the dish you chose to see what you can do about it.");ld.id="rescue-lede";v.appendChild(ld);}
+  if(!(UI.mres||UI.rres||UI.merr||UI.rerr||wait||UI.mopen)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Photograph the menu for the order that fits your "+mn+" best, or name the dish you chose to see what you can do about it.");ld.id="rescue-lede";v.appendChild(ld);}
   me.appendChild(el("p","cap","At a restaurant or a function"));
   var mb=btn(UI.mopen?"btn":"btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";mb.disabled=wait;   /* nothing looks ready that a wait would drop */
   mb.addEventListener("click",function(){mf.click();});
