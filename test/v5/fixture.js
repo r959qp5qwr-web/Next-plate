@@ -38,10 +38,10 @@ exports.meals = {
 };
 exports.rescue = {
   status: "ok",
-  dish: { name: "Andhra-style spicy mutton biryani", portion: "Full handi, as delivered", kcal: 1120, protein: 42, carbs: 118, fats: 52, fiber: 4,
+  dish: { name: "Andhra-style spicy mutton biryani", portion: "1 handi, about 650 g", kcal: 1120, protein: 42, carbs: 118, fats: 52, fiber: 4,
     warning: "Heavy on rice and ghee", breakdown: "Layout sample from your Gemini file, not AI output. Polished rice and rendered fat make this a heavy plate." },
   hacks: [
-    { title: "Eat a bowl of cucumber-pudina raita first", kind: "sequence", deltaKcal: 65, deltaProtein: 6, deltaCarbs: 4, deltaFats: 2, deltaFiber: 3 },
+    { title: "Eat 150 g cucumber-pudina raita first", kind: "sequence", deltaKcal: 65, deltaProtein: 6, deltaCarbs: 4, deltaFats: 2, deltaFiber: 3 },
     { title: "Set aside a third of the rice, keep all the mutton", kind: "portion", deltaKcal: -310, deltaProtein: 0, deltaCarbs: -46, deltaFats: -11, deltaFiber: 0 },
     { title: "Pre-meal 5 g psyllium husk in lemon water", kind: "sequence", deltaKcal: 15, deltaProtein: 0, deltaCarbs: 1, deltaFats: 0, deltaFiber: 5 },
     { title: "A brisk 15-minute walk after the meal", kind: "move", deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 },

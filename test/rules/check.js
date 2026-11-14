@@ -1193,6 +1193,23 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const pr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
   ok(/never a move that leaves out the roti, rice or other grain/.test(pr), 'Rescue, diabetes: the prompt asks for no move that leaves out the grain');
 }
+{ // second screen review, R2-B6 081-2: Rescue amounts are in pieces or grams, never katori or phulka, and a bowl only with its grams
+  const r = JSON.parse(JSON.stringify(fx.rescue)); r.dish.portion = '2 katori curry and 2 naan';
+  r.hacks = [{ title: 'Have only half a katori of the gravy', kind: 'portion', deltaKcal: -150, deltaProtein: -2, deltaCarbs: -6, deltaFats: -12, deltaFiber: 0 },
+    { title: 'Eat a bowl of salad first', kind: 'sequence', deltaKcal: 40, deltaProtein: 1, deltaCarbs: 6, deltaFats: 1, deltaFiber: 3 },
+    { title: 'Eat 150 g salad first', kind: 'sequence', deltaKcal: 40, deltaProtein: 1, deltaCarbs: 6, deltaFats: 1, deltaFiber: 3 },
+    { title: 'Leave 2 phulka for later', kind: 'portion', deltaKcal: -140, deltaProtein: -4, deltaCarbs: -30, deltaFats: -1, deltaFiber: -2 }];
+  const out = plan('rescue', { profile: Object.assign({}, P, { health: 'none' }), ctx: { meal: 'lunch', text: 'Paneer butter masala with naan' } }).check(r), titles = out.hacks.map(h => h.title);
+  ok(out.dish.portion === '', 'Rescue: a portion in katori is not shown (' + out.dish.portion + ')');
+  ok(!titles.some(t => /katori|phulka|bowl of/i.test(t)) && titles.includes('Eat 150 g salad first'), 'Rescue: a move in katori, phulka or a bowl without grams is dropped; one in grams stays (' + titles.join(' | ') + ')');
+  const r2 = JSON.parse(JSON.stringify(fx.rescue)); r2.dish.portion = '1 bowl, about 300 g, and 2 naan';
+  const p2 = plan('rescue', { profile: Object.assign({}, P, { health: 'none' }), ctx: { meal: 'lunch', text: 'Paneer butter masala with naan' } }).check(r2).dish.portion;
+  ok(p2 === '1 bowl, \u2248 300 g, and 2 naan', 'Rescue: a portion with its grams stays, the weight marked as an estimate (' + p2 + ')');
+  const r3 = JSON.parse(JSON.stringify(fx.rescue)); r3.dish.portion = 'Full handi, as delivered';
+  ok(plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'biryani' } }).check(r3).dish.portion === '', 'Rescue: a portion in a handi with no grams is not shown');
+  const pr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
+  ok(/in pieces or grams/.test(pr) && /no household units such as katori/.test(pr), 'Rescue: the prompt asks for the portion in pieces or grams, with no katori');
+}
 { // every prompt carries the word rule
   const ks = [['meals', { ctx: { meal: 'dinner' } }], ['rescue', { ctx: { meal: 'dinner', text: 'dosa' } }], ['menu', { ctx: { meal: 'dinner', text: fxm.typed } }],
     ['log', { ctx: { meal: 'lunch', text: 'dosa' } }], ['tune', { slot: 'dinner', meal: Object.assign({}, meal, { minutes: 18 }) }]];
