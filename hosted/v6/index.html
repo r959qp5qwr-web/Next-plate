@@ -1676,10 +1676,10 @@ function isGrainMaterial(t){var s=attaNorm(String(t||"").toLowerCase()),w=words(
   if(PULSEFLOUR.test(s)||/\b(?:dal|daal)\s+(?:atta|flour)\b/.test(String(t||"").toLowerCase()))return false;                                             /* "besan atta", "wheat and chickpea flour": a pulse, nut or seed flour is not the grain (round 13) */
   return w.some(function(x){return GRAINMAT.test(x);})&&w.every(function(x){return GRAINMAT.test(x)||MATFILL.test(x)||MATCOMP.test(x)||(GRAIN_RX.test(x)&&x!=="thali"&&x!=="sattu");})&&!STAND.test(s);}   /* "rice and moong dal", "rice, dal and vegetables", "whole wheat bread", "idli rice"; not "oat milk", "rice bran" */
 function sameFood(a,b){a=words(a).join(" ");b=words(b).join(" ");return !!a&&!!b&&(a===b||a.indexOf(b)>=0||b.indexOf(a)>=0);}
-function declaredGrain(g,items){g=g&&typeof g==="object"?g:{};var food=quoted(g.food,60),mo=quoted(g.made_of,40);
+function declaredGrain(g,items){g=g&&typeof g==="object"?g:{};var food=showName(rawName(g.food))||quoted(g.food,60),mo=quoted(g.made_of,40);
   if(!food||!isGrainMaterial(mo))return null;
-  var it=items.filter(function(i){return sameFood(i.food,food);})[0];
-  if(!it||!(it.grams>=30)||!isGrain(it.food))return null;
+  var it=items.filter(function(i){return sameFood(i.food,food)||!!i.rawFood&&sameFood(i.rawFood,quoted(g.food,200));})[0];
+  if(!it||!(it.grams>=30)||!isGrain(it.rawFood||it.food))return null;
   return {food:it.food,made_of:mo,grams:it.grams};}
 /* a one-tap change keeps the grain: it names no stand-in, leaves at least half the plate's carbs, and takes no grain off */
 function keepsGrain(txt,carbs,dc){return !STANDN.test(txt)&&!(carbs!=null&&dc!=null&&carbs+dc<carbs*0.5)&&!removesGrain(txt);}
@@ -1734,6 +1734,20 @@ var PLAINEMPTY=false;
 /* a model name is shown only in this shape: ASCII letters, spaces and hyphens, every token at least 2 letters */
 var NAMESHAPE=/^[A-Za-z]{2,}(?:[ -][A-Za-z]{2,})*$/;
 function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
+/* usefulness brief (15 Nov): an honest name is not dropped for its shape alone. The shown name is the model's name with bracket groups, a
+   comma tail (a list "a, b and c" keeps its commas), counts with their measure word, and on a menu a trailing price taken off. Every food, supplement and unit check reads the
+   raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
+   (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
+function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
+  var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
+  if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
+  /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
+  var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
+  h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
+  if(/\bkatoris?\b/i.test(h)||h.length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
+  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1):"";}
+function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
 var TAGLISTS=function(){return {meat:MEATW,fish:FISHW,egg:EGGW,dairy:DAIRYW,wheat:LEAVEW.wheat,nuts:LEAVEW.nut,soya:LEAVEW.soya,onion_garlic:ONIONW,root_veg:ROOTW,sweet:SWEETS,salty_side:SALTY};};
@@ -1793,22 +1807,22 @@ function checkMeal(m,p){
   if(!m||typeof m!=="object")return {drop:"shape"};
   var rawTitle=clean(m.title,70);
   var items=(Array.isArray(m.items)?m.items:[]).slice(0,7).map(function(it){
-    return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
+    var rf=rawName(it&&it.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
   });
   /* every item is a model name: it has the name shape, grams and its own tags, or the whole plate is dropped, so the figures always match
      the items shown (S8, S10; safety round 5) */
-  if(items.some(function(it){return !it.grams||!nameOK(it.food);}))return {drop:"shape"};
+  if(items.some(function(it){return !it.grams||!it.food;}))return {drop:"shape"};
   if(items.length<2)return {drop:"shape"};
   /* declared contents first (D1): the plate and each item, so a drop says which net caught it */
   var cb=contentsBad(m.contains,rawTitle,p);for(var ci=0;!cb&&ci<items.length;ci++)cb=contentsBad(items[ci].raw,items[ci].food,p);
   if(cb)return {drop:cb};
-  items.forEach(function(it){it.contains=tagList(it.raw);delete it.raw;});
+  items.forEach(function(it){it.contains=tagList(it.raw);delete it.raw;});var rawItems=items.map(function(i){return i.rawFood;}).join(" ");
   /* the model's own title and subtitle are read for the food rules but never shown: the engine writes both from the checked items */
-  var all=rawTitle+" "+clean(m.subtitle,120)+" "+items.map(function(i){return i.food;}).join(" ")+" "+clean(m.grain&&m.grain.food,60)+" "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
+  var all=rawTitle+" "+clean(m.subtitle,120)+" "+rawItems+" "+rawName(m.grain&&m.grain.food)+" "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
   var title=engineTitle(items),sub=engineSub(items);
-  var dg=declaredGrain(m.grain,items);
+  var dg=declaredGrain(m.grain,items);items.forEach(function(it){delete it.rawFood;});   /* the grain is identified on the raw names */
   if(p.health==="diabetes"&&p.slot!=="snack"&&!dg)return {drop:"diabetes-grain"};   /* rule 3: a declared grain item, made of a true grain, on the plate, 30 g or more */
   var n={kcal:num(m.kcal,40,2500),protein:num(m.protein,0,250),carbs:num(m.carbs,0,400),fats:num(m.fats,0,200),fiber:num(m.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
@@ -1816,12 +1830,12 @@ function checkMeal(m,p){
   if(Math.abs(est-n.kcal)/n.kcal>0.15)return {drop:"energy"};
   var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
-      var mo=quoted(s&&s.made_of,40);return {food:clean(s&&s.food,60),made_of:isGrainMaterial(mo)?mo:"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return nameOK(s.food)&&!contentsBad(s.raw,s.food,p)&&!crosses(s.food+" "+clean(s.made_of,40),p)&&!supp(s.food)&&!(low&&n.kcal+s.deltaKcal<low)&&
+      var mo=quoted(s&&s.made_of,40),rf=rawName(s&&s.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,made_of:isGrainMaterial(mo)?mo:"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
+    .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
-      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.food)&&s.grams>=30))&&
+      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.rawFood)&&s.grams>=30))&&
       /* round 13: a protein swap takes the place of the first protein item; with diabetes it may not take the place of the grain item */
-      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;return s;});}
+      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   /* one-tap changes: the engine writes the label and the note from the change's structure (the food it adds, by name, with its grams; the
@@ -1829,9 +1843,9 @@ function checkMeal(m,p){
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
     var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
-    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),item=a.add_item==null||a.add_item===""?"":clean(a.add_item,40),ig=num(a.add_grams,1,500);
-    if((a.add_item!=null&&a.add_item!==""&&!nameOK(item))||(item&&!ig))return;
-    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" "+item,p)||supp(raw+" "+item))return;
+    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=a.add_item==null||a.add_item===""?"":rawName(a.add_item),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
+    if((rawItem&&!item)||(item&&!ig))return;
+    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" "+rawItem,p)||supp(raw+" "+rawItem))return;
     if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
     x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(raw,n.carbs,x.deltaCarbs);CUR_SLOT="";
@@ -2716,25 +2730,25 @@ function checkMenu(r,p,c,pl,hooks){
     if(!d||typeof d!=="object")return drop("shape");
     /* safety round 5: the dish and side are names (name shape, tags, word lists); the portion is written by the engine from its grams;
        the model's ask, tip and place are not shown. The model's raw words are still read for the food and grain rules. */
-    var name=quoted(d.as_written,60),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],60),all=name+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
-    if(!name||!nameOK(name))return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
-    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&nameOK(sm[2])&&+sm[1]>0?sm[2]:"",sideCount=side?+sm[1]:0;
-    if(typed&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
+    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
+    if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
+    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
+    if(typed&&!onMenu(rawN,typed)&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     var cb=contentsBad(d.contains,name,p);if(cb)return drop(cb);                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
     if(supp(all))return drop("supplement");if(CLAIM.test(name))return drop("claim");        /* rule 4 */
     var m=menuFigs(d,"",DISHR);if(!m.n)return drop(m.drop);var n=m.n;                       /* rule 5 */
     var dt=tagList(d.contains),pg=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(rawPor),por=pg?"\u2248 "+Math.round(+pg[1])+" g":"",ask="";   /* the weight, written by the engine */
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
-    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
+    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
-      if(!off&&(/\bkatoris?\b/i.test(side)||VESSEL.test(side)))off="side-units";
+      if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
-    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(name,rawPor,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
+    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     var sg=num(d.grain_grams,0,1500)||0;   /* a grain side shows its count and its grams (owner decision, 14 Nov) */
-    var shown=side?sideCount+" "+side+(sg>=10&&isGrain(side)&&!isGrain(name)?", \u2248\u00A0"+Math.round(sg)+"\u00A0g":""):"";   /* "<count> <name>", written by the engine */
-    list.push({tags:dt,name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,rawPor,side):"",
+    var shown=side?sideCount+" "+side+(sg>=10&&isGrain(sideRaw)&&!isGrain(rawN)?", \u2248\u00A0"+Math.round(sg)+"\u00A0g":""):"";   /* "<count> <name>", written by the engine */
+    list.push({tags:dt,name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place="";   /* not shown (safety round 5) */
@@ -2746,8 +2760,8 @@ function checkMenu(r,p,c,pl,hooks){
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl,p);}   /* rule 7 */
   var kept={},otags=[],onames=[];out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;otags=otags.concat(o.tags);onames.push(o.name,o["with"]);delete o.i;delete o.ch;delete o.tags;return o;});
   out.tip="Eat the vegetables and protein first, and the grain last.";   /* app-static, the same for every menu (safety round 5) */
-  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var nm=quoted(l&&l.as_written,60);return {name:nm,why:LEAVETEXT[l&&l.reason]||""};})
-    .filter(function(l,i){return nameOK(l.name)&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.name,typed))&&!leaveBad(l.name)&&!onlyInBarred(l.name,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3);
+  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
+    .filter(function(l,i){return !!l.name&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.raw,typed)||onMenu(l.name,typed))&&!leaveBad(l.raw)&&!onlyInBarred(l.raw,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3).map(function(l){return {name:l.name,why:l.why};});
   return out;
 }
 

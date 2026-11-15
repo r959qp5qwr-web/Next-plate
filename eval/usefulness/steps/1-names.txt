@@ -1,0 +1,7 @@
+step 1: names cleaned, not dropped for shape
+meets  Plates shown (clean, of 75)                     67 of 75
+meets  Requests with no plate (of 25)                  2 (diabetes-on-sulfonylurea {"meds-low":3}; diabetes-on-sulfonylurea {"meds-low":3})
+BELOW  Reason line on shown plates                     0 of 67 (0 %)
+meets  Swaps + one-tap (all recorded, live 259)        261 (swaps 153 of 171, one-tap 108 of 120; 101 % of live)
+meets  Menu orders (14 menus, live 38)                 37; empty where live serves: none
+drops (clean plates): {"contents":1,"diabetes-grain":1,"meds-low":6}; drops (menus): {"side-shape":5,"diabetes-grain":4,"contents":2,"diet":2}

@@ -23,13 +23,13 @@ for(const f of files){const res=JSON.parse(fs.readFileSync(path.join(REPO,'eval/
   const raw=JSON.parse(JSON.stringify(x.reply.raw));if(!raw.refer_reason)raw.refer_reason='none';(raw.meals||[]).forEach(tag);
   const p=Object.assign({},baseP,s.p),c=Object.assign({},baseC,s.c);let pl,out;
   try{pl=a.plan('meals',{profile:p,ctx:c,file:s.file||{}});if(pl.error||pl.reply){T.errors.push(f+':'+x.id+':'+(pl.error||'reply'));continue;}out=pl.check(raw);}catch(e){T.errors.push(f+':'+x.id+':'+String(e).slice(0,80));continue;}
-  const t=T.meals;t.req++;const nr=(raw.meals||[]).length,no=(out.meals||[]).length;t.raw+=nr;t.out+=no;if(!no)t.zero++;if(no===1)t.one++;
+  const t=T.meals;t.req++;const nr=(raw.meals||[]).length,no=(out.meals||[]).length;t.raw+=nr;t.out+=no;if(!no){t.zero++;(t.zeroWhy=t.zeroWhy||[]).push(x.id+' '+JSON.stringify(out.dropped||{}));}if(no===1)t.one++;
   Object.entries(out.dropped||{}).forEach(([k,v])=>add(t.reasons,k,typeof v==='number'?v:1));
   (raw.meals||[]).forEach(m=>{t.swRaw+=((m.swaps||{}).protein||[]).length+((m.swaps||{}).base||[]).length;t.alRaw+=Object.keys(m.alchemy||{}).length;
    [['for_you',m.for_you],['why',(m.why||[]).length],['taste',(m.taste||[]).length],['subtitle',m.subtitle],['cuisine',m.cuisine]].forEach(([k,v])=>{if(v)add(t.proseRaw,k);});});
   if(raw.read)add(t.proseRaw,'read');if(out.read)add(t.prose,'read');
   (out.meals||[]).forEach(m=>{t.swOut+=(m.swaps.protein||[]).length+(m.swaps.base||[]).length;t.alOut+=Object.keys(m.alchemy||{}).length;
-   [['for_you',m.forYou],['why',(m.why||[]).length],['taste',(m.taste||[]).length],['subtitle',m.subtitle],['cuisine',m.cuisine]].forEach(([k,v])=>{if(v)add(t.prose,k);});});
+   [['reason',m.reason],['for_you',m.forYou],['why',(m.why||[]).length],['taste',(m.taste||[]).length],['subtitle',m.subtitle],['cuisine',m.cuisine]].forEach(([k,v])=>{if(v)add(t.prose,k);});});
  }}
 for(const f of mfiles){const res=JSON.parse(fs.readFileSync(path.join(REPO,'eval/v6',f)));const arr=Array.isArray(res)?res:[res];
  for(const x of arr){const s=scenM[x.id];if(!s||!x.reply||!x.reply.raw||x.got!=='ok')continue;

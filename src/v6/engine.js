@@ -587,25 +587,25 @@ function checkMenu(r,p,c,pl,hooks){
     if(!d||typeof d!=="object")return drop("shape");
     /* safety round 5: the dish and side are names (name shape, tags, word lists); the portion is written by the engine from its grams;
        the model's ask, tip and place are not shown. The model's raw words are still read for the food and grain rules. */
-    var name=quoted(d.as_written,60),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],60),all=name+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
-    if(!name||!nameOK(name))return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
-    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&nameOK(sm[2])&&+sm[1]>0?sm[2]:"",sideCount=side?+sm[1]:0;
-    if(typed&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
+    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
+    if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
+    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
+    if(typed&&!onMenu(rawN,typed)&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     var cb=contentsBad(d.contains,name,p);if(cb)return drop(cb);                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
     if(supp(all))return drop("supplement");if(CLAIM.test(name))return drop("claim");        /* rule 4 */
     var m=menuFigs(d,"",DISHR);if(!m.n)return drop(m.drop);var n=m.n;                       /* rule 5 */
     var dt=tagList(d.contains),pg=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(rawPor),por=pg?"\u2248 "+Math.round(+pg[1])+" g":"",ask="";   /* the weight, written by the engine */
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
-    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
+    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
-      if(!off&&(/\bkatoris?\b/i.test(side)||VESSEL.test(side)))off="side-units";
+      if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
-    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(name,rawPor,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
+    if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     var sg=num(d.grain_grams,0,1500)||0;   /* a grain side shows its count and its grams (owner decision, 14 Nov) */
-    var shown=side?sideCount+" "+side+(sg>=10&&isGrain(side)&&!isGrain(name)?", \u2248\u00A0"+Math.round(sg)+"\u00A0g":""):"";   /* "<count> <name>", written by the engine */
-    list.push({tags:dt,name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,rawPor,side):"",
+    var shown=side?sideCount+" "+side+(sg>=10&&isGrain(sideRaw)&&!isGrain(rawN)?", \u2248\u00A0"+Math.round(sg)+"\u00A0g":""):"";   /* "<count> <name>", written by the engine */
+    list.push({tags:dt,name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place="";   /* not shown (safety round 5) */
@@ -617,8 +617,8 @@ function checkMenu(r,p,c,pl,hooks){
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl,p);}   /* rule 7 */
   var kept={},otags=[],onames=[];out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;otags=otags.concat(o.tags);onames.push(o.name,o["with"]);delete o.i;delete o.ch;delete o.tags;return o;});
   out.tip="Eat the vegetables and protein first, and the grain last.";   /* app-static, the same for every menu (safety round 5) */
-  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var nm=quoted(l&&l.as_written,60);return {name:nm,why:LEAVETEXT[l&&l.reason]||""};})
-    .filter(function(l,i){return nameOK(l.name)&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.name,typed))&&!leaveBad(l.name)&&!onlyInBarred(l.name,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3);
+  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
+    .filter(function(l,i){return !!l.name&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.raw,typed)||onMenu(l.name,typed))&&!leaveBad(l.raw)&&!onlyInBarred(l.raw,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3).map(function(l){return {name:l.name,why:l.why};});
   return out;
 }
 

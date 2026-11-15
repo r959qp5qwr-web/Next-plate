@@ -1,0 +1,7 @@
+6665ea6 (round 5 part 1, the base)
+meets  Plates shown (clean, of 75)                     67 of 75
+meets  Requests with no plate (of 25)                  2 (diabetes-on-sulfonylurea {"meds-low":3}; diabetes-on-sulfonylurea {"meds-low":3})
+BELOW  Reason line on shown plates                     0 of 67 (0 %)
+meets  Swaps + one-tap (all recorded, live 259)        221 (swaps 129 of 171, one-tap 92 of 120; 85 % of live)
+BELOW  Menu orders (14 menus, live 38)                 34; empty where live serves: menu-south-tiffin-diabetes 3->0
+drops (clean plates): {"contents":1,"diabetes-grain":1,"meds-low":6}; drops (menus): {"shape":13,"side-shape":8,"diabetes-grain":4,"diet":1}

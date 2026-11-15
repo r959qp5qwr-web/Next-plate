@@ -309,6 +309,27 @@ console.log(`round 5 schema walk: ${walked} string fields`);
   add('round 5 handler wrapper found handlers', n >= 10, `only ${n} handlers that write the log or compose were found; the guard is not reading the page`);
   console.log(`round 5 handlers that write the log or compose: ${n}, wrapped in act(): ${wrapped}`); }
 
+// ---------- S8 in names (usefulness brief): a name is cleaned, not dropped for its shape; a household count never shows in it ----------
+// (The engine-written side, "<count> <name>" with a grain side's grams, is the owner's form for a side (14 Nov) and is not a model name.)
+const COUNTW = /\b\d+\s*(?:x\s*)?(?:rotis?|phulkas?|chapatis?|katoris?|bowls?|cups?|glass(?:es)?|pcs|pieces?|slices?|spoons?|tbsp|tsp|ladles?|idlis?|dosas?|puris?|parathas?|nos)\b|\bkatoris?\b/i;
+const COUNTED = ['Chicken Curry Thali (2 roti, rice, chicken curry, salad)', 'Dal with 2 phulkas', 'Paneer tikka 2 pcs', 'Rajma chawal, 1 bowl', '1 katori moong dal', 'Idli (3 nos)'];
+for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
+  for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTED) {
+    const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
+    const bad = allStr(out).filter(x => COUNTW.test(x));
+    add('S8 no household count in a shown name', !bad.length, `${kind}: "${v}" in ${pth} showed ${JSON.stringify(bad.slice(0, 2))}`); } }
+// cleaned, not dropped: an honest name with brackets, a comma tail or a count is offered, shown without them
+for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka'], ['Flattened rice, softened', 'Flattened rice'], ['Steamed rice 150 g', 'Steamed rice'], ['Cucumber, tomato and onion salad', 'Cucumber, tomato and onion salad']]) {
+  const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
+  const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
+  add('S8 names are cleaned, not dropped', it.includes(shown), `"${raw}" showed ${JSON.stringify(it)}, not "${shown}"`); }
+// every check still reads the raw name, brackets included: the canteen thali with papad and pickle is dropped for high blood pressure
+for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
+  add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);
+  add('S3 brackets are read', !(menuOffered(o, 'Veg Thali (dal, sabzi, papad, pickle)', ['grain']).orders || []).length, `${JSON.stringify(o)}: menu "Veg Thali (dal, sabzi, papad, pickle)" was offered`); }
+add('S2 brackets are read', !plateOffered({ diet: 'veg' }, withItem('Veg thali (with chicken curry)', ['grain'])).ok, 'vegetarian: "Veg thali (with chicken curry)" was offered');
+add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with protein powder)', ['grain'])).ok, '"Oats porridge (with protein powder)" was offered');
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});

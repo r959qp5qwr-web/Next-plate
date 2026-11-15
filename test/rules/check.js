@@ -14,8 +14,9 @@ const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
   referred = (r) => r && typeof r === 'object' && r.refer_reason === undefined ? false : rf(r); }
 // the Rescue fixture is a mutton biryani; cases here rename it and type other dishes, so its declared contents are left to each case
 // Model prose is not shown (safety round 5): the engine writes every line, so no prose check is shimmed here.
-// The name shape (letters, spaces, hyphens) is tested in test/safety/check.js; this suite's grain names keep their digits and brackets.
-{ const nk = nameOK; nameOK = (t) => typeof t === 'string' && /^[\x20-\x7E]+$/.test(t) && /[A-Za-z]{2}/.test(t); }
+// A shown name is the model's name with brackets and a comma tail taken off (usefulness brief, showName in core); this suite's grain names keep
+// their digits and brackets, and a swap is found by its shown name.
+const shownAs = (f) => (typeof showName === 'function' ? showName(f) : '') || f;
 delete fx.rescue.dish.contains; fx.rescue.hacks.forEach(h => { delete h.contains; });
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 let bad = 0;
@@ -216,7 +217,7 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   const p = readProfile(Object.assign({}, P)); p.slot = 'dinner';
   // worst case: the model declares a grain (wheat) as what every swap and plate is made of; the name test must still hold
   const swapOf = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, made_of: 'wheat', grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
-    const c = checkMeal(m, p); return !!(c.meal && c.meal.swaps.base.some(s => s.food === f)); };
+    const c = checkMeal(m, p); return !!(c.meal && c.meal.swaps.base.some(s => s.food === shownAs(f))); };
   const plateOf = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.items = m.items.map(i => i.group === 'carbs' ? Object.assign({}, i, { food: f }) : i);
     m.grain = { food: f, made_of: 'wheat', grams: 200 }; m.title = 'Paneer tikka plate'; m.subtitle = 'With palak'; return checkMeal(m, p); };
   const offered = STANDINS.filter(swapOf), passed = STANDINS.filter(f => plateOf(f).meal);
@@ -224,7 +225,7 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   ok(!passed.length, 'diabetes: a plate whose only base is a grain-free stand-in is dropped' + (passed.length ? ' (passed: ' + passed.join(', ') + ')' : ''));
   const pnv = readProfile(Object.assign({}, P, { diet: 'nonveg' })); pnv.slot = 'dinner';   // the true grains include egg and chicken dishes
   const swapNV = (f) => { const m = JSON.parse(JSON.stringify(meal)); m.swaps.base = [m.swaps.base[0], { food: f, made_of: 'wheat', grams: 150, deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 }];
-    const c = checkMeal(m, pnv); return !!(c.meal && c.meal.swaps.base.some(s => s.food === f)); };
+    const c = checkMeal(m, pnv); return !!(c.meal && c.meal.swaps.base.some(s => s.food === shownAs(f))); };
   const lost = GRAINS.filter(f => !swapNV(f));
   ok(!lost.length, 'diabetes: every true grain stays on offer as a base swap' + (lost.length ? ' (dropped: ' + lost.join(', ') + ')' : ''));
 }
