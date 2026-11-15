@@ -421,6 +421,11 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   add('B2 every reachable Builder state is in bounds and accepted unchanged', !!rebal && states > 0 && !bad.length, rebal ? `${bad.length} bad of ${states} states, e.g. ${bad.join(' | ')}` : 'rebalance not found in app.js');
   console.log(`B2: ${states} Builder states reached from ${starts.length} presets`); }
 
+// ---------- B3 (Codex re-audit): the note to clients on medicines promises only what the code enforces ----------
+{ const p = readProfile(Object.assign({}, BASE, { health: 'diabetes', meds: 'yes', goal: 'lose', kg: 80 }));
+  const txt = JSON.stringify(safe(() => dayTargets6(p).notes, []));
+  add('B3 the medicines note promises what is enforced', /usual size/.test(txt) && /doctor sets how much carbohydrate/.test(txt) && !/even amount|same amount|consistent carb|steady carb/i.test(txt), 'the note says: ' + txt.slice(0, 400)); }
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});

@@ -63,7 +63,7 @@ function dayTargets6(p,par){
   if(goal==="lose"){
     if(bmi<par.bmiOverweight)hold="Your BMI is about "+bmi.toFixed(1)+", inside the healthy range for Indian adults (under 23), so plates hold your weight steady instead of cutting calories.";
     else if(older)hold="After 65, weight loss is planned one person at a time with a doctor, to protect muscle. Plates hold your weight steady and raise protein.";
-    else if(meds)hold="With insulin or sugar tablets such as glimepiride or gliclazide, eating less can drop blood sugar too far. Plates hold steady with an even amount of grain at each meal, until your doctor adjusts the plan.";
+    else if(meds)hold="With insulin or sugar tablets such as glimepiride or gliclazide, eating less can drop blood sugar too far. Plates hold your weight steady: each meal stays at least its usual size, the grain stays on the plate, and the figures are checked to agree. Your doctor sets how much carbohydrate you need.";   /* says only what the code enforces (Codex re-audit B3) */
     if(hold)notes.push(["Weight loss.",hold]);
     else{
       var def=bmi>=par.bmiObese?par.deficitObese:par.deficitOverweight,cap=maint*par.deficitMaxShare,fl=par.floor[p.sex];
