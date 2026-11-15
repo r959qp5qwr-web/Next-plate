@@ -10,6 +10,7 @@ module.exports = [
   S(P, 'plate-loading', 'Plate: making the plate', 'After set-up, or on opening, while the plate is made.'),
   S(P, 'plate-loading-changed', 'Plate: food rules changed while the plate is made', 'While the first plate is made, open My food, tick Nuts, Done.'),
   S(P, 'plate-hero', 'Plate: the plate for this meal', 'Opening the app after set-up.'),
+  S(P, 'plate-rules-reload', 'Plate: a food rule changed mid-request, then a reload', 'While plates are made, leave out dairy in My food, then reload the page.'),
   S(P, 'plate-old-saved', 'Plate: a plate kept from earlier today', 'Reopening the app later the same day.'),
   S(P, 'plate-leave-two', 'Plate: two foods left out', 'My food: leave out dairy and nuts.'),
   S(P, 'plate-no-body', 'Plate: no height, weight or age given', 'Set-up body step skipped.'),

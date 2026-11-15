@@ -180,6 +180,23 @@ const STATES = [
     (p) => p.route('**/api/meals', async r => { (p.__calls = p.__calls || []).push(JSON.parse(r.request().postData() || '{}')); if (p.__calls.length === 1) await new Promise(x => setTimeout(x, 3500)); try { await r.continue(); } catch (e) {} })],
   ['plate-hero', seed(), async (p, h) => { await h.plate(p); await closeTo(p, ['#plate-card .hero-top']); await asks(p, ASKS); await noTagline(p); await scrollAway(p); }],
   // round 12: a plate saved on the phone before the declared grain field is not shown again; today's plate is made under the new rules
+  // second audit B4 (tier 1, app logic): a food rule changed while plates are made, then a reload; and a kept plate stamped with other rules.
+  // Plates made under the old rules never show, and nothing kept carries the old stamp.
+  ['plate-rules-reload', seed(), async (p, h) => { await h.plate(p);
+    await p.route('**/api/meals', async r => { (p.__calls = p.__calls || []).push(JSON.parse(r.request().postData() || '{}')); await new Promise(x => setTimeout(x, 4000)); try { await r.continue(); } catch (e) {} });
+    await p.click('#myfood'); await h.settle(300); await p.click('#leave-dairy'); await p.click('#sheet-done'); await new Promise(x => setTimeout(x, 800));   // the new request is in flight
+    const injected = await p.evaluate(() => { const x = JSON.parse(localStorage.getItem('np6')); x.store = x.store || { res: {}, shown: {} }; x.store.res = x.store.res || {}; x.store.shown = x.store.shown || {};
+      x.store.res.stale = { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: Date.now(), rules: '["veg",[],["diabetes"],"no",47,158,72,"f","low"]',
+        meals: [{ title: 'Plate made under other rules', subtitle: '', minutes: 20, items: [{ food: 'Paneer tikka', grams: 150, group: 'protein', contains: ['dairy'] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }],
+          kcal: 520, protein: 28, carbs: 52, fats: 22, fiber: 8, grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, contains: ['dairy', 'grain'], why: [], swaps: { protein: [], base: [] }, alchemy: {}, planned: [], forYou: '' }] };
+      x.store.shown.lunch = 'stale'; localStorage.setItem('np6', JSON.stringify(x)); return Object.keys(x.store.res).length; });
+    if (!injected) throw new Error('the stale plate could not be put in the store');
+    await p.reload({ waitUntil: 'domcontentloaded' }); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 40000 }); await h.settle(600);
+    const r = await p.evaluate(() => { const x = JSON.parse(localStorage.getItem('np6')); return { stamps: Object.values(x.store.res || {}).map(e => e.rules), leave: (x.p || {}).leave || [], text: document.getElementById('v-plate').innerText }; });
+    if (!r.leave.includes('dairy')) throw new Error('the changed food rule was not kept over the reload');
+    if (r.stamps.some(t => !t || !t.includes('dairy'))) throw new Error('a plate made under the old rules is still kept: ' + JSON.stringify(r.stamps));
+    if (/Plate made under other rules/.test(r.text)) throw new Error('a kept plate stamped with other rules is shown');
+    if (/\b(paneer|curd|ghee|raita|dahi|butter)\b/i.test(r.text)) throw new Error('a dairy food shows after dairy was left out'); }],
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
     async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
