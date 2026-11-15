@@ -392,6 +392,20 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const r4 = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(retag(m4))), {}), c4 = (r4.meals || [])[0] || { swaps: { protein: [] }, alchemy: {} };
   add('A2 honest swaps and changes stay on offer', c4.swaps.protein.some(s => s.food === 'Boiled chickpeas') && !!c4.alchemy.protein, `offered: ${JSON.stringify(c4.swaps.protein.map(s => s.food))}, changes ${JSON.stringify(Object.keys(c4.alchemy))}`); }
 
+// ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
+// A first net, not a complete list: the phrasings below are the re-audit's and their variants, so they are regression cases, not held out.
+{ const URG = ['I took insulin and feel shaky', 'my sugar dropped to 50 and I feel dizzy', 'my sugar is very low and I am sweating', 'chest pain after lunch', 'feeling faint and confused',
+    'sugar kam ho gaya, chakkar aa rahe hain', 'seene me dard hai', 'saans phool rahi hai', 'cant breathe properly', 'passed out after lunch', 'hypo after my tablets', 'feeling shakey after insulin', 'no chest pain today'];
+  const BENIGN = ['sugar-free dessert', 'low sugar biscuits', 'I want low sugar chai', 'I am confused what to eat', 'dizzy from the heat, something cold', 'Something light with paneer', 'I am sweating, it is hot'];
+  for (const kind of ['meals', 'menu', 'rescue', 'log']) {
+    for (const t of URG) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
+      add('B1 urgent text is referred before the model', !!(pl.reply && pl.reply.status === 'refer' && pl.reply.read === SAFETY && pl.reply.urgent && !pl.prompt), `${kind}: "${t}" ${pl.reply ? JSON.stringify(pl.reply).slice(0, 80) : 'went to the model'}`); }
+    for (const t of BENIGN) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
+      add('B1 benign text is not referred', !(pl.reply && pl.reply.status === 'refer'), `${kind}: "${t}" was referred`); } }
+  // a wrong "none" from the model cannot undo it: the model is never asked
+  const pl = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: 'chest pain after lunch' } }), {});
+  add('B1 a wrong refer_reason cannot undo it', !pl.check, 'the plates plan for "chest pain after lunch" can still take a model reply'); }
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});

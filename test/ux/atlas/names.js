@@ -57,6 +57,7 @@ module.exports = [
   S(MG, 'menu-grain-undo', 'Menu, diabetes: no grain left, undo', 'No to every grain, then tap Change answer: the orders come back with the question.'),
   S(MG, 'menu-grain-other', 'Menu, diabetes: a different menu after a No', 'Say No, then read a different menu: the question is asked again.'),
   S(MG, 'menu-grain-two', 'Menu, diabetes: two grains in one order', 'An order with roti and rice asks about both.'),
+  S(X, 'plate-ask-urgent', 'Blocked: an urgent symptom typed in the ask', 'Type "chest pain after lunch" in the ask and send.'),
   S(X, 'plate-blocked-kidney', 'Plate: kidney condition, referred', 'Health: kidney condition.'),
   S(X, 'plate-blocked-preg', 'Plate: pregnancy, referred', 'Health: pregnant.'),
   S(X, 'builder-blocked', 'Builder: referred', 'Kidney condition, tap Builder.'),

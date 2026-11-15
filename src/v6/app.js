@@ -149,7 +149,7 @@ function makePlates(text,again){
     UI.busy="";
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
-      STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
+      STORE.res[key]={meal:meal,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)UI.askDraft=text;}
     else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);}
@@ -506,7 +506,7 @@ function renderPlate(){
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
   }else if(r.status==="refer"){
-    var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));e.appendChild(el("h2",null,r.read||SAFETY));   /* the card quotes the ask it answers (R2-B5 072-1) */
+    var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));e.appendChild(el("h2",null,r.read||SAFETY));if(r.urgent)e.appendChild(el("p","urgent",URGENTLINE));   /* the card quotes the ask it answers (R2-B5 072-1); an urgent symptom adds the line to get help now (B1) */
     var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);v.appendChild(e);
   }else{
     if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.empty&&UI.errAsk?"Nothing for \u201C"+UI.errAsk+"\u201D fit your food rules. Change a choice under Your day, or tap Try again. Showing the plates from before.":(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));   /* R2-B5 069 */
@@ -613,7 +613,7 @@ function rescue(text,image){
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
     if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
-    else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||""};}
+    else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
     else if(s===200&&j.reason==="diet"){UI.rerr="That dish does not fit your food rules (what you eat and leave out). Name another dish.";UI.rkeep="";UI.rretry=false;}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
     else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
@@ -628,7 +628,7 @@ function readMenu(text,image){
   api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
     if(askedFor()!==sent){if(!blocked()&&C.meal===meal)readMenu(text,image);else render();return;}
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",scriptNote:j.scriptNote||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
-    else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
+    else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read,urgent:!!j.urgent};
     else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="script"?"script":j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.mnone=s===200&&j.status!=="unreadable"&&j.status!=="script";UI.merr=s!==200?(j.code==="upstream_error"&&image?"Next Plate couldn't read your menu just now. Your photo is kept.":errText(j.code,"menu")):j.status==="script"?SCRIPTNOTE:j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();if(UI.merr)$("said").textContent=UI.merr;});
 }
@@ -659,7 +659,7 @@ function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var 
 function asideText(){var by={};(UI.maside||[]).forEach(function(a){var k=a.g+(a.too?"|too":"");(by[k]=by[k]||[]).push(a.name);});
   return Object.keys(by).map(function(k){var n=by[k],g=k.split("|")[0],too=/\|too$/.test(k);return n.join(" and ")+(n.length>1?" need ":" needs ")+g+(too?" too":"")+", so "+(n.length>1?"they are":"it is")+" set aside. ";}).join("");}
 function orderView(v,r){
-  if(r.status==="refer"){var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));v.appendChild(e);return;}
+  if(r.status==="refer"){var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si,el("h2",null,r.read||SAFETY));if(r.urgent)e.appendChild(el("p","urgent",URGENTLINE));v.appendChild(e);return;}
   if(UI.msel>=r.orders.length)UI.msel=0;
   var mn=mealName(r.meal).toLowerCase(),o=r.orders[UI.msel],a={},hab={veg:false,walk:false,lemon:false},moved=false;
   MENUK.forEach(function(k){a[k]=o.n[k];});
@@ -780,7 +780,7 @@ function renderRescue0(){
   if(UI.mres){orderView(v,UI.mres);return;}
   var r=UI.rres;
   if(!r)return;
-  if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));e.appendChild(el("h2",null,r.read||SAFETY));v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
+  if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));e.appendChild(el("h2",null,r.read||SAFETY));if(r.urgent)e.appendChild(el("p","urgent",URGENTLINE));v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
@@ -831,7 +831,7 @@ function logOther(text,image){
   var sent=askedFor();
   api("/api/log",body,function(s,j){UI.lbusy=false;
     if(askedFor()!==sent){if(!blocked())logOther(text,image);else renderSheet();return;}
-    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200&&j.status==="refer"){UI.lretry=false;UI.lerr=SAFETY+" Next Plate does not count meals for this.";}   /* S7: a referral shows as one */
+    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200&&j.status==="refer"){UI.lretry=false;UI.lerr=SAFETY+" Next Plate does not count meals for this."+(j.urgent?" "+URGENTLINE:"");}   /* S7: a referral shows as one */
     else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Name what you ate and how much.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;
     if(UI.sheet==="log")renderSheet();});
