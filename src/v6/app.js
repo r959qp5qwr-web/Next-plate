@@ -28,7 +28,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
   /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
-  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);})){delete STORE.res[k];
+  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
     Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;}});}});
   if(typeof raw.k==="string")KEYCODE=raw.k;
 }catch(e){}})();
@@ -58,7 +58,9 @@ function profileOut(){return {goal:P.goal,focus:P.focus,meds:has("diabetes")?(P.
 function appetite(){return APP[C.meal]!=null?APP[C.meal]:suggestAppetite(FILE,C.meal).v;}
 /* kept plates (Show my last plates, a plate kept for later) are checked against the current rules and body figures: one that fails is
    not offered (audit B9); a tap state that no longer holds is cleared */
-function pruneKept(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(!r||!Array.isArray(r.meals)||!r.meals.length)return;
+function pruneKept(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(!r)return;
+    if(r.rules!==rules()){delete STORE.res[k];Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k)STORE.shown[s]=null;});return;}   /* made under other rules: never shown */
+    if(!Array.isArray(r.meals)||!r.meals.length)return;
     var keep=r.meals.filter(function(m){return m&&m.items&&!baseWhy(m,r.meal);});if(keep.length===r.meals.length)return;
     if(!keep.length){delete STORE.res[k];Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k)STORE.shown[s]=null;});}else r.meals=keep;UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;});}
 function clockMeal(h){return h<4?"dinner":h<11?"breakfast":h<15.5?"lunch":h<18.5?"snack":"dinner";}
@@ -85,6 +87,10 @@ function baseWhy(m,meal){var s0={alc:UI.alc,swp:UI.swp,swb:UI.swb};UI.alc={};UI.
 function rescueSum(r,moves){var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber};r.hacks.forEach(function(h,k){if(!moves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;});return a;}
 function rescueWhy(r,moves){return composedWhy(rescueSum(r,moves),r.dish,{meal:r.meal||C.meal});}
 function refuse(why){toast("Not changed. "+why,true);}
+/* Every tap that shows a composed state or writes the log goes through act() (safety round 5): the day is checked first (S12), then the
+   composed result the tap would make (S5, S6). test/safety/check.js reads app.js and fails if a click handler that logs or clears does not. */
+function act(check,fn,onDay){return function(){if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
+function orderSum(r,o,moves){var a={};MENUK.forEach(function(k){a[k]=o.n[k];});(r.moves||[]).forEach(function(m,k){if(moves[k]&&m.kind==="portion")a=scaleN(a,m.scale);});return a;}
 /* moving to another meal starts its plate fresh: no plate choice, swap or change carries over (correctness review, minor) */
 /* a refusal shows the info mark, not the tick that a done action shows */
 var toast0=toast;toast=function(t,warn){var u=$("toast").querySelector("use"),h=warn?"#i-info":"#i-check";if(u&&u.getAttribute("href")!==h)u.setAttribute("href",h);toast0(t,warn);};
@@ -142,7 +148,7 @@ function makePlates(text,again){
     UI.busy="";
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
-      STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now()};STORE.shown[meal]=key;
+      STORE.res[key]={meal:meal,status:j.status,read:j.read||"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)UI.askDraft=text;}
     else{UI.err=errText(j.code,"plate");UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);}
@@ -373,7 +379,7 @@ function loggedCard(s){
     if(onMeds()){var w=el("div","note");w.setAttribute("role","note");w.appendChild(ic("info"));w.appendChild(el("p",null,MEDSWARN));c.appendChild(w);}
     c.appendChild(el("p","tsub",PL?"The rest of the day adjusts. No meal is asked to make up for it in one sitting.":"Add your age, height and weight so the rest of the day can adjust."));}   /* without targets nothing adjusts (R2-B3 038-1) */
   else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈\u00A0"+Math.round(s.kcal)+"\u00A0kcal · "+Math.round(s.protein)+"\u00A0g protein"));c.appendChild(p);}
-  var row=el("div","pick-acts"),ch=btn("btn","Reopen "+nm.toLowerCase(),null,"slot-change");ch.addEventListener("click",function(){if(dayMoved())return;clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");});row.appendChild(ch);
+  var row=el("div","pick-acts"),ch=btn("btn","Reopen "+nm.toLowerCase(),null,"slot-change");ch.addEventListener("click",act(null,function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");}));row.appendChild(ch);
   var nf=nextOffer(),nx=nf.meal;if(nf.low){var lw=el("p","tsub","Little is left for a snack today.");lw.id="snack-low";c.appendChild(lw);}
   if(nx){var go=btn("btn primary","Plan "+mealName(nx).toLowerCase(),"chev","slot-next");go.addEventListener("click",function(){pickMeal(nx);render();$("scroll").scrollTop=0;});row.appendChild(go);}
   c.appendChild(row);return c;
@@ -400,7 +406,7 @@ function heroCard(m,v,r){
   var protSwap=(v.swapped||[]).some(function(x){return x.group==="protein";}),tastes=protSwap?[]:(m.taste||[]).filter(function(w){return !speaksOf(w);});
   if(tastes.length){var ts=el("p","taste");ts.setAttribute("aria-label","Tastes "+tastes.join(", "));tastes.forEach(function(w){ts.appendChild(el("span",null,w));});txt.appendChild(ts);}
   txt.appendChild(el("h2",m.title.length>34?"long":null,m.title));if(v.suffix)txt.appendChild(el("p","suffix",v.suffix));
-  txt.appendChild(el("p","sub",m.subtitle));
+  txt.appendChild(el("p","sub",engineSub(v.items)));
   var tags=(m.planned||[]).map(function(id){return r.hooks&&r.hooks[id];}).filter(Boolean);
   if(tags.length){var pa=el("p","planned");pa.id="planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode("\u00A0· "));pa.appendChild(el("span",null,t));});txt.appendChild(pa);}
   main.appendChild(txt);
@@ -413,13 +419,13 @@ function heroCard(m,v,r){
   var off=[];[["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
     var a=m.alchemy[x[0]];var b=btn("tbtn",ALCHLABEL[x[0]],UI.alc[x[0]]?"check":x[1],"alc-"+x[0]);   /* on shows a tick, off is outlined (screen review B1) */setPressed(b,!!UI.alc[x[0]]);if(!a)off.push(ALCHLABEL[x[0]]);
     if(!a){b.disabled=true;b.title=waitT?"Getting ready":"Not offered for this plate";}
-    b.addEventListener("click",function(){if(!a)return;if(dayMoved())return;var snap={alc:JSON.parse(JSON.stringify(UI.alc)),swb:UI.swb};UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]]&&a.grainAfter!=null&&UI.swb){UI.swb=0;$("said").textContent="The grain swap is undone: this change works on the planned grain.";}   /* S10 */
+    b.addEventListener("click",act(null,function(){if(!a)return;var snap={alc:JSON.parse(JSON.stringify(UI.alc)),swb:UI.swb};UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]]&&a.grainAfter!=null&&UI.swb){UI.swb=0;$("said").textContent="The grain swap is undone: this change works on the planned grain.";}   /* S10 */
       /* one grain change at a time; with diabetes the changes on together keep at least half the plate's carbs (S5, S10) */
       if(UI.alc[x[0]]){var off=[];ALCH.forEach(function(k){var a2=m.alchemy[k];if(k===x[0]||!UI.alc[k]||!a2)return;var dc=0;ALCH.forEach(function(q){if(UI.alc[q]&&m.alchemy[q])dc+=m.alchemy[q].deltaCarbs||0;});
         if(a.grainAfter!=null&&a2.grainAfter!=null||has("diabetes")&&C.meal!=="snack"&&m.carbs+dc<m.carbs*0.5){UI.alc[k]=false;off.push(ALCHLABEL[k]);}});
         if(off.length)$("said").textContent=off.join(", ")+(off.length>1?" are":" is")+" turned off, so the grain stays as planned.";}
       var why=plateWhy(m);if(why){UI.alc=snap.alc;UI.swb=snap.swb;refuse(why);render();return;}   /* the composed plate, tick or untick */
-      if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();});if(a||waitT)tn.appendChild(b);});   /* a change not offered is named below, not shown dead (screen review B1) */
+      if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();}));if(a||waitT)tn.appendChild(b);});   /* a change not offered is named below, not shown dead (screen review B1) */
   if(!waitT&&off.length){var tno=el("p","fine tnote");tno.id="alc-off";
     if(m.tuneFailed){tno.textContent="One-tap changes and swaps didn't load. ";var tr0=btn("linkbtn","Try again",null,"tune-retry");tr0.addEventListener("click",function(){m.tuneFailed=false;tune(curKey(),UI.sel);render();});tno.appendChild(tr0);}   /* a failed request is not "none for this plate" (R2-B2 024-1) */
     else if(off.length===4)tno.textContent="No one-tap changes for this plate.";else{tno.appendChild(document.createTextNode("Not offered for this plate: "));off.forEach(function(o,i){if(i)tno.appendChild(document.createTextNode(", "));tno.appendChild(el("span","nw",o));});tno.appendChild(document.createTextNode("."));}tn.appendChild(tno);}
@@ -435,28 +441,28 @@ function heroCard(m,v,r){
     [["protein","Main protein","swp","protein"],["base","Grains and starch","swb","carbs"]].forEach(function(x){var list=m.swaps[x[0]],at=swapAt(m,x[0]);if(list.length<2||at<0)return;var g=el("div");g.appendChild(el("p","cap",x[1]));var w=el("div","lows");
       var onPlate=m.items[at];   /* the label names the item the swap replaces (S10) */
       list.forEach(function(s,i){var lbl=i?s.food+swapDelta(s,x[0]):(onPlate?onPlate.food:s.food)+" (on\u00A0your\u00A0plate)";var b=btn("choice",lbl,null,x[2]+"-"+i);b.setAttribute("role","radio");b.setAttribute("aria-checked",UI[x[2]]===i?"true":"false");
-        b.addEventListener("click",function(){if(dayMoved())return;var snap={alc:JSON.parse(JSON.stringify(UI.alc)),v:UI[x[2]]};UI[x[2]]=i;if(i&&x[2]==="swb"){var off=[];ALCH.forEach(function(k){var a2=m.alchemy&&m.alchemy[k];if(UI.alc[k]&&a2&&a2.grainAfter!=null){UI.alc[k]=false;off.push(ALCHLABEL[k]);}});if(off.length)$("said").textContent=off.join(", ")+" is turned off: it changes the planned grain.";}   /* S10 */var why=plateWhy(m);if(why){UI.alc=snap.alc;UI[x[2]]=snap.v;refuse(why);render();return;}if(i)logEv("swapped",{from:list[0].food,to:s.food});render();});w.appendChild(b);});g.appendChild(w);d.appendChild(g);});
+        b.addEventListener("click",act(null,function(){var snap={alc:JSON.parse(JSON.stringify(UI.alc)),v:UI[x[2]]};UI[x[2]]=i;if(i&&x[2]==="swb"){var off=[];ALCH.forEach(function(k){var a2=m.alchemy&&m.alchemy[k];if(UI.alc[k]&&a2&&a2.grainAfter!=null){UI.alc[k]=false;off.push(ALCHLABEL[k]);}});if(off.length)$("said").textContent=off.join(", ")+" is turned off: it changes the planned grain.";}   /* S10 */var why=plateWhy(m);if(why){UI.alc=snap.alc;UI[x[2]]=snap.v;refuse(why);render();return;}if(i)logEv("swapped",{from:list[0].food,to:s.food});render();}));w.appendChild(b);});g.appendChild(w);d.appendChild(g);});
     sv.appendChild(d);}
   var ul=el("ul","measures");
   v.items.forEach(function(it){var li=el("li"),qy=el("span","qty g"+(it.tag?" chg":""));qy.style.setProperty("--dot",RINGC[{greens:"veg",protein:"pro",carbs:"grain"}[it.group]||"side"]);
     if(it.grams){qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));}else qy.textContent="—";
     var f=el("span","food");f.appendChild(el("b",null,it.food));if(it.tag)f.appendChild(el("span","tag",it.tag));add(li,qy,f);ul.appendChild(li);});
-  sv.appendChild(ul);if(has("bp")){var bpi=el("p","fine bpcook","Cook with no added salt; skip pickle and papad.");bpi.id="bp-cook";sv.appendChild(bpi);}card.appendChild(sv);   /* the salt step where the cook reads (R2-B2 026-1) */
+  sv.appendChild(ul);if(has("bp")){var bpi=el("p","fine bpcook","Cook with no added salt.");bpi.id="bp-cook";sv.appendChild(bpi);}card.appendChild(sv);   /* the salt step where the cook reads (R2-B2 026-1) */
   var whys=m.why.filter(function(w){return !speaksOf(w.pair+" "+w.effect);});
   if(whys.length){var pr=el("div","pairs"),ph=el("p","ph");ph.id="pairs";add(ph,el("b",null,"Pair it"),el("small",null,"to take up more from this plate"));pr.appendChild(ph);
     var pu=el("ul");whys.forEach(function(w){var li=el("li"),when=/\b(later|after|before|hours?|apart|gap|wait)\b/i.test(w.pair),pl=el("span","plus"+(when?" when":""),when?"":"+"),tx=el("span");if(when)pl.appendChild(ic("clock"));pl.setAttribute("aria-hidden","true");add(tx,el("b","pf",w.pair),el("span","pe",w.effect));add(li,pl,tx);pu.appendChild(li);});
     pr.appendChild(pu);card.appendChild(pr);}
   var acts=el("div","acts two");
   var total=r.meals.length,nx=btn("btn",total>1?"Next\u00A0plate ("+(UI.sel+1)+"\u00A0of\u00A0"+total+")":"New plates","refresh","next");
-  nx.addEventListener("click",function(){if(dayMoved())return;if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");});
+  nx.addEventListener("click",act(null,function(){if(total>1){logEv("next",{title:m.title});UI.sel=(UI.sel+1)%total;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();}else makePlates("");}));
   var tr=btn("btn","Change the mix","lab","try");tr.addEventListener("click",function(){show("build");});
   var hv=btn("btn primary","I'll have this","check","have");
-  hv.addEventListener("click",function(){if(dayMoved())return;var why=plateWhy(m);if(why){UI.alc={};UI.swp=0;UI.swb=0;refuse(why);render();return;}clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});unAsk();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
+  hv.addEventListener("click",act(function(){return plateWhy(m);},function(){clearSlot(C.meal);logEv("had",{title:v.title,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,planned:m.planned||[]});unAsk();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");}));
   add(acts,hv,nx,tr);card.appendChild(acts);
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){
     /* opened again for the same meal, the words, a wait or an estimate not yet counted stay (second screen review, R2-B4 055-2, 057-1) */
     if(UI.lmeal!==C.meal){UI.ltext="";UI.lres=null;UI.lbusy=false;}UI.lmeal=C.meal;UI.lerr=UI.lock?errText(UI.lock,"log"):"";UI.lretry=false;openSheet("log");});
-  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",function(){if(dayMoved())return;clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */});add(lg,o,sk);card.appendChild(lg);
+  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */}));add(lg,o,sk);card.appendChild(lg);
   return card;
 }
 function lockLine(){return /^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":UI.lock==="not_set_up"?"Asks open once your coach switches meal planning on.":KEYCODE?"Asks open once you open the new link from your coach.":"Asks open once your coach's link is opened on this phone.";}
@@ -519,7 +525,7 @@ function renderPlate(){
     if(r.meals.length>1){var hh=el("div","sec-h");hh.appendChild(el("h3",null,"Also for "+mealName(C.meal).toLowerCase()));v.appendChild(hh);
       var wrap=el("div","alts");r.meals.forEach(function(x,i){if(i===UI.sel)return;var b=el("button","alt");b.type="button";b.id="alt-"+i;
         var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈\u00A0"+x.protein+"\u00A0g protein · "+x.kcal+"\u00A0kcal"+(x.minutes?" · "+x.minutes+"\u00A0min":"")));
-        add(b,thali(x.items,56,"Plate"),tx,ic("chev"));b.addEventListener("click",function(){if(dayMoved())return;logEv("chosen",{title:x.title});UI.sel=i;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
+        add(b,thali(x.items,56,"Plate"),tx,ic("chev"));b.addEventListener("click",act(null,function(){logEv("chosen",{title:x.title});UI.sel=i;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;render();$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});}));wrap.appendChild(b);});
       v.appendChild(wrap);}
   }
   var dh=el("div","sec-h day-h");dh.appendChild(el("h3",null,"Your day"));v.appendChild(dh);directiveCard(v);ctxBlock(v);
@@ -555,7 +561,7 @@ function renderBuild(){
   var t=PL?PL.target:null,mid=el("div","ringmid");if(t){mid.appendChild(el("b",null,String(t.kcal)));mid.appendChild(el("small",null,"kcal · "+t.protein+"\u00A0g protein"));}   /* no target: the centre stays empty, and the note below says why (R2-B5 078-1) */
   var rw=el("div","ringwrap");add(rw,rg,mid);
   var stp=el("div","steppers");
-  [["protein","Protein","pro"],["greens","Vegetables and greens","veg"],["carbs","Grains (roti, rice, millet)","grain"],["fats","Fats and seeds","side"]].forEach(function(x){
+  [["protein","Protein","pro"],["greens","Vegetables and greens","veg"],["carbs","Grains","grain"],["fats","Fats and seeds","side"]].forEach(function(x){
     var row=el("div","stp"),sw=el("i");sw.style.background=RINGC[x[2]];var tx=el("div");tx.appendChild(el("b",null,x[1]));
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
@@ -607,7 +613,8 @@ function rescue(text,image){
     if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||""};}
-    else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, for example \u201Cmasala dosa, 1 plate\u201D.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
+    else if(s===200&&j.reason==="diet"){UI.rerr="That dish does not fit your food rules (what you eat and leave out). Name another dish.";UI.rkeep="";UI.rretry=false;}
+    else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
     else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
     render();if(UI.rerr)$("said").textContent=UI.rerr;});
 }
@@ -636,7 +643,7 @@ function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.f
 function grainNone(again){var g=(UI.mno||[]).join(" and "),yes=Object.keys(UI.myes||{}).filter(function(k){return UI.myes[k]&&(UI.mno||[]).indexOf(k)<0;});UI.mres=null;UI.mopen=false;UI.mundo=true;UI.mfix="";
   /* two short sentences; with a Yes on record the step names the grain they confirmed (second screen review, R2-B8 115, R2-B7 111-1) */
   UI.merr=(again?"Earlier you said ":"You said ")+g+(grainPlural(g)?" are":" is")+" not available. Every order Next Plate picked from this menu needs "+(UI.mno.length>1?"one of them":grainPlural(g)?"them":"it")+". "+
-    (yes.length?"You said "+yes.join(" and ")+(yes.length>1||grainPlural(yes[0])?" are":" is")+" available: name your dish with "+(yes.length>1||grainPlural(yes[0])?"them":"it")+" instead.":"Ask which roti or rice they have, then name your dish with it.");}
+    (yes.length?"You said "+yes.join(" and ")+(yes.length>1||grainPlural(yes[0])?" are":" is")+" available: name your dish with "+(yes.length>1||grainPlural(yes[0])?"them":"it")+" instead.":"Ask which grain they have, then name your dish with it.");}
 function grainUndo(){UI.mno=[];UI.maside=[];UI.mundo=false;UI.merr="";$("said").textContent="The order asks about the grain again.";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
 function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
   var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
@@ -680,8 +687,8 @@ function orderView(v,r){
   var tags=(o.planned||[]).map(function(id){return r.hooks[id];}).filter(Boolean);
   if(tags.length){var pa=el("p","planned");pa.id="order-planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode("\u00A0· "));pa.appendChild(el("span",null,t));});card.appendChild(pa);}
   var go=btn("btn primary","I'll order this","check","order-go");
-  go.addEventListener("click",function(){if(dayMoved())return;var why=composedWhy(a,o.n,{meal:r.meal});if(why){UI.mmoves={};refuse(why);render();return;}clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+String(o["with"]).replace(/, (\u2248\u00A0\d+\u00A0g)$/," ($1)"):"")+(share?" ("+share+")":""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
-    UI.mres=null;UI.mtext="";pickMeal(r.meal);show("plate");toast("Counted for "+mn+". Your next meals adjust to it.");});
+  go.addEventListener("click",act(function(){var w=composedWhy(orderSum(r,o,UI.mmoves),o.n,{meal:r.meal});if(w)UI.mmoves={};return w;},function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+String(o["with"]).replace(/, (\u2248\u00A0\d+\u00A0g)$/," ($1)"):"")+(share?" ("+share+")":""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
+    UI.mres=null;UI.mtext="";pickMeal(r.meal);show("plate");toast("Counted for "+mn+". Your next meals adjust to it.");}));
   /* Round 28 (owner decision): with diabetes the plan keeps a grain. When the grain is a side or part of the portion, the person
      confirms it is available before ordering; "No" moves to the next order with another grain, or back to the menu. */
   /* Round 29: answers are kept by the grain's name for this session, so "Also on this menu" and a fresh read of the menu do not ask
@@ -706,12 +713,12 @@ function orderView(v,r){
     var mv=el("div","moves");r.moves.forEach(function(m,k){var b=el("button","move");b.type="button";b.id="order-move-"+k;setPressed(b,!!UI.mmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
       var tx=el("span"),sc=m.kind==="portion"?scaleN(o.n,m.scale):null;tx.appendChild(document.createTextNode(m.title));
       tx.appendChild(el("small",null,sc?"≈\u00A0"+sc.kcal+"\u00A0kcal · ≈\u00A0"+sc.protein+"\u00A0g protein":"softens the rise"));add(b,ii,tx);
-      b.addEventListener("click",function(){UI.mmoves[k]=!UI.mmoves[k];render();var t=document.querySelector("#v-rescue .note")||$("order-card"),sc=$("scroll");if(t&&sc&&t.getBoundingClientRect().top<sc.getBoundingClientRect().top)t.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});});mv.appendChild(b);});
+      b.addEventListener("click",act(function(){var nx=JSON.parse(JSON.stringify(UI.mmoves));nx[k]=!nx[k];return composedWhy(orderSum(r,o,nx),o.n,{meal:r.meal});},function(){UI.mmoves[k]=!UI.mmoves[k];render();var t=document.querySelector("#v-rescue .note")||$("order-card"),sc=$("scroll");if(t&&sc&&t.getBoundingClientRect().top<sc.getBoundingClientRect().top)t.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}));mv.appendChild(b);});
     v.appendChild(mv);}
   if(r.orders.length>1){var ah=el("div","sec-h");ah.appendChild(el("h3",null,"Also on this menu"));v.appendChild(ah);
     var wrap=el("div","alts");r.orders.forEach(function(x,i){if(i===UI.msel)return;var b=el("button","alt menu");b.type="button";b.id="order-alt-"+i;
       var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+"\u00A0· ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal\u00A0· ≈\u00A0"+x.n.protein+"\u00A0g\u00A0protein"+(x.fit!=null?"\u00A0· Close to your target:\u00A0"+x.fit+"\u00A0/\u00A0100":"")));   /* a line never starts with a separator (R2-B6 091-2) */
-      add(b,tx,ic("chev"));b.addEventListener("click",function(){if(dayMoved())return;logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});});wrap.appendChild(b);});
+      add(b,tx,ic("chev"));b.addEventListener("click",act(null,function(){logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}));wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(r.leave.length){var lh=el("div","sec-h");lh.appendChild(el("h3",null,"Leave for another day"));v.appendChild(lh);
     var ul=el("ul","checks");ul.id="order-leave";r.leave.forEach(function(l){var li=el("li","no"),xi=el("i");xi.appendChild(ic("x"));var sp=el("span");sp.appendChild(el("b",null,l.name+". "));sp.appendChild(document.createTextNode(l.why));add(li,xi,sp);ul.appendChild(li);});v.appendChild(ul);}
@@ -741,7 +748,7 @@ function renderRescue0(){
   /* while a note offers its own photo and type buttons, the same entry tools are not repeated under it (R2-B6 093-1, R2-B7 101) */
   var dupl=UI.merr&&UI.mfix;if(UI.mfix==="type"){mb.disabled=true;}
   if(!dupl)add(me,mb);if(!UI.mopen&&!dupl)me.appendChild(pn);if(!dupl)me.appendChild(mt);me.appendChild(mf);
-  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="for example, chole bhature";
+  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
   var go=el("button","send"+(UI.rerr&&UI.rretry||UI.merr&&UI.mretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,null);});
   var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;add(ent,me);v.appendChild(ent);
@@ -794,13 +801,12 @@ function renderRescue0(){
   var mh=el("div","sec-h");mh.appendChild(el("h3",null,"Moves you can make"));v.appendChild(mh);
   var mv=el("div","moves");r.hacks.forEach(function(h,k){var b=el("button","move");b.type="button";b.id="move-"+k;setPressed(b,!!UI.rmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
     var tx=el("span");tx.appendChild(document.createTextNode(h.title));var bits=[];if(h.deltaKcal)bits.push(Math.abs(h.deltaKcal)+"\u00A0kcal "+(h.deltaKcal>0?"more":"less"));if(h.deltaProtein)bits.push(Math.abs(h.deltaProtein)+"\u00A0g protein "+(h.deltaProtein>0?"more":"less"));   /* no bare minus sign (R2-B6 081-4) */if(h.kind==="sequence"||h.kind==="move")bits.push("softens the rise");
-    if(bits.length)tx.appendChild(el("small",null,bits.join(" · ")));add(b,ii,tx);b.addEventListener("click",function(){if(dayMoved())return;
+    if(bits.length)tx.appendChild(el("small",null,bits.join(" · ")));add(b,ii,tx);b.addEventListener("click",act(function(){var nx=JSON.parse(JSON.stringify(UI.rmoves));nx[k]=!nx[k];return rescueWhy(r,nx);},function(){
       /* S5 and S6 on the moves ticked together, tick or untick (audit B7): a change that breaks them is refused, nothing else moves */
-      var nx=JSON.parse(JSON.stringify(UI.rmoves));nx[k]=!nx[k];var why=rescueWhy(r,nx);if(why){refuse(why);return;}
-      UI.rmoves=nx;render();});mv.appendChild(b);});
+      UI.rmoves[k]=!UI.rmoves[k];render();}));mv.appendChild(b);});
   v.appendChild(mv);
   var rm=r.meal||C.meal,had=btn("btn primary","I had this, for "+mealName(rm).toLowerCase(),"check","rescue-had");   /* logged to the meal it was worked out for */
-  had.addEventListener("click",function(){if(dayMoved())return;var why=rescueWhy(r,UI.rmoves);if(why){UI.rmoves={};refuse(why);render();return;}clearSlot(rm);logEv("rescued",{title:d.name,kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber},rm);UI.rres=null;UI.rtext="";pickMeal(rm);show("plate");toast("Counted for "+mealName(rm).toLowerCase()+". Your next meals adjust to it.");});
+  had.addEventListener("click",act(function(){var w=rescueWhy(r,UI.rmoves);if(w)UI.rmoves={};return w;},function(){clearSlot(rm);logEv("rescued",{title:d.name,kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber},rm);UI.rres=null;UI.rtext="";pickMeal(rm);show("plate");toast("Counted for "+mealName(rm).toLowerCase()+". Your next meals adjust to it.");}));
   v.appendChild(had);
   v.appendChild(el("p","fine","Numbers are estimates for the dish as usually served. Restaurants vary."));
 }
@@ -825,7 +831,7 @@ function logOther(text,image){
   api("/api/log",body,function(s,j){UI.lbusy=false;
     if(askedFor()!==sent){if(!blocked())logOther(text,image);else renderSheet();return;}
     if(s===200&&j.status==="ok")UI.lres=j;else if(s===200&&j.status==="refer"){UI.lretry=false;UI.lerr=SAFETY+" Next Plate does not count meals for this.";}   /* S7: a referral shows as one */
-    else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. For example: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
+    else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Name what you ate and how much.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;
     if(UI.sheet==="log")renderSheet();});
 }
@@ -840,7 +846,7 @@ function renderSheet(){
   if(UI.sheet==="log"){
     c.setAttribute("aria-label","What did you have");sheetHead(c,"What did you have for "+mealName(C.meal).toLowerCase()+"?","Close",closeSheet);
     if(!UI.lres){
-      var f=el("form","rin login");f.autocomplete="off";var i=el("textarea");i.id="login";i.rows=2;i.maxLength=200;i.placeholder="2 aloo paratha with curd";i.value=UI.ltext||"";i.setAttribute("aria-label","What you ate");
+      var f=el("form","rin login");f.autocomplete="off";var i=el("textarea");i.id="login";i.rows=2;i.maxLength=200;i.placeholder="What you ate, and how much";i.value=UI.ltext||"";i.setAttribute("aria-label","What you ate");
       i.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event("submit",{cancelable:true}));}});
       var go=btn(UI.lerr&&UI.lretry||UI.lock?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy||!!UI.lock;   /* a worded button; the box shows the whole meal (screen review B3) */
       f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();UI.ltext=i.value;if(t&&!UI.lock)logOther(t,null);});
@@ -857,7 +863,7 @@ function renderSheet(){
     c.appendChild(el("p","tsub",r.protein+"\u00A0g protein · "+r.carbs+"\u00A0g carbs · "+r.fats+"\u00A0g fats · "+r.fiber+"\u00A0g fibre (an estimate)"));
     if(r.assumed)c.appendChild(el("p","fine","Assumed: "+r.assumed));
     var row=el("div","pick-acts"),fix=btn("btn","Change it",null,"log-fix");fix.addEventListener("click",function(){UI.lres=null;renderSheet();});
-    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",function(){if(dayMoved()){closeSheet();return;}clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");});
+    var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");},closeSheet));
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
   sheetHead(c,"My food","Done",function(){save();closeSheet();render();});

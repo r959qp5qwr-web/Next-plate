@@ -8,7 +8,7 @@ exports.typed = [
   "RICE AND BREADS", "Veg Biryani 280", "Jeera Rice 160", "Tandoori Roti 30", "Butter Naan 60",
   "SIDES", "Cucumber Raita 90", "Green Salad 80", "Gulab Jamun 90",
 ].join("\n");
-const none = { with: "", with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: "", grain_grams: 0, with_contains: [] };
+const none = { with: "", with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: "", grain_grams: 0, with_contains: ["plain"] };
 const roti1 = { with: "1 Tandoori Roti", with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3, grain_made_of: "wheat", grain_grams: 40, with_contains: ["wheat", "grain"] };
 const roti2 = { with: "2 Tandoori Roti", with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6, grain_made_of: "wheat", grain_grams: 80, with_contains: ["wheat", "grain"] };
 exports.reply = {
@@ -26,9 +26,9 @@ exports.reply = {
     { as_written: "Tawa Sabzi", contains: ["onion_garlic", "root_veg"], portion: "1 bowl, about 250 g", kcal: 220, protein: 6, carbs: 20, fats: 13, fiber: 7, ask: "", ...roti2 },
   ],
   leave: [
-    { as_written: "Malai Kofta", contains: ["dairy", "root_veg", "nuts"], why: "Fried koftas in a cream gravy, heavy for a dinner." },
-    { as_written: "Mutton Rogan Josh", contains: ["meat", "dairy"], why: "Rich and oily, a lot to take on late in the day." },
-    { as_written: "Gulab Jamun", contains: ["dairy", "sweet"], why: "A fried sweet, better shared on another day." },
+    { as_written: "Malai Kofta", contains: ["dairy", "root_veg", "nuts"], reason: "rich" },
+    { as_written: "Mutton Rogan Josh", contains: ["meat", "dairy"], reason: "rich" },
+    { as_written: "Gulab Jamun", contains: ["dairy", "sweet"], reason: "sweet" },
   ],
   tip: "Start with the green salad and the dal or paneer, and keep the roti for last.",
 };
