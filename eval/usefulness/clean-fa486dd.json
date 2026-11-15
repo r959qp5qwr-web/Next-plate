@@ -1,0 +1,53 @@
+{
+ "meals": {
+  "req": 25,
+  "raw": 75,
+  "out": 44,
+  "zero": 4,
+  "one": 7,
+  "reasons": {
+   "shape": 27,
+   "meds-low": 4
+  },
+  "prose": {
+   "subtitle": 44
+  },
+  "proseRaw": {
+   "for_you": 75,
+   "why": 59,
+   "taste": 75,
+   "subtitle": 75,
+   "cuisine": 75,
+   "read": 25
+  },
+  "swRaw": 0,
+  "swOut": 0,
+  "alRaw": 0,
+  "alOut": 0
+ },
+ "menu": {
+  "req": 44,
+  "raw": 244,
+  "out": 91,
+  "zero": 10,
+  "reasons": {
+   "shape": 67,
+   "side-shape": 28,
+   "diabetes-grain": 39,
+   "contents": 5,
+   "contents-implied": 1,
+   "diet": 1
+  },
+  "prose": {
+   "tip": 34,
+   "portion": 91
+  },
+  "proseRaw": {
+   "tip": 44,
+   "place": 44,
+   "ask": 239,
+   "portion": 244
+  }
+ },
+ "errors": []
+}
