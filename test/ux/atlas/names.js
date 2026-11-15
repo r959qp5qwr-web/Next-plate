@@ -36,6 +36,7 @@ module.exports = [
   S(PE, 'plate-no-code-never', 'Plate: no code kept on a set-up phone', 'A set-up phone that has no code from the coach’s link kept.'),
   S(PE, 'plate-no-code', 'Plate: the kept code is not accepted', 'A set-up phone whose kept code from the coach’s link is no longer accepted.'),
   S(B, 'builder', 'Builder: build the plate by parts', 'Tap Builder.'),
+  S(B, 'builder-saved-out-of-bounds', 'Builder: a share saved out of bounds by an older build', 'Open the Builder with a saved share of fats 45 %, then tap More fats eight times.'),
   S(B, 'builder-adjusted', 'Builder: greens changed', 'Builder, tap greens plus twice.'),
   S(B, 'builder-no-plate', 'Builder: no plate yet', 'Builder when the plate could not be made.'),
   S(R, 'rescue-entry', 'Rescue: start', 'Tap Rescue.'),

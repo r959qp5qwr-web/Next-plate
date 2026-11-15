@@ -363,7 +363,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
 { const retag = (x) => JSON.parse(JSON.stringify(x), (k, v) => Array.isArray(v) && v.length === 1 && v[0] === 'plain' ? PT : v);   // an older page has no "plain" tag
-  const agree = (n) => Math.abs(4 * n.protein + 4 * n.carbs + 9 * n.fats - n.kcal) / n.kcal <= 0.15;
+  const agree = (n) => Math.abs(4 * n.protein + 4 * n.carbs + 9 * n.fats - n.kcal) <= Math.max(0.15 * n.kcal, 25);   // the engine's one rule: 15 %, or 25 kcal for small figures
   const combos = (m) => { const P = m.swaps.protein.length ? m.swaps.protein : [null], B = m.swaps.base.length ? m.swaps.base : [null], K = Object.keys(m.alchemy || {}), out = [];
     for (let i = 0; i < P.length; i++) for (let j = 0; j < B.length; j++) for (let mask = 0; mask < (1 << K.length); mask++) { let n = { kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats };
       const ds = []; if (i > 0) ds.push(P[i]); if (j > 0) ds.push(B[j]); K.forEach((k, b) => { if (mask & (1 << b)) ds.push(m.alchemy[k]); });
@@ -386,6 +386,10 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   for (const o of [{}, { health: 'diabetes', meds: 'yes' }]) { const r = rescueOut(o, 'Veg thali', {}, []); if (r.status !== 'ok') continue; const K = r.hacks || [];
     for (let mask = 1; mask < (1 << K.length); mask++) { let n = Object.assign({}, r.dish); K.forEach((h, b) => { if (mask & (1 << b)) n = { kcal: n.kcal + h.deltaKcal, protein: n.protein + h.deltaProtein, carbs: n.carbs + h.deltaCarbs, fats: n.fats + h.deltaFats }; });
       add('A2 Rescue dish with every set of moves agrees', agree(n), `${JSON.stringify(o)}: ${JSON.stringify(n)}`); } }
+  // every menu order the engine returns agrees as shown (with its side, no moves ticked), so the app's check never refuses an order it was offered
+  for (const [kc, pr, cb, ft, sk, sp, sc, sf] of [[600, 20, 70, 32, 40, 1, 4, 3], [520, 24, 64, 18, 160, 4, 30, 3], [620, 26, 70, 24, 120, 3, 22, 2], [300, 10, 40, 14, 60, 2, 10, 1]]) {
+    const mo = menuOffered({}, 'Dal Fry', ['grain'], '1 Tandoori Roti', ['grain'], { kcal: kc, protein: pr, carbs: cb, fats: ft, with_kcal: sk, with_protein: sp, with_carbs: sc, with_fats: sf });
+    for (const o of mo.orders || []) add('A2 every menu order agrees as shown', agree(o.n), `${JSON.stringify(o.n)}`); }
   // positive control: an honest swap and change whose deltas match their macros stay on offer
   const m4 = platePlain(); m4.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: ['plain'], ...z }, { food: 'Boiled chickpeas', grams: 180, contains: ['plain'], ...z, deltaKcal: 60, deltaProtein: 3, deltaCarbs: 9, deltaFats: 1 }];
   m4.alchemy.protein = { titleSuffix: '+ more moong', note: 'Add 50 g sprouted moong.', add_item: 'Sprouted moong', add_grams: 50, minutes: 20, grain_grams_after: 90, contains: ['plain'], deltaKcal: 50, deltaProtein: 6, deltaCarbs: 6, deltaFats: 0, deltaFiber: 2 };

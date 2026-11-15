@@ -94,22 +94,23 @@ const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice a
     { title: 'Leave a third of the naan for later', kind: 'portion', contains: ['grain', 'wheat'], deltaKcal: -110, deltaProtein: -3, deltaCarbs: -35, deltaFats: -2, deltaFiber: -1 },
     { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
 // plate-random-combos: a plate and a Rescue dish whose changes are each fine alone but not in every combination (engine output shape)
+// figures that agree, base and every delta (Codex A2), so the app's composed check refuses taps for S5 and S6, not for the figures
 const RANDPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Rajma with jowar roti', subtitle: 'Rajma, jowar roti and salad', cuisine: '', minutes: 25, tuned: true,
   items: [{ food: 'Rajma curry', grams: 200, group: 'protein', contains: ['onion_garlic'] }, { food: 'Jowar roti', grams: 100, group: 'carbs', contains: ['grain'] }, { food: 'Sliced cucumber', grams: 100, group: 'greens', contains: [] }],
-  kcal: 700, protein: 26, carbs: 84, fats: 38, fiber: 18, why: [], taste: [], planned: [], forYou: '', contains: ['grain', 'onion_garlic'], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 100 },
-  swaps: { protein: [{ food: 'Rajma curry', grams: 200, contains: ['onion_garlic'], ...GZ }, { food: 'Chana masala', grams: 200, contains: ['onion_garlic'], ...GZ, deltaKcal: -15, deltaCarbs: -5 }],
-    base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 100, contains: ['grain'], ...GZ }, { food: 'Bajra roti', made_of: 'bajra', grams: 90, contains: ['grain'], ...GZ, deltaKcal: -5, deltaCarbs: -10 }] },
-  alchemy: { protein: { suffix: '+ more rajma', note: 'Add 60 g rajma.', minutes: 25, contains: [], deltaKcal: 20, deltaProtein: 5, deltaCarbs: 20, deltaFats: 0, deltaFiber: 3 },
-    glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber; less roti.', minutes: 25, contains: [], deltaKcal: -15, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 },
-    express: { suffix: '(10 minutes)', note: 'Quick rajma from a pressure cooker.', minutes: 10, contains: [], deltaKcal: -15, deltaProtein: 0, deltaCarbs: -15, deltaFats: 0, deltaFiber: 0 },
-    gut: { suffix: '(easy on the gut)', note: 'Less chilli.', minutes: 25, contains: [], deltaKcal: -10, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 0 } } }] };
+  kcal: 700, protein: 26, carbs: 84, fats: 29, fiber: 18, why: [], taste: [], planned: [], forYou: '', contains: ['grain', 'onion_garlic'], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 100 },
+  swaps: { protein: [{ food: 'Rajma curry', grams: 200, contains: ['onion_garlic'], ...GZ }, { food: 'Chana masala', grams: 200, contains: ['onion_garlic'], ...GZ, deltaKcal: -20, deltaCarbs: -5 }],
+    base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 100, contains: ['grain'], ...GZ }, { food: 'Bajra roti', made_of: 'bajra', grams: 90, contains: ['grain'], ...GZ, deltaKcal: -40, deltaCarbs: -10 }] },
+  alchemy: { protein: { suffix: '+ more rajma', note: 'Add 60 g rajma.', minutes: 25, contains: [], deltaKcal: 100, deltaProtein: 5, deltaCarbs: 20, deltaFats: 0, deltaFiber: 3 },
+    glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber; less roti.', minutes: 25, contains: [], deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 },
+    express: { suffix: '(10 minutes)', note: 'Quick rajma from a pressure cooker.', minutes: 10, contains: [], deltaKcal: -60, deltaProtein: 0, deltaCarbs: -15, deltaFats: 0, deltaFiber: 0 },
+    gut: { suffix: '(easy on the gut)', note: 'Less chilli.', minutes: 25, contains: [], deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 0 } } }] };
 const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '1 plate, \u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
-  hacks: [{ title: 'Add 150 g dal on the side', kind: 'sequence', contains: [], deltaKcal: 120, deltaProtein: 8, deltaCarbs: 30, deltaFats: 2, deltaFiber: 4 },
-    { title: 'Eat about two thirds of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -200, deltaProtein: -6, deltaCarbs: -40, deltaFats: -8, deltaFiber: -2 },
-    { title: 'Eat about three quarters of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -150, deltaProtein: -4, deltaCarbs: -25, deltaFats: -6, deltaFiber: -2 },
+  hacks: [{ title: 'Add 150 g dal on the side', kind: 'sequence', contains: [], deltaKcal: 170, deltaProtein: 8, deltaCarbs: 30, deltaFats: 2, deltaFiber: 4 },
+    { title: 'Eat about two thirds of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -256, deltaProtein: -6, deltaCarbs: -40, deltaFats: -8, deltaFiber: -2 },
+    { title: 'Eat about three quarters of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -170, deltaProtein: -4, deltaCarbs: -25, deltaFats: -6, deltaFiber: -2 },
     { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
 const randomCombos = (pi0) => async (p, h) => {
-    const PROF = [{ meds: 'yes', cm: 0, kg: 0, age: 0 }, { meds: 'no', cm: 158, kg: 72, age: 47 }, { meds: 'unsure', cm: 158, kg: 72, age: 47 }], bad = [];
+    const PROF = [{ meds: 'yes', cm: 0, kg: 0, age: 0 }, { meds: 'no', cm: 158, kg: 72, age: 47 }, { meds: 'unsure', cm: 158, kg: 72, age: 47 }], bad = []; let composed = 0;
     const ev0 = await p.evaluate(() => JSON.parse(localStorage.getItem('np6') || '{}').ev || []);
     for (let pi = pi0; pi < pi0 + 1; pi++) {
       await p.evaluate(([o, ev]) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); Object.assign(x.p, o); x.ev = ev; x.store = { day: 0, res: {}, shown: {} }; localStorage.setItem('np6', JSON.stringify(x)); }, [PROF[pi], ev0]);
@@ -126,11 +127,11 @@ const randomCombos = (pi0) => async (p, h) => {
           await new Promise(r => setTimeout(r, 5));   // yield to the page between sequences
           if (!q('#have')) { tap('#slot-change'); continue; }
           const n0 = ev().length; tap('#have'); const e = ev().slice(n0).filter(x => x.type === 'had').pop();
-          if (e) { if (e.carbs < 84 * 0.5) out.push('plate carbs ' + e.carbs + ' of 84'); if (usual && e.kcal < usual) out.push('plate ' + e.kcal + ' kcal under the usual ' + usual); }
+          if (e) { if (e.carbs < 84 * 0.5) out.push('plate carbs ' + e.carbs + ' of 84'); if (usual && e.kcal < usual) out.push('plate ' + e.kcal + ' kcal under the usual ' + usual); if (e.kcal !== 700) out.composed = (out.composed || 0) + 1; }
           tap('#slot-change'); }
-        return { out, usual };
+        return { out, usual, composed: out.composed || 0 };
       }, 7 + pi);
-      bad.push(...r.out.map(x => JSON.stringify(PROF[pi]) + ': ' + x));
+      bad.push(...r.out.map(x => JSON.stringify(PROF[pi]) + ': ' + x)); composed += r.composed;
       // Rescue: random ticks and unticks, then "I had this"
       await p.click('#tab-rescue'); await h.settle(300);
       const rr = await p.evaluate(async (seed) => {
@@ -148,7 +149,8 @@ const randomCombos = (pi0) => async (p, h) => {
       bad.push(...rr.map(x => JSON.stringify(PROF[pi]) + ': ' + x));
       await p.click('#tab-plate'); await h.settle(200); }
     await p.evaluate((ev) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); x.ev = ev; localStorage.setItem('np6', JSON.stringify(x)); }, ev0); await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(800);   // a light page for the screens
-    if (bad.length) throw new Error(bad.length + ' logged meal(s) broke S5 or S6, e.g. ' + [...new Set(bad)].slice(0, 4).join('; ')); };
+    if (bad.length) throw new Error(bad.length + ' logged meal(s) broke S5 or S6, e.g. ' + [...new Set(bad)].slice(0, 4).join('; '));
+    if (!composed) throw new Error('no swapped or changed plate was logged: every tap was refused, so the run tested nothing'); };
 const randomRoutes = (p) => Promise.all([p.route('**/api/meals', J(200, RANDPLATE)), p.route('**/api/rescue', J(200, RANDRESCUE))]);
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
@@ -204,7 +206,9 @@ const STATES = [
   ['plate-dial-open', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-appetite'); await h.settle(); if (await p.$eval('#dial-appetite', b => b.getBoundingClientRect().right > innerWidth)) throw new Error('the appetite pill that closes the panel is off the screen'); }],
   ['plate-swap-open', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await h.next(p, { text: '(on\u00A0your\u00A0plate)' }, 'Swap: the option on the plate'); }],
   ['plate-one-tap-on', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.click('#alc-glucose'); await h.settle();
-    const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | ')); if (!/160\s*g.*changed/i.test(li)) throw new Error('the serving list does not show the grain grams after the sugar change (' + li + ')'); }],
+    const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | ')); if (!/160\s*g.*changed/i.test(li)) throw new Error('the serving list does not show the grain grams after the sugar change (' + li + ')');
+    { await h.settle(800); const w = await p.evaluate(() => ({ k: ((document.getElementById('h-k') || {}).textContent || '').trim(), why: ((document.getElementById('why-line') || {}).textContent || '') }));
+      if (!w.why || !w.why.includes('this plate gives about ' + w.k + '\u00A0kcal')) throw new Error('the reason line does not carry the figures on screen after the tap (' + w.k + ' kcal; "' + w.why + '")'); } }],
   ['plate-logged', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900);
     // owner, 14 Nov: under 120 kcal left for the snack, the next main meal is offered first, with one line why
     const r = await p.evaluate(() => ({ go: ((document.getElementById('slot-next') || {}).textContent || '').trim(), low: !!document.getElementById('snack-low') && /Little is left for a snack today\./.test(document.getElementById('snack-low').textContent) }));
@@ -248,6 +252,14 @@ const STATES = [
   ['plate-asked', seed(), async (p, h) => { await h.plate(p); await p.fill('#askin', 'Only eggs, spinach and bread at home'); await p.press('#askin', 'Enter'); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(900); }],
   ['toast', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(250); }],
   ['builder', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await planBtn(p, false); }],
+  // Codex re-audit B2: a share saved out of the engine's bounds by an older build is dropped at load; the steppers start from the preset and work,
+  // and a tap past a bound is refused with a note
+  ['builder-saved-out-of-bounds', seed({ c: { mode: 'desk', mood: 'best', cuisine: 'home', prep: 'home', oil: 'min', ratio: { protein: 20, greens: 11, carbs: 24, fats: 45 } } }), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
+    const out = () => p.evaluate(() => ['protein', 'greens', 'carbs', 'fats'].map(k => { const b = document.getElementById('st-' + k + '-p'); return b ? b.parentElement.querySelector('output').textContent : ''; }).join(' '));
+    const o0 = await out(); if (/45%/.test(o0)) throw new Error('a saved fats share of 45 % is still used (' + o0 + ')');
+    for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(120); }
+    const o1 = await out(), nums = o1.match(/\d+/g).map(Number); if (nums.some(v => v < 5) || nums[3] > 40 || nums.reduce((x, y) => x + y, 0) !== 100) throw new Error('the shares left their bounds (' + o1 + ')');
+    if (!/can't go higher/.test(await p.evaluate(() => document.getElementById('toast').textContent))) throw new Error('a tap past the fats bound was not refused with a note'); }],
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
@@ -324,7 +336,9 @@ const STATES = [
   ['plate-swapped', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle();
     // second screen review, R2-B2 025-1: the swap is named under the title, and no taste or pairing line speaks of the food swapped off
     const r = await p.evaluate(() => ({ suf: (document.querySelector('#plate-card .suffix') || {}).textContent || '', taste: !!document.querySelector('#plate-card .taste'), pairs: [...document.querySelectorAll('#plate-card .pairs li')].map(l => l.textContent).join(' | ') }));
-    if (!/in place of (?:charred )?paneer tikka/.test(r.suf) || r.taste || /paneer|tikka|marinade/i.test(r.pairs)) throw new Error('after the swap the plate still speaks of the food swapped off (suffix "' + r.suf + '", taste ' + r.taste + ', pairs: ' + r.pairs + ')'); }],
+    if (!/in place of (?:charred )?paneer tikka/.test(r.suf) || r.taste || /paneer|tikka|marinade/i.test(r.pairs)) throw new Error('after the swap the plate still speaks of the food swapped off (suffix "' + r.suf + '", taste ' + r.taste + ', pairs: ' + r.pairs + ')');
+    { await h.settle(800); const w = await p.evaluate(() => ({ k: ((document.getElementById('h-k') || {}).textContent || '').trim(), why: ((document.getElementById('why-line') || {}).textContent || '') }));
+      if (!w.why || !w.why.includes('this plate gives about ' + w.k + '\u00A0kcal')) throw new Error('the reason line does not carry the figures on screen after the tap (' + w.k + ' kcal; "' + w.why + '")'); } }],
   // R2-B2 025-1: the meal logged after a swap names the swap
   ['plate-swapped-logged', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await p.click('#swp-1'); await h.settle(300); await p.click('#have'); await h.settle(900);
     const t = await p.evaluate(() => (document.querySelector('#v-plate .logged .dish') || {}).textContent || '');

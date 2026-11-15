@@ -42,6 +42,9 @@ var PRESETS={balanced:{protein:35,greens:35,carbs:20,fats:10},steady:{protein:35
 /* Builder shares (Codex re-audit B2): one bounds table for the app's steppers and for the request check, so a share the app can make is
    always accepted unchanged. These are the bounds the request check already used. */
 var RATIOB={protein:[5,70],greens:[5,70],carbs:[5,70],fats:[5,40]},RATIOK=["protein","greens","carbs","fats"];
+/* a ratio as sent, or null: every share a whole number within its bounds, summing to 100 (2 either way); never clamped into range */
+function ratioOK(r){if(!r||typeof r!=="object")return null;var q={},ok=RATIOK.every(function(k){var v=r[k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)!==v||v<RATIOB[k][0]||v>RATIOB[k][1])return false;q[k]=v;return true;});
+  return ok&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2?q:null;}
 
 /* ---------- targets ----------
    kcal: Mifflin-St Jeor BMR x the standard activity factor. Protein: kg x PROTEIN_G_PER_KG (default 0.83, ICMR-NIN 2020 adult RDA; the owner may change it).
@@ -550,14 +553,16 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
+  /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
+  var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
   h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
   var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||h.length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
-  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1):"";}
+  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
+  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
@@ -614,10 +619,11 @@ var GROUPS=["protein","greens","carbs","fats","other"];
 var ALCH=["protein","glucose","express","gut"];
 var ALCHLABEL={protein:"More protein",glucose:"Gentler on sugar",express:"10-minute version",gut:"Easy on the gut"};
 /* Validate one meal. Returns {meal} or {drop: reason}. */
-/* Figures agree (Codex re-audit C, 15 Nov): the kcal shown is within the base energy check's 15 % of 4 x protein + 4 x carbs + 9 x fats, for
-   a plate as planned and for every combination a client can make of it. One number, used everywhere: here, at render and before logging. */
-var EGAP=0.15;
-function figsAgree(n){if(!n||!(n.kcal>0))return false;var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)/n.kcal<=EGAP;}
+/* Figures agree (Codex re-audit C, 15 Nov): the kcal shown is within the base energy check's 15 % (or 25 kcal for small figures) of
+   4 x protein + 4 x carbs + 9 x fats, for a plate, a menu order and a Rescue dish, as planned and for every combination a client can make.
+   One rule, used everywhere: in the engine, at render and before logging. */
+var EGAP=0.15,EGAPK=25;   /* 15 %: the base energy check; 25 kcal: the menu check's floor for small figures. One rule for plates, menus and Rescue */
+function figsAgree(n){if(!n||!(n.kcal>0))return false;var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)<=Math.max(n.kcal*EGAP,EGAPK);}
 function addN(n,d){return {kcal:n.kcal+(d.deltaKcal||0),protein:n.protein+(d.deltaProtein||0),carbs:n.carbs+(d.deltaCarbs||0),fats:n.fats+(d.deltaFats||0),fiber:n.fiber+(d.deltaFiber||0)};}
 /* every protein swap x base swap x set of one-tap changes, enumerated (not sampled); while any combination's figures disagree, the option in it
    whose own delta is furthest from its macros is dropped. The first swap of each list is the plate as planned and is never applied. */
@@ -861,8 +867,7 @@ function readCtx(x,kind){
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   /* a share outside its bounds is not clamped into them: the ratio is used as sent, or not at all (B2) */
-  var r=x.ratio;if(r&&typeof r==="object"){var q={},okr=RATIOK.every(function(k){var v=r[k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)!==v||v<RATIOB[k][0]||v>RATIOB[k][1])return false;q[k]=v;return true;});
-    if(okr&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2)c.ratio=q;}
+  var q=ratioOK(x.ratio);if(q)c.ratio=q;
   return c;
 }
 

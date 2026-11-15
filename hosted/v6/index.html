@@ -1234,6 +1234,9 @@ var PRESETS={balanced:{protein:35,greens:35,carbs:20,fats:10},steady:{protein:35
 /* Builder shares (Codex re-audit B2): one bounds table for the app's steppers and for the request check, so a share the app can make is
    always accepted unchanged. These are the bounds the request check already used. */
 var RATIOB={protein:[5,70],greens:[5,70],carbs:[5,70],fats:[5,40]},RATIOK=["protein","greens","carbs","fats"];
+/* a ratio as sent, or null: every share a whole number within its bounds, summing to 100 (2 either way); never clamped into range */
+function ratioOK(r){if(!r||typeof r!=="object")return null;var q={},ok=RATIOK.every(function(k){var v=r[k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)!==v||v<RATIOB[k][0]||v>RATIOB[k][1])return false;q[k]=v;return true;});
+  return ok&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2?q:null;}
 
 /* ---------- targets ----------
    kcal: Mifflin-St Jeor BMR x the standard activity factor. Protein: kg x PROTEIN_G_PER_KG (default 0.83, ICMR-NIN 2020 adult RDA; the owner may change it).
@@ -1742,14 +1745,16 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
+  /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
+  var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
   h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
   var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||h.length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
-  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1):"";}
+  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
+  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
@@ -1806,10 +1811,11 @@ var GROUPS=["protein","greens","carbs","fats","other"];
 var ALCH=["protein","glucose","express","gut"];
 var ALCHLABEL={protein:"More protein",glucose:"Gentler on sugar",express:"10-minute version",gut:"Easy on the gut"};
 /* Validate one meal. Returns {meal} or {drop: reason}. */
-/* Figures agree (Codex re-audit C, 15 Nov): the kcal shown is within the base energy check's 15 % of 4 x protein + 4 x carbs + 9 x fats, for
-   a plate as planned and for every combination a client can make of it. One number, used everywhere: here, at render and before logging. */
-var EGAP=0.15;
-function figsAgree(n){if(!n||!(n.kcal>0))return false;var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)/n.kcal<=EGAP;}
+/* Figures agree (Codex re-audit C, 15 Nov): the kcal shown is within the base energy check's 15 % (or 25 kcal for small figures) of
+   4 x protein + 4 x carbs + 9 x fats, for a plate, a menu order and a Rescue dish, as planned and for every combination a client can make.
+   One rule, used everywhere: in the engine, at render and before logging. */
+var EGAP=0.15,EGAPK=25;   /* 15 %: the base energy check; 25 kcal: the menu check's floor for small figures. One rule for plates, menus and Rescue */
+function figsAgree(n){if(!n||!(n.kcal>0))return false;var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)<=Math.max(n.kcal*EGAP,EGAPK);}
 function addN(n,d){return {kcal:n.kcal+(d.deltaKcal||0),protein:n.protein+(d.deltaProtein||0),carbs:n.carbs+(d.deltaCarbs||0),fats:n.fats+(d.deltaFats||0),fiber:n.fiber+(d.deltaFiber||0)};}
 /* every protein swap x base swap x set of one-tap changes, enumerated (not sampled); while any combination's figures disagree, the option in it
    whose own delta is furthest from its macros is dropped. The first swap of each list is the plate as planned and is never applied. */
@@ -2053,8 +2059,7 @@ function readCtx(x,kind){
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   /* a share outside its bounds is not clamped into them: the ratio is used as sent, or not at all (B2) */
-  var r=x.ratio;if(r&&typeof r==="object"){var q={},okr=RATIOK.every(function(k){var v=r[k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)!==v||v<RATIOB[k][0]||v>RATIOB[k][1])return false;q[k]=v;return true;});
-    if(okr&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2)c.ratio=q;}
+  var q=ratioOK(x.ratio);if(q)c.ratio=q;
   return c;
 }
 
@@ -2532,7 +2537,7 @@ var MENUK=["kcal","protein","carbs","fats","fiber"],DISHR=[[30,2500],[0,150],[0,
 function menuFigs(o,pre,R){
   var n={},ok=true;MENUK.forEach(function(k,i){var v=o[pre+k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)<R[i][0]||Math.round(v)>R[i][1])ok=false;else n[k]=Math.round(v);});
   if(!ok)return {drop:"numbers"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)>Math.max(n.kcal*.2,25)?{drop:"energy"}:{n:n};
+  return figsAgree(n)?{n:n}:{drop:"energy"};   /* the same rule as plates and the app (A2) */
 }
 var FIGTXT=/\d\s*(kcal|cal\b|calories|g\b|gm\b|grams?\b)/i;          /* a figure inside a sentence was not checked by code, so the sentence is not shown */
 function buildMenuPrompt(p,c,file,pl,hooks){
@@ -2788,6 +2793,7 @@ function checkMenu(r,p,c,pl,hooks){
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
       if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
+      if(!off&&!figsAgree(addN(n,{deltaKcal:sf.n.kcal,deltaProtein:sf.n.protein,deltaCarbs:sf.n.carbs,deltaFats:sf.n.fats,deltaFiber:sf.n.fiber})))off="side-numbers";   /* the order with its side agrees too (A2) */
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
@@ -2834,7 +2840,7 @@ function referTyped(t){return REFERTXT.test(t)||REFERNL.test(t)||urgentTyped(t);
    low or dropping; hypo), chest pain, fainting, breathlessness, and confusion with insulin, tablets or sugar, in English, Hinglish and common misspellings. No sugar
    figure is used. A negated mention ("no chest pain today") is still referred: the conservative reading. "Sugar-free" is not a symptom. */
 var URGENTLINE="If you feel unwell now, contact your doctor or emergency care.";
-var URGENTSIGN=/\b(?:shak(?:y|ey|ing)|shivering|trembl\w*|sweat(?:y|ing|s)?|pasina|paseena|dizz?y|dizziness|giddy|giddiness|chakk?ar|confus\w*|blurr?(?:ed|y)\s+vision|weak(?:ness)?|ghabrahat)\b/i;
+var URGENTSIGN=/\b(?:shak(?:y|ey|ing)|shivering|trembl\w*|sweat(?:y|ing|s)?|pasina|paseena|dizz?y|dizziness|giddy|giddiness|chakk?ar|confus\w*|blurr?(?:ed|y)\s+vision|ghabrahat)\b/i;
 var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diabetic|hypo\w*)\b/i;
 var URGENTTXT=new RegExp("\\b(?:"+[
   "(?:blood\\s+)?sugar\\s+(?:level\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",
@@ -3084,7 +3090,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
   var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
-  var rr=rc.ratio;if(rr&&typeof rr==="object"&&["protein","greens","carbs","fats"].every(function(k){return +rr[k]>=5&&+rr[k]<=65;})&&Math.abs(rr.protein+rr.greens+rr.carbs+rr.fats-100)<=2)C.ratio={protein:+rr.protein,greens:+rr.greens,carbs:+rr.carbs,fats:+rr.fats};   /* the chosen share is kept on the phone (R2-B5 076-3) */
+  C.ratio=ratioOK(rc.ratio);   /* a saved share out of the engine's bounds (an older build could save one) is dropped at load (B2) */   /* the chosen share is kept on the phone (R2-B5 076-3) */
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
@@ -3142,6 +3148,12 @@ function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}
+/* "Why this plate, today", rebuilt from the plate as it now is (after any swap or change), by the engine's own reasonLine: the figures and the
+   grain it names are always the ones on screen (usefulness brief) */
+function whyLine(m,vw,r){if(typeof reasonLine!=="function")return m.forYou||"";var at=swapAt(m,"base"),gi=at>=0?vw.items[at]:null;
+  var pp={health:has("diabetes")?"diabetes":"none",medsUsual:medsUsual(profileOut(),C.meal)};
+  var cited=(m.planned||[]).map(function(id){return {id:id,tag:r.hooks&&r.hooks[id]};}).filter(function(h){return !!h.tag;});
+  return reasonLine({kcal:vw.n.kcal,protein:vw.n.protein,grain:gi&&gi.grams?{food:gi.food,grams:gi.grams}:{food:"",grams:0}},cited,PL,pp,mealName(C.meal).toLowerCase());}
 function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;
   var gone=!!g&&!v.items.some(function(it){return sameFood(it.food,g)||it.tag==="swapped"&&m.swaps.base.some(function(s){return s.food===it.food;});});
   return composedWhy(v.n,m,{meal:meal,grainGone:gone,plate:true});}
@@ -3582,8 +3594,9 @@ function renderPlate(){
       var ba=btn("linkbtn","Add your "+bodyMissing().text,null,"add-body-top");ba.addEventListener("click",function(){openSheet("food",bodyMissing().at);});bt.appendChild(ba);bn.appendChild(bt);v.appendChild(bn);}
     v.appendChild(heroCard(m,vw,r));
     if(has("diabetes")||has("bp")){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,(has("diabetes")?"With diabetes the grain stays on the plate, next to protein and vegetables. ":"")+(has("bp")?"With high BP these plates leave out pickle, papad and added salt. ":"")+"Your doctor's advice comes first."));v.appendChild(nt);}
-    if(m.forYou){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
-      wt.appendChild(el("p","lead",m.forYou));add(wc,wi,wt);v.appendChild(wc);}
+    var why=whyLine(m,vw,r);
+    if(why){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
+      var wl=el("p","lead",why);wl.id="why-line";wt.appendChild(wl);add(wc,wi,wt);v.appendChild(wc);}
     if(r.meals.length>1){var hh=el("div","sec-h");hh.appendChild(el("h3",null,"Also for "+mealName(C.meal).toLowerCase()));v.appendChild(hh);
       var wrap=el("div","alts");r.meals.forEach(function(x,i){if(i===UI.sel)return;var b=el("button","alt");b.type="button";b.id="alt-"+i;
         var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈\u00A0"+x.protein+"\u00A0g protein · "+x.kcal+"\u00A0kcal"+(x.minutes?" · "+x.minutes+"\u00A0min":"")));
@@ -3681,7 +3694,7 @@ function rescue(text,image){
     if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
-    else if(s===200&&j.reason==="diet"){UI.rerr="That dish does not fit your food rules (what you eat and leave out). Name another dish.";UI.rkeep="";UI.rretry=false;}
+    else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
     else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
     render();if(UI.rerr)$("said").textContent=UI.rerr;});

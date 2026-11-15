@@ -362,7 +362,7 @@ var MENUK=["kcal","protein","carbs","fats","fiber"],DISHR=[[30,2500],[0,150],[0,
 function menuFigs(o,pre,R){
   var n={},ok=true;MENUK.forEach(function(k,i){var v=o[pre+k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)<R[i][0]||Math.round(v)>R[i][1])ok=false;else n[k]=Math.round(v);});
   if(!ok)return {drop:"numbers"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)>Math.max(n.kcal*.2,25)?{drop:"energy"}:{n:n};
+  return figsAgree(n)?{n:n}:{drop:"energy"};   /* the same rule as plates and the app (A2) */
 }
 var FIGTXT=/\d\s*(kcal|cal\b|calories|g\b|gm\b|grams?\b)/i;          /* a figure inside a sentence was not checked by code, so the sentence is not shown */
 function buildMenuPrompt(p,c,file,pl,hooks){
@@ -618,6 +618,7 @@ function checkMenu(r,p,c,pl,hooks){
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
       if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
+      if(!off&&!figsAgree(addN(n,{deltaKcal:sf.n.kcal,deltaProtein:sf.n.protein,deltaCarbs:sf.n.carbs,deltaFats:sf.n.fats,deltaFiber:sf.n.fiber})))off="side-numbers";   /* the order with its side agrees too (A2) */
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
     if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
@@ -664,7 +665,7 @@ function referTyped(t){return REFERTXT.test(t)||REFERNL.test(t)||urgentTyped(t);
    low or dropping; hypo), chest pain, fainting, breathlessness, and confusion with insulin, tablets or sugar, in English, Hinglish and common misspellings. No sugar
    figure is used. A negated mention ("no chest pain today") is still referred: the conservative reading. "Sugar-free" is not a symptom. */
 var URGENTLINE="If you feel unwell now, contact your doctor or emergency care.";
-var URGENTSIGN=/\b(?:shak(?:y|ey|ing)|shivering|trembl\w*|sweat(?:y|ing|s)?|pasina|paseena|dizz?y|dizziness|giddy|giddiness|chakk?ar|confus\w*|blurr?(?:ed|y)\s+vision|weak(?:ness)?|ghabrahat)\b/i;
+var URGENTSIGN=/\b(?:shak(?:y|ey|ing)|shivering|trembl\w*|sweat(?:y|ing|s)?|pasina|paseena|dizz?y|dizziness|giddy|giddiness|chakk?ar|confus\w*|blurr?(?:ed|y)\s+vision|ghabrahat)\b/i;
 var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diabetic|hypo\w*)\b/i;
 var URGENTTXT=new RegExp("\\b(?:"+[
   "(?:blood\\s+)?sugar\\s+(?:level\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",

@@ -23,7 +23,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
   var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
-  var rr=rc.ratio;if(rr&&typeof rr==="object"&&["protein","greens","carbs","fats"].every(function(k){return +rr[k]>=5&&+rr[k]<=65;})&&Math.abs(rr.protein+rr.greens+rr.carbs+rr.fats-100)<=2)C.ratio={protein:+rr.protein,greens:+rr.greens,carbs:+rr.carbs,fats:+rr.fats};   /* the chosen share is kept on the phone (R2-B5 076-3) */
+  C.ratio=ratioOK(rc.ratio);   /* a saved share out of the engine's bounds (an older build could save one) is dropped at load (B2) */   /* the chosen share is kept on the phone (R2-B5 076-3) */
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
@@ -81,6 +81,12 @@ function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}
+/* "Why this plate, today", rebuilt from the plate as it now is (after any swap or change), by the engine's own reasonLine: the figures and the
+   grain it names are always the ones on screen (usefulness brief) */
+function whyLine(m,vw,r){if(typeof reasonLine!=="function")return m.forYou||"";var at=swapAt(m,"base"),gi=at>=0?vw.items[at]:null;
+  var pp={health:has("diabetes")?"diabetes":"none",medsUsual:medsUsual(profileOut(),C.meal)};
+  var cited=(m.planned||[]).map(function(id){return {id:id,tag:r.hooks&&r.hooks[id]};}).filter(function(h){return !!h.tag;});
+  return reasonLine({kcal:vw.n.kcal,protein:vw.n.protein,grain:gi&&gi.grams?{food:gi.food,grams:gi.grams}:{food:"",grams:0}},cited,PL,pp,mealName(C.meal).toLowerCase());}
 function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;
   var gone=!!g&&!v.items.some(function(it){return sameFood(it.food,g)||it.tag==="swapped"&&m.swaps.base.some(function(s){return s.food===it.food;});});
   return composedWhy(v.n,m,{meal:meal,grainGone:gone,plate:true});}
@@ -521,8 +527,9 @@ function renderPlate(){
       var ba=btn("linkbtn","Add your "+bodyMissing().text,null,"add-body-top");ba.addEventListener("click",function(){openSheet("food",bodyMissing().at);});bt.appendChild(ba);bn.appendChild(bt);v.appendChild(bn);}
     v.appendChild(heroCard(m,vw,r));
     if(has("diabetes")||has("bp")){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,(has("diabetes")?"With diabetes the grain stays on the plate, next to protein and vegetables. ":"")+(has("bp")?"With high BP these plates leave out pickle, papad and added salt. ":"")+"Your doctor's advice comes first."));v.appendChild(nt);}
-    if(m.forYou){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
-      wt.appendChild(el("p","lead",m.forYou));add(wc,wi,wt);v.appendChild(wc);}
+    var why=whyLine(m,vw,r);
+    if(why){var wc=el("article","card why"),wi=el("span","why-ic");wi.appendChild(ic("shield"));var wt=el("div");wt.appendChild(el("h3",null,"Why this plate, today"));
+      var wl=el("p","lead",why);wl.id="why-line";wt.appendChild(wl);add(wc,wi,wt);v.appendChild(wc);}
     if(r.meals.length>1){var hh=el("div","sec-h");hh.appendChild(el("h3",null,"Also for "+mealName(C.meal).toLowerCase()));v.appendChild(hh);
       var wrap=el("div","alts");r.meals.forEach(function(x,i){if(i===UI.sel)return;var b=el("button","alt");b.type="button";b.id="alt-"+i;
         var tx=el("span");tx.appendChild(el("b",null,x.title));tx.appendChild(el("small",null,"≈\u00A0"+x.protein+"\u00A0g protein · "+x.kcal+"\u00A0kcal"+(x.minutes?" · "+x.minutes+"\u00A0min":"")));
@@ -620,7 +627,7 @@ function rescue(text,image){
     if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
-    else if(s===200&&j.reason==="diet"){UI.rerr="That dish does not fit your food rules (what you eat and leave out). Name another dish.";UI.rkeep="";UI.rretry=false;}
+    else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
     else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
     render();if(UI.rerr)$("said").textContent=UI.rerr;});

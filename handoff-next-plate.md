@@ -202,7 +202,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 - Tier split and gates: the owner decides after the at-risk live sample (not Claude's to change).
 - Urgent-symptom first net (B1): symptom scope and wording ("If you feel unwell now, contact your doctor or emergency care.") need a clinician's review. Decided conservatively: a negated mention ("no chest pain today") is still referred; "sugar-free" and "low sugar biscuits" are not; no sugar figure is used.
 - Medicines (B3): carbohydrate consistency for clients on insulin or tablets, and reconciling grain grams against carbohydrate (needs a sourced composition table), are owner and clinician decisions; nothing built.
-- Tier 2 tracked: a regional name with a wrong but non-empty tag is still offered ("Kori rotti", "Payesh", "Poondu rasam" tagged grain only; 9 of the second audit's 380 names on plates). Promote if the at-risk sample shows mis-tagging.
+- Tier 2 tracked: a regional name with a wrong but non-empty tag is still offered ("Kori rotti", "Payesh", "Poondu rasam" tagged grain only; 175 of the second audit's 380 names pass on a plate with a wrong tag, measured on this build; with the right tag 0). Promote if the at-risk sample shows mis-tagging.
 - This file still holds Railway IDs in section 8 (written before the Codex B4 note "no Railway IDs in the repo"): remove them?
 - "Deploy."? Recommended once the revised look is approved.
 - WhatsApp post wording (`docs/film/WHATSAPP-post.md`): approve or edit?
