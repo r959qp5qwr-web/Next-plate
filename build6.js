@@ -41,8 +41,8 @@ if (esbPath) {
     .replace(/>\s+</g, '><');
   fs.writeFileSync('hosted/v6/index.min.html', min);
   console.log('hosted/v6/index.min.html', min.length, 'bytes');
-  // The live v5 screens with the newest core: this is what PAGE_REF serves until the owner says "Deploy." for the v6 screens.
-  // The server loads hosted/v5/index.min.html, so the engine can be checked against the live Gemini engine without changing what clients see.
+  // The v5 screens with the newest core. Not a release target: the v6 page is the one served (PAGE_PATH on the host), and a rollback is by PAGE_REF.
+  // It keeps the core current for the server's default PAGE_PATH; it has none of the v6 screens' S10-S12 protection and nothing tests its screens.
   const m5 = rd('hosted/v5/index.min.html').replace(/<script id="np-core">([\s\S]*?)<\/script>/, () => '<script id="np-core">' + minCore(core) + '</script>');
   fs.writeFileSync('hosted/v5/index.min.html', m5);
   console.log('hosted/v5/index.min.html (v5 screens, v6 core)', m5.length, 'bytes');
