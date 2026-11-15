@@ -180,6 +180,10 @@ for (const meds of ['yes', 'unsure']) { const p = readProfile(Object.assign({}, 
     add('S6 one-tap change', !Object.keys(t.alchemy || {}).length, `${JSON.stringify(o)}: a change taking the lunch plate 200 kcal lower was offered`);
     const mo = menuOffered(o, 'Idli Sambar', ['grain'], '', [], { kcal: 220, protein: 8, carbs: 40, fats: 3, fiber: 4, grain_made_of: 'rice', grain_grams: 80 });
     add('S6 menu', !(mo.orders || []).length && /meds-low/.test(JSON.stringify(mo.dropped)), `${JSON.stringify(o)}: a 220 kcal lunch order was offered (${JSON.stringify(mo.dropped)})`);
+    // at-risk sample: on medicines the prompt states the floor as a minimum, never as a centre to land within 10 percent of (plates and menu)
+    for (const kind of ['meals', 'menu']) { const pr = plan(kind, { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: kind === 'menu' ? 'MAINS\nDal Fry 200' : undefined } }).prompt || '', u = medsUsual(readProfile(Object.assign({}, BASE, o)), 'lunch');
+      const m = /at least (\d+) kcal(?:, never below| \(never below)/.exec(pr);   // the target line, or with no body figures the medicines line
+      add('S6 prompt states the floor as a minimum', !!m && +m[1] >= u && !/Target for this meal: about/.test(pr) && !/within 10 percent of the kcal target/.test(pr), `${JSON.stringify(o)} ${kind}: ${(/- Target for this meal:[^\n]*/.exec(pr) || ['no target line'])[0]}`); }
     add('S6 prompt', /usual size of this meal/.test(plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }).prompt || ''), `${JSON.stringify(o)}: the plates prompt does not state the usual size`); }
   add('S6 no false hit', plateOffered({ health: 'diabetes', meds: 'no' }, platePlain()).ok, 'not on medicine: a 500 kcal lunch plate was dropped'); }
 

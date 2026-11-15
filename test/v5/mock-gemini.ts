@@ -23,7 +23,7 @@ Bun.serve({ port: Number(Bun.env.MOCK_PORT || 8787), async fetch(req) {
     const lite = !b.generationConfig.responseSchema.properties.meals.items.properties.alchemy;                      // v6: cite only hooks the prompt offered
     const ids = [...text.matchAll(/^- \[([a-z0-9_]+)\]/gm)].map(m => m[1]);
     // on insulin or sugar tablets the prompt names the meal's usual size; the stand-in serves each plate at least that big, scaled as a whole (D2)
-    const usual = Number((/is at least about (\d+) kcal, the usual size/.exec(text) || [])[1] || 0);
+    const usual = Number((/is at least (\d+) kcal \(never below/.exec(text) || [])[1] || 0);
     const big = (m: any) => { const f = usual && m.kcal < usual * 1.05 ? usual * 1.05 / m.kcal : 1; if (f === 1) return m; const r = (x: number) => Math.round(x * f);
       return { ...m, kcal: r(m.kcal), protein: r(m.protein), carbs: r(m.carbs), fats: r(m.fats), fiber: r(m.fiber), items: m.items.map((it: any) => ({ ...it, grams: r(it.grams) })), grain: m.grain && { ...m.grain, grams: r(m.grain.grams) } }; };
     which = { ...which, meals: which.meals.map((m: any, i: number) => ({ ...big(m), ...(lite ? { swaps: undefined, alchemy: undefined } : {}), planned_around: ids.slice(i, i + 3), for_you: "Layout sample: this line will say why the plate suits you today." })) };
