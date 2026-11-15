@@ -638,7 +638,8 @@ function checkMeal(m,p){
     if(p.health==="diabetes"&&p.slot!=="snack"&&!kg)return;   /* rule 3: the grain stays, at least half of it, and no wording takes it off */
     if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     al[k]=x;});
-  return {meal:{title:title,subtitle:sub,cuisine:clean(m.cuisine,40),minutes:num(m.prepMinutes,0,180)||0,items:items,
+  var cu=clean(m.cuisine,40);if(crosses(cu,p)||supp(cu))cu="";   /* the cuisine line is food-checked too (audit, minor 3) */
+  return {meal:{title:title,subtitle:sub,cuisine:cu,minutes:num(m.prepMinutes,0,180)||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:why,swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
 /* Validate a whole reply. Returns {status, read, meals, dropped:{reason:count}} */

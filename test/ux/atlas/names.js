@@ -153,6 +153,7 @@ module.exports.push(
   S(P, 'plate-swap-declared-grain', 'Plate: a grain swap on the declared grain', 'A plate with sweet potato and jowar roti: swap the grain.'),
   S(P, 'plate-two-grain-changes', 'Plate: two grain changes, one at a time', 'Tap two changes that each change the grain.'),
   S(P, 'plate-tune-stale', 'Plate: swaps for old answers', 'Change My food while the swaps are on their way.'),
-  S(M, 'menu-script-note', 'Menu: typed in another script', 'Type the menu in Devanagari letters.'));
+  S(M, 'menu-script-note', 'Menu: typed in another script', 'Type the menu in Devanagari letters.'),
+  S(P, 'plate-plan-next-fresh', 'Plate: the next meal starts fresh', 'Swap the protein, tap I\'ll have this, then Plan the next meal.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

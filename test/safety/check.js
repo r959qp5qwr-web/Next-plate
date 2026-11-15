@@ -113,9 +113,9 @@ for (const t of L.wheat) { const c = checkMeal(plateWith(plural(t), 'whole wheat
 for (const t of L.meat) { const m = J(fx.meals.meals[0]); m.items[0] = { food: cap(plural(t)) + ' tikka', grams: 150, group: 'protein', contains: [] }; const c = checkMeal(m, prof({ diet: 'veg' })); add('S2 plate', !c.meal, `vegetarian, plate with "${m.items[0].food}" was offered`); }
 // each shown field on its own: a plate's for_you, pairing tip and read line; a menu's ask, side, grain_made_of and tip (fields are blanked, the plate stays)
 { const pl = plan('meals', { profile: Object.assign({}, BASE, { leave: ['dairy'] }), ctx: { meal: 'lunch' } });
-  const m = platePlain(); m.for_you = 'A light plate with ghee on the roti.'; m.why = [{ pair: 'Jowar roti + paneer', effect: 'The paneer adds protein to the meal.' }];
+  const m = platePlain(); m.for_you = 'A light plate with ghee on the roti.'; m.why = [{ pair: 'Jowar roti + paneer', effect: 'The paneer adds protein to the meal.' }]; m.cuisine = 'Ghee-rich Punjabi';
   const r = pl.check({ status: 'ok', refer_reason: 'none', read: 'A dairy day: paneer and ghee help.', meals: [m] }), x = (r.meals || [])[0] || {};
-  add('S1 shown fields', !!x.title && !x.forYou && !(x.why || []).length && !r.read, `dairy left out: for_you "${x.forYou}", why ${JSON.stringify(x.why)}, read "${r.read}"`); }
+  add('S1 shown fields', !!x.title && !x.forYou && !(x.why || []).length && !r.read && !x.cuisine, `dairy left out: for_you "${x.forYou}", why ${JSON.stringify(x.why)}, read "${r.read}", cuisine "${x.cuisine}"`); }
 for (const [field, val, o] of [['ask', 'Ask for extra ghee on top', { leave: ['dairy'] }], ['ask', 'Ask for a sweet lassi with it', { health: 'diabetes' }], ['tip', 'Start with the chhach, then the dal.', { leave: ['dairy'] }]]) {
   const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'MAINS\nDal Fry 200\n' } });
   const d = { as_written: 'Dal Fry', portion: '1 plate, about 350 g', kcal: 520, protein: 22, carbs: 60, fats: 18, fiber: 6, ask: field === 'ask' ? val : '', grain_made_of: 'rice', grain_grams: 100, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, contains: ['grain', 'onion_garlic'], with_contains: [], planned_around: [] };

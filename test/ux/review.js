@@ -471,6 +471,11 @@ const STATES = [
   ['menu-script-note', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', '\u092a\u0928\u0940\u0930 \u091f\u093f\u0915\u094d\u0915\u093e 320\n\u0926\u093e\u0932 \u0924\u0921\u093c\u0915\u093e 240'); await p.click('#mgo');
     await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the note');
     const t = await p.textContent('#v-rescue .note'); if (!/Next Plate can read menus in English letters for now\. Type the dishes in English letters\./.test(t) || !(await p.$('#menu-type-instead'))) throw new Error('a menu in another script does not end with the note (' + t + ')'); }],
+  // a swap made on one meal's plate does not carry over to the next meal's plate ("Plan next")
+  ['plate-plan-next-fresh', seed(), async (p, h) => { await h.plate(p); for (const m of ['snack', 'dinner', 'lunch']) { await p.click('#meal-' + m); await h.plate(p); }   // the later meals' plates are already kept
+    await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await p.click('#swp-1'); await h.settle(); await p.click('#have'); await h.settle(900);
+    await p.click('#slot-next'); await h.plate(p); const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | '));
+    if (/swapped/i.test(li)) throw new Error('the swap made on the last plate carried over to the next meal (' + li + ')'); }],
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
