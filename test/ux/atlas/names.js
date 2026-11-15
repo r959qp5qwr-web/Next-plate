@@ -47,6 +47,7 @@ module.exports = [
   S(R, 'rescue-error', 'Rescue: no answer came', 'Send while the service fails to answer.'),
   S(M, 'rescue-menu-typed', 'Menu: typing a menu', 'Rescue, Type the menu, paste the menu.'),
   S(M, 'menu-wait', 'Menu: reading the menu', 'Send a typed menu.'),
+  S(M, 'rescue-menu-request', 'Menu: a Jain order with its preparation request', 'Jain client: type a menu and read it.'),
   S(M, 'rescue-menu-order', 'Menu: what to order', 'Send a typed menu; the orders come.'),
   S(M, 'menu-nothing-fits', 'Menu: nothing on it fits', 'A menu with no fitting dish.'),
   S(M, 'menu-unreadable', 'Menu: photo could not be read', 'Send a blurred photo of a menu.'),
