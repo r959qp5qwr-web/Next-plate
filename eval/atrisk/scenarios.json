@@ -1,0 +1,581 @@
+[
+ {
+  "id": "jain-n-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "n"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "jain-n-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "n"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "jain-n-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "n"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-n-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "n"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-n-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "n"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-n-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "n"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nodairy-w-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "w",
+   "leave": [
+    "dairy"
+   ]
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nodairy-w-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "w",
+   "leave": [
+    "dairy"
+   ]
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nodairy-w-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "w",
+   "leave": [
+    "dairy"
+   ]
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nowheat-n-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "n",
+   "leave": [
+    "wheat"
+   ]
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nowheat-n-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "n",
+   "leave": [
+    "wheat"
+   ]
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nowheat-n-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "n",
+   "leave": [
+    "wheat"
+   ]
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "egg-nonut-s-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "egg",
+   "region": "s",
+   "leave": [
+    "nut"
+   ]
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "egg-nonut-s-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "egg",
+   "region": "s",
+   "leave": [
+    "nut"
+   ]
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "egg-nonut-s-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "egg",
+   "region": "s",
+   "leave": [
+    "nut"
+   ]
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nosoya-e-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e",
+   "leave": [
+    "soya"
+   ]
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nosoya-e-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e",
+   "leave": [
+    "soya"
+   ]
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-nosoya-e-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e",
+   "leave": [
+    "soya"
+   ]
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-e-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-e-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-e-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "e"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "jain-w-diabetes-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "w",
+   "health": "diabetes",
+   "meds": "no",
+   "goal": "lose"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "jain-w-diabetes-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "w",
+   "health": "diabetes",
+   "meds": "no",
+   "goal": "lose"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "jain-w-diabetes-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "jain",
+   "region": "w",
+   "health": "diabetes",
+   "meds": "no",
+   "goal": "lose"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-diabetes-meds-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s",
+   "health": "diabetes",
+   "meds": "yes",
+   "goal": "lose",
+   "kg": 74
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-diabetes-meds-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s",
+   "health": "diabetes",
+   "meds": "yes",
+   "goal": "lose",
+   "kg": 74
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "veg-s-diabetes-meds-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "veg",
+   "region": "s",
+   "health": "diabetes",
+   "meds": "yes",
+   "goal": "lose",
+   "kg": 74
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-e-bp-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "e",
+   "health": "bp"
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-e-bp-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "e",
+   "health": "bp"
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "vegan-e-bp-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "vegan",
+   "region": "e",
+   "health": "bp"
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "nonveg-e-bp-breakfast",
+  "kind": "meals",
+  "p": {
+   "diet": "nonveg",
+   "region": "e",
+   "health": "bp",
+   "sex": "m",
+   "age": 52,
+   "cm": 170,
+   "kg": 78
+  },
+  "c": {
+   "meal": "breakfast",
+   "hour": 8.5,
+   "time": "8:30 am",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "nonveg-e-bp-lunch",
+  "kind": "meals",
+  "p": {
+   "diet": "nonveg",
+   "region": "e",
+   "health": "bp",
+   "sex": "m",
+   "age": 52,
+   "cm": 170,
+   "kg": 78
+  },
+  "c": {
+   "meal": "lunch",
+   "hour": 13.2,
+   "time": "1:10 pm",
+   "dayNo": 320
+  }
+ },
+ {
+  "id": "nonveg-e-bp-dinner",
+  "kind": "meals",
+  "p": {
+   "diet": "nonveg",
+   "region": "e",
+   "health": "bp",
+   "sex": "m",
+   "age": 52,
+   "cm": 170,
+   "kg": 78
+  },
+  "c": {
+   "meal": "dinner",
+   "hour": 20.3,
+   "time": "8:20 pm",
+   "dayNo": 320
+  }
+ }
+]
