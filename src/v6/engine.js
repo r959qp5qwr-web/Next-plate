@@ -388,7 +388,7 @@ briefText(p,c,file,pl,hooks,true),
 rulesText(p),
 p.health==="diabetes"?"- Diabetes, when ordering out: every order keeps one measured grain. Either the dish has its own (biryani, pulao, dosa, idli, noodles) or \"with\" is a roti, naan or rice from this menu, with its count. Name that grain plainly in \"with\" or in \"portion\". Leave out a dish that cannot be ordered with a grain here.":null,
 p.medsUsual?"- They take insulin or sulfonylurea tablets, or are not sure: a dish with its side is at least "+p.medsUsual+" kcal (never below; up to 10 percent above), the usual size of this meal. Never suggest only a soup or a salad.":null,
-"- If you cannot read a menu here (blurred, cut off, or not a menu), return status \"unreadable\" and no dishes. If the text asks about symptoms, medicines or anything that is not food to order, return status \"refer\".",
+"- If you cannot read a menu here (blurred, cut off, or not a menu), return status \"unreadable\" and no dishes. If you can read it but no dish fits this person's food rules, even with a preparation request, return status \"nothing_fits\" and no dishes: never \"unreadable\" for that. If the text asks about symptoms, medicines or anything that is not food to order, return status \"refer\".",
 referText(),
 "",
 "WHAT TO RETURN",
@@ -400,7 +400,8 @@ referText(),
 "  kcal, protein, carbs, fats, fiber: your honest estimate for that one order as served, before any change.",
 "  with: one side from this same menu that completes the dish for this person, in the form \"<count> <name>\", the name letter for letter as one line of the menu (\"2 Tandoori Roti\"), and nothing after it. Empty if the dish is a meal on its own.",
 "  with_kcal, with_protein, with_carbs, with_fats, with_fiber: your estimate for that side in that amount. All 0 when \"with\" is empty.",
-"  contains: the tags of the dish itself; with_contains: the tags of the side ([\"plain\"] when \"with\" is empty).",
+"  request: a preparation to ask for when the dish fits this person only if made that way, one of: \"none\"; \"jain\" (no onion, garlic or root vegetables); \"no_dairy_fat\" (oil instead of ghee or butter); \"no_egg\"; \"less_salt\". \"none\" when it fits as served. A request never makes meat, fish, egg, paneer, curd or cream fit.",
+"  contains_listed: the tags of the dish as the menu lists it; contains: its tags as served after the request (the same as contains_listed when request is \"none\"); with_contains: the tags of the side ([\"plain\"] when \"with\" is empty).",
 "  grain_made_of: what the grain in this order (in the dish or its side, as eaten in the portion you give) is made of, for example \"wheat\" for naan or roti, \"rice\" for biryani or dosa; \"\" if the order as given has none. grain_grams: the grams of that grain in the portion as eaten; 0 if none.",
 "  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (1 to 4; only ids listed there). Every order cites at least one; a health id (such as salt with BP) applies to every order you choose.",
 "- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied letter for letter), contains, and reason: \"fried\", \"sweet\", \"rich\" or \"refined\" (mostly refined flour or starch).",
@@ -409,8 +410,8 @@ referText(),
 function menuSchema(ids){
   var I={type:"INTEGER"},S={type:"STRING"},T={type:"ARRAY",items:{type:"STRING",enum:TAGS}};
   function obj(props,req){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:Object.keys(props)};}
-  return obj({status:{type:"STRING",enum:["ok","refer","unreadable"]},refer_reason:{type:"STRING",enum:REFERW},
-    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,grain_made_of:S,grain_grams:I,contains:T,with_contains:T,
+  return obj({status:{type:"STRING",enum:["ok","refer","unreadable","nothing_fits"]},refer_reason:{type:"STRING",enum:REFERW},
+    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,grain_made_of:S,grain_grams:I,request:{type:"STRING",enum:REQKINDS},contains_listed:T,contains:T,with_contains:T,
       planned_around:{type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}}})},
     leave:{type:"ARRAY",items:obj({as_written:S,reason:{type:"STRING",enum:LEAVEWHY},contains:T})}},["status","refer_reason"]);
 }
@@ -586,6 +587,19 @@ function menuNote(n,t,mn){
    n is the dish plus its side. A dish that fails a check is dropped; a side that fails is taken off the order and the dish stands alone. */
 var BANDN={Gentle:0,Moderate:1,Sharp:2};
 /* "leave for another day": a fixed engine line per reason, never the model's words (safety round 5) */
+/* A preparation request on a menu order (at-risk sample, 15 Nov): the model names a kind from this closed list, the engine writes the line, and
+   the rules check reads the order's tags as served. A kind may account only for the tags it can take out: jain for onion_garlic and root_veg,
+   no_dairy_fat for dairy (the fat; the word net still drops paneer, curd or cream in the name); no_egg and less_salt take out no tag. Nothing
+   takes out meat, fish or egg. An order whose listed tags lose any other tag is dropped. */
+var REQKINDS=["none","jain","no_dairy_fat","no_egg","less_salt"],REQREMOVE={none:[],jain:["onion_garlic","root_veg"],no_dairy_fat:["dairy"],no_egg:[],less_salt:[]};
+var REQTEXT={jain:"Make it Jain style, with no onion, garlic or root vegetables.",no_dairy_fat:"Make it with oil instead of ghee or butter.",no_egg:"Make it without egg.",less_salt:"Go easy on the salt."};   /* shown after "Ask the waiter:" */
+function requestBad(d){var k=REQKINDS.indexOf(d&&d.request)>=0?d.request:"none",listed=Array.isArray(d&&d.contains_listed)?d.contains_listed:null,served=Array.isArray(d&&d.contains)?d.contains:[];
+  if(!listed)return k==="none"?"":"request-unlisted";   /* a request with no listed tags cannot be checked */
+  for(var i=0;i<listed.length;i++)if(served.indexOf(listed[i])<0&&REQREMOVE[k].indexOf(listed[i])<0)return "request";
+  return "";}
+var NOFITNAME={meat:"meat",fish:"fish",egg:"egg",dairy:"dairy",wheat:"wheat",nuts:"nuts",soya:"soya",onion_garlic:"onion or garlic",root_veg:"root vegetables",sweet:"sweets",salty_side:"pickle or papad"};
+function noFitLine(p){var b=barredTags(p).map(function(t){return NOFITNAME[t];}).filter(Boolean);
+  return "Nothing on this menu fits your food rules"+(b.length?" (no "+(b.length>1?b.slice(0,-1).join(", ")+" or "+b[b.length-1]:b[0])+")":"")+". Ask what they can make for you, or name the dish you want.";}
 var LEAVEWHY=["fried","sweet","rich","refined"],LEAVETEXT={fried:"Deep-fried, so heavy for this meal.",sweet:"A sweet, better kept for another day.",rich:"Rich and oily, a lot for this meal.",refined:"Mostly refined starch, low in fibre."};
 var SCRIPTNOTE="Next Plate can read menus in English letters for now. Type the dishes in English letters.";
 function checkMenu(r,p,c,pl,hooks){
@@ -596,7 +610,8 @@ function checkMenu(r,p,c,pl,hooks){
   var raw=Array.isArray(r.dishes)?r.dishes.slice(0,8):[];
   /* a menu in a script the checks cannot read ends with a note to type it in English letters (D1) */
   var script=NONLATIN.test(c.text||"")||raw.some(function(d){return d&&typeof d.as_written==="string"&&NONLATIN.test(d.as_written);});
-  if(r.status==="unreadable"||!raw.length){out.status=script?"script":"unreadable";if(script)out.read=SCRIPTNOTE;return out;}            /* no readable dishes: "I could not read that menu" */
+  if(r.status==="nothing_fits"&&!raw.length){out.status="empty";out.read=noFitLine(p);return out;}   /* readable, and nothing fits: said so, never "unreadable" */
+  if(!raw.length){out.status=script?"script":"unreadable";if(script)out.read=SCRIPTNOTE;return out;}            /* no readable dishes: "I could not read that menu" */
   var typed=c.text?menuNorm(c.text):"",items=menuItems(c.text),t=pl?pl.target:null,seen={},list=[];
   function drop(k){out.dropped[k]=(out.dropped[k]||0)+1;}
   function bad(x){return CLAIM.test(x)||supp(x)||crosses(x,p);}
@@ -610,11 +625,11 @@ function checkMenu(r,p,c,pl,hooks){
     if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
     var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
     if(typed&&!onMenu(rawN,typed)&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
-    var cb=contentsBad(d.contains,name,p);if(cb)return drop(cb);                             /* declared contents first (D1) */
+    var cb=contentsBad(d.contains,name,p)||requestBad(d);if(cb)return drop(cb);   /* the tags as served, and a request only where it can take a tag out */                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
     if(supp(all))return drop("supplement");if(CLAIM.test(name))return drop("claim");        /* rule 4 */
     var m=menuFigs(d,"",DISHR);if(!m.n)return drop(m.drop);var n=m.n;                       /* rule 5 */
-    var dt=tagList(d.contains),pg=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(rawPor),por=pg?"\u2248 "+Math.round(+pg[1])+" g":"",ask="";   /* the weight, written by the engine */
+    var dt=tagList(d.contains),pg=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(rawPor),por=pg?"\u2248 "+Math.round(+pg[1])+" g":"",ask=REQTEXT[d.request]||"";   /* the request line, written by the engine */   /* the weight, written by the engine */
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
@@ -629,7 +644,7 @@ function checkMenu(r,p,c,pl,hooks){
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place="";   /* not shown (safety round 5) */
-  if(!list.length){out.status=script?"script":"empty";if(script)out.read=SCRIPTNOTE;return out;}
+  if(!list.length){out.status=script?"script":"empty";out.read=script?SCRIPTNOTE:noFitLine(p);return out;}
   if(script||out.dropped.script)out.scriptNote=SCRIPTNOTE;   /* a menu partly in another script says so (audit m5) */
   /* rule 6: fit to this meal's target, then the gentler band, then fewer changes (an ask, a side); ties keep the menu's order */
   function far(n){return Math.abs(n.kcal-t.kcal)/t.kcal+Math.max(0,t.protein-n.protein)/t.protein;}      /* among orders that all score 0, the one nearest the target is the least bad */

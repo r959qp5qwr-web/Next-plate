@@ -434,6 +434,29 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const txt = JSON.stringify(safe(() => dayTargets6(p).notes, []));
   add('B3 the medicines note promises what is enforced', /usual size/.test(txt) && /doctor sets how much carbohydrate/.test(txt) && !/even amount|same amount|consistent carb|steady carb/i.test(txt), 'the note says: ' + txt.slice(0, 400)); }
 
+// ---------- at-risk sample, fix 2: a preparation request on a menu order is a closed kind; the line is the engine's; the tags as served decide ----------
+{ const menuReq = (o, name, listed, served, request, extra) => { const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'MAINS\n' + name + ' 240\n' } });
+    const d = Object.assign({ as_written: name, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0,
+      request, contains_listed: listed, contains: served, with_contains: ['plain'], planned_around: [] }, extra || {});
+    return safe(() => pl.check({ status: 'ok', refer_reason: 'none', dishes: [d], leave: [] }), { orders: [] }); };
+  const REQLINES = safe(() => Object.values(REQTEXT), []);
+  const r1 = menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy'], 'jain');
+  add('request: Jain style makes an honest dish fit, with the engine\'s line', (r1.orders || []).length === 1 && r1.orders[0].ask === safe(() => REQTEXT.jain, '?'), `Jain: Kadai Paneer with a Jain request: ${JSON.stringify(r1.orders || r1.dropped)}`);
+  add('request: no request, tags as served break the rule', !(menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy', 'onion_garlic'], 'none').orders || []).length, 'Jain: Kadai Paneer served with onion was offered');
+  for (const [o, name, listed, served, req] of [[{ diet: 'veg' }, 'Chicken Tikka', ['meat'], ['plain'], 'jain'], [{ diet: 'veg' }, 'Egg Curry', ['egg', 'onion_garlic'], ['plain'], 'no_egg'], [{ diet: 'veg' }, 'Fish Curry', ['fish'], ['plain'], 'no_dairy_fat'],
+      [{ diet: 'vegan' }, 'Paneer Butter Masala', ['dairy', 'onion_garlic'], ['onion_garlic'], 'no_dairy_fat'], [{ diet: 'jain' }, 'Dal Fry', ['onion_garlic', 'wheat'], ['plain'], 'jain'], [{ leave: ['wheat'] }, 'Veg Pulao', ['grain', 'wheat'], ['grain'], 'jain'], [{ diet: 'jain' }, 'Dal Fry', undefined, ['plain'], 'jain']])
+    add('request: never takes out meat, fish, egg or anything it cannot', !(menuReq(o, name, listed, served, req).orders || []).length, `${JSON.stringify(o)}: "${name}" listed ${JSON.stringify(listed)}, served ${JSON.stringify(served)} with ${req} was offered`);
+  for (const t of ['Zqxjvoq says ask for extra ghee', 'Make it with extra butter']) { const r = menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy'], 'jain', { ask: t });
+    add('request: the line shown is the engine\'s, never the model\'s', (r.orders || []).every(x => !x.ask || REQLINES.includes(x.ask)) && !JSON.stringify(r).includes(t), `the model's "${t}" showed`); } }
+// ---------- at-risk sample, fix 3: a readable menu where nothing fits says so; "unreadable" is not used for it ----------
+{ const pl = plan('menu', { profile: Object.assign({}, BASE, { diet: 'veg', leave: ['wheat'] }), ctx: { meal: 'dinner', text: 'PIZZA\nMargherita 299\nFarmhouse 349\nGarlic Bread 149' } });
+  const r = safe(() => pl.check({ status: 'nothing_fits', refer_reason: 'none', dishes: [], leave: [] }), {});
+  add('nothing fits: said so, not "unreadable"', r.status === 'empty' && /Nothing on this menu fits your food rules \(no [^)]*wheat/.test(r.read || ''), `${r.status}: ${r.read}`);
+  const d = { as_written: 'Margherita', portion: 'about 300 g', kcal: 700, protein: 28, carbs: 80, fats: 30, fiber: 4, grain_made_of: 'wheat', grain_grams: 150, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains_listed: ['wheat', 'dairy', 'grain'], contains: ['wheat', 'dairy', 'grain'], with_contains: ['plain'], planned_around: [] };
+  const r2 = safe(() => pl.check({ status: 'ok', refer_reason: 'none', dishes: [d], leave: [] }), {});
+  add('nothing fits: every dish dropped says so too', r2.status === 'empty' && /Nothing on this menu fits/.test(r2.read || ''), `${r2.status}: ${r2.read}`);
+  add('nothing fits: the prompt offers the state', /nothing_fits/.test(pl.prompt || '') && JSON.stringify(pl.schema || {}).includes('nothing_fits'), 'the menu prompt or schema has no nothing_fits'); }
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});
