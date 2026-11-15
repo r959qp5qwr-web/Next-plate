@@ -1,4 +1,5 @@
-/* Next Plate: hosted server. One file for Railway Functions (Bun).
+/* Next Plate: hosted server. One file for Railway Functions (Bun). The live function runs this file with its code inlined, so a change
+   here reaches live only when the function's inlined code is updated at deploy (a deploy step).
    Serves the page and answers /api/<kind> through Google's Gemini API. The key stays here, never in the page.
    This file is only transport, key and limits. The thinking (what a request may contain, the prompt, the reply schema and
    the safety checks) lives in the page's np-core script and is run here unchanged, so a new PAGE_REF updates both.
@@ -12,7 +13,7 @@
      THINKING         optional: minimal, low, medium or high
      PHOTOS           "off" switches menu photos off (default on)
      EVAL_CODE        optional second code for the quality check (eval/): skips the per-phone and daily counters and returns the raw reply
-     PAGE_REF         git commit the page is loaded from (GitHub raw); PAGE_PATH the file in the repo (default hosted/v5/index.min.html);
+     PAGE_REF         git commit the page is loaded from (GitHub raw); PAGE_PATH the file in the repo (default hosted/v6/index.min.html);
                       PAGE_FILE loads a local file instead (testing)
    Counters live in memory, so a restart resets them.
    Sent to Google: meal, time, mode, mood, cuisine, appetite, cooking/ordering, oil, plate ratio, meals eaten today, typed words,
@@ -21,7 +22,7 @@
 const env = (k: string, d: string) => (Bun.env[k] ?? "").trim() || d;
 const PAGE_REF = env("PAGE_REF", "main");
 const PAGE_FILE = env("PAGE_FILE", "");
-const PAGE_PATH = env("PAGE_PATH", "hosted/v5/index.min.html");
+const PAGE_PATH = env("PAGE_PATH", "hosted/v6/index.min.html");   // the v6 screens are the release target (Codex re-audit B4)
 const PAGE_URL = `https://raw.githubusercontent.com/r959qp5qwr-web/Next-plate/${PAGE_REF}/${PAGE_PATH}`;
 async function loadPage(): Promise<string> {
   if (PAGE_FILE) return await Bun.file(PAGE_FILE).text();
