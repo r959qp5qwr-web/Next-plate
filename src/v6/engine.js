@@ -71,6 +71,7 @@ function planDay(p,file,meal,appetite,par){
   pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein,Math.max(usualP,par.mealProteinMax*day.refKg)));
   pr=Math.min(pr,Math.max(usualP*par.mealFloor,k*(0.85+0.03*Math.max(1,Math.min(10,Math.round(appetite||5))))*par.mealProteinEnergyMax/4));   /* a meal's protein stays within what whole food at that energy can carry (R2-B3 043-1) */
   var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling */
+  if(day.meds)k=Math.max(k,usualK);   /* on insulin or sugar tablets a home meal never falls below its usual size (owner decision, 15 Nov; safety invariant S6) */
   var t=file.today,mine=by[meal]&&by[meal].kind!=="skipped"?by[meal]:null;
   return {day:day,eaten:{kcal:Math.round(ek+(mine?mine.kcal:0)),protein:Math.round(ep+(mine?mine.protein:0)),fiber:Math.round(t.fiber)},left:{kcal:Math.round(remK),protein:Math.round(remP)},
     target:{kcal:Math.round(k/10)*10,protein:Math.round(pr)},usual:{kcal:Math.round(usualK/10)*10,protein:Math.round(usualP)},mealsLeft:left.length,assumed:ak>0};
@@ -301,7 +302,7 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   var n={kcal:num(r.kcal,1,5000),protein:num(r.protein,0,300),carbs:num(r.carbs,0,600),fats:num(r.fats,0,300),fiber:num(r.fiber,0,100)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
-  var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:own(it&&it.food,60,typed),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
+  var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:own(it&&it.food,60,typed)||banOut(it&&it.food),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
   var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as))as="";else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
   return {status:"ok",title:own(r.title,60,typed)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
@@ -582,9 +583,14 @@ function checkMenu(r,p,c,pl,hooks){
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
 KINDS=["meals","rescue","log","tune","menu"];
+/* a logged item keeps its name when a banned word is in it (a brand, say): the word goes, the food stays (review, 15 Nov) */
+function banOut(t){var q=String(t||"").replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
+/* safety invariant S7: typed disclosures of pregnancy, breastfeeding or a kidney condition ("kidney beans" is food) */
+var REFERTXT=/\b(?:pregnan\w*|expecting a baby|breast-?feeding|nursing mother|lactating|garbh\w*|dialysis|ckd|creatinine|renal\s+(?:disease|failure|problem\w*)|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage))\b/i;
 plan=function(kind,body){
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
+  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";if(REFERTXT.test(tx))return {reply:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};

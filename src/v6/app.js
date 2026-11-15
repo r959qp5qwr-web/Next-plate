@@ -56,7 +56,8 @@ function clockText(){var h=now.getHours(),m=now.getMinutes();return ((h%12)||12)
 function mealName(k){return lab("meal",k);}
 function profileOut(){return {goal:P.goal,focus:P.focus,meds:has("diabetes")?(P.meds||"unsure"):"no",diet:P.diet,health:P.health,bp:has("bp"),region:P.region,leave:P.leave,sex:P.sex,age:P.age,cm:P.cm,kg:P.kg,act:P.act};}
 function appetite(){return APP[C.meal]!=null?APP[C.meal]:suggestAppetite(FILE,C.meal).v;}
-function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());
+function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;
+  if(dayOf(now.getTime())!==DAY){DAY=dayOf(now.getTime());CLOCK=hr<4?"dinner":hr<11?"breakfast":hr<15.5?"lunch":hr<18.5?"snack":"dinner";C.meal=CLOCK;STORE={day:DAY,res:{},shown:{}};APP={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;}   /* a tab open past midnight starts the new day (S12) */FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());
   HOOKS=hooksFor(profileOut(),FILE,{meal:C.meal,hour:C.meal===CLOCK?hr:null,mode:C.mode},PL);}
 function slotOf(meal){for(var i=0;i<FILE.today.meals.length;i++)if(FILE.today.meals[i].meal===meal)return FILE.today.meals[i];return null;}
 function daySig(){return FILE.today.meals.filter(function(m){return m.meal!==C.meal;}).map(function(m){return m.meal.charAt(0)+(m.kind==="ordered"?"m":m.kind.charAt(0))+Math.round(m.kcal/100);}).join("");}
@@ -376,7 +377,7 @@ function heroCard(m,v,r){
   var off=[];[["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
     var a=m.alchemy[x[0]];var b=btn("tbtn",ALCHLABEL[x[0]],UI.alc[x[0]]?"check":x[1],"alc-"+x[0]);   /* on shows a tick, off is outlined (screen review B1) */setPressed(b,!!UI.alc[x[0]]);if(!a)off.push(ALCHLABEL[x[0]]);
     if(!a){b.disabled=true;b.title=waitT?"Getting ready":"Not offered for this plate";}
-    b.addEventListener("click",function(){if(!a)return;UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();});if(a||waitT)tn.appendChild(b);});   /* a change not offered is named below, not shown dead (screen review B1) */
+    b.addEventListener("click",function(){if(!a)return;UI.alc[x[0]]=!UI.alc[x[0]];if(UI.alc[x[0]]&&a.grainAfter!=null&&UI.swb){UI.swb=0;$("said").textContent="The grain swap is undone: this change works on the planned grain.";}   /* S10 */if(UI.alc[x[0]])logEv("tuned",{k:x[0],title:m.title});render();});if(a||waitT)tn.appendChild(b);});   /* a change not offered is named below, not shown dead (screen review B1) */
   if(!waitT&&off.length){var tno=el("p","fine tnote");tno.id="alc-off";
     if(m.tuneFailed){tno.textContent="One-tap changes and swaps didn't load. ";var tr0=btn("linkbtn","Try again",null,"tune-retry");tr0.addEventListener("click",function(){m.tuneFailed=false;tune(curKey(),UI.sel);render();});tno.appendChild(tr0);}   /* a failed request is not "none for this plate" (R2-B2 024-1) */
     else if(off.length===4)tno.textContent="No one-tap changes for this plate.";else{tno.appendChild(document.createTextNode("Not offered for this plate: "));off.forEach(function(o,i){if(i)tno.appendChild(document.createTextNode(", "));tno.appendChild(el("span","nw",o));});tno.appendChild(document.createTextNode("."));}tn.appendChild(tno);}
@@ -392,7 +393,7 @@ function heroCard(m,v,r){
     [["protein","Main protein","swp","protein"],["base","Grains and starch","swb","carbs"]].forEach(function(x){var list=m.swaps[x[0]];if(list.length<2)return;var g=el("div");g.appendChild(el("p","cap",x[1]));var w=el("div","lows");
       var onPlate=m.items.filter(function(it){return it.group===x[3];})[0];
       list.forEach(function(s,i){var lbl=i?s.food+swapDelta(s,x[0]):(onPlate?onPlate.food:s.food)+" (on\u00A0your\u00A0plate)";var b=btn("choice",lbl,null,x[2]+"-"+i);b.setAttribute("role","radio");b.setAttribute("aria-checked",UI[x[2]]===i?"true":"false");
-        b.addEventListener("click",function(){UI[x[2]]=i;if(i)logEv("swapped",{from:list[0].food,to:s.food});render();});w.appendChild(b);});g.appendChild(w);d.appendChild(g);});
+        b.addEventListener("click",function(){UI[x[2]]=i;if(i&&x[2]==="swb"){var off=[];ALCH.forEach(function(k){var a2=m.alchemy&&m.alchemy[k];if(UI.alc[k]&&a2&&a2.grainAfter!=null){UI.alc[k]=false;off.push(ALCHLABEL[k]);}});if(off.length)$("said").textContent=off.join(", ")+" is turned off: it changes the planned grain.";}   /* S10 */if(i)logEv("swapped",{from:list[0].food,to:s.food});render();});w.appendChild(b);});g.appendChild(w);d.appendChild(g);});
     sv.appendChild(d);}
   var ul=el("ul","measures");
   v.items.forEach(function(it){var li=el("li"),qy=el("span","qty g"+(it.tag?" chg":""));qy.style.setProperty("--dot",RINGC[{greens:"veg",protein:"pro",carbs:"grain"}[it.group]||"side"]);
@@ -776,7 +777,8 @@ function logOther(text,image){
   var sent=askedFor();
   api("/api/log",body,function(s,j){UI.lbusy=false;
     if(askedFor()!==sent){if(!blocked())logOther(text,image);else renderSheet();return;}
-    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. For example: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
+    if(s===200&&j.status==="ok")UI.lres=j;else if(s===200&&j.status==="refer"){UI.lretry=false;UI.lerr=SAFETY+" Next Plate does not count meals for this.";}   /* S7: a referral shows as one */
+    else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. For example: “2 aloo paratha with curd”.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;
     if(UI.sheet==="log")renderSheet();});
 }

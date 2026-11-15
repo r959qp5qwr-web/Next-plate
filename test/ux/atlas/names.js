@@ -138,5 +138,10 @@ module.exports.push(
   S(M, 'menu-health-changed', 'Menu: Diabetes ticked while the menu is read', 'Read a menu, tick Diabetes in My food during the wait.'),
   S(R, 'rescue-health-changed', 'Rescue: Diabetes ticked while a dish is worked out', 'Name a dish, tick Diabetes in My food during the wait.'),
   S(B, 'builder-ratio-reload', 'Builder: the saved share after a reload', 'Plan with Steady sugar, open the app again, tap Builder.'));
+module.exports.push(
+  S(P, 'plate-swap-then-change', 'Plate: grain swap, then the sugar change', 'Adjust, pick a grain swap, then tap Gentler on sugar.'),
+  S(P, 'plate-change-then-swap', 'Plate: sugar change, then a grain swap', 'Tap Gentler on sugar, then pick a grain swap.'),
+  S(P, 'plate-after-midnight', 'Plate: the next day, app left open', 'Log a meal, leave the app open past midnight.'),
+  S(PS, 'sheet-log-referred', 'Sheet: I had something else, referred', 'Type that you are pregnant in I had something else.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

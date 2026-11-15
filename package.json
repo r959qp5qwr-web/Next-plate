@@ -8,7 +8,8 @@
     "drill": "node test/ux/review.js --drill --out /tmp/np-drill",
     "rules": "node test/rules/check.js hosted/v6/index.html && node test/rules/check.js hosted/v6/index.min.html && node test/rules/check.js hosted/v5/index.min.html",
     "films": "test/films/check.sh",
-    "words": "node test/words/check.js"
+    "words": "node test/words/check.js",
+    "safety": "node test/safety/check.js hosted/v6/index.html && node test/safety/check.js hosted/v6/index.min.html && node test/safety/check.js hosted/v5/index.min.html"
   },
   "devDependencies": {
     "esbuild": "0.24.2"

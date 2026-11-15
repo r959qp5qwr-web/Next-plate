@@ -394,6 +394,20 @@ const STATES = [
     await p.reload({ waitUntil: 'domcontentloaded' }); await h.plate(p); await p.click('#tab-build'); await h.settle();
     const on = await p.evaluate(() => ['mode', 'balanced', 'steady'].filter(k => (document.querySelector('#preset-' + k) || {}).getAttribute && document.querySelector('#preset-' + k).getAttribute('aria-checked') === 'true'));
     if (on.join() !== 'steady') throw new Error('after a reload the Builder marks ' + (on.join() || 'nothing') + ' while the share in use is Steady sugar'); }],
+  // ---- safety invariants S7, S10, S12 on screen (15 Nov) ----
+  ['plate-swap-then-change', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await p.click('#swb-1'); await h.settle(); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.click('#alc-glucose'); await h.settle();
+    const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | '));
+    if (/swapped/i.test(li) || !/160\s*g.*changed/i.test(li)) throw new Error('a grain swap and the sugar change are both on (' + li + ')'); }],
+  ['plate-change-then-swap', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.click('#alc-glucose'); await h.settle(); await p.click('#adjust'); await h.settle(); await p.click('#swb-1'); await h.settle();
+    const on = await p.getAttribute('#alc-glucose', 'aria-pressed'); if (on === 'true') throw new Error('the sugar change stayed on over a grain swap'); }],
+  ['plate-after-midnight', seed(), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900);
+    const n0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(e => e.type === 'had').length); await p.clock.fastForward('24:00:00'); await p.click('#tab-plate'); await h.settle(300); await h.plate(p);
+    if (await p.$('.card.logged')) throw new Error('yesterday\u2019s logged meal still shows after midnight');
+    await p.click('#have'); await h.settle(600);
+    const had = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(e => e.type === 'had').length);
+    if (had !== n0 + 1) throw new Error('logging today\u2019s meal after midnight erased yesterday\u2019s (' + n0 + ' before, ' + had + ' after)'); }],
+  ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
+    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

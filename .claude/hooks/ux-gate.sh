@@ -4,7 +4,9 @@
 #   2. the safety rules hold on every page (test/rules/check.js), no banned word sits outside its listed exceptions (test/words/check.js),
 #      and every film has its picture and sound (test/films/check.sh),
 #   3. the surface review (test/ux/review.js --quick, drill first) finds nothing, and
-#   4. the ux-critic agent has written VERDICT: PASS for that state's fingerprint (test/ux/manifest.sh) in test/ux/CRITIC.md.
+#   4. the ux-critic agent has written VERDICT: PASS for that state's fingerprint (test/ux/manifest.sh) in test/ux/CRITIC.md, and
+#   5. the safety invariants hold (test/safety/check.js on every page) and the safety audit (docs/SAFETY-INVARIANTS.md,
+#      .claude/agents/safety-auditor.md) has written VERDICT: PASS for the same fingerprint in test/safety/AUDIT.md (owner, 15 Nov).
 # The state is fingerprinted, not the edit, so changes made through the shell, films and the post are covered too.
 # Exit 2 blocks the stop and tells Claude why. After 3 blocks on the same state it lets the stop through with a message to the owner,
 # so an unsatisfiable gate is reported instead of looping. A hook proves only that these steps ran (Builders Doctrine BD-94);
@@ -18,10 +20,12 @@ block() { M="$1"; why="$2"; prev=$(cat "$N" 2>/dev/null); cnt=1; [ "${prev%% *}"
 ESBUILD=./node_modules/esbuild node build6.js >/dev/null 2>&1 || block "unbuilt" "the pages do not build (npm run build)"
 M=$(test/ux/manifest.sh)
 critic_ok() { head -1 test/ux/CRITIC.md 2>/dev/null | grep -q "^VERDICT: PASS" && sed -n 2p test/ux/CRITIC.md | grep -q "BUILD: $M"; }
+audit_ok() { head -1 test/safety/AUDIT.md 2>/dev/null | grep -q "^VERDICT: PASS" && sed -n 2p test/safety/AUDIT.md | grep -q "BUILD: $M"; }
 # PASSED only spares a second review run; the Critic's PASS for this fingerprint is checked every time
-grep -qx "$M" test/ux/PASSED 2>/dev/null && critic_ok && { rm -f "$N"; exit 0; }
+grep -qx "$M" test/ux/PASSED 2>/dev/null && critic_ok && audit_ok && { rm -f "$N"; exit 0; }
 for pg in hosted/v6/index.html hosted/v6/index.min.html hosted/v5/index.min.html; do
-  node test/rules/check.js "$pg" >/dev/null 2>&1 || block "$M" "a safety rule does not hold on $pg (node test/rules/check.js $pg)"; done
+  node test/rules/check.js "$pg" >/dev/null 2>&1 || block "$M" "a safety rule does not hold on $pg (node test/rules/check.js $pg)"
+  node test/safety/check.js "$pg" >/dev/null 2>&1 || block "$M" "a safety invariant does not hold on $pg (node test/safety/check.js $pg)"; done
 node test/words/check.js >/dev/null 2>&1 || block "$M" "a banned word outside the listed exceptions (node test/words/check.js)"
 test/films/check.sh >/dev/null 2>&1 || block "$M" "a film has no picture, a frozen picture, decode errors or chimes-only sound (test/films/check.sh)"
 node test/ux/review.js --quick --pool 6 --out test/ux/out >/dev/null 2>&1; rc=$?
@@ -30,4 +34,7 @@ node test/ux/review.js --quick --pool 6 --out test/ux/out >/dev/null 2>&1; rc=$?
 [ -f test/ux/CRITIC.md ] || block "$M" "no Critic verdict for this state. Run the ux-critic agent; it writes test/ux/CRITIC.md"
 head -1 test/ux/CRITIC.md | grep -q '^VERDICT: PASS' || block "$M" "the Critic's verdict is not PASS; fix its findings (test/ux/CRITIC.md) and ask it again"
 sed -n 2p test/ux/CRITIC.md | grep -q "BUILD: $M" || block "$M" "the Critic's verdict is for a different state (fingerprint $M expected); ask the Critic again"
+[ -f test/safety/AUDIT.md ] || block "$M" "no safety audit for this state. Run the safety audit (.claude/agents/safety-auditor.md); it writes test/safety/AUDIT.md"
+head -1 test/safety/AUDIT.md | grep -q '^VERDICT: PASS' || block "$M" "the safety audit is not PASS; fix its findings (test/safety/AUDIT.md) and audit again"
+sed -n 2p test/safety/AUDIT.md | grep -q "BUILD: $M" || block "$M" "the safety audit is for a different state (fingerprint $M expected); audit again"
 echo "$M" > test/ux/PASSED; rm -f "$N"; exit 0
