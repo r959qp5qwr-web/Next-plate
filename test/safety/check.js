@@ -309,6 +309,39 @@ console.log(`round 5 schema walk: ${walked} string fields`);
   add('round 5 handler wrapper found handlers', n >= 10, `only ${n} handlers that write the log or compose were found; the guard is not reading the page`);
   console.log(`round 5 handlers that write the log or compose: ${n}, wrapped in act(): ${wrapped}`); }
 
+// ---------- A1 (external re-audit, round 5): names come from a closed vocabulary. A wrong but non-empty tag list no longer lets an unknown dish through ----------
+const AN = JSON.parse(fs.readFileSync(path.join(__dirname, 'audit-names.json'), 'utf8')).sets;
+const swapOffered = (o, name, tags, part) => { const m = platePlain(); m.swaps = { protein: [], base: [] };
+  if (part === 'base') m.swaps.base = [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...z }, { food: name, made_of: 'rice', grams: 90, contains: tags, ...z }];
+  else m.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: ['plain'], ...z }, { food: name, grams: 180, contains: tags, ...z }];
+  const pl = plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }); const r = safe(() => pl.check(mealsReply(m)), {});
+  return ((((r.meals || [])[0] || {}).swaps || {})[part || 'protein'] || []).some(x => x.food.toLowerCase() === name.toLowerCase()); };
+const oneTapOffered = (o, name, tags) => { const t = tuneOut(o, 'lunch', { protein: { titleSuffix: '+ more', note: 'Add 60 g ' + name + '.', add_item: name, add_grams: 60, minutes: 20, grain_grams_after: 90, contains: tags, deltaKcal: 60, deltaProtein: 6, deltaCarbs: 4, deltaFats: 2, deltaFiber: 1 } }); return Object.keys(t.alchemy || {}).length > 0; };
+const leaveShown = (o, name, tags) => { const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'MAINS\nDal Fry 200\n' + name + ' 150\n' } });
+  const r = safe(() => pl.check({ status: 'ok', refer_reason: 'none', place: '', tip: '', dishes: [{ as_written: 'Dal Fry', portion: 'about 350 g', kcal: 520, protein: 22, carbs: 60, fats: 18, fiber: 6, ask: '', grain_made_of: 'rice', grain_grams: 100, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, contains: ['grain', 'onion_garlic'], with_contains: [], planned_around: [] }],
+    leave: [{ as_written: name, why: 'Heavy.', reason: 'rich', contains: tags }] }), {});
+  return (r.leave || []).some(l => l.name.toLowerCase() === name.toLowerCase()); };
+let anN = 0;
+for (const [k, { profile, tag, names }] of Object.entries(AN)) for (const name of names) { anN++;
+  add('A1 audit names, wrong tag, plate', !plateOffered(profile, withItem(name, ['grain'])).ok, `${k} ${JSON.stringify(profile)}: "${name}" tagged grain only was offered`);
+  add('A1 audit names, wrong tag, protein swap', !swapOffered(profile, name, ['grain']), `${k}: swap "${name}" tagged grain only was offered`);
+  add('A1 audit names, wrong tag, menu', !(menuOffered(profile, name, ['grain']).orders || []).length, `${k}: menu order "${name}" tagged grain only was offered`);
+  add('A1 audit names, right tag', !plateOffered(profile, withItem(name, [tag])).ok, `${k}: "${name}" tagged ${tag} was offered`); }
+// Codex's three dishes, and a nonsense name, tagged grain only: dropped on every surface. Their tag controls: missing, empty, honest barred tag
+for (const [name, o, honest] of [['Kori rotti', { diet: 'veg' }, 'meat'], ['Payesh', { diet: 'vegan' }, 'dairy'], ['Poondu rasam', { diet: 'jain' }, 'onion_garlic'], ['Zorvy plok', {}, 'plain'], ['Zorvy plok', { diet: 'veg' }, 'plain']]) {
+  add('A1 unknown name, every surface', !plateOffered(o, withItem(name, ['grain'])).ok, `${JSON.stringify(o)}: plate item "${name}" was offered`);
+  add('A1 unknown name, every surface', !swapOffered(o, name, ['grain']) && !swapOffered(o, name, ['grain'], 'base'), `${JSON.stringify(o)}: swap "${name}" was offered`);
+  add('A1 unknown name, every surface', !oneTapOffered(o, name, ['grain']), `${JSON.stringify(o)}: a one-tap change adding "${name}" was offered`);
+  add('A1 unknown name, every surface', !(menuOffered(o, name, ['grain']).orders || []).length, `${JSON.stringify(o)}: menu order "${name}" was offered`);
+  add('A1 unknown name, every surface', (menuOffered(o, 'Dal Fry', ['grain'], '1 ' + name, ['grain']).orders || []).every(x => !x.with), `${JSON.stringify(o)}: menu side "${name}" was offered`);
+  add('A1 unknown name, every surface', !leaveShown(o, name, ['grain']), `${JSON.stringify(o)}: leave entry "${name}" was shown`);
+  for (const tags of [undefined, [], [honest]]) if (honest !== 'plain' || tags !== undefined && tags.length) {} else add('A1 tag controls', !plateOffered(o, withItem(name, tags)).ok, `${JSON.stringify(o)}: "${name}" with ${JSON.stringify(tags)} was offered`);
+  if (honest !== 'plain') for (const tags of [undefined, [], [honest]]) add('A1 tag controls', !plateOffered(o, withItem(name, tags)).ok && !swapOffered(o, name, tags) && !(menuOffered(o, name, tags).orders || []).length, `${JSON.stringify(o)}: "${name}" with ${JSON.stringify(tags)} was offered`); }
+// positive controls: known honest names are still offered on each surface
+for (const [o, name, tags] of [[{ diet: 'veg' }, 'Sprouted moong', ['plain']], [{ diet: 'jain' }, 'Hing tadka dal', ['plain']], [{ diet: 'vegan' }, 'Boiled chickpeas', ['plain']], [{ health: 'diabetes' }, 'Rajma', ['plain']]]) {
+  add('A1 known names still offered', plateOffered(o, withItem(name, tags)).ok && swapOffered(o, name, tags) && oneTapOffered(o, name, tags) && !!(menuOffered(o, name, tags).orders || []).length, `${JSON.stringify(o)}: "${name}" was dropped on a surface (plate ${plateOffered(o, withItem(name, tags)).why}, swap ${swapOffered(o, name, tags)}, one-tap ${oneTapOffered(o, name, tags)}, menu ${JSON.stringify(menuOffered(o, name, tags).dropped)})`); }
+console.log(`A1: ${anN} audit names, each on plate, swap and menu`);
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});
