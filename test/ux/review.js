@@ -88,6 +88,11 @@ const GRAINPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Sweet 
   swaps: { protein: [], base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...GZ }, { food: 'Ragi roti', made_of: 'ragi', grams: 90, contains: ['grain'], ...GZ, deltaFiber: 1 }] },
   alchemy: { glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber salad; jowar roti down to 60 g.', minutes: 20, contains: ['grain'], grainAfter: 60, deltaKcal: -60, deltaProtein: -1, deltaCarbs: -14, deltaFats: 0, deltaFiber: 2 },
     gut: { suffix: '(easy on the gut)', note: 'Less chilli; jowar roti down to 55 g.', minutes: 20, contains: ['grain'], grainAfter: 55, deltaKcal: -40, deltaProtein: 1, deltaCarbs: -16, deltaFats: 0, deltaFiber: -1 } } }] };
+// rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
+const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
+  hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
+    { title: 'Leave a third of the naan for later', kind: 'portion', contains: ['grain', 'wheat'], deltaKcal: -110, deltaProtein: -3, deltaCarbs: -35, deltaFats: -2, deltaFiber: -1 },
+    { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -476,6 +481,16 @@ const STATES = [
     await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await p.click('#swp-1'); await h.settle(); await p.click('#have'); await h.settle(900);
     await p.click('#slot-next'); await h.plate(p); const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | '));
     if (/swapped/i.test(li)) throw new Error('the swap made on the last plate carried over to the next meal (' + li + ')'); }],
+  // S5: with diabetes, Rescue moves ticked together keep at least half the dish's carbs; the move that would break it is not ticked, and #said says why
+  ['rescue-two-moves-grain', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', J(200, TWOMOVES)); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Paneer butter masala with rice and naan'); await p.press('#rin', 'Enter');
+    await p.waitForSelector('#move-1', { timeout: 20000 }); await p.click('#move-0'); await h.settle(300); await p.click('#move-1'); await h.settle(500);
+    const r = await p.evaluate(() => ({ a: document.getElementById('move-0').getAttribute('aria-pressed'), b: document.getElementById('move-1').getAttribute('aria-pressed'), said: document.getElementById('said').textContent }));
+    if (r.a !== 'true' || r.b === 'true' || !/Not ticked/.test(r.said)) throw new Error('two Rescue moves together take more than half the grain, or the earlier one was unticked without a word (' + JSON.stringify(r) + ')'); }],
+  // S11 on the log sheet: a reply made before the day's start (4 am) passed during the wait is not shown; it is asked for again
+  ['sheet-log-day-changed', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(300);
+    await p.clock.fastForward('16:00:00'); p.__release(); await h.settle(2500);   // 05:10 the next day, while the reply is pending
+    if (p.__logs < 2) throw new Error('the log estimate made for yesterday was shown after the day changed (' + p.__logs + ' requests)'); },
+    (p) => { const held = new Promise(x => { p.__release = x; }); p.__logs = 0; return p.route('**/api/log', async r => { if (p.__logs++ === 0) await held; try { await r.continue(); } catch (e) {} }); }],
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));

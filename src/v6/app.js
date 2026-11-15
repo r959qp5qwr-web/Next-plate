@@ -67,6 +67,8 @@ function dayMoved(){if(dayOf(Date.now())===DAY)return false;refresh();render();t
 function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
 ["visibilitychange","focus","pageshow"].forEach(function(t){(t==="visibilitychange"?document:window).addEventListener(t,function(){if(!document.hidden)wake();});});
 /* moving to another meal starts its plate fresh: no plate choice, swap or change carries over (correctness review, minor) */
+/* a refusal shows the info mark, not the tick that a done action shows */
+var toast0=toast;toast=function(t,warn){var u=$("toast").querySelector("use");if(u)u.setAttribute("href",warn?"#i-info":"#i-check");toast0(t,warn);};
 function pickMeal(m){if(C.meal===m)return;C.meal=m;UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;}
 function slotOf(meal){for(var i=0;i<FILE.today.meals.length;i++)if(FILE.today.meals[i].meal===meal)return FILE.today.meals[i];return null;}
 function daySig(){return FILE.today.meals.filter(function(m){return m.meal!==C.meal;}).map(function(m){return m.meal.charAt(0)+(m.kind==="ordered"?"m":m.kind.charAt(0))+Math.round(m.kcal/100);}).join("");}
@@ -769,7 +771,11 @@ function renderRescue0(){
   var mh=el("div","sec-h");mh.appendChild(el("h3",null,"Moves you can make"));v.appendChild(mh);
   var mv=el("div","moves");r.hacks.forEach(function(h,k){var b=el("button","move");b.type="button";b.id="move-"+k;setPressed(b,!!UI.rmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
     var tx=el("span");tx.appendChild(document.createTextNode(h.title));var bits=[];if(h.deltaKcal)bits.push(Math.abs(h.deltaKcal)+"\u00A0kcal "+(h.deltaKcal>0?"more":"less"));if(h.deltaProtein)bits.push(Math.abs(h.deltaProtein)+"\u00A0g protein "+(h.deltaProtein>0?"more":"less"));   /* no bare minus sign (R2-B6 081-4) */if(h.kind==="sequence"||h.kind==="move")bits.push("softens the rise");
-    if(bits.length)tx.appendChild(el("small",null,bits.join(" · ")));add(b,ii,tx);b.addEventListener("click",function(){UI.rmoves[k]=!UI.rmoves[k];render();});mv.appendChild(b);});
+    if(bits.length)tx.appendChild(el("small",null,bits.join(" · ")));add(b,ii,tx);b.addEventListener("click",function(){
+      /* S5: with diabetes the moves ticked together keep at least half the dish's carbs, as one-tap changes do; a move that would break it is not ticked, and #said says why */
+      if(!UI.rmoves[k]&&has("diabetes")&&(r.meal||C.meal)!=="snack"){var dc=h.deltaCarbs||0;r.hacks.forEach(function(x,q){if(UI.rmoves[q])dc+=x.deltaCarbs||0;});
+        if(d.carbs+dc<d.carbs*0.5){var why="Not ticked: with the moves already ticked, this one would take away more than half the grain. The grain stays with diabetes.";toast(why,true);return;}}   /* shown and spoken */
+      UI.rmoves[k]=!UI.rmoves[k];render();});mv.appendChild(b);});
   v.appendChild(mv);
   var rm=r.meal||C.meal,had=btn("btn primary","I had this, for "+mealName(rm).toLowerCase(),"check","rescue-had");   /* logged to the meal it was worked out for */
   had.addEventListener("click",function(){if(dayMoved())return;clearSlot(rm);logEv("rescued",{title:d.name,kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber},rm);UI.rres=null;UI.rtext="";pickMeal(rm);show("plate");toast("Counted for "+mealName(rm).toLowerCase()+". Your next meals adjust to it.");});

@@ -304,11 +304,15 @@ function checkTune(r,p,meal){
   var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
   return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
+function given(v,lo,hi){if(typeof v!=="number"||!isFinite(v))return null;v=Math.round(v);return v<lo||v>hi?null:v;}
 function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer"};   /* refer_reason other than "none" is a referral (S7) */
-  var n={kcal:num(r.kcal,1,5000),protein:num(r.protein,0,300),carbs:num(r.carbs,0,600),fats:num(r.fats,0,300),fiber:num(r.fiber,0,100)};
+  /* figures are taken as given or not at all, as on the menu (rule 5): a missing, negative or out-of-range figure is not clamped; the reply
+     goes to "didn't read as a meal". The ranges are the Rescue dish's, the existing bounds for a dish as eaten (correctness review, minor) */
+  var n={kcal:given(r.kcal,40,4000),protein:given(r.protein,0,300),carbs:given(r.carbs,0,500),fats:given(r.fats,0,300),fiber:given(r.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
+  if((Array.isArray(r.items)?r.items:[]).slice(0,8).some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
   var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:own(it&&it.food,60,typed)||banOut(it&&it.food),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
   var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as)||houseUnit(as))as="";   /* grams and kcal only (S8) */else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
