@@ -538,12 +538,18 @@ function renderPlate(){
 }
 
 /* ---------- 02 Builder ---------- */
+/* Builder shares (Codex re-audit B2): a tap moves one share by d and the others make room one point at a time, the largest giving first (the
+   smallest taking first), each within the bounds the engine accepts (RATIOB in np-core); the shares always sum to 100. A tap that cannot
+   is refused: rebalance returns null and the app says why. */
 function rebalance(r,key,d){
-  var next=Math.max(5,Math.min(65,r[key]+d)),diff=next-r[key];if(!diff)return r;
-  var o=Object.keys(r).filter(function(k){return k!==key;}),u={};for(var k in r)u[k]=r[k];u[key]=next;var rem=diff;
-  o.forEach(function(k,i){var share=i===o.length-1?rem:Math.round(diff/o.length);u[k]=Math.max(5,r[k]-share);rem-=share;});
-  var sum=u.protein+u.greens+u.carbs+u.fats;if(sum!==100)u[o[0]]+=100-sum;return u;
+  var b=RATIOB[key],next=r[key]+d;if(next<b[0]||next>b[1])return null;
+  var u={};RATIOK.forEach(function(k){u[k]=r[k];});u[key]=next;var rem=-d,step=rem<0?-1:1;
+  while(rem){var can=RATIOK.filter(function(k){return k!==key&&(step<0?u[k]>RATIOB[k][0]:u[k]<RATIOB[k][1]);});if(!can.length)return null;
+    can.sort(function(a,c){return step<0?u[c]-u[a]:u[a]-u[c];});u[can[0]]+=step;rem-=step;}
+  return u;
 }
+var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
+function stepRatio(key,d){var u=rebalance(UI.ratio,key,d);if(!u){toast(RATIONAME[key]+(d>0?" can't go higher.":" can't go lower."),true);return;}UI.ratio=u;UI.preset="";render();}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -566,7 +572,7 @@ function renderBuild(){
     var row=el("div","stp"),sw=el("i");sw.style.background=RINGC[x[2]];var tx=el("div");tx.appendChild(el("b",null,x[1]));
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
-    mn.addEventListener("click",function(){UI.ratio=rebalance(UI.ratio,x[0],-5);UI.preset="";render();});pl.addEventListener("click",function(){UI.ratio=rebalance(UI.ratio,x[0],5);UI.preset="";render();});
+    mn.addEventListener("click",function(){stepRatio(x[0],-5);});pl.addEventListener("click",function(){stepRatio(x[0],5);});
     add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
   add(c,rw,stp);v.appendChild(c);
   /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */

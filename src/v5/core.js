@@ -39,6 +39,9 @@ var MODEFOCUS={
 };
 /* [P] builder presets; the post-training one went with Strength day (owner, 14 Nov, option survey) */
 var PRESETS={balanced:{protein:35,greens:35,carbs:20,fats:10},steady:{protein:35,greens:45,carbs:10,fats:10}};
+/* Builder shares (Codex re-audit B2): one bounds table for the app's steppers and for the request check, so a share the app can make is
+   always accepted unchanged. These are the bounds the request check already used. */
+var RATIOB={protein:[5,70],greens:[5,70],carbs:[5,70],fats:[5,40]},RATIOK=["protein","greens","carbs","fats"];
 
 /* ---------- targets ----------
    kcal: Mifflin-St Jeor BMR x the standard activity factor. Protein: kg x PROTEIN_G_PER_KG (default 0.83, ICMR-NIN 2020 adult RDA; the owner may change it).
@@ -857,8 +860,9 @@ function readCtx(x,kind){
   c.mood=okOpt("mood",x.mood)?x.mood:"best";var cu=optNow("cuisine",x.cuisine);c.cuisine=okOpt("cuisine",cu)?cu:"home";
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
-  var r=x.ratio;if(r&&typeof r==="object"){var q={protein:num(r.protein,5,70),greens:num(r.greens,5,70),carbs:num(r.carbs,5,70),fats:num(r.fats,5,40)};
-    if(q.protein&&q.greens&&q.carbs&&q.fats&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2)c.ratio=q;}
+  /* a share outside its bounds is not clamped into them: the ratio is used as sent, or not at all (B2) */
+  var r=x.ratio;if(r&&typeof r==="object"){var q={},okr=RATIOK.every(function(k){var v=r[k];if(typeof v!=="number"||!isFinite(v)||Math.round(v)!==v||v<RATIOB[k][0]||v>RATIOB[k][1])return false;q[k]=v;return true;});
+    if(okr&&Math.abs(q.protein+q.greens+q.carbs+q.fats-100)<=2)c.ratio=q;}
   return c;
 }
 

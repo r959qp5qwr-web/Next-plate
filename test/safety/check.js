@@ -406,6 +406,21 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const pl = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: 'chest pain after lunch' } }), {});
   add('B1 a wrong refer_reason cannot undo it', !pl.check, 'the plates plan for "chest pain after lunch" can still take a model reply'); }
 
+// ---------- B2 (Codex re-audit): Builder shares stay in bounds, sum to 100, and reach the engine unchanged, from every preset ----------
+{ const app = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8'), at = app.indexOf('function rebalance(');   // NP_APP: another checkout's app.js
+  let fnSrc = '', d = 0; for (let i = app.indexOf('{', at); i < app.length; i++) { if (app[i] === '{') d++; else if (app[i] === '}') { d--; if (!d) { fnSrc = app.slice(at, i + 1); break; } } }
+  const rebal = safe(() => (0, eval)('(' + fnSrc.replace(/^function rebalance/, 'function') + ')'), null);
+  const K = ['protein', 'greens', 'carbs', 'fats'], starts = safe(() => Object.values(MODEPLATE).concat(Object.values(PRESETS)), []);
+  let states = 0, bad = [];
+  const accepted = (q) => { const c = safe(() => readCtx({ meal: 'lunch', ratio: q }, 'meals'), null); return !!(c && c.ratio && K.every(k => c.ratio[k] === q[k])); };
+  if (rebal) for (const st of starts) { const seen = new Set(), queue = [st];
+    while (queue.length && states < 400000) { const q = queue.pop(), key = K.map(k => q[k]).join(','); if (seen.has(key)) continue; seen.add(key); states++;
+      const sum = K.reduce((a, k) => a + q[k], 0);
+      if (sum !== 100 || K.some(k => !(q[k] >= 5)) || !accepted(q)) { if (bad.length < 5) bad.push(key); continue; }
+      for (const k of K) for (const dd of [5, -5]) { const n = safe(() => rebal(q, k, dd), null); if (n) queue.push(n); } } }
+  add('B2 every reachable Builder state is in bounds and accepted unchanged', !!rebal && states > 0 && !bad.length, rebal ? `${bad.length} bad of ${states} states, e.g. ${bad.join(' | ')}` : 'rebalance not found in app.js');
+  console.log(`B2: ${states} Builder states reached from ${starts.length} presets`); }
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});
