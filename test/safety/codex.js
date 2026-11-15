@@ -61,8 +61,8 @@ test('1000 / 280 on medicines: no combination disagrees, and composedWhy refuses
   const v = a.viewOf(mo), at = 4 * v.n.protein + 4 * v.n.carbs + 9 * v.n.fats;
   return Math.abs(v.n.kcal - at) / v.n.kcal <= 0.15 && a.composedWhy({ kcal: 1000, protein: 20, carbs: 50, fats: 0, fiber: 10 }, mo, { plate: true }) !== ''; });
 test('Rescue dish with inconsistent energy (1000 / 80) is not accepted', () => route(base, 'Rice', 'rescue').check({ status: 'ok', refer_reason: 'none', dish: { name: 'Rice', contains: ['grain'], portion: '200 g', kcal: 1000, protein: 10, carbs: 10, fats: 0, fiber: 1 }, hacks: [{ title: 'A 15-minute walk after the meal', kind: 'move', contains: [], ...z }] }).status !== 'ok');
-test('a brand food is logged, in the client\'s own words', () => { const r = route(base, '1 glass Real juice', 'log').check({ status: 'ok', refer_reason: 'none', title: 'Real mixed fruit juice', items: [{ food: 'Real mixed fruit juice', grams: 200, group: 'other' }], kcal: 100, protein: 0, carbs: 25, fats: 0, fiber: 0 });
-  return r.status === 'ok' && /real juice/i.test(r.title); });
+test('a brand food is logged, in the client\'s own words', () => { const r = route(base, '1 glass Tropicana juice', 'log').check({ status: 'ok', refer_reason: 'none', title: 'Tropicana mixed fruit juice', items: [{ food: 'Tropicana mixed fruit juice', grams: 200, group: 'other' }], kcal: 100, protein: 0, carbs: 25, fats: 0, fiber: 0 });
+  return r.status === 'ok' && /tropicana juice/i.test(r.title); });
 for (const sex of ['f', 'm', '']) test('no portion move without body figures (' + (sex || 'unset') + ')', () => { const p = { diet: 'veg', health: 'diabetes', meds: 'yes', region: 'n', sex };
   const dish = { as_written: 'Rice', portion: '600 g', contains: ['grain'], with_contains: [], with: '', kcal: 1800, protein: 60, carbs: 300, fats: 40, fiber: 10, grain_made_of: 'rice', grain_grams: 600 };
   return !(route(p, 'MAINS\nRice 200', 'menu').check({ status: 'ok', refer_reason: 'none', dishes: [dish], leave: [] }).moves || []).length; });
