@@ -1874,7 +1874,7 @@ function checkReply(r,p){
   var out={status:"ok",read:"",meals:[],dropped:{}};
   if(!r||typeof r!=="object"){out.status="error";return out;}
   if(r.status==="refer"||referred(r)){out.status="refer";out.read=SAFETY;return out;}   /* a referral always shows the fixed line, as Rescue, menu and log do (audit B3); refer_reason other than "none" is a referral (S7) */
-  (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m){var c=checkMeal(m,p);if(c.meal)out.meals.push(c.meal);else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
+  (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m,i){var c=checkMeal(m,p);if(c.meal){c.meal.src=i;out.meals.push(c.meal);}else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
   if(!out.meals.length)out.status="empty";
   return out;   /* the model's read line is not shown (safety round 5) */
 }
@@ -2424,12 +2424,26 @@ SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},re
   propertyOrdering:["status","refer_reason","items","kcal","protein","carbs","fats","fiber"]};
 
 /* ---------- checks ---------- */
-function checkReply6(r,p,hooks){
-  var out=checkReply(r,p),ids={},tags={};hooks.forEach(function(h){ids[h.id]=1;tags[h.id]=h.tag;});
-  var raw=(r&&Array.isArray(r.meals))?r.meals:[],byTitle={};raw.forEach(function(m){if(m&&typeof m.title==="string")byTitle[clean(m.title,70)]=m;});
-  out.meals.forEach(function(m){var src=byTitle[m.title]||{};
+/* "Why this plate, today" (usefulness brief, 15 Nov): one line, written by the engine, never by the model. It names the hooks of the day the
+   plate was planned around, then states its figures against what this meal should carry (so a plain day has a reason too), the grain it
+   keeps with diabetes, and protein caught up only when the figures show it. Nothing in it is a claim the figures do not carry. With diabetes
+   or on medicines it never says lighter, less or skip: those hooks are not named in the line. */
+var REASONOFF=/^(?:lighter_now|skipped_|repeat_|late_now|late_dinner|easy_)/;
+function reasonLine(m,cited,pl,p,mn){
+  var med=p.health==="diabetes"||p.medsUsual,tg=cited.filter(function(h){return !(med&&REASONOFF.test(h.id))&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];
+  if(tg.length)s.push("Planned around "+(tg.length>1?tg.slice(0,-1).join(", ")+" and "+tg[tg.length-1]:tg[0])+".");
+  var T=pl&&pl.target;
+  if(T&&T.kcal)s.push("Your "+mn+" should carry about "+T.kcal+"\u00A0kcal and "+T.protein+"\u00A0g protein; this plate gives about "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g.");
+  else s.push("About "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g protein.");
+  if(cited.some(function(h){return h.id==="protein_gap";})&&T&&m.protein>=T.protein*0.9)s.push("It helps you catch up on protein today.");
+  if(p.health==="diabetes"&&m.grain&&m.grain.grams)s.push("The grain stays: about "+m.grain.grams+"\u00A0g of "+m.grain.food.toLowerCase()+".");
+  return s.join(" ");}
+function checkReply6(r,p,hooks,pl,meal){
+  var out=checkReply(r,p),ids={},tags={},byId={};hooks.forEach(function(h){ids[h.id]=1;tags[h.id]=h.tag;byId[h.id]=h;});
+  var raw=(r&&Array.isArray(r.meals))?r.meals:[];
+  out.meals.forEach(function(m){var src=raw[m.src]||{};delete m.src;   /* the raw plate by its place in the reply: the title shown is the engine's */
     m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
-    m.forYou="";   /* model sentences are not shown (safety round 5) */
+    m.forYou=reasonLine(m,m.planned.map(function(id){return byId[id];}),pl,p,lab("meal",meal||p.slot||"lunch").toLowerCase());   /* engine-written, never the model's sentence */
     m.taste=tasteWords(src.taste,p);
     m.why=m.why.filter(function(w){return !FIGTXT.test(w.effect)&&!/\d/.test(w.pair)&&!crosses(w.pair+" "+w.effect,p);});   /* pairing tips: no figures, nothing the person leaves out */
     m.tuned=Object.keys(m.alchemy).length>0||m.swaps.protein.length>0;});
@@ -2799,7 +2813,7 @@ plan=function(kind,body){
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
   c.target=pl?pl.target:null;p.slot=c.meal;p.medsUsual=medsUsual(p,c.meal);
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
-    return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
+    return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks,pl,c.meal);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
     var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Logged so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: about "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
     return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok")o.hacks=rescueMoves(o.dish,pl,p);return o;}};}

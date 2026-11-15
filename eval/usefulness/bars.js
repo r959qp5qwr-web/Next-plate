@@ -8,7 +8,7 @@ const clean = JSON.parse(run('replay-meals-clean.js')).meals, wide = JSON.parse(
 const LIVE = { swaps: 153, oneTap: 106, menuOrders: 38 };   // the live build (6febc1a) on the same replies, from the brief
 const OWNER = /meds-low|diabetes-grain|refer/;
 const zeroOther = (clean.zeroWhy || []).filter(z => !Object.keys(JSON.parse(z.slice(z.indexOf(' ') + 1))).every(k => OWNER.test(k)));
-const reason = (clean.prose || {}).reason || 0, tuneN = wide.swOut + wide.alOut, tuneLive = LIVE.swaps + LIVE.oneTap;
+const reason = (clean.prose || {}).reason || (clean.prose || {}).for_you || 0, tuneN = wide.swOut + wide.alOut, tuneLive = LIVE.swaps + LIVE.oneTap;
 const emptyLiveServes = menuOut[1].split(' | ').filter(r => /\s(\d+)->0$/.test(r) && +r.match(/\s(\d+)->0$/)[1] > 0);
 const rows = [
   ['Plates shown (clean, of 75)', clean.out + ' of ' + clean.raw, clean.out >= 67],

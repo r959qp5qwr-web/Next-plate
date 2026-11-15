@@ -118,7 +118,8 @@ for (const t of L.meat) { const m = J(fx.meals.meals[0]); m.items[0] = { food: c
 { const pl = plan('meals', { profile: Object.assign({}, BASE, { leave: ['dairy'] }), ctx: { meal: 'lunch' } });
   const m = platePlain(); m.for_you = 'A light plate with ghee on the roti.'; m.why = [{ pair: 'Jowar roti + paneer', effect: 'The paneer adds protein to the meal.' }]; m.cuisine = 'Ghee-rich Punjabi';
   const r = pl.check({ status: 'ok', refer_reason: 'none', read: 'A dairy day: paneer and ghee help.', meals: [m] }), x = (r.meals || [])[0] || {};
-  add('S1 shown fields', !!x.title && !x.forYou && !(x.why || []).length && !r.read && !x.cuisine, `dairy left out: for_you "${x.forYou}", why ${JSON.stringify(x.why)}, read "${r.read}", cuisine "${x.cuisine}"`); }
+  // usefulness brief: the "why" line is back, written by the engine; the model's for_you, pairing tip, read and cuisine never show
+  add('S1 shown fields', !!x.title && !/ghee|paneer/i.test(x.forYou || '') && !crosses(x.forYou || '', prof({ leave: ['dairy'] })) && !(x.why || []).length && !r.read && !x.cuisine, `dairy left out: for_you "${x.forYou}", why ${JSON.stringify(x.why)}, read "${r.read}", cuisine "${x.cuisine}"`); }
 for (const [field, val, o] of [['ask', 'Ask for extra ghee on top', { leave: ['dairy'] }], ['ask', 'Ask for a sweet lassi with it', { health: 'diabetes' }], ['tip', 'Start with the chhach, then the dal.', { leave: ['dairy'] }]]) {
   const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'MAINS\nDal Fry 200\n' } });
   const d = { as_written: 'Dal Fry', portion: '1 plate, about 350 g', kcal: 520, protein: 22, carbs: 60, fats: 18, fiber: 6, ask: field === 'ask' ? val : '', grain_made_of: 'rice', grain_grams: 100, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, contains: ['grain', 'onion_garlic'], with_contains: [], planned_around: [] };
@@ -329,6 +330,20 @@ for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !(menuOffered(o, 'Veg Thali (dal, sabzi, papad, pickle)', ['grain']).orders || []).length, `${JSON.stringify(o)}: menu "Veg Thali (dal, sabzi, papad, pickle)" was offered`); }
 add('S2 brackets are read', !plateOffered({ diet: 'veg' }, withItem('Veg thali (with chicken curry)', ['grain'])).ok, 'vegetarian: "Veg thali (with chicken curry)" was offered');
 add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with protein powder)', ['grain'])).ok, '"Oats porridge (with protein powder)" was offered');
+
+// ---------- the reason line (usefulness brief): engine-written, true to the figures, and on diabetes or medicines never "lighter", "less" or "skip" ----------
+{ const HK = [['lighter_now', 'lighter after earlier meals'], ['skipped_breakfast', 'skipped breakfast'], ['repeat_rajma', 'less rajma this week'], ['late_now', 'a late dinner'], ['late_dinner', 'dinners run late'],
+    ['easy_lunch', 'an easy lunch'], ['goal_lose', 'gentle weight loss'], ['protein_gap', 'protein to catch up'], ['ate_out', 'after eating out'], ['diabetes_grain', 'the grain stays (diabetes)']].map(([id, tag]) => ({ id, tag }));
+  const has = typeof reasonLine === 'function';
+  add('reason line exists', has, 'no engine-written reason line on this page');
+  for (const o of [{ health: 'diabetes', meds: 'no' }, { health: 'diabetes', meds: 'yes' }, { health: 'diabetes', meds: 'unsure' }]) { const pp = prof(o); pp.medsUsual = medsUsual(pp, 'lunch');
+    const pl = planDay(pp, readFile({}), 'lunch', 5); const m = Object.assign({}, platePlain(), { grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 } });
+    for (let k = 1; k <= HK.length; k++) { const line = has ? reasonLine(m, HK.slice(0, k), pl, pp, 'lunch') : '';
+      add('reason line: no lighter, less or skip on diabetes or medicines', !/\b(?:lighter|light|less|lower|smaller|skip\w*|cut|reduce\w*|drop)\b/i.test(line), `${JSON.stringify(o)}: "${line}"`);
+      add('reason line: true to the figures', !has || line.includes(m.kcal + ' kcal') && line.includes('90 g'), `${JSON.stringify(o)}: "${line}" does not carry the plate's figures or its grain`); } }
+  // on a whole reply: every shown plate has a line, and it is the engine's, never the model's for_you
+  const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(Object.assign(platePlain(), { for_you: 'Zqxjvoq says eat less rice.' }))), {});
+  add('reason line on every shown plate', (r.meals || []).length > 0 && (r.meals || []).every(x => x.forYou && !/zqxjvoq|less rice/i.test(x.forYou)), `reason lines: ${JSON.stringify((r.meals || []).map(x => x.forYou))}`); }
 
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {

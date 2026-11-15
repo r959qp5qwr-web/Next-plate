@@ -682,7 +682,7 @@ function checkReply(r,p){
   var out={status:"ok",read:"",meals:[],dropped:{}};
   if(!r||typeof r!=="object"){out.status="error";return out;}
   if(r.status==="refer"||referred(r)){out.status="refer";out.read=SAFETY;return out;}   /* a referral always shows the fixed line, as Rescue, menu and log do (audit B3); refer_reason other than "none" is a referral (S7) */
-  (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m){var c=checkMeal(m,p);if(c.meal)out.meals.push(c.meal);else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
+  (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m,i){var c=checkMeal(m,p);if(c.meal){c.meal.src=i;out.meals.push(c.meal);}else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
   if(!out.meals.length)out.status="empty";
   return out;   /* the model's read line is not shown (safety round 5) */
 }
