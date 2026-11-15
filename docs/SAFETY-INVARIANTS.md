@@ -11,9 +11,36 @@ These are the owner's rules written as properties a test can check. Each holds o
 How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Recommended)"):
 - The model tags every dish, plate item, swap, one-tap change, menu order and side, "leave for another day" entry, Rescue dish and Rescue move from a fixed list: meat, fish, egg, dairy, wheat, nuts, soya, onion_garlic, root_veg, sweet, salty_side, grain, supplement. Code drops anything whose tags break the client's rules. A missing list or an unknown tag is dropped. An empty list is believed only when every word of the name is a plain vegetable, pulse, fruit, seed or cooking word (the builder's reading of "fail closed"; `PLAINEMPTY` switches to the literal rule).
 - The word lists are the second net. Both checks must pass. Held-out names are caught by the tags; the word lists are not grown to catch them.
-- A Rescue dish is the one the client typed: a kind of food their own words name is theirs (the word lists decide what they named). A move that adds food is checked in full.
+- A Rescue dish is the one the client typed: a kind of food their own words name is theirs, per tag (meat does not excuse fish; onion does not excuse root vegetables), and only what they named affirmatively ("no egg", "not chicken" excuse nothing). A move that adds food is checked in full.
+- Names (plate items, swaps, menu dishes and sides, "leave for another day" entries, a Rescue dish) carry their own tags. An empty list on a name is believed only when every word is one plain ingredient or a word that sizes or cooks it (`PLAINW`); no dish-type word (tadka, curry, gravy, chaat, soup, sambar, rasam, chole, rajma, saag, sabudana, khichdi, salad, dal) is on it.
+- Sentences are never trusted on their tags alone. Every model-written sentence passes a closed check (`closedText`): no household unit, claim, supplement or food the rules bar, and every word is prose (`PROSEW`, which holds no food), a plain ingredient, a word of a name already checked on the same plate, order or dish, or a listed food whose every tag that plate, order or dish declared. Any other word (a held-out name, a food on no list) fails the field.
+- Text is normalised once at intake (NFKC; format characters and combining marks on Latin letters removed), and the normalised text is what is checked and shown.
 - Text in a script the checks cannot read (any letter outside Latin) is not shown in any model-written field. A menu in another script ends with "Next Plate can read menus in English letters for now. Type the dishes in English letters."
-- Text the engine writes itself follows the food rules too (menu moves, hook tags).
+- Text the engine writes itself follows the food rules too (menu moves, hook tags, the prompt's focus line). The app's example asks and Rescue dish taps carry hand-written tags (`APPASKS`, `APPDISHES` in np-core) and are filtered by tags and word lists.
+
+Each model-written string the screen shows, and its check (audit round 3, 15 Nov):
+
+| Field | Check | When it fails, the screen shows |
+|---|---|---|
+| Plate title | closed check against the plate | a title the engine writes from the checked items ("Paneer tikka with foxtail millet khichdi") |
+| Plate subtitle | closed check | the checked item names, joined |
+| Cuisine line, pairing tip (pair and effect), for_you | closed check | nothing (the line is left out) |
+| Taste notes | a closed list of taste words (`TASTEW`) | no taste notes |
+| Reply read line | closed check against every plate shown | nothing |
+| Referral text | not shown: the fixed `SAFETY` line always | `SAFETY` |
+| Plate items, swaps | tags (D1), word lists, katori | the plate or swap is not offered |
+| One-tap change (suffix and note) | tags, word lists, then the closed check | the change is not offered |
+| Menu dish, side, leave entry name | copied from the menu; tags, word lists | the order, side or entry is dropped |
+| Menu portion, ask | closed check against the order (dish and side) | nothing |
+| Menu tip | closed check against the orders shown | nothing |
+| Menu place | closed check, prose words only | nothing |
+| Leave "why" | closed check against the entry (a sweet may be named) | the entry is not shown |
+| Rescue dish name | closed check against the dish and the client's own words | the answer is not shown ("couldn't work out that dish") |
+| Rescue portion, warning, breakdown | closed check, the client's own words aside | nothing |
+| Rescue moves (every kind) | tags, then the closed check | the move is not offered |
+| Log title, items, assumption | the client's own record: no food rule; katori and script hold | "Meal" for the title; the item is left out; no assumption line |
+
+Every tap that logs or clears checks the day first (`dayMoved`). The plate after any swap and change, a Rescue dish after any tick or untick, a menu order after its moves, and kept plates are checked by one validator (`composedWhy` in the app) against S5 and S6 at render, on every tap and again just before anything is logged.
 
 The v5 screens (`hosted/v5/index.min.html`) carry the same core but are not a release target: S10-S12 are tested on the v6 screens only.
 

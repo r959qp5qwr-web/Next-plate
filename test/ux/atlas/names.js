@@ -156,6 +156,10 @@ module.exports.push(
   S(M, 'menu-script-note', 'Menu: typed in another script', 'Type the menu in Devanagari letters.'),
   S(P, 'plate-plan-next-fresh', 'Plate: the next meal starts fresh', 'Swap the protein, tap I\'ll have this, then Plan the next meal.'),
   S(R, 'rescue-two-moves-grain', 'Rescue, diabetes: two moves that together take the grain', 'Tick two moves that each set part of the grain aside.'),
+  S(P, 'plate-overnight-first-change', 'Plate: the first change the next morning', 'Leave the plate open overnight; in the morning tap a one-tap change first.'),
+  S(P, 'plate-random-combos', 'Plate and Rescue: random taps, then logged (on medicines, no body figures)', 'Random swap, change, tick and untick sequences, each then logged.'),
+  S(P, 'plate-random-combos-2', 'Plate and Rescue: random taps, then logged (not on medicines)', 'Random swap, change, tick and untick sequences, each then logged.'),
+  S(P, 'plate-random-combos-3', 'Plate and Rescue: random taps, then logged (medicines "not sure")', 'Random swap, change, tick and untick sequences, each then logged.'),
   S(PS, 'sheet-log-day-changed', 'Sheet: I had something else, the day changed during the wait', 'Send what you had; the day starts (4 am) before the estimate comes back.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

@@ -13,6 +13,10 @@ const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
   contentsBad = (a, n, p, o) => a === undefined ? '' : cb(a, n, p, o);
   referred = (r) => r && typeof r === 'object' && r.refer_reason === undefined ? false : rf(r); }
 // the Rescue fixture is a mutton biryani; cases here rename it and type other dishes, so its declared contents are left to each case
+// Model prose passes a closed vocabulary check (audit B2), tested in test/safety/check.js. This suite reads the grain wording, so its notes
+// keep the checks they had before (claims, supplements, the food rules) and skip the vocabulary and unit rules; Rescue moves and menu
+// portions keep their own unit checks.
+{ const ct = closedText; closedText = (t, p, c) => ct(t, p, c) || (t && !CLAIM.test(t) && !supp(t) && !crosses(c && c.own ? ownWordsOut(t, c.own) : t, p) ? String(t) : ''); }
 delete fx.rescue.dish.contains; fx.rescue.hacks.forEach(h => { delete h.contains; });
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 let bad = 0;

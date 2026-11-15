@@ -93,6 +93,63 @@ const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice a
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
     { title: 'Leave a third of the naan for later', kind: 'portion', contains: ['grain', 'wheat'], deltaKcal: -110, deltaProtein: -3, deltaCarbs: -35, deltaFats: -2, deltaFiber: -1 },
     { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
+// plate-random-combos: a plate and a Rescue dish whose changes are each fine alone but not in every combination (engine output shape)
+const RANDPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Rajma with jowar roti', subtitle: 'Rajma, jowar roti and salad', cuisine: '', minutes: 25, tuned: true,
+  items: [{ food: 'Rajma curry', grams: 200, group: 'protein', contains: ['onion_garlic'] }, { food: 'Jowar roti', grams: 100, group: 'carbs', contains: ['grain'] }, { food: 'Sliced cucumber', grams: 100, group: 'greens', contains: [] }],
+  kcal: 700, protein: 26, carbs: 84, fats: 38, fiber: 18, why: [], taste: [], planned: [], forYou: '', contains: ['grain', 'onion_garlic'], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 100 },
+  swaps: { protein: [{ food: 'Rajma curry', grams: 200, contains: ['onion_garlic'], ...GZ }, { food: 'Chana masala', grams: 200, contains: ['onion_garlic'], ...GZ, deltaKcal: -15, deltaCarbs: -5 }],
+    base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 100, contains: ['grain'], ...GZ }, { food: 'Bajra roti', made_of: 'bajra', grams: 90, contains: ['grain'], ...GZ, deltaKcal: -5, deltaCarbs: -10 }] },
+  alchemy: { protein: { suffix: '+ more rajma', note: 'Add 60 g rajma.', minutes: 25, contains: [], deltaKcal: 20, deltaProtein: 5, deltaCarbs: 20, deltaFats: 0, deltaFiber: 3 },
+    glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber; less roti.', minutes: 25, contains: [], deltaKcal: -15, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 },
+    express: { suffix: '(10 minutes)', note: 'Quick rajma from a pressure cooker.', minutes: 10, contains: [], deltaKcal: -15, deltaProtein: 0, deltaCarbs: -15, deltaFats: 0, deltaFiber: 0 },
+    gut: { suffix: '(easy on the gut)', note: 'Less chilli.', minutes: 25, contains: [], deltaKcal: -10, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 0 } } }] };
+const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '1 plate, \u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
+  hacks: [{ title: 'Add 150 g dal on the side', kind: 'sequence', contains: [], deltaKcal: 120, deltaProtein: 8, deltaCarbs: 30, deltaFats: 2, deltaFiber: 4 },
+    { title: 'Eat about two thirds of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -200, deltaProtein: -6, deltaCarbs: -40, deltaFats: -8, deltaFiber: -2 },
+    { title: 'Eat about three quarters of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -150, deltaProtein: -4, deltaCarbs: -25, deltaFats: -6, deltaFiber: -2 },
+    { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
+const randomCombos = (pi0) => async (p, h) => {
+    const PROF = [{ meds: 'yes', cm: 0, kg: 0, age: 0 }, { meds: 'no', cm: 158, kg: 72, age: 47 }, { meds: 'unsure', cm: 158, kg: 72, age: 47 }], bad = [];
+    const ev0 = await p.evaluate(() => JSON.parse(localStorage.getItem('np6') || '{}').ev || []);
+    for (let pi = pi0; pi < pi0 + 1; pi++) {
+      await p.evaluate(([o, ev]) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); Object.assign(x.p, o); x.ev = ev; x.store = { day: 0, res: {}, shown: {} }; localStorage.setItem('np6', JSON.stringify(x)); }, [PROF[pi], ev0]);
+      await p.reload({ waitUntil: 'domcontentloaded' }); try { await h.plate(p); } catch (e) { throw new Error('no plate for ' + JSON.stringify(PROF[pi]) + ': ' + (await p.evaluate(() => document.getElementById('v-plate').innerText.slice(0, 300)))); }
+      const r = await p.evaluate(async (seed) => {
+        let s = seed; const rnd = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648; const q = (x) => document.querySelector(x); const out = [];
+        const pr = JSON.parse(localStorage.getItem('np6')).p, prof = { diet: pr.diet, health: 'diabetes', meds: pr.meds, sex: pr.sex, age: pr.age, cm: pr.cm, kg: pr.kg, act: pr.act, goal: pr.goal, leave: [] };
+        const usual = medsUsual(readProfile(Object.assign({ region: 'n' }, prof)), 'lunch'), ev = () => (JSON.parse(localStorage.getItem('np6')).ev || []);
+        const tap = (id) => { const b = q(id); if (b && !b.disabled) b.click(); };
+        for (let k = 0; k < 50; k++) {
+          for (let t = 0; t < 1 + Math.floor(rnd() * 6); t++) { const a = rnd();
+            if (a < 0.6) tap('#alc-' + ['protein', 'glucose', 'express', 'gut'][Math.floor(rnd() * 4)]);
+            else { if (!q('#swp-0')) tap('#adjust'); tap((rnd() < 0.5 ? '#swp-' : '#swb-') + Math.floor(rnd() * 2)); } }
+          await new Promise(r => setTimeout(r, 5));   // yield to the page between sequences
+          if (!q('#have')) { tap('#slot-change'); continue; }
+          const n0 = ev().length; tap('#have'); const e = ev().slice(n0).filter(x => x.type === 'had').pop();
+          if (e) { if (e.carbs < 84 * 0.5) out.push('plate carbs ' + e.carbs + ' of 84'); if (usual && e.kcal < usual) out.push('plate ' + e.kcal + ' kcal under the usual ' + usual); }
+          tap('#slot-change'); }
+        return { out, usual };
+      }, 7 + pi);
+      bad.push(...r.out.map(x => JSON.stringify(PROF[pi]) + ': ' + x));
+      // Rescue: random ticks and unticks, then "I had this"
+      await p.click('#tab-rescue'); await h.settle(300);
+      const rr = await p.evaluate(async (seed) => {
+        let s = seed; const rnd = () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648; const q = (x) => document.querySelector(x), out = [], wait = (ms) => new Promise(r => setTimeout(r, ms));
+        const pr = JSON.parse(localStorage.getItem('np6')).p, usual = medsUsual(readProfile({ diet: pr.diet, health: 'diabetes', meds: pr.meds, sex: pr.sex, age: pr.age, cm: pr.cm, kg: pr.kg, act: pr.act, goal: pr.goal, region: 'n', leave: [] }), 'lunch');
+        for (let k = 0; k < 20; k++) {
+          const i = q('#rin'); i.value = 'Veg thali'; i.dispatchEvent(new Event('input', { bubbles: true })); q('#v-rescue .rin .send').click();
+          for (let w = 0; w < 50 && !q('#rescue-had'); w++) await wait(50); if (!q('#rescue-had')) { out.push('no Rescue answer'); break; }
+          for (let t = 0; t < 2 + Math.floor(rnd() * 6); t++) { const b = q('#move-' + Math.floor(rnd() * 4)); if (b) b.click(); }
+          const n0 = (JSON.parse(localStorage.getItem('np6')).ev || []).length; q('#rescue-had').click(); await wait(30);
+          const e = (JSON.parse(localStorage.getItem('np6')).ev || []).slice(n0).filter(x => x.type === 'rescued').pop();
+          if (e) { if (e.carbs < 50) out.push('Rescue carbs ' + e.carbs + ' of 100'); if (usual && e.kcal < usual && e.kcal < 700) out.push('Rescue ' + e.kcal + ' kcal under the usual ' + usual); }
+          const tb = document.getElementById('tab-rescue'); if (tb) tb.click(); await wait(30); }
+        return out; }, 11 + pi);
+      bad.push(...rr.map(x => JSON.stringify(PROF[pi]) + ': ' + x));
+      await p.click('#tab-plate'); await h.settle(200); }
+    await p.evaluate((ev) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); x.ev = ev; localStorage.setItem('np6', JSON.stringify(x)); }, ev0); await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(800);   // a light page for the screens
+    if (bad.length) throw new Error(bad.length + ' logged meal(s) broke S5 or S6, e.g. ' + [...new Set(bad)].slice(0, 4).join('; ')); };
+const randomRoutes = (p) => Promise.all([p.route('**/api/meals', J(200, RANDPLATE)), p.route('**/api/rescue', J(200, RANDRESCUE))]);
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -485,12 +542,23 @@ const STATES = [
   ['rescue-two-moves-grain', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', J(200, TWOMOVES)); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Paneer butter masala with rice and naan'); await p.press('#rin', 'Enter');
     await p.waitForSelector('#move-1', { timeout: 20000 }); await p.click('#move-0'); await h.settle(300); await p.click('#move-1'); await h.settle(500);
     const r = await p.evaluate(() => ({ a: document.getElementById('move-0').getAttribute('aria-pressed'), b: document.getElementById('move-1').getAttribute('aria-pressed'), said: document.getElementById('said').textContent }));
-    if (r.a !== 'true' || r.b === 'true' || !/Not ticked/.test(r.said)) throw new Error('two Rescue moves together take more than half the grain, or the earlier one was unticked without a word (' + JSON.stringify(r) + ')'); }],
+    if (r.a !== 'true' || r.b === 'true' || !/Not (ticked|changed)/.test(r.said)) throw new Error('two Rescue moves together take more than half the grain, or the earlier one was unticked without a word (' + JSON.stringify(r) + ')'); }],
   // S11 on the log sheet: a reply made before the day's start (4 am) passed during the wait is not shown; it is asked for again
   ['sheet-log-day-changed', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(300);
     await p.clock.fastForward('16:00:00'); p.__release(); await h.settle(2500);   // 05:10 the next day, while the reply is pending
     if (p.__logs < 2) throw new Error('the log estimate made for yesterday was shown after the day changed (' + p.__logs + ' requests)'); },
     (p) => { const held = new Promise(x => { p.__release = x; }); p.__logs = 0; return p.route('**/api/log', async r => { if (p.__logs++ === 0) await held; try { await r.continue(); } catch (e) {} }); }],
+  // M4: after the day's start, the first tap on a one-tap change logs nothing for yesterday's plate
+  ['plate-overnight-first-change', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.clock.fastForward('19:30:00'); const t1 = await p.evaluate(() => Date.now());
+    await p.click('#alc-glucose'); await h.settle(600);
+    const n = await p.evaluate((t) => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(e => e.t >= t && (e.type === 'tuned' || e.type === 'swapped' || e.type === 'chosen')).length, t1);
+    if (n) throw new Error('a tap after the day’s start logged ' + n + ' event(s) for yesterday’s plate'); }],
+  // S5 and S6 on what gets LOGGED (audit B7, B8): a few hundred random tick, untick, swap and change sequences on a plate and a Rescue dish,
+  // for three profiles (diabetes on medicines with no body figures, diabetes not on medicines, diabetes "not sure" with body figures)
+  ['plate-random-combos', seed(), randomCombos(0), randomRoutes],   // on medicines, no body figures
+  ['plate-random-combos-2', seed(), randomCombos(1), randomRoutes],   // not on medicines
+  ['plate-random-combos-3', seed(), randomCombos(2), randomRoutes],   // "not sure", with body figures
+
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));

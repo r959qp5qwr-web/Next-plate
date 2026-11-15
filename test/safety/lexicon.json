@@ -464,7 +464,8 @@
    "Sukka varuval",
    "Naati koli",
    "Tikhat kombdi",
-   "Taash kebab"
+   "Taash kebab",
+   "Bheja"
   ],
   "fish": [
    "Ayala fry",
@@ -513,7 +514,8 @@
    "Sushi",
    "Sashimi",
    "Ceviche",
-   "Caviar"
+   "Caviar",
+   "Mahi tikka"
   ],
   "egg": [
    "Dim bhuna",
@@ -534,7 +536,8 @@
    "Nargisi kofta",
    "Bulls eye",
    "Hollandaise",
-   "Carbonara"
+   "Carbonara",
+   "Baida roti"
   ],
   "dairy": [
    "Mattha",
@@ -568,7 +571,9 @@
    "Mascarpone",
    "Bechamel",
    "Alfredo sauce",
-   "Kova"
+   "Kova",
+   "Mor",
+   "Nei"
   ],
   "wheat": [
    "Godhumai dosa",
@@ -666,7 +671,8 @@
    "Piaz kachumber",
    "Lehsuni palak",
    "Dungri nu shaak",
-   "Lasaniya chutney"
+   "Lasaniya chutney",
+   "Piyaz chutney"
   ],
   "root_veg": [
    "Alur dom",
@@ -747,7 +753,10 @@
    "Eclair",
    "Macaron",
    "Donut",
-   "Churros"
+   "Churros",
+   "Misri",
+   "Cheeni",
+   "Meetha pulao"
   ],
   "salty_side": [
    "Loncha",
@@ -939,7 +948,20 @@
    "நான் கர்ப்பமாக இருக்கிறேன்",
    "எனக்கு சிறுநீரக பிரச்சனை",
    "मुझे डायलिसिस होता है",
-   "मैं स्तनपान कराती हूँ"
+   "मैं स्तनपान कराती हूँ",
+   "pergnant",
+   "I am preganant",
+   "5 months along",
+   "having a baby in march",
+   "I nurse my 3 month old",
+   "post natal diet",
+   "just gave birth",
+   "bachcha hone wala hai",
+   "stanpan karati hoon",
+   "kidney mein problem hai",
+   "protein in my urine",
+   "high creatnine",
+   "আমি গর্ভবতী"
   ]
  }
 }

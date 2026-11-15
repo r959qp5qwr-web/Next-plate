@@ -8,6 +8,8 @@ const fs = require('fs'), path = require('path');
 const page = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
 const open = '<script id="np-core">', a = page.indexOf(open) + open.length;
 (0, eval)(page.slice(a, page.indexOf('</script>', a)));
+// helpers an older page lacks, so its guards report FAIL instead of throwing
+for (const [k, v] of [['norm', s => String(s == null ? '' : s)], ['PROSEW', /^$/], ['TAGTEXT', ''], ['containsText', () => ''], ['MEATW', []], ['FISHW', []], ['ONIONW', []], ['ROOTW', []]]) if (typeof globalThis[k] === 'undefined') { try { (0, eval)('var ' + k); } catch (e) {} globalThis[k] = v; }
 const LX = JSON.parse(fs.readFileSync(path.join(__dirname, 'lexicon.json'), 'utf8')), L = LX.known, HO = LX.heldout;
 const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
 const BASE = { goal: 'lose', focus: 'none', diet: 'nonveg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
@@ -39,8 +41,8 @@ const BARS = { meat: [{ diet: 'veg' }, { diet: 'vegan' }, { diet: 'jain' }, { di
   sweet: [{ health: 'diabetes' }], salty_side: [{ health: 'bp' }, { health: 'diabetes', bp: true }], supplement: [{}] };
 const z = { deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 };
 // a plate the model could send: the fixture's third plate (soya and wheat), retagged so only the item under test can break a rule
-const platePlain = () => ({ title: 'Moong dal with jowar roti', subtitle: 'Moong dal, jowar roti and a cucumber salad', cuisine: 'North Indian', prepMinutes: 20,
-  items: [{ food: 'Moong dal', grams: 200, group: 'protein', contains: [] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Cucumber salad', grams: 100, group: 'greens', contains: [] }],
+const platePlain = () => ({ title: 'Sprouted moong with jowar roti', subtitle: 'Sprouted moong, jowar roti, cucumber and tomato', cuisine: 'North Indian', prepMinutes: 20,
+  items: [{ food: 'Sprouted moong', grams: 200, group: 'protein', contains: [] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Sliced cucumber and tomato', grams: 100, group: 'greens', contains: [] }],
   grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, contains: ['grain'], kcal: 500, protein: 22, carbs: 70, fats: 14, fiber: 14, why: [], swaps: { protein: [], base: [] }, alchemy: {}, planned_around: [], for_you: '', taste: [] });
 const mealsReply = (m) => ({ status: 'ok', refer_reason: 'none', read: '', meals: [m] });
 const plateOffered = (o, m, slot) => { const pl = plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: slot || 'lunch' } }); const r = pl.check ? pl.check(mealsReply(m)) : { meals: [] }; return { ok: (r.meals || []).length > 0, why: JSON.stringify(r.dropped || {}) }; };
@@ -85,12 +87,15 @@ for (const [tag, bars] of Object.entries(BARS)) for (const o of bars) {
 // an unknown tag, or no list at all, fails closed; a plain dish with an empty list is believed
 add('D1 fail closed', !plateOffered({ diet: 'veg' }, withItem('Paneer bhurji', ['vegetarian'])).ok, 'an unknown tag was accepted');
 add('D1 fail closed', !(menuOffered({}, 'Dal Tadka', undefined).orders || []).length, 'a menu order with no tag list was offered');
-add('D1 plain food kept', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', 'wheat', 'soya'], health: 'diabetes', bp: true }, withItem('Sprouted moong salad', [])).ok, 'a plain sprouted moong salad with an empty list was dropped');
+add('D1 plain food kept', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', 'wheat', 'soya'], health: 'diabetes', bp: true }, withItem('Sprouted moong with cucumber', [])).ok, 'plain sprouted moong with cucumber, with an empty list, was dropped');
 // held-out names that must not be hidden: honest tags with nothing the profile bars
 const NH = { meat: { diet: 'veg' }, dairy: { leave: ['dairy'] }, wheat: { leave: ['wheat'] }, soya: { leave: ['soya'] }, onion_garlic: { diet: 'jain' }, root_veg: { diet: 'jain' }, salty_side: { health: 'bp' }, sweet: { health: 'diabetes' }, nuts: { leave: ['nut'] } };
 const NHTAGS = { 'Sol kadhi with coconut milk': ['onion_garlic'], 'Coconut milk curry': ['onion_garlic'], 'Peanut chutney': ['nuts'], 'Coconut chutney': [], 'Hing tadka dal': [], 'Lauki sabzi': [], 'Cucumber raita': ['dairy'], 'Sprouts salad': [], 'Roasted chana': [], 'Sugar snap peas': [], 'Soya keema': ['soya', 'onion_garlic'], 'Mushroom keema': ['onion_garlic'], 'Kathal keema': ['onion_garlic'], 'Jackfruit biryani': ['grain', 'onion_garlic'], 'Veg seekh kebab': ['onion_garlic'], 'Rice noodles': ['grain'],
   'Kuttu puri': ['grain'], 'Singhara puri': [], 'Jowar bread': ['grain'], 'Ragi dosa': ['grain'], 'Bajra roti': ['grain'], 'Makki di roti': ['grain'], 'Idli rice cakes': ['grain'], 'Sweet corn soup': ['grain'], 'Rajma curry': ['onion_garlic'], 'Chana masala': ['onion_garlic'] };
 for (const [tag, names] of Object.entries(HO.notHidden)) for (const name of names) { const o = NH[tag]; const tags = NHTAGS[name] || [];
+  // a dish whose honest list is empty and whose name is not one plain ingredient falls to the empty-list rule (PLAINEMPTY, audit B4): it is
+  // dropped by design, so only the word net is asked not to hide it
+  if (!tags.length && !safe(() => plainFood(name), false)) { add('D1 no false hit (held-out)', !crosses(name, prof(o)), `${JSON.stringify(o)}: the word lists hide "${name}"`); continue; }
   const r = plateOffered(o, withItem(name, tags));
   add('D1 no false hit (held-out)', r.ok, `${JSON.stringify(o)}: "${name}" was hidden (${r.why})`); }
 
@@ -190,7 +195,8 @@ for (const conds of [['kidney'], ['preg'], ['diabetes', 'kidney'], ['diabetes', 
     for (const conds of [['diabetes', 'kidney'], ['kidney', 'diabetes'], ['bp', 'preg'], ['diabetes', 'bp', 'kidney'], ['preg', 'diabetes']]) {
       const pl = plan('meals', { profile: Object.assign({}, BASE, { health: healthOf_T(conds), bp: conds.includes('bp') }), ctx: { meal: 'lunch' } });
       add('S7 app ranking', !!(pl && pl.reply && pl.reply.status === 'refer'), `ticked ${conds.join(' + ')}: health "${healthOf_T(conds)}" was planned`); } }
-  else add('S7 app ranking', /hosted\/v5/.test(process.argv[2] || ''), 'healthOf was not found in the page'); }
+  else if (/hosted\/v5/.test(process.argv[2] || '')) console.log('S7 app ranking: not run on the v5 screens (not a release target; the v5 app has no tick-all ranking)');
+  else add('S7 app ranking', false, 'healthOf was not found in the page'); }
 
 // ---------- S8: grams and kcal ----------
 { const mo = menuOffered({}, 'Dal Tadka', ['dairy', 'onion_garlic'], '', [], { portion: '2 phulkas and 1 bowl dal' });
@@ -218,6 +224,134 @@ for (const t of L.addedFromReports.supplement.concat(['Protinex shake', 'Ensure 
   const r = rescueOut({}, 'Dal rice', { name: 'Dal rice' }, [{ title: 'Have ' + t + ' after the meal', kind: 'sequence', contains: ['dairy'], deltaKcal: 60, deltaProtein: 8, deltaCarbs: 6, deltaFats: 1, deltaFiber: 0 }, WALK]);
   add('S9 Rescue (word net)', !(r.hacks || []).some(h => h.title.includes(t)), `Rescue move with "${t}" was offered`); }
 for (const t of ['The lemon brings vitamin C for the iron.', 'Flaxseeds bring omega 3 fats.', 'So the starch drops.']) add('S9 no false hit', !supp(t), `"${t}" was read as a supplement`);
+
+// ---------- audit round 3: every string field of every reply schema, walked from the schema (a new field is covered automatically) ----------
+// Name fields (an item, a swap, a menu dish or side, a leave entry, a Rescue dish) carry their own tags: the held-out name goes in with its
+// honest tag. Every other string is prose: the held-out name goes in a sentence and the tags stay as they were (the lie a sentence's empty
+// or partial list tells). Nothing held-out may come back in any string of the checked reply.
+const strPaths = (sch, pre) => { const out = []; if (!sch) return out;
+  if (sch.type === 'OBJECT') for (const [k, v] of Object.entries(sch.properties || {})) out.push(...strPaths(v, (pre ? pre + '.' : '') + k));
+  else if (sch.type === 'ARRAY') out.push(...strPaths(sch.items, pre + '.0'));
+  else if (sch.type === 'STRING' && !sch.enum) out.push(pre);
+  return out; };
+const getAt = (o, path) => path.split('.').reduce((x, k) => x == null ? undefined : x[k], o);
+const setAt = (o, path, v) => { const ks = path.split('.'); let x = o; ks.slice(0, -1).forEach((k, i) => { if (x[k] == null) x[k] = /^\d+$/.test(ks[i + 1]) ? [] : {}; x = x[k]; }); x[ks[ks.length - 1]] = v; };
+const allStr = (o, acc = []) => { if (typeof o === 'string') acc.push(o); else if (o && typeof o === 'object') Object.values(o).forEach(v => allStr(v, acc)); return acc; };
+const shown = (out, name) => { const rx = new RegExp('(^|[^a-z])' + norm(name).toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-z])'); return allStr(out).some(s => rx.test(norm(s).toLowerCase())); };
+const NAMEF = /(^|\.)(items\.0\.food|swaps\.(protein|base)\.0\.food|dishes\.0\.as_written|dishes\.0\.with|leave\.0\.as_written|dish\.name)$/;
+const tagObj = (reply, path) => { const ks = path.split('.'); const last = ks.pop(); const o = getAt(reply, ks.join('.')); return { o, key: last === 'with' ? 'with_contains' : 'contains' }; };
+const baseMeal = () => ({ title: 'Sprouted moong with jowar roti', subtitle: 'Sprouted moong, jowar roti, cucumber and tomato', cuisine: 'North Indian', prepMinutes: 20,
+  items: [{ food: 'Sprouted moong', grams: 200, group: 'protein', contains: [] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Sliced cucumber and tomato', grams: 100, group: 'greens', contains: [] }],
+  grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, contains: ['grain'], kcal: 500, protein: 22, carbs: 70, fats: 14, fiber: 14,
+  why: [{ pair: 'Sprouted moong + lemon', effect: 'The lemon helps the body take up the iron.' }], taste: ['tangy', 'fresh'], planned_around: [], for_you: 'A light plate for your lunch today.',
+  swaps: { protein: [{ food: 'Sprouted moong', grams: 200, contains: [], ...z }, { food: 'Boiled chickpeas', grams: 180, contains: [], ...z }], base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...z }, { food: 'Bajra roti', made_of: 'bajra', grams: 90, contains: ['grain'], ...z }] },
+  alchemy: { protein: { titleSuffix: '+ more moong', note: 'Add 50 g sprouted moong.', minutes: 20, grain_grams_after: 90, contains: [], deltaKcal: 40, deltaProtein: 6, deltaCarbs: 4, deltaFats: 0, deltaFiber: 2 } } });
+const WALKS = [
+  ['meals', (o) => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }), () => ({ status: 'ok', refer_reason: 'none', read: 'A light lunch.', refer: '', meals: [baseMeal()] }), (r) => (r.meals || []).length > 0],
+  ['ask', (o) => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false, text: 'Something light' } }), () => ({ status: 'ok', refer_reason: 'none', read: 'A light lunch.', refer: '', meals: [baseMeal()] }), (r) => (r.meals || []).length > 0],
+  ['tune', (o) => plan('tune', { profile: Object.assign({}, BASE, o), slot: 'lunch', meal: Object.assign(baseMeal(), { minutes: 20 }) }), () => { const m = baseMeal(); return { swaps: m.swaps, alchemy: m.alchemy }; }, (r) => r.status === 'ok' && Object.keys(r.alchemy || {}).length > 0],
+  ['menu', (o, name) => plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'MAINS\nPlain Moong 240\n' + (name ? name + ' 200\n' : '') + 'SIDES\nJowar Roti 30\n' } }),
+    () => ({ status: 'ok', refer_reason: 'none', place: 'North Indian restaurant', tip: 'Start with the moong.', dishes: [{ as_written: 'Plain Moong', portion: '1 plate, about 300 g', kcal: 520, protein: 24, carbs: 64, fats: 18, fiber: 8, ask: 'Ask for less oil', grain_made_of: 'jowar', grain_grams: 60, with: '2 Jowar Roti', with_kcal: 160, with_protein: 4, with_carbs: 30, with_fats: 3, with_fiber: 4, contains: [], with_contains: ['grain'], planned_around: [] }],
+      leave: [{ as_written: 'Plain Moong', why: 'A light dish, better another day.', contains: [] }] }), (r) => (r.orders || []).length > 0],
+  ['rescue', (o) => plan('rescue', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: 'Veg thali' } }),
+    () => ({ status: 'ok', refer_reason: 'none', dish: { name: 'Veg thali', portion: '1 plate, about 400 g', kcal: 700, protein: 22, carbs: 100, fats: 22, fiber: 10, warning: 'Heavy on oil', breakdown: 'Most of the energy is in the oil.', contains: ['grain'] },
+      hacks: [{ title: 'Eat the cucumber first', kind: 'sequence', contains: [], ...z, deltaKcal: 10 }, { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], ...z }] }), (r) => r.status === 'ok'],
+];
+const WALKNAMES = [];   // a few held-out names from every tag, and the auditor's own
+for (const [tag, names] of Object.entries(HO)) if (BARS[tag]) names.filter((n, i) => i < 4 || /^(Mahi tikka|Mor|Nei|Piyaz chutney|Bheja|Raan|Baida roti|Misri|Cheeni|Meetha pulao|Complan|Threptin|Gongura pachadi)$/.test(n)).forEach(n => WALKNAMES.push([tag, n]));
+let walked = 0;
+for (const [kind, mk, base, okBase] of WALKS) {
+  const paths = strPaths(mk(BARS.meat[0], 'x').schema);
+  for (const [tag, o] of [['meat', BARS.meat[0]], ['dairy', BARS.dairy[0]], ['sweet', BARS.sweet[0]], ['supplement', {}]]) { const pl = mk(o); add('walk: base replies pass', !!pl.check && okBase(pl.check(base())), `${kind} ${JSON.stringify(o)}: the base reply did not pass`); }
+  for (const path of paths) {
+    walked++;
+    for (const [tag, name] of WALKNAMES) for (const o of BARS[tag].slice(0, 1)) {
+      if (/^leave\.0\.as_written$/.test(path) && tag === 'sweet') continue;   // S4: a sweet may be named under "leave for another day"
+      const pl = mk(o, name); if (!pl.check) continue; const r = base(); const isName = NAMEF.test(path);
+      if (isName) { setAt(r, path, name); const t = tagObj(r, path); if (t.o) t.o[t.key] = (t.o[t.key] || []).concat([tag]); }
+      else setAt(r, path, /taste/.test(path) ? name : 'Add a side of ' + name + ' today');
+      const out = safe(() => pl.check(r), {});
+      add('walk: no held-out name in any field', !shown(out, name), `${kind} ${JSON.stringify(o)}: "${name}" (${tag}) placed in ${path} was shown`); }
+    // S8: a household unit in any field is not shown (menu names are copied from the menu and keep their words)
+    for (const [u, rx] of [['2 katori cucumber', /katori/i], ['a bowl of cucumber', /bowl of cucumber/i]]) { if (/as_written|dishes\.0\.with/.test(path) || (NAMEF.test(path) && /bowl/.test(u))) continue;
+      const pl = mk({}, null), r = base(); setAt(r, path, NAMEF.test(path) ? u : 'Have ' + u + ' first');
+      const out = safe(() => pl.check(r), {}); add('walk: no household unit in any field', !allStr(out).some(s => rx.test(s)), `${kind}: "${u}" placed in ${path} was shown`); }
+    // the script rule: Devanagari or Tamil text in any field is not shown
+    for (const t of ['मटन करी', 'மீன்']) { const pl = mk({}, null), r = base(); setAt(r, path, t); const out = safe(() => pl.check(r), {});
+      add('walk: no other script in any field', !allStr(out).some(s => s.includes(t)), `${kind}: "${t}" placed in ${path} was shown`); } } }
+{ // the log is the client's own record: no food rule, but units and script hold on every field
+  const pl = plan('log', { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: 'dal rice' } });
+  for (const path of strPaths(pl.schema)) { walked++; const r = Object.assign(J(fx.log), {}); setAt(r, path, path === 'assumed' ? 'Have 2 katori dal' : '2 katori dal'); const out = safe(() => pl.check(r), {});
+    add('walk: no household unit in any field', !allStr(out).some(s => /katori/i.test(s)), `log: "katori" placed in ${path} was shown`); } }
+console.log(`schema walk: ${walked} string fields`);
+// B3: a referral always shows the fixed line
+for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
+  const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});
+  add('S7 referral text is the fixed line', r.status === 'refer' && r.read === SAFETY, `plate referral showed "${r.read}"`); }
+
+// ---------- B6: text intake. Every listed word and every held-out name, with each trick character at each position, is still caught ----------
+const TRICKS = ['​', '­', '‍', '‌', '⁠', '﻿', '́'];
+const fullWidth = s => s.replace(/[A-Za-z]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0xFEE0));
+const tricked = w => { const out = [fullWidth(w)]; for (const t of TRICKS) for (let i = 1; i < w.length; i++) out.push(w.slice(0, i) + t + w.slice(i)); return out; };
+const LISTED = [['wheat', { leave: ['wheat'] }], ['nut', { leave: ['nut'] }], ['dairy', { leave: ['dairy'] }], ['soya', { leave: ['soya'] }], ['meat', { diet: 'veg' }], ['egg', { diet: 'veg' }], ['jain', { diet: 'jain' }], ['salty', { health: 'bp' }], ['sweet', { health: 'diabetes' }]];
+for (const [cat, o] of LISTED) for (const w of L[cat].concat(AR[cat] || [])) for (const x of tricked(w)) add('B6 trick characters (word net)', crosses(quoted(x, 80), prof(o)), `${JSON.stringify(o)}: "${JSON.stringify(x)}" passed the word net`);
+for (const [tag, name] of WALKNAMES) for (const x of tricked(name).filter((_, i) => i % 3 === 0)) {
+  const o = BARS[tag][0]; add('B6 trick characters (held-out, tags)', !plateOffered(o, withItem(x, [tag])).ok, `${JSON.stringify(o)}: "${JSON.stringify(x)}" was offered`);
+  const m = platePlain(); m.for_you = 'Add a side of ' + x + ' today'; const pl = plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }); const r = safe(() => pl.check(mealsReply(m)), {});
+  add('B6 trick characters (held-out, prose)', !shown(r, name), `${JSON.stringify(o)}: for_you with "${JSON.stringify(x)}" was shown`); }
+// typed referrals keep working after intake normalisation (Devanagari and Tamil marks are kept)
+for (const t of HO.referText.concat(L.referText)) add('B6 intake keeps S7', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
+
+// ---------- B4: PLAINW holds single plain ingredients only ----------
+{ const lists = { MEATW, FISHW, EGGW, DAIRYW, ONIONW, ROOTW, SWEETS, SALTY, SUPPW, nut: LEAVEW.nut, wheat: LEAVEW.wheat, soya: LEAVEW.soya };
+  for (const [ln, list] of Object.entries(lists)) for (const e of list) add('B4 PLAINW: no listed food is plain', !words(e).every(w => PLAINW.test(w)), `${ln} entry "${e}" is made only of PLAINW words`);
+  const STOPX = /^(?:a|an|the|of|and|or|in|with|is|its|any|such|as|other|from|into|made|it|them|cooked|form|stock|fat|sauce|bake|batter|their|anything|most|its)$/;
+  const exw = TAGTEXT.replace(/^[a-z_]+ \(|\), /g, ' ').split(/[^a-z]+/).filter(w => w && !STOPX.test(w));
+  for (const w of new Set(exw)) add('B4 PLAINW: no TAGTEXT word is plain', !PLAINW.test(w), `TAGTEXT word "${w}" is in PLAINW`);
+  for (const w of new Set(containsText().toLowerCase().split(/[^a-z]+/).filter(w => w && !STOPX.test(w)))) add('B4 PLAINW: no containsText word is plain', !PLAINW.test(w) || !/dal|tadka|ghee|garlic|gulab|jamun/.test(w), `containsText example "${w}" is in PLAINW`);
+  for (const [tag, names] of Object.entries(HO)) if (Array.isArray(names) && BARS[tag]) for (const n of names) add('B4 PLAINW: no held-out name is plain', !plainFood(n), `held-out "${n}" is plain`);
+  for (const [tag, names] of Object.entries(HO)) if (Array.isArray(names) && BARS[tag]) for (const n of names) add('B2 PROSEW: no held-out name is prose', !words(norm(n)).every(w => PROSEW.test(w) || PLAINW.test(w)), `held-out "${n}" is made only of prose and plain words`);
+  for (const [ln, list] of Object.entries(lists)) if (ln !== 'SUPPW') for (const e of list) add('B2 PROSEW: no listed food is prose', !words(e).every(w => PROSEW.test(w)), `${ln} entry "${e}" is made only of PROSEW words`);
+  for (const n of ['Dal tadka', 'Sabudana', 'Sabudana khichdi', 'Rajma', 'Chole', 'Sambar', 'Mixed vegetable curry', 'Gravy', 'Chana chaat', 'Sarson saag', 'Tomato soup', 'Shorba'])
+    for (const o of [{ diet: 'vegan' }, { diet: 'jain' }, { leave: ['nut'] }, { leave: ['dairy'] }]) add('B4 dish words with an empty list', !plateOffered(o, withItem(n, [])).ok && !(menuOffered(o, n, []).orders || []).length, `${JSON.stringify(o)}: "${n}" with [] was offered`); }
+
+// ---------- B5: food the app writes, every entry against every profile (tags here are written apart from the engine's) ----------
+{ const T = { 'Only dal, rice and curd at home': ['dairy'], 'Andhra mutton biryani': ['meat', 'dairy', 'onion_garlic'], 'Pahadi mutton rara with 2 butter rotis': ['meat', 'dairy', 'wheat', 'onion_garlic'], 'Peri-peri half chicken with spicy rice': ['meat', 'onion_garlic'],
+    'Paneer butter masala with 2 butter naan': ['dairy', 'wheat', 'onion_garlic'], 'Chole bhature': ['wheat', 'onion_garlic'], 'Veg biryani with raita': ['dairy', 'onion_garlic'], 'Masala dosa with chutney': ['root_veg', 'onion_garlic'], 'A slice of tiramisu after dinner': ['dairy', 'egg', 'wheat', 'sweet'] };
+  const PROFS = []; for (const diet of ['veg', 'egg', 'nonveg', 'jain', 'vegan']) for (const leave of [[], ['dairy'], ['nut'], ['wheat'], ['soya']]) for (const h of [{ health: 'none' }, { health: 'diabetes' }, { health: 'bp' }]) PROFS.push(Object.assign({ diet, leave }, h));
+  const all = (typeof APPDISHES !== 'undefined' ? APPDISHES.concat(APPASKS) : []);
+  add('B5 app food is tagged', all.length === 12, 'the app’s dishes and asks are not in np-core with their tags');
+  for (const o of PROFS) { const p = prof(o), bar = barredTags(p); for (const e of all) if (safe(() => appFoodOK(e, p), true)) add('B5 app food against every profile', !(T[e[0]] || []).some(t => bar.includes(t)), `${JSON.stringify(o)}: "${e[0]}" is shown`); } }
+
+// ---------- B1: only what the client named, per tag ----------
+{ const cases = [[{ diet: 'veg' }, 'Veg biryani, no egg', 'Egg biryani', ['grain', 'egg']], [{ diet: 'veg' }, 'Paneer tikka, not chicken', 'Chicken tikka', ['meat']], [{ leave: ['dairy'] }, 'Thali, no paneer', 'Paneer thali', ['grain', 'dairy']],
+    [{ diet: 'jain' }, 'Thali, no onion no garlic', 'Lahsuni dal thali', ['grain', 'onion_garlic']], [{ diet: 'jain' }, 'Jain pav bhaji, no potato', 'Pav bhaji with lahsuni chutney', ['onion_garlic', 'wheat']], [{ diet: 'egg' }, 'Egg curry, no chicken', 'Egg curry with bangude', ['egg', 'fish']],
+    [{ diet: 'veg' }, 'Mutton biryani', 'Mutton and prawn biryani', ['meat', 'fish', 'grain']], [{ diet: 'jain' }, 'Onion uttapam', 'Onion and potato uttapam', ['grain', 'onion_garlic', 'root_veg']]];
+  const NEGW = ['no', 'not', 'without', 'skip the', 'no extra'], FOOD = [['egg', 'egg', { diet: 'veg' }], ['chicken', 'meat', { diet: 'veg' }], ['fish', 'fish', { diet: 'egg' }], ['paneer', 'dairy', { diet: 'vegan' }], ['onion', 'onion_garlic', { diet: 'jain' }], ['garlic', 'onion_garlic', { diet: 'jain' }], ['potato', 'root_veg', { diet: 'jain' }], ['peanuts', 'nuts', { leave: ['nut'] }]];
+  for (const neg of NEGW) for (const [f, tag, o] of FOOD) cases.push([o, 'Veg thali, ' + neg + ' ' + f, cap(f) + ' thali', ['grain', tag]]);
+  for (const [o, typed, dish, tags] of cases) { const r = rescueOut(o, typed, { name: dish, contains: tags }, [WALK]);
+    add('B1 typed excuse', r.status !== 'ok', `${JSON.stringify(o)}: typed "${typed}", dish "${dish}" ${JSON.stringify(tags)} was shown`); }
+  const r = rescueOut({ diet: 'veg' }, 'Veg thali, no chicken', { name: 'Veg thali', warning: 'Chicken pieces are fried', breakdown: 'The chicken gravy carries most of the fat' }, [WALK]);
+  add('B1 typed excuse', r.status === 'ok' && !/chicken/i.test(r.dish.warning + r.dish.breakdown), 'a negated word excused the warning or breakdown');
+  const r2 = rescueOut({ diet: 'veg' }, 'Veg fried rice, no egg', { name: 'Veg fried rice' }, [{ title: 'Eat half the egg fried rice', kind: 'portion', contains: ['egg', 'grain'], deltaKcal: -200, deltaProtein: -4, deltaCarbs: -30, deltaFats: -6, deltaFiber: 0 }, WALK]);
+  add('B1 typed excuse', !(r2.hacks || []).some(h => /egg/i.test(h.title)), 'a negated egg excused a portion move'); }
+
+// ---------- M3: the day starts at 4 am on local calendar fields, daylight saving included ----------
+{ const cp = require('child_process'), core = path.resolve(process.argv[2] || 'hosted/v6/index.html');
+  const prog = `const fs=require('fs');const page=fs.readFileSync(${JSON.stringify(core)},'utf8');const o='<script id="np-core">',a=page.indexOf(o)+o.length;(0,eval)(page.slice(a,page.indexOf('</script>',a)));
+    const T=JSON.parse(process.argv[1]);console.log(JSON.stringify(T.map(([y,mo,d,h,mi])=>dayOf(new Date(y,mo-1,d,h,mi).getTime()))));`;
+  const run = (tz, times) => safe(() => JSON.parse(cp.execFileSync(process.execPath, ['-e', prog, JSON.stringify(times)], { env: Object.assign({}, process.env, { TZ: tz }) }).toString()), []);
+  const ny = [[2026, 11, 1, 3, 30], [2026, 11, 1, 4, 30], [2026, 11, 1, 1, 30], [2027, 3, 14, 3, 30], [2027, 3, 14, 4, 30], [2027, 3, 14, 5, 0]], nyWant = [20261031, 20261101, 20261031, 20270313, 20270314, 20270314];
+  const r1 = run('America/New_York', ny); ny.forEach((t, i) => add('M3 day start, daylight saving', r1[i] === nyWant[i], `New York ${t.join('-')}: day ${r1[i]}, want ${nyWant[i]}`));
+  const ik = [[2026, 11, 12, 23, 59], [2026, 11, 13, 0, 30], [2026, 11, 13, 3, 59], [2026, 11, 13, 4, 0]], ikWant = [20261112, 20261112, 20261112, 20261113];
+  const r2 = run('Asia/Kolkata', ik); ik.forEach((t, i) => add('M3 day start, Kolkata', r2[i] === ikWant[i], `Kolkata ${t.join('-')}: day ${r2[i]}, want ${ikWant[i]}`)); }
+
+// ---------- m5: a menu partly in another script gets the note ----------
+{ const pl = plan('menu', { profile: BASE, ctx: { meal: 'lunch', text: 'MAINS\nPlain Moong 240\nपनीर टिक्का 300\n' } });
+  const r = safe(() => pl.check({ status: 'ok', refer_reason: 'none', place: '', tip: '', leave: [], dishes: [Object.assign({}, WALKS[3][2]().dishes[0], { with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: '', grain_grams: 0 }), Object.assign({}, WALKS[3][2]().dishes[0], { as_written: 'पनीर टिक्का' })] }), {});
+  add('m5 partly another script', (r.orders || []).length > 0 && /English letters/.test(r.scriptNote || ''), `status ${r.status}, note "${r.scriptNote}"`); }
+// m4: on medicines a tune names its meal
+add('m4 tune slot on medicines', !!safe(() => plan('tune', { profile: Object.assign({}, BASE, { health: 'diabetes', meds: 'yes' }), meal: Object.assign(baseMeal(), { minutes: 20 }) }).error, false), 'a tune with no meal on medicines was planned');
 
 // ---------- report ----------
 let fail = 0;
