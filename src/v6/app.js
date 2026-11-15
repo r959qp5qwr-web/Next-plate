@@ -77,6 +77,7 @@ function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
    untick, and kept plates against the current rules and body figures. It runs on every tap, at render and again just before anything is
    logged; a state that fails is not offered and not logged, and #said says why. ---------- */
 function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
+  if(!figsAgree(n))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine */
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}

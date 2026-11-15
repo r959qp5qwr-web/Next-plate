@@ -611,6 +611,25 @@ var GROUPS=["protein","greens","carbs","fats","other"];
 var ALCH=["protein","glucose","express","gut"];
 var ALCHLABEL={protein:"More protein",glucose:"Gentler on sugar",express:"10-minute version",gut:"Easy on the gut"};
 /* Validate one meal. Returns {meal} or {drop: reason}. */
+/* Figures agree (Codex re-audit C, 15 Nov): the kcal shown is within the base energy check's 15 % of 4 x protein + 4 x carbs + 9 x fats, for
+   a plate as planned and for every combination a client can make of it. One number, used everywhere: here, at render and before logging. */
+var EGAP=0.15;
+function figsAgree(n){if(!n||!(n.kcal>0))return false;var est=4*n.protein+4*n.carbs+9*n.fats;return Math.abs(est-n.kcal)/n.kcal<=EGAP;}
+function addN(n,d){return {kcal:n.kcal+(d.deltaKcal||0),protein:n.protein+(d.deltaProtein||0),carbs:n.carbs+(d.deltaCarbs||0),fats:n.fats+(d.deltaFats||0),fiber:n.fiber+(d.deltaFiber||0)};}
+/* every protein swap x base swap x set of one-tap changes, enumerated (not sampled); while any combination's figures disagree, the option in it
+   whose own delta is furthest from its macros is dropped. The first swap of each list is the plate as planned and is never applied. */
+function pruneCombos(n,swaps,al){var keys=Object.keys(al),dropped=0;
+  function off(d){return Math.abs((d.deltaKcal||0)-(4*(d.deltaProtein||0)+4*(d.deltaCarbs||0)+9*(d.deltaFats||0)));}
+  for(var guard=0;guard<40;guard++){var bad=null;keys=Object.keys(al);
+    var P=swaps.protein.length?swaps.protein:[null],B=swaps.base.length?swaps.base:[null];
+    for(var i=0;i<P.length&&!bad;i++)for(var j=0;j<B.length&&!bad;j++)for(var mask=0;mask<(1<<keys.length)&&!bad;mask++){
+      var parts=[];if(i>0)parts.push(["protein",i]);if(j>0)parts.push(["base",j]);keys.forEach(function(k,b){if(mask&(1<<b))parts.push(["al",k]);});
+      var x=n;parts.forEach(function(q){x=addN(x,q[0]==="al"?al[q[1]]:swaps[q[0]][q[1]]);});
+      if(!figsAgree(x))bad=parts;}
+    if(!bad)break;
+    var worst=bad.slice().sort(function(a,b){var da=a[0]==="al"?al[a[1]]:swaps[a[0]][a[1]],db=b[0]==="al"?al[b[1]]:swaps[b[0]][b[1]];return off(db)-off(da);})[0];
+    if(!worst)break;dropped++;if(worst[0]==="al")delete al[worst[1]];else swaps[worst[0]].splice(worst[1],1);}
+  return dropped;}
 function checkMeal(m,p){
   if(!m||typeof m!=="object")return {drop:"shape"};
   var rawTitle=clean(m.title,70);
@@ -635,7 +654,7 @@ function checkMeal(m,p){
   var n={kcal:num(m.kcal,40,2500),protein:num(m.protein,0,250),carbs:num(m.carbs,0,400),fats:num(m.fats,0,200),fiber:num(m.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
   var est=4*n.protein+4*n.carbs+9*n.fats;
-  if(Math.abs(est-n.kcal)/n.kcal>0.15)return {drop:"energy"};
+  if(!figsAgree(n))return {drop:"energy"};
   var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
       var mo=quoted(s&&s.made_of,40),rf=rawName(s&&s.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,made_of:isGrainMaterial(mo)?mo:"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
@@ -662,6 +681,7 @@ function checkMeal(m,p){
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
     al[k]=x;});
+  pruneCombos(n,swaps,al);   /* figures agree on every combination (A2) */
   return {meal:{title:title,subtitle:sub,cuisine:"",minutes:num(m.prepMinutes,0,180)||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:[],swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
@@ -711,7 +731,7 @@ function checkRescue(r,p,c){
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer",read:SAFETY};
   var d=r.dish||{},n={kcal:num(d.kcal,40,4000),protein:num(d.protein,0,300),carbs:num(d.carbs,0,500),fats:num(d.fats,0,300),fiber:num(d.fiber,0,80)};
-  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
+  if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!figsAgree(n))return {status:"empty"};   /* figures agree (A2) */
   var dn=typed&&typed.length<=60&&typed.split(/\s+/).length<=8?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),60):"Your dish";
   if(!dn)dn="Your dish";
   /* usefulness brief (15 Nov): the Rescue dish is the client's own, so it is shown as they typed it, whatever their rules bar or the model's

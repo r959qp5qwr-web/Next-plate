@@ -160,9 +160,10 @@ for (const title of ['Give the rice to your family and eat the rajma', 'Let the 
   add('S5 rescue', !(r.hacks || []).some(h => h.title === title), `diabetes: Rescue move "${title}" was offered`); }
 // round 5: the moves are engine-written from the figures. With diabetes a portion move never takes carbs below half (S5 on structure),
 // and a large order still gets a portion move (no false hit)
-for (const kcal of [700, 900, 1200, 1600]) for (const carbs of [60, 100, 160]) { const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal, carbs }, []);
+for (const kcal of [700, 900, 1200, 1600]) for (const carbs of [60, 100, 160]) { const fats = Math.round((kcal - 4 * 24 - 4 * carbs) / 9);   // figures that agree (A2)
+  const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal, carbs, protein: 24, fats }, []);
   add('S5 rescue engine moves', r.status === 'ok' && (r.hacks || []).every(h => h.kind !== 'portion' || -h.deltaCarbs <= carbs * 0.5) && (r.hacks || []).every(h => !/rice|roti|bread or rice/.test(h.title) || /last/.test(h.title)), `diabetes ${kcal} kcal ${carbs} g carbs: ${JSON.stringify((r.hacks || []).map(h => h.title + ' ' + h.deltaCarbs))}`); }
-{ const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal: 1400, carbs: 100 }, []);
+{ const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal: 1400, carbs: 100, protein: 24, fats: 101 }, []);
   add('S5 rescue no false hit', (r.hacks || []).some(h => h.kind === 'portion'), `diabetes: a 1400 kcal order got no portion move (${JSON.stringify(r.hacks)})`); }
 
 // ---------- S6: on insulin or sugar tablets (or not sure) ----------
@@ -359,6 +360,37 @@ for (const [o, typed, d] of [[{ diet: 'veg' }, 'Chicken biryani', { kcal: 900, p
     add('Rescue moves keep the usual size (S6)', !u || h.kind !== 'portion' || d.kcal + (h.deltaKcal || 0) >= u, `${JSON.stringify(o)} "${typed}": "${h.title}" takes the meal to ${d.kcal + (h.deltaKcal || 0)} kcal, under the usual ${u}`);
     add('Rescue moves name no barred food', !crosses(h.title, pp), `${JSON.stringify(o)} "${typed}": "${h.title}"`); } }
 add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
+
+// ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
+{ const retag = (x) => JSON.parse(JSON.stringify(x), (k, v) => Array.isArray(v) && v.length === 1 && v[0] === 'plain' ? PT : v);   // an older page has no "plain" tag
+  const agree = (n) => Math.abs(4 * n.protein + 4 * n.carbs + 9 * n.fats - n.kcal) / n.kcal <= 0.15;
+  const combos = (m) => { const P = m.swaps.protein.length ? m.swaps.protein : [null], B = m.swaps.base.length ? m.swaps.base : [null], K = Object.keys(m.alchemy || {}), out = [];
+    for (let i = 0; i < P.length; i++) for (let j = 0; j < B.length; j++) for (let mask = 0; mask < (1 << K.length); mask++) { let n = { kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats };
+      const ds = []; if (i > 0) ds.push(P[i]); if (j > 0) ds.push(B[j]); K.forEach((k, b) => { if (mask & (1 << b)) ds.push(m.alchemy[k]); });
+      ds.forEach(d => { n = { kcal: n.kcal + d.deltaKcal, protein: n.protein + d.deltaProtein, carbs: n.carbs + d.deltaCarbs, fats: n.fats + d.deltaFats }; }); out.push(n); }
+    return out; };
+  // Codex: a 490 kcal base (474 by its macros) with a +120 kcal swap and two +65 kcal changes, all with zero macro deltas
+  const m1 = platePlain(); Object.assign(m1, { kcal: 490, protein: 27, carbs: 60, fats: 14 });
+  m1.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: ['plain'], ...z }, { food: 'Steamed moong', grams: 200, contains: ['plain'], ...z, deltaKcal: 120 }];
+  for (const k of ['protein', 'gut']) m1.alchemy[k] = { titleSuffix: 'More vegetables', note: 'Add 50 g cucumber.', add_item: 'Cucumber', add_grams: 50, contains: ['plain'], grain_grams_after: 90, minutes: 20, ...z, deltaKcal: 65 };
+  const r1 = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', goal: 'hold' }), ctx: { meal: 'lunch' } }).check(mealsReply(retag(m1))), {}), c1 = (r1.meals || [])[0];
+  add('A2 every combination agrees (Codex 740 / 474)', !!c1 && combos(c1).every(agree), c1 ? 'a combination disagrees: ' + JSON.stringify(combos(c1).filter(n => !agree(n))) : 'the honest base plate was dropped');
+  // Codex: on medicines, a 1000 kcal plate with a 0 kcal swap of -40 g P, -50 g C, -40 g F (280 kcal by its macros)
+  const m2 = platePlain(); Object.assign(m2, { kcal: 1000, protein: 60, carbs: 100, fats: 40 }); m2.items.forEach(i => i.grams *= 2); m2.items[1].grams = 120; m2.grain.grams = 120;
+  m2.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: ['plain'], ...z }, { food: 'Steamed moong', grams: 200, contains: ['plain'], ...z, deltaProtein: -40, deltaCarbs: -50, deltaFats: -40 }];
+  const r2 = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes', meds: 'yes', goal: 'lose' }), ctx: { meal: 'lunch' } }).check(mealsReply(retag(m2))), {}), c2 = (r2.meals || [])[0];
+  add('A2 every combination agrees (Codex 1000 / 280, medicines)', !!c2 && combos(c2).every(agree), c2 ? 'a combination disagrees: ' + JSON.stringify(combos(c2).filter(n => !agree(n))) : 'the honest base plate was dropped');
+  // Codex: a Rescue dish of 1000 kcal with 10 g P, 10 g C and 0 g F (80 kcal by its macros)
+  const r3 = rescueOut({}, 'Rice', { name: 'Rice', kcal: 1000, protein: 10, carbs: 10, fats: 0, fiber: 1, contains: ['grain'] }, [WALK]);
+  add('A2 Rescue dish figures agree (Codex 1000 / 80)', r3.status !== 'ok', 'a Rescue dish of 1000 kcal with 80 kcal of macros was accepted');
+  for (const o of [{}, { health: 'diabetes', meds: 'yes' }]) { const r = rescueOut(o, 'Veg thali', {}, []); if (r.status !== 'ok') continue; const K = r.hacks || [];
+    for (let mask = 1; mask < (1 << K.length); mask++) { let n = Object.assign({}, r.dish); K.forEach((h, b) => { if (mask & (1 << b)) n = { kcal: n.kcal + h.deltaKcal, protein: n.protein + h.deltaProtein, carbs: n.carbs + h.deltaCarbs, fats: n.fats + h.deltaFats }; });
+      add('A2 Rescue dish with every set of moves agrees', agree(n), `${JSON.stringify(o)}: ${JSON.stringify(n)}`); } }
+  // positive control: an honest swap and change whose deltas match their macros stay on offer
+  const m4 = platePlain(); m4.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: ['plain'], ...z }, { food: 'Boiled chickpeas', grams: 180, contains: ['plain'], ...z, deltaKcal: 60, deltaProtein: 3, deltaCarbs: 9, deltaFats: 1 }];
+  m4.alchemy.protein = { titleSuffix: '+ more moong', note: 'Add 50 g sprouted moong.', add_item: 'Sprouted moong', add_grams: 50, minutes: 20, grain_grams_after: 90, contains: ['plain'], deltaKcal: 50, deltaProtein: 6, deltaCarbs: 6, deltaFats: 0, deltaFiber: 2 };
+  const r4 = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(retag(m4))), {}), c4 = (r4.meals || [])[0] || { swaps: { protein: [] }, alchemy: {} };
+  add('A2 honest swaps and changes stay on offer', c4.swaps.protein.some(s => s.food === 'Boiled chickpeas') && !!c4.alchemy.protein, `offered: ${JSON.stringify(c4.swaps.protein.map(s => s.food))}, changes ${JSON.stringify(Object.keys(c4.alchemy))}`); }
 
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {

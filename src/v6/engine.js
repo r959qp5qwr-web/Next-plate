@@ -561,6 +561,10 @@ function menuMoves(n,pl,p){
 /* Rescue moves, written by the engine from the dish's figures (safety round 5): at most one portion move, chosen as on the menu (it must
    bring the dish nearer the meal's target, never under the usual size on medicines, and it keeps at least half the grain); a walk; and an
    eating order. S5 and S6 are judged on these figures, never on wording. */
+/* figures agree on the dish with every set of moves (A2): a move that can make a set disagree is dropped */
+function pruneMoves(n,moves){for(var g=0;g<20;g++){var bad=-1;
+    for(var mask=1;mask<(1<<moves.length)&&bad<0;mask++){var x=n,last=-1;moves.forEach(function(h,k){if(mask&(1<<k)){x=addN(x,h);last=k;}});if(!figsAgree(x))bad=last;}
+    if(bad<0)return;moves.splice(bad,1);}}
 function rescueMoves(n,pl,p){var M=[],u=p.medsUsual||0,zero={deltaKcal:0,deltaProtein:0,deltaCarbs:0,deltaFats:0,deltaFiber:0};
   if(pl&&pl.target){var t=pl.target,f0=fitOf(n,t),best=null;
     (n.kcal>t.kcal?[[.75,"Eat about three quarters and leave the rest"],[.67,"Eat about two thirds and leave the rest"],[.5,"Eat about half and leave the rest"]]:[]).forEach(function(x){
@@ -673,7 +677,7 @@ plan=function(kind,body){
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks,pl,c.meal);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
     var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Logged so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: about "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
-    return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok")o.hacks=rescueMoves(o.dish,pl,p);return o;}};}
+    return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok"){o.hacks=rescueMoves(o.dish,pl,p);pruneMoves(o.dish,o.hacks);}return o;}};}
   if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
     return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:function(d){return checkLog(d,c);}};}
   if(kind==="menu"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};var mh=hooksFor(p,file,c,pl);

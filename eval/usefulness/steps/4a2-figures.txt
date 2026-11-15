@@ -1,0 +1,7 @@
+step 4 A2: figures agree on every combination
+meets  Plates shown (clean, of 75)                     67 of 75
+meets  Requests with no plate (of 25)                  2 (diabetes-on-sulfonylurea {"meds-low":3}; diabetes-on-sulfonylurea {"meds-low":3})
+meets  Reason line on shown plates                     67 of 67 (100 %)
+meets  Swaps + one-tap (all recorded, live 259)        259 (swaps 151 of 171, one-tap 108 of 120; 100 % of live)
+meets  Menu orders (14 menus, live 38)                 37; empty where live serves: none
+drops (clean plates): {"contents":1,"diabetes-grain":1,"meds-low":6}; drops (menus): {"side-shape":5,"diabetes-grain":4,"contents":2,"diet":2}

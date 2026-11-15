@@ -559,7 +559,7 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   const km = { title: 'Moong dal khichdi with palak', subtitle: 'Brown rice and moong khichdi, palak, curd', cuisine: 'North Indian home', prepMinutes: 25,
     items: [{ food: 'Yellow moong dal and brown rice khichdi', grams: 250, group: 'protein' }, { food: 'Plain low-fat curd', grams: 100, group: 'protein' }, { food: 'Stir-fried palak with garlic', grams: 120, group: 'greens' }, { food: 'Ghee for tempering', grams: 5, group: 'fats' }],
     grain: { food: 'Yellow moong dal and brown rice khichdi', made_of: 'brown rice and moong dal', grams: 250 }, kcal: 470, protein: 24, carbs: 62, fats: 12, fiber: 11, why: [],
-    swaps: { protein: [{ food: 'Yellow moong dal and brown rice khichdi', grams: 250, ...z }, { food: 'Paneer bhurji', grams: 150, ...z, deltaCarbs: -40, deltaKcal: -30 }], base: [] }, alchemy: {} };
+    swaps: { protein: [{ food: 'Yellow moong dal and brown rice khichdi', grams: 250, ...z }, { food: 'Paneer bhurji', grams: 150, ...z, deltaCarbs: -40, deltaKcal: -30, deltaProtein: 10, deltaFats: 10 }   /* figures that agree (A2): -160 + 40 + 90 */], base: [] }, alchemy: {} };
   const kc = checkMeal(JSON.parse(JSON.stringify(km)), p);
   ok(!!kc.meal && !kc.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'round 13: with diabetes no protein swap takes the place of a grain item grouped as protein');
   const kn = checkMeal(JSON.parse(JSON.stringify(km)), (() => { const q = readProfile(Object.assign({}, P, { health: 'none' })); q.slot = 'dinner'; return q; })());
