@@ -76,20 +76,20 @@ function fitOf(n,t){
 }
 
 /* ---------- word lists: these filter, they never bend ---------- */
-var NONVEG=["chicken","mutton","fish","prawn","prawns","shrimp","meat","keema","bacon","ham","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","sausage","pepperoni","seafood","crab","lamb","pork","beef","salami","turkey","goat","kheema","anchovy","squid"];
-var EGGW=["egg","eggs","omelette","omelet","anda","mayonnaise","mayo"];
-var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese"];
-var JAINW=["onion","onions","garlic","potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","shallot","leek","spring onion","arbi","jimikand"];
-var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali"],
-  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba"],
-  soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce"]};
-var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup"];
-var SALTY=["pickle","achar","papad","namkeen","chips","soy sauce"];
+var NONVEG=["chicken","mutton","fish","prawn","prawns","shrimp","meat","keema","bacon","ham","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","sausage","pepperoni","seafood","crab","lamb","pork","beef","salami","turkey","goat","kheema","anchovy","squid","murgh","murg","kozhi","gosht","boti","nihari","paya","kaleji","macher","maach","machh","meen","bombil","chingri","chingdi","ilish","hilsa","kekda","mussel","clam","oyster","lobster","octopus"];   /* regional names (safety invariants S2, 15 Nov) */
+var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo"];
+var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam"];
+var JAINW=["onion","onions","garlic","potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","shallot","leek","spring onion","arbi","jimikand","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","adrak","batata","suran","shakarkandi","shakarkand"];
+var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji"],
+  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit"],
+  soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker"]};
+var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup"];
+var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","soy sauce","bhujia","farsan"];
 /* D2: no supplements, powders, tablets or doses */
 var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey"];
 /* invented precision and medical claims ([S] "+2000 % curcumin", "mTOR", "mg/dL") */
 var CLAIM=/%|\bmg\s*\/\s*dl\b|\bmtor\b|\bleucine\b|\bglut4\b|\bcortisol\b|\bmelatonin\b|\binsulin\b|\bdetox|\bcures?\b|\bcured\b|\btreat(ment|ing|ed)\b|\btreats?\s+(your|the|it|this|that|diabetes|anaemia|anemia|deficienc|blood|sugar|pain|weight|pcos|thyroid)|\bguarantee|\bheal(s|ing)?\b|\bhrv\b|\bmyofibrillar\b|\binflammat|\bimmun/i;
-var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(added\s+|extra\s+)?[a-z]+(\s+(or|and)\s+[a-z]+)?/g;
+var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(added\s+|extra\s+)?[a-z]+(\s+or\s+[a-z]+)?|\b[a-z]+-free\b/g;   /* "no oil and ghee" still shows ghee (safety invariant S1, 15 Nov) */
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 var SAFETY="Your coach and doctor should plan this with you.";   /* says what it answers; the card quotes the ask above it (second screen review, R2-B5 072, R2-B7 107) */
 
@@ -495,7 +495,10 @@ function badWords(p){
   return bad;
 }
 var PLANT=/\b(coconut|almond|oat|soy|soya|rice|cashew|peanut)\s+(milk|curd|yogurt|yoghurt|cream|butter)\b/g;
-function crosses(text,p){var b=badWords(p);return !!b.length&&wordRx(b).test(String(text).toLowerCase().replace(NEG," ").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1"));}
+/* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
+var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}
+var MILLETBREAD=/\b(bajra|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|rice|chawal|akki)\s+(rotis?|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|thalipeeth)\b/g;
+function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(String(text).toLowerCase().replace(MILLETBREAD,"$1 flatbread").replace(NEG," ").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1"));}
 function supp(text){return wordRx(SUPPW).test(String(text).toLowerCase());}
 
 /* ---------- cleaning ---------- */
@@ -539,7 +542,7 @@ function checkMeal(m,p){
     return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};
   }).filter(function(it){return it.food&&it.grams;});
   if(items.length<2)return {drop:"shape"};
-  var all=title+" "+sub+" "+items.map(function(i){return i.food;}).join(" ");
+  var all=title+" "+sub+" "+items.map(function(i){return i.food;}).join(" ")+" "+clean(m.grain&&m.grain.food,60)+" "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
   var dg=declaredGrain(m.grain,items);
@@ -552,7 +555,7 @@ function checkMeal(m,p){
     .filter(function(w){return w.pair&&w.effect&&!CLAIM.test(w.pair+" "+w.effect)&&!supp(w.pair+" "+w.effect);});
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
       return {food:clean(s&&s.food,60),made_of:quoted(s&&s.made_of,40),grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return s.food&&!crosses(s.food,p)&&!supp(s.food)&&
+    .filter(function(s){return s.food&&!crosses(s.food+" "+clean(s.made_of,40),p)&&!supp(s.food)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.food)&&s.grams>=30))&&
       /* round 13: a protein swap takes the place of the first protein item; with diabetes it may not take the place of the grain item */

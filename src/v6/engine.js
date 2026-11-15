@@ -549,7 +549,7 @@ function checkMenu(r,p,c,pl,hooks){
   var pNoSweet=p.health==="diabetes"?Object.assign({},p,{health:"none"}):p;function leaveBad(x){return CLAIM.test(x)||supp(x)||crosses(x,pNoSweet);}
   raw.forEach(function(d,i){
     if(!d||typeof d!=="object")return drop("shape");
-    var name=quoted(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=own(d["with"],60,c.text)||own(String(d["with"]||"").split(/[,(;]|\s[-\u2013\u2014]\s/)[0],60,c.text),all=name+" "+por+" "+ask+" "+side,key=menuNorm(name);
+    var name=quoted(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=own(d["with"],60,c.text)||own(String(d["with"]||"").split(/[,(;]|\s[-\u2013\u2014]\s/)[0],60,c.text),all=name+" "+por+" "+ask+" "+side+" "+clean(d["with"],60)+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
     if(!name||seen[key])return drop("shape");seen[key]=1;
     if(typed&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
