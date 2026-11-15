@@ -1906,7 +1906,10 @@ function checkRescue(r,p,c){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var dn=typed&&typed.length<=60&&typed.split(/\s+/).length<=8?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),60):"Your dish";
   if(!dn)dn="Your dish";
-  if(contentsBad(d.contains,dn,p)||crosses(typed,p)||crosses(clean(d.name,80),p)||supp(typed+" "+clean(d.name,80)))return {status:"empty",reason:"diet",dropped:{dish:1}};
+  /* usefulness brief (15 Nov): the Rescue dish is the client's own, so it is shown as they typed it, whatever their rules bar or the model's
+     tags say; nothing the model writes about it is shown, and every move is the engine's, checked in full (S5, S6; no food named). A
+     supplement is not a meal: it is not helped (S9). */
+  if(supp(typed+" "+clean(d.name,80)))return {status:"empty",reason:"diet",dropped:{dish:1}};
   var g=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(String(d.portion||"")),por=g?"≈ "+Math.round(+g[1])+" g":"";   /* the weight, written by the engine */
   return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:"",breakdown:"",contains:tagList(d.contains)},hacks:[]};
 }

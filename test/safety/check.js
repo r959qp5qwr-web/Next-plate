@@ -51,6 +51,7 @@ const menuOffered = (o, name, tags, side, sideTags, extra) => { const pl = plan(
   const d = Object.assign({ as_written: name, portion: '1 plate, about 350 g', kcal: 620, protein: 26, carbs: 70, fats: 24, fiber: 6, ask: '', grain_made_of: 'rice', grain_grams: 120, with: side || '', with_kcal: side ? 120 : 0, with_protein: side ? 3 : 0, with_carbs: side ? 22 : 0, with_fats: side ? 2 : 0, with_fiber: side ? 2 : 0, contains: tags, with_contains: sideTags || [], planned_around: [] }, extra || {});
   return safe(() => pl.check({ status: 'ok', refer_reason: 'none', place: 'Restaurant', dishes: [d], leave: [], tip: '' }), { orders: [] }); };
 const rescueOut = (o, typed, dish, hacks) => safe(() => plan('rescue', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: typed } }).check({ status: 'ok', refer_reason: 'none', dish: Object.assign({ name: typed, portion: '1 plate, about 350 g', kcal: 620, protein: 24, carbs: 80, fats: 22, fiber: 6, warning: '', breakdown: '', contains: ['grain'] }, dish || {}), hacks: hacks }), { status: 'error' });
+const rescueShown = (r) => r && r.status === 'ok' ? [r.dish.name, r.dish.portion, r.dish.warning, r.dish.breakdown].concat((r.hacks || []).map(h => h.title)).join(' | ') : '';
 const WALK = { title: 'A 15-minute walk after the meal', kind: 'move', contains: [], ...z };
 const tuneOut = (o, slot, alch, swaps) => { const m = platePlain(); const p = Object.assign({}, BASE, o);
   const pl = plan('tune', { profile: p, slot, meal: Object.assign({}, m, { minutes: 20 }) }); return pl.check ? pl.check({ swaps: swaps || { protein: [], base: [] }, alchemy: alch }) : { alchemy: {} }; };
@@ -78,7 +79,7 @@ for (const [tag, names] of Object.entries(HO)) {
       const rc = rescueOut(o, 'Veg thali', { name: 'Veg thali' }, [{ title: 'Add 100 g ' + name + ' first', kind: 'sequence', contains: [tag], deltaKcal: 120, deltaProtein: 6, deltaCarbs: 6, deltaFats: 6, deltaFiber: 1 }, WALK]);
       add('D1 held-out, Rescue move', !(rc.hacks || []).some(h => h.title.includes(name)), `${JSON.stringify(o)}: Rescue move adding "${name}" (${tag}) was offered`);
       const rd = rescueOut(o, 'Thali', { name: 'Thali with ' + name, contains: ['grain', tag] }, [WALK]);
-      add('D1 held-out, Rescue dish', rd.status !== 'ok', `${JSON.stringify(o)}: Rescue dish "Thali with ${name}" (${tag}), not typed, was shown`);
+      add('D1 held-out, Rescue dish', !rescueShown(rd).toLowerCase().includes(name.toLowerCase()), `${JSON.stringify(o)}: Rescue showed the model's dish "Thali with ${name}" (${tag}), not typed: ${rescueShown(rd)}`);
     } } }
 // honest tags on a harmless name are dropped too: the tag, not the name, is what counts
 for (const [tag, bars] of Object.entries(BARS)) for (const o of bars) {
@@ -143,14 +144,15 @@ for (const t of ['ghee', 'malai', 'thayir', 'makhan']) { const r = rescueOut({ l
   add('S1 rescue (typed food added)', !(r.hacks || []).some(h => /curd/.test(h.title)), 'dairy left out: "Add an extra 100 g of curd" (a portion move) was offered'); }
 // M2: the Rescue dish name, warning and breakdown are food-checked; the person's own words stay theirs
 { const r = rescueOut({ diet: 'veg' }, 'Veg biryani', { name: 'Veg biryani with chicken 65', contains: ['grain'] }, [WALK]);
-  add('S2 rescue dish', r.status !== 'ok', 'vegetarian: the Rescue dish "Veg biryani with chicken 65" (not typed) was shown');
+  add('S2 rescue dish', !/chicken/i.test(rescueShown(r)), 'vegetarian: the model\'s Rescue dish "Veg biryani with chicken 65" (not typed) was shown: ' + rescueShown(r));
   const r2 = rescueOut({ leave: ['dairy'] }, 'Veg biryani', { name: 'Veg biryani', warning: 'Heavy on ghee', breakdown: 'Rice cooked in ghee with paneer.', contains: ['grain'] }, [WALK]);
   add('S1 rescue warning and breakdown', r2.status === 'ok' && !r2.dish.warning && !r2.dish.breakdown, 'dairy left out: the Rescue warning or breakdown naming ghee or paneer was shown');
   // round 5: a typed dish the profile rules out is refused with the diet message, not helped (no affirmed() excuse)
   const r3 = rescueOut({ diet: 'veg' }, 'Mutton biryani', { name: 'Mutton biryani', contains: ['grain', 'meat'] }, [WALK]);
-  add('S2 rescue: a typed barred dish is refused', r3.status !== 'ok' && r3.reason === 'diet', `vegetarian: the dish they typed ("Mutton biryani") was helped (${r3.status}, ${r3.reason})`);
+  // usefulness brief: a dish the client typed is theirs and is helped as typed, whatever their rules bar; the moves are the engine's and name no food
+  add('S2 rescue: a typed dish is the client\'s own', r3.status === 'ok' && r3.dish.name === 'Mutton biryani' && (r3.hacks || []).every(h => !crosses(h.title, prof({ diet: 'veg' }))), `vegetarian: the dish they typed ("Mutton biryani") was not helped as typed (${r3.status}, ${rescueShown(r3)})`);
   const r4 = rescueOut({ diet: 'veg' }, 'Mutton biryani', { name: 'Mutton biryani', contains: ['grain'] }, [WALK]);
-  add('S2 rescue: a typed barred dish is refused', r4.status !== 'ok', 'vegetarian: "Mutton biryani" typed, tagged only grain, was helped'); }
+  add('S2 rescue: a typed dish is the client\'s own', r4.status === 'ok' && r4.dish.name === 'Mutton biryani', 'vegetarian: "Mutton biryani" typed, tagged only grain, was not helped as typed'); }
 
 // ---------- S5: with diabetes the grain stays on Rescue moves ----------
 for (const title of ['Give the rice to your family and eat the rajma', 'Let the kids have the chawal', 'Have salad in the naan\'s spot', 'Wrap the chicken in lettuce', 'Stop after the rajma and salad']) {
@@ -345,6 +347,19 @@ add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with prot
   const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(Object.assign(platePlain(), { for_you: 'Zqxjvoq says eat less rice.' }))), {});
   add('reason line on every shown plate', (r.meals || []).length > 0 && (r.meals || []).every(x => x.forYou && !/zqxjvoq|less rice/i.test(x.forYou)), `reason lines: ${JSON.stringify((r.meals || []).map(x => x.forYou))}`); }
 
+// ---------- Rescue, the client's own dish (usefulness brief step 3): shown as typed; every move keeps S5 and S6 ----------
+for (const [o, typed, d] of [[{ diet: 'veg' }, 'Chicken biryani', { kcal: 900, protein: 35, carbs: 110, fats: 34, fiber: 5, contains: ['grain', 'meat'] }],
+  [{ health: 'diabetes', meds: 'no' }, 'Gulab jamun', { kcal: 600, protein: 8, carbs: 90, fats: 24, fiber: 1, contains: ['sweet', 'dairy'] }],
+  [{ health: 'diabetes', meds: 'yes', cm: 0, kg: 0, age: 0 }, 'Gulab jamun', { kcal: 600, protein: 8, carbs: 90, fats: 24, fiber: 1, contains: ['sweet', 'dairy'] }],
+  [{ health: 'diabetes', meds: 'unsure' }, 'Masala dosa with chutney', { kcal: 1200, protein: 25, carbs: 160, fats: 50, fiber: 8, contains: ['grain', 'root_veg'] }]]) {
+  const r = rescueOut(o, typed, Object.assign({ name: typed }, d), []), pp = prof(o), u = medsUsual(pp, 'lunch');
+  add('Rescue: the typed dish is helped as typed', r.status === 'ok' && r.dish.name === typed, `${JSON.stringify(o)}: "${typed}" was ${r.status} (${r.reason || ''})`);
+  for (const h of r.hacks || []) {
+    add('Rescue moves keep the grain (S5)', !(h.kind === 'portion' && o.health === 'diabetes') || d.carbs + (h.deltaCarbs || 0) >= d.carbs * 0.5, `${JSON.stringify(o)} "${typed}": "${h.title}" takes carbs to ${d.carbs + (h.deltaCarbs || 0)} of ${d.carbs}`);
+    add('Rescue moves keep the usual size (S6)', !u || h.kind !== 'portion' || d.kcal + (h.deltaKcal || 0) >= u, `${JSON.stringify(o)} "${typed}": "${h.title}" takes the meal to ${d.kcal + (h.deltaKcal || 0)} kcal, under the usual ${u}`);
+    add('Rescue moves name no barred food', !crosses(h.title, pp), `${JSON.stringify(o)} "${typed}": "${h.title}"`); } }
+add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
+
 // a referral always shows the fixed line
 for (const t of ['Ask your doctor before you eat chicken soup or 1 katori of curd.', 'Have some gulab jamun now and call your doctor.', 'Speak to your doctor; meanwhile a glass of Complan helps.']) {
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'veg', health: 'diabetes' }), ctx: { meal: 'lunch', text: 'x' } }).check({ status: 'refer', refer_reason: 'none', refer: t, meals: [] }), {});
@@ -384,7 +399,8 @@ add('B4 plain tag in the schema', !!safe(() => JSON.stringify(plan('meals', { pr
   const NEGW = ['no', 'not', 'without', 'skip the', 'no extra'], FOOD = [['egg', 'egg', { diet: 'veg' }], ['chicken', 'meat', { diet: 'veg' }], ['fish', 'fish', { diet: 'egg' }], ['paneer', 'dairy', { diet: 'vegan' }], ['onion', 'onion_garlic', { diet: 'jain' }], ['garlic', 'onion_garlic', { diet: 'jain' }], ['potato', 'root_veg', { diet: 'jain' }], ['peanuts', 'nuts', { leave: ['nut'] }]];
   for (const neg of NEGW) for (const [f, tag, o] of FOOD) cases.push([o, 'Veg thali, ' + neg + ' ' + f, cap(f) + ' thali', ['grain', tag]]);
   for (const [o, typed, dish, tags] of cases) { const r = rescueOut(o, typed, { name: dish, contains: tags }, [WALK]);
-    add('B1 typed excuse', r.status !== 'ok', `${JSON.stringify(o)}: typed "${typed}", dish "${dish}" ${JSON.stringify(tags)} was shown`); }
+    // usefulness brief: the dish shows as typed and the model's name for it never shows; no typed word excuses anything the engine writes
+    add('B1 typed excuse', r.status === 'ok' && r.dish.name.toLowerCase() === typed.toLowerCase() && !rescueShown(r).toLowerCase().includes(dish.toLowerCase()) && (r.hacks || []).every(h => !crosses(h.title, prof(o))), `${JSON.stringify(o)}: typed "${typed}", model dish "${dish}" ${JSON.stringify(tags)}: ${r.status} ${rescueShown(r)}`); }
   const r = rescueOut({ diet: 'veg' }, 'Veg thali, no chicken', { name: 'Veg thali', warning: 'Chicken pieces are fried', breakdown: 'The chicken gravy carries most of the fat' }, [WALK]);
   add('B1 typed excuse', r.status === 'ok' && !/chicken/i.test(r.dish.warning + r.dish.breakdown), 'a negated word excused the warning or breakdown');
   const r2 = rescueOut({ diet: 'veg' }, 'Veg fried rice, no egg', { name: 'Veg fried rice' }, [{ title: 'Eat half the egg fried rice', kind: 'portion', contains: ['egg', 'grain'], deltaKcal: -200, deltaProtein: -4, deltaCarbs: -30, deltaFats: -6, deltaFiber: 0 }, WALK]);
