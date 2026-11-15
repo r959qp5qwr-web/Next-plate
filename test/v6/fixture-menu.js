@@ -8,26 +8,27 @@ exports.typed = [
   "RICE AND BREADS", "Veg Biryani 280", "Jeera Rice 160", "Tandoori Roti 30", "Butter Naan 60",
   "SIDES", "Cucumber Raita 90", "Green Salad 80", "Gulab Jamun 90",
 ].join("\n");
-const none = { with: "", with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: "", grain_grams: 0 };
-const roti1 = { with: "1 Tandoori Roti", with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3, grain_made_of: "wheat", grain_grams: 40 };
-const roti2 = { with: "2 Tandoori Roti", with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6, grain_made_of: "wheat", grain_grams: 80 };
+const none = { with: "", with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, grain_made_of: "", grain_grams: 0, with_contains: [] };
+const roti1 = { with: "1 Tandoori Roti", with_kcal: 120, with_protein: 4, with_carbs: 22, with_fats: 2, with_fiber: 3, grain_made_of: "wheat", grain_grams: 40, with_contains: ["wheat", "grain"] };
+const roti2 = { with: "2 Tandoori Roti", with_kcal: 240, with_protein: 8, with_carbs: 44, with_fats: 4, with_fiber: 6, grain_made_of: "wheat", grain_grams: 80, with_contains: ["wheat", "grain"] };
 exports.reply = {
   status: "ok",
+  refer_reason: "none",
   place: "North Indian restaurant",
   dishes: [
-    { as_written: "Paneer Tikka", portion: "6 pieces, about 180 g", kcal: 380, protein: 24, carbs: 10, fats: 27, fiber: 2, ask: "Go easy on the butter brushed on top", ...roti1 },
-    { as_written: "Chicken Tikka", portion: "6 pieces, about 200 g", kcal: 320, protein: 42, carbs: 6, fats: 14, fiber: 1, ask: "No butter on top", ...roti2 },
-    { as_written: "Dal Tadka", portion: "1 bowl, about 300 g", kcal: 280, protein: 15, carbs: 34, fats: 9, fiber: 9, ask: "Tadka in less ghee", ...roti2 },
-    { as_written: "Palak Paneer", portion: "1 bowl, about 250 g", kcal: 340, protein: 17, carbs: 12, fats: 25, fiber: 5, ask: "No cream on top", ...roti2 },
-    { as_written: "Butter Chicken", portion: "1 bowl, about 300 g", kcal: 520, protein: 32, carbs: 14, fats: 38, fiber: 2, ask: "", with: "1 Butter Naan", with_kcal: 260, with_protein: 7, with_carbs: 40, with_fats: 8, with_fiber: 2, grain_made_of: "wheat", grain_grams: 90 },
-    { as_written: "Chole Bhature", portion: "2 bhature with 1 bowl of chole", kcal: 820, protein: 22, carbs: 98, fats: 38, fiber: 14, ask: "One bhatura instead of two", ...none, grain_made_of: "wheat", grain_grams: 75 },
-    { as_written: "Veg Biryani", portion: "1 plate, about 350 g", kcal: 520, protein: 12, carbs: 78, fats: 18, fiber: 6, ask: "Raita on the side", with: "1 Cucumber Raita", with_kcal: 90, with_protein: 4, with_carbs: 7, with_fats: 5, with_fiber: 1, grain_made_of: "rice", grain_grams: 200 },
-    { as_written: "Tawa Sabzi", portion: "1 bowl, about 250 g", kcal: 220, protein: 6, carbs: 20, fats: 13, fiber: 7, ask: "", ...roti2 },
+    { as_written: "Paneer Tikka", contains: ["dairy"], portion: "6 pieces, about 180 g", kcal: 380, protein: 24, carbs: 10, fats: 27, fiber: 2, ask: "Go easy on the butter brushed on top", ...roti1 },
+    { as_written: "Chicken Tikka", contains: ["meat", "dairy"], portion: "6 pieces, about 200 g", kcal: 320, protein: 42, carbs: 6, fats: 14, fiber: 1, ask: "No butter on top", ...roti2 },
+    { as_written: "Dal Tadka", contains: ["dairy", "onion_garlic"], portion: "1 bowl, about 300 g", kcal: 280, protein: 15, carbs: 34, fats: 9, fiber: 9, ask: "Tadka in less ghee", ...roti2 },
+    { as_written: "Palak Paneer", contains: ["dairy", "onion_garlic"], portion: "1 bowl, about 250 g", kcal: 340, protein: 17, carbs: 12, fats: 25, fiber: 5, ask: "No cream on top", ...roti2 },
+    { as_written: "Butter Chicken", contains: ["meat", "dairy"], portion: "1 bowl, about 300 g", kcal: 520, protein: 32, carbs: 14, fats: 38, fiber: 2, ask: "", with: "1 Butter Naan", with_kcal: 260, with_protein: 7, with_carbs: 40, with_fats: 8, with_fiber: 2, grain_made_of: "wheat", grain_grams: 90, with_contains: ["wheat", "grain", "dairy"] },
+    { as_written: "Chole Bhature", contains: ["wheat", "grain", "onion_garlic"], portion: "2 bhature with 1 bowl of chole", kcal: 820, protein: 22, carbs: 98, fats: 38, fiber: 14, ask: "One bhatura instead of two", ...none, grain_made_of: "wheat", grain_grams: 75 },
+    { as_written: "Veg Biryani", contains: ["grain", "dairy", "onion_garlic"], portion: "1 plate, about 350 g", kcal: 520, protein: 12, carbs: 78, fats: 18, fiber: 6, ask: "Raita on the side", with: "1 Cucumber Raita", with_kcal: 90, with_protein: 4, with_carbs: 7, with_fats: 5, with_fiber: 1, grain_made_of: "rice", grain_grams: 200, with_contains: ["dairy"] },
+    { as_written: "Tawa Sabzi", contains: ["onion_garlic", "root_veg"], portion: "1 bowl, about 250 g", kcal: 220, protein: 6, carbs: 20, fats: 13, fiber: 7, ask: "", ...roti2 },
   ],
   leave: [
-    { as_written: "Malai Kofta", why: "Fried koftas in a cream gravy, heavy for a dinner." },
-    { as_written: "Mutton Rogan Josh", why: "Rich and oily, a lot to take on late in the day." },
-    { as_written: "Gulab Jamun", why: "A fried sweet, better shared on another day." },
+    { as_written: "Malai Kofta", contains: ["dairy", "root_veg", "nuts"], why: "Fried koftas in a cream gravy, heavy for a dinner." },
+    { as_written: "Mutton Rogan Josh", contains: ["meat", "dairy"], why: "Rich and oily, a lot to take on late in the day." },
+    { as_written: "Gulab Jamun", contains: ["dairy", "sweet"], why: "A fried sweet, better shared on another day." },
   ],
   tip: "Start with the green salad and the dal or paneer, and keep the roti for last.",
 };

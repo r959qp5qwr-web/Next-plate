@@ -1268,20 +1268,21 @@ function fitOf(n,t){
 }
 
 /* ---------- word lists: these filter, they never bend ---------- */
-var NONVEG=["chicken","mutton","fish","prawn","prawns","shrimp","meat","keema","bacon","ham","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","sausage","pepperoni","seafood","crab","lamb","pork","beef","salami","turkey","goat","kheema","anchovy","squid","murgh","murg","kozhi","gosht","boti","nihari","paya","kaleji","macher","maach","machh","meen","bombil","chingri","chingdi","ilish","hilsa","kekda","mussel","clam","oyster","lobster","octopus"];   /* regional names (safety invariants S2, 15 Nov) */
-var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo"];
-var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam"];
-var JAINW=["onion","onions","garlic","potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","shallot","leek","spring onion","arbi","jimikand","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","adrak","batata","suran","shakarkandi","shakarkand"];
-var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji"],
-  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit"],
-  soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker"]};
-var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup"];
-var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","soy sauce","bhujia","farsan"];
-/* D2: no supplements, powders, tablets or doses */
-var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey"];
+var NONVEG=["chicken","mutton","fish","prawn","prawns","shrimp","meat","keema","bacon","ham","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","sausage","pepperoni","seafood","crab","lamb","pork","beef","salami","turkey","goat","kheema","anchovy","squid","murgh","murg","kozhi","gosht","boti","nihari","paya","kaleji","macher","maach","machh","meen","bombil","chingri","chingdi","ilish","hilsa","kekda","mussel","clam","oyster","lobster","octopus","machli","machhli","macchi","machher","jhinga","jheenga","kolambi","chemmeen","nethili","mangsho","bhetki","duck","haleem","galouti","kingfish","catfish","shellfish","karimeen","fish"];   /* regional names (safety invariants S2, 15 Nov) */
+var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo","mutta","dimer","motte","guddu","omlet","anday"];
+var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam","makhani","dal makhani","rasgulla","gulab jamun","kalakand","ghi","panir","chhach","mishti doi","milkshake","custard","ras malai","rabdi","phirni","peda","sandesh"];
+var JAINW=["onion","onions","garlic","potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","shallot","leek","spring onion","arbi","jimikand","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","adrak","batata","suran","shakarkandi","shakarkand","alu","ulli","inji","colocasia","turnip","turnips","kappa","shalgam","chukandar","taro","tapioca","cassava","lotus stem","kamal kakdi","scallion","scallions","mullangi","urulai"];
+var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji","badaam","moongfali","cashewnut","cashewnuts","kajoo","singdana","palli"],
+  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger"],
+  soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
+var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi"];
+var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","soy sauce","bhujia","farsan","pickled","avakaya","oorugai","thokku","sev","mixture","chakli","murukku","chivda","pappadam","pappad","papads","wafers","kurkure"];
+/* D2: no supplements, powders, tablets or doses (S9). Brands and forms that are only a supplement; "vitamin", "omega 3" and "drops" alone
+   also name food ("lemon has vitamin C", "the starch drops"), so they count in a supplement phrase. The declared "supplement" tag is the main check. */
+var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey","protinex","ensure plus","ensure powder","ensure shake","glass of ensure","glucerna","horlicks","bournvita","herbalife","spirulina","moringa powder","ashwagandha","omega 3 capsule","omega 3 capsules","omega-3 capsules","omega 3 supplement","vitamin pill","vitamin pills","vitamin tablet","vitamin drops","vitamin gummies","vitamin d drops","vitamin c tablet","vitamin supplement","pill","pills","iron drops","oral drops","metamucil","softgel","softgels","sachet"];
 /* invented precision and medical claims ([S] "+2000 % curcumin", "mTOR", "mg/dL") */
 var CLAIM=/%|\bmg\s*\/\s*dl\b|\bmtor\b|\bleucine\b|\bglut4\b|\bcortisol\b|\bmelatonin\b|\binsulin\b|\bdetox|\bcures?\b|\bcured\b|\btreat(ment|ing|ed)\b|\btreats?\s+(your|the|it|this|that|diabetes|anaemia|anemia|deficienc|blood|sugar|pain|weight|pcos|thyroid)|\bguarantee|\bheal(s|ing)?\b|\bhrv\b|\bmyofibrillar\b|\binflammat|\bimmun/i;
-var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(added\s+|extra\s+)?[a-z]+(\s+or\s+[a-z]+)?|\b[a-z]+-free\b/g;   /* "no oil and ghee" still shows ghee (safety invariant S1, 15 Nov) */
+var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(?!(?:added|extra|more|much)\b)[a-z]+(\s+or\s+[a-z]+)?|\b[a-z]+-free\b/g;   /* "no oil and ghee" still shows ghee; "no extra ghee" and "no added sugar" mean some is there (safety invariant S1, 15 Nov) */
 var EMO=/[\u2600-\u27BF\uFE0F]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDC00-\uDFFF]/g;
 var SAFETY="Your coach and doctor should plan this with you.";   /* says what it answers; the card quotes the ask above it (second screen review, R2-B5 072, R2-B7 107) */
 
@@ -1688,10 +1689,65 @@ function badWords(p){
 }
 var PLANT=/\b(coconut|almond|oat|soy|soya|rice|cashew|peanut)\s+(milk|curd|yogurt|yoghurt|cream|butter)\b/g;
 /* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
-var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}
-var MILLETBREAD=/\b(bajra|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|rice|chawal|akki)\s+(rotis?|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|thalipeeth)\b/g;
-function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(String(text).toLowerCase().replace(MILLETBREAD,"$1 flatbread").replace(NEG," ").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1"));}
+var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}   /* Hindi plurals in -e (phulke, kulche, bhature) are listed as words */
+var MILLETBREAD=/\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)(?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
+/* good food a listed word sits inside: soya or mushroom keema, sol kadhi, butter beans, rice noodles, jowar bread, idli rice cakes, sugar snap
+   peas (review of the test evidence, 15 Nov) */
+function notFood(t){return t.replace(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|chana|rajma|nutrela)\s+(keema|kheema)\b/g,"$1 mince").replace(/\bsol\s+kadhi\b/g,"sol curry")
+  .replace(/\bbutter\s+beans?\b/g,"lima beans").replace(/\b(rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(noodles?|vermicelli|pasta|sevai)\b/g,"$1 strands")
+  .replace(/\b(jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(bread|breads|toast)\b/g,"$1 loaf").replace(/\brice\s+cakes?\b/g,"rice rounds").replace(/\bsugar\s+snap\b/g,"snap");}
+function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(notFood(String(text).toLowerCase()).replace(MILLETBREAD,"$1 flatbread").replace(NEG," ").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1"));}
 function supp(text){return wordRx(SUPPW).test(String(text).toLowerCase());}
+
+/* ---------- declared contents (owner, 15 Nov, option survey: "Declared contents (Recommended)"). The model tags every dish, plate item,
+   swap, one-tap change, menu order and its side, Rescue dish and Rescue move from this fixed list, and code drops anything whose tags break
+   the person's rules. The word lists above stay as a second net: both checks must pass. ---------- */
+var TAGS=["meat","fish","egg","dairy","wheat","nuts","soya","onion_garlic","root_veg","sweet","salty_side","grain","supplement"];
+/* what each tag means, from the rule wording, for the prompts */
+var TAGTEXT="meat (any meat or poultry, its stock or fat), fish (any fish or seafood, dried fish, fish sauce), egg (egg in any form, mayonnaise, egg in a batter or bake), "+
+  "dairy (milk and anything made from it: curd, buttermilk, paneer, chhena, khoya, ghee, butter, cream, cheese, malai, and milk sweets such as kulfi, rasgulla, kalakand or peda), "+
+  "wheat (wheat in any form: atta, maida, sooji or rava, dalia, bread, pasta, most noodles and bakery), nuts (tree nuts and peanuts, nut pastes, nut butters, chikki), "+
+  "soya (soya beans and anything made from them: soya chunks, chaap, tofu, soy milk, soy sauce, tempeh), onion_garlic (onion, garlic, shallot, leek, spring onion, chives), "+
+  "root_veg (any root or underground vegetable: potato, sweet potato, carrot, radish, beetroot, turnip, yam, colocasia, lotus stem, tapioca, fresh ginger or turmeric root), "+
+  "sweet (any sweet, dessert or mithai, sugar, jaggery, honey, syrup, a sweetened drink or juice), salty_side (pickle, papad, namkeen, chips, sev, bhujia and other salted snacks or sides), "+
+  "grain (any cereal grain or millet: wheat, rice, millets, oats, maize, barley), supplement (any supplement, powder, capsule, tablet, drops, health-drink mix or protein powder)";
+var LEAVETAG={dairy:"dairy",nut:"nuts",wheat:"wheat",soya:"soya"};
+function barredTags(p,sweetOK){var b=["supplement"];   /* a supplement is never offered (S9) */
+  if(p.diet==="veg"||p.diet==="jain"||p.diet==="vegan")b.push("meat","fish","egg");else if(p.diet==="egg")b.push("meat","fish");
+  if(p.diet==="vegan")b.push("dairy");if(p.diet==="jain")b.push("onion_garlic","root_veg");
+  (p.leave||[]).forEach(function(k){var t=LEAVETAG[k];if(t&&b.indexOf(t)<0)b.push(t);});
+  if(p.bp)b.push("salty_side");if(p.health==="diabetes"&&!sweetOK)b.push("sweet");
+  return b;}
+/* An empty list is believed only when code can show the name is plain: every word is a plain vegetable, pulse, fruit, seed, herb or a
+   cooking or amount word below, none of which belongs to a tag. An unknown word means "not shown to be plain", and the item is dropped
+   (fail closed). The owner's rule reads "a missing or empty tag list where food is expected is dropped"; this reading keeps plain salads,
+   dals and fruit (which no tag fits) and drops every other empty list. PLAINEMPTY=false gives the literal rule. */
+var PLAINEMPTY=true;
+var PLAINW=new RegExp("^(?:\\d+|g|gm|grams?|ml|kcal|a|an|the|of|and|or|with|in|on|to|for|at|by|from|into|its|your|some|little|few|half|third|quarter|one|two|three|four|small|medium|large|plate|piece|pieces|slice|slices|cup|bowl|glass|side|extra|more|less|lightly|light|fresh|raw|plain|mixed|chopped|sliced|diced|grated|shredded|steamed|boiled|sauteed|saut|roasted|grilled|tossed|stir|stewed|baked|cooked|tempered|spiced|mashed|mash|sprouted|soaked|whole|split|green|red|yellow|black|white|kala|kabuli|lemony|tangy|warm|cold|cool|cooling|clear|thin|thick|soft|home|style|dry|"+
+  "salad|kachumber|kosambari|sabzi|sabji|subzi|bhaji|poriyal|thoran|palya|usili|kootu|curry|gravy|soup|shorba|rasam|sambar|dal|daal|dhal|tadka|tarka|chaat|sundal|stew|"+
+  "cucumber|kheera|tomato|tomatoes|lettuce|cabbage|spinach|palak|methi|fenugreek|lauki|dudhi|doodhi|bottle|ridge|snake|ash|gourd|turai|tori|tinda|parwal|karela|bitter|bhindi|okra|ladyfinger|brinjal|baingan|eggplant|capsicum|bell|pepper|peppers|beans|bean|french|cluster|gawar|broad|sem|peas|pea|matar|cauliflower|gobi|broccoli|pumpkin|kaddu|zucchini|squash|drumstick|drumsticks|moringa|sprouts|greens|leafy|leaves|amaranth|chaulai|bathua|sarson|saag|kale|celery|mushroom|mushrooms|corn|vegetable|vegetables|veg|veggies|"+
+  "moong|mung|masoor|toor|tuvar|arhar|urad|chana|chickpea|chickpeas|chole|rajma|lobia|chawli|kulthi|horsegram|moth|matki|"+
+  "apple|banana|papaya|guava|orange|mosambi|pomegranate|watermelon|melon|muskmelon|pear|grapes|berries|strawberries|pineapple|kiwi|fruit|fruits|amla|"+
+  "seeds|seed|lima|fasting|kuttu|singhara|singhare|rajgira|sabudana|makhana|snap|coconut|chutney|flax|flaxseed|flaxseeds|chia|sesame|til|sunflower|"+
+  "coriander|dhaniya|mint|pudina|curry|lemon|lime|nimbu|jeera|cumin|turmeric|haldi|mustard|rai|hing|asafoetida|chilli|chillies|chili|mirch|ajwain|saunf|fennel|pepper|cinnamon|cardamom|clove|cloves|herbs|spices|oil|water|"+
+  "eat|have|first|then|after|before|last|start|keep|set|aside|ask|order|serve|add|swap|walk|brisk|minute|minutes|min|meal|dish|it|this|that|plate|slowly|share|portion|less|oil|spoon|spoons)$");
+function plainFood(name){var w=words(notFood(String(name||"").toLowerCase()).replace(/\b(kuttu|singhara|singhare|rajgira|sabudana)\s+(?:ki\s+|ka\s+|ke\s+)?(?:puris?|rotis?|parathas?|khichdi|vadas?|tikkis?)\b/g,"$1 fasting"));return PLAINEMPTY&&w.length>0&&w.every(function(x){return PLAINW.test(x);});}
+/* the tags a person's own typed words account for: a Rescue dish is the one they named, so its kind of food is theirs (word net) */
+var TAGLISTS=function(){return {meat:NONVEG,fish:NONVEG,egg:EGGW,dairy:DAIRYW,wheat:LEAVEW.wheat,nuts:LEAVEW.nut,soya:LEAVEW.soya,onion_garlic:JAINW,root_veg:JAINW,sweet:SWEETS,salty_side:SALTY};};
+function typedTags(typed){var L=TAGLISTS(),t=String(typed||"").toLowerCase(),out=[];if(!t)return out;Object.keys(L).forEach(function(k){if(foodRx(L[k]).test(t))out.push(k);});return out;}
+/* "" when the declared contents pass; otherwise why the item is dropped. o: {sweetOK, typed (tags excused because the person typed them), noFood} */
+function contentsBad(a,name,p,o){o=o||{};
+  if(!Array.isArray(a))return "contents-missing";
+  for(var i=0;i<a.length;i++)if(TAGS.indexOf(a[i])<0)return "contents-unknown";
+  if(!a.length&&!o.noFood&&!plainFood(name))return "contents-empty";
+  var b=barredTags(p,o.sweetOK),ok=o.typed||[];
+  for(var j=0;j<a.length;j++)if(b.indexOf(a[j])>=0&&(a[j]==="supplement"||ok.indexOf(a[j])<0))return "contents";
+  return "";}
+function tagList(a){return Array.isArray(a)?a.filter(function(t,i){return TAGS.indexOf(t)>=0&&a.indexOf(t)===i;}):[];}
+/* text in a script the checks cannot read (any letter outside Latin, such as Devanagari or Tamil) is not shown in a model-written field */
+var NONLATIN=/[^\p{Script=Latin}\P{L}]/u;
+/* refer_reason on every reply that answers typed text: any value other than "none" is a referral (S7) */
+function referred(r){return !r||r.refer_reason!=="none";}
 
 /* ---------- cleaning ---------- */
 /* The owner's banned words (handoff rule 13). Text the model writes in its own voice is dropped when it uses one; the prompts ask for
@@ -1704,7 +1760,7 @@ var BANFORMS=["real(?:ness)?","quiet(?:er|est|ly|ness)?","simply","seamless\\w*"
   "empower\\w*","smart(?:er|est|ly|ness|s)?","magic(?:al|ally)?","game[\\s-]?chang\\w*","revolutionary","transform\\w*",
   "curat\\w*","tailor\\w*","personali[sz]\\w*","holistic\\w*","wellness[\\s-]journeys?"];
 var BANRX=new RegExp("(^|[^a-z])("+BANFORMS.join("|")+")(?![a-z])","i");
-function quoted(t,max){if(typeof t!=="string")return "";t=t.replace(EMO,"").replace(/!+/g,".").replace(/\s+/g," ").trim();return t.length>max?t.slice(0,max-1).replace(/\s+\S*$/,"")+"\u2026":t;}
+function quoted(t,max){if(typeof t!=="string"||NONLATIN.test(t))return "";t=t.replace(EMO,"").replace(/!+/g,".").replace(/\s+/g," ").trim();return t.length>max?t.slice(0,max-1).replace(/\s+\S*$/,"")+"\u2026":t;}
 function clean(t,max){t=quoted(t,max);return BANRX.test(t)?"":t;}
 /* A name the model writes for something the person typed (the Rescue dish, the log's title and foods) keeps one of the words only when the
    person typed that word themselves (a dish they named that way); otherwise the name is dropped. */
@@ -1717,6 +1773,10 @@ function own(t,max,typed){var q=quoted(t,max),SW=/^(?:a|an|the|of|and|or|with|to
   while((m=re.exec(ql))){var w=m[2].replace(/[^a-z]+/g," ").trim();if(/\s/.test(w))return "";
     var mine=pairs(typed,w),theirs=pairs(ql,w);if(!theirs.some(function(p){return mine.indexOf(p)>=0;}))return "";}
   return q;}
+var REFERW=["none","pregnancy","kidney","other_urgent"];
+/* D1 and S7 in the prompts: every food carries its declared contents; every reply to typed text carries refer_reason */
+function containsText(){return "- contains: every dish, item, swap and change carries contains, the list of these tags that are in it: "+TAGTEXT+". Tag honestly by what the food is made of and cooked with, not by its name (dal tadka cooked in ghee with garlic is dairy and onion_garlic; a gulab jamun is dairy and sweet). Each tag at most once; an empty list only when none of them is in it. The app checks the tags against the person's rules.";}
+function referText(){return "- refer_reason: \"none\", unless what they wrote says they are pregnant or breastfeeding (\"pregnancy\"), have a kidney condition (\"kidney\"), or describes something urgent for a doctor (\"other_urgent\"), in any language or spelling. Any value but \"none\" sends them to their coach or doctor.";}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
 function delta(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):0;}
@@ -1731,9 +1791,13 @@ function checkMeal(m,p){
   var title=clean(m.title,70),sub=clean(m.subtitle,120);
   if(!title)return {drop:"shape"};
   var items=(Array.isArray(m.items)?m.items:[]).slice(0,7).map(function(it){
-    return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};
+    return {food:clean(it&&it.food,60),grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
   }).filter(function(it){return it.food&&it.grams;});
   if(items.length<2)return {drop:"shape"};
+  /* declared contents first (D1): the plate and each item, so a drop says which net caught it */
+  var cb=contentsBad(m.contains,title,p);for(var ci=0;!cb&&ci<items.length;ci++)cb=contentsBad(items[ci].raw,items[ci].food,p);
+  if(cb)return {drop:cb};
+  items.forEach(function(it){it.contains=tagList(it.raw);delete it.raw;});
   var all=title+" "+sub+" "+items.map(function(i){return i.food;}).join(" ")+" "+clean(m.grain&&m.grain.food,60)+" "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
@@ -1743,34 +1807,37 @@ function checkMeal(m,p){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
   var est=4*n.protein+4*n.carbs+9*n.fats;
   if(Math.abs(est-n.kcal)/n.kcal>0.15)return {drop:"energy"};
+  var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
   var why=(Array.isArray(m.why)?m.why:[]).slice(0,3).map(function(w){return {pair:clean(w&&w.pair,60),effect:clean(w&&w.effect,150)};})
     .filter(function(w){return w.pair&&w.effect&&!CLAIM.test(w.pair+" "+w.effect)&&!supp(w.pair+" "+w.effect);});
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
-      return {food:clean(s&&s.food,60),made_of:quoted(s&&s.made_of,40),grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return s.food&&!crosses(s.food+" "+clean(s.made_of,40),p)&&!supp(s.food)&&
+      return {food:clean(s&&s.food,60),made_of:quoted(s&&s.made_of,40),raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
+    .filter(function(s){return s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.food+" "+clean(s.made_of,40),p)&&!supp(s.food)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.food)&&s.grams>=30))&&
       /* round 13: a protein swap takes the place of the first protein item; with diabetes it may not take the place of the grain item */
-      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));});}
+      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
     var x={suffix:clean(a.titleSuffix,50),note:clean(a.note,140),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
     var txt=x.suffix+". "+x.note,after=num(a.grain_grams_after,0,800);
-    if(!x.note||!x.suffix||crosses(txt,p)||supp(txt)||CLAIM.test(txt))return;
+    if(!x.note||!x.suffix||contentsBad(a.contains,txt,p)||crosses(txt,p)||supp(txt)||CLAIM.test(txt))return;
+    if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
+    x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(txt,n.carbs,x.deltaCarbs);CUR_SLOT="";
     if(p.health==="diabetes"&&p.slot!=="snack"&&!kg)return;   /* rule 3: the grain stays, at least half of it, and no wording takes it off */
     if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     al[k]=x;});
   return {meal:{title:title,subtitle:sub,cuisine:clean(m.cuisine,40),minutes:num(m.prepMinutes,0,180)||0,items:items,
-    kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:why,swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0}}};
+    kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:why,swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
 /* Validate a whole reply. Returns {status, read, meals, dropped:{reason:count}} */
 function checkReply(r,p){
   var out={status:"ok",read:"",meals:[],dropped:{}};
   if(!r||typeof r!=="object"){out.status="error";return out;}
-  if(r.status==="refer"){out.status="refer";out.read=clean(r.refer,200)||SAFETY;if(CLAIM.test(out.read)||supp(out.read))out.read=SAFETY;return out;}
+  if(r.status==="refer"||referred(r)){out.status="refer";out.read=r.status==="refer"&&r.refer_reason==="none"&&clean(r.refer,200)||SAFETY;if(CLAIM.test(out.read)||supp(out.read))out.read=SAFETY;return out;}   /* refer_reason other than "none" is a referral (S7) */
   out.read=clean(r.read,200);if(CLAIM.test(out.read)||supp(out.read)||crosses(out.read,p))out.read="";
   (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m){var c=checkMeal(m,p);if(c.meal)out.meals.push(c.meal);else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
   if(!out.meals.length)out.status="empty";
@@ -1787,21 +1854,38 @@ function ownWordsOut(title,typed){var w=String(typed||"").toLowerCase().match(/[
    menu clears such a portion (second screen review, R2-B6 081-2) */
 var HOUSEU=/\b(?:katoris?|katori|phulkas?|fulkas?)\b/i,VESSEL=/\b(?:bowls?|cups?|glass(?:es)?|ladles?|handis?|tumblers?)\b/i,GRAMS=/\d\s*(?:g|gm|grams?|ml)\b/i;
 function houseUnit(t){return HOUSEU.test(t)||VESSEL.test(t)&&!GRAMS.test(t);}
+/* S5 for Rescue: a move that gives the grain to someone else, puts something else in its spot, or wraps the food in a leaf takes the grain
+   off, whatever its wording ("Give the rice to your family", "Let the kids have the chawal", "Have salad in the naan's spot", "Wrap the
+   chicken in lettuce") */
+var GIVEAWAY=/\b(?:family|kids|children|child|husband|wife|son|daughter|guests?|others|friends?|partner|table|everyone|someone|mother|father|parents)\b/;
+var SPOTW=/\bin\s+(?:the\s+|your\s+)?[a-z]+(?:'?s)?\s+(?:spot|place|stead)\b|\b(?:lettuce|cabbage|leaf|leaves|lettuce\s+leaf)\s+(?:wraps?|cups?|boats?|rolls?)\b|\bwrap\w*\b[^.;]*\bin\s+(?:a\s+)?(?:lettuce|cabbage|leaf|leaves|lettuce\s+leaves)\b/;
+var ADDW=/\b(?:add|adds|adding|added|extra|more|another|second|on\s+top|top\s+(?:it\s+)?with|topped)\b/;
 function checkRescue(r,p,c){
-  function dropsGrain(t){return p.health==="diabetes"&&p.slot!=="snack"&&(removesGrain(t)||STAND.test(t));}
-  var typed=c&&typeof c.text==="string"?c.text:"",dn=own(r&&r.dish&&r.dish.name,80,typed)||(typed&&typed.length<=40&&typed.split(/\s+/).length<=6?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),80):"Your dish");
+  var typed=c&&typeof c.text==="string"?c.text:"",tt=typedTags(typed);
+  function dropsGrain(h,carbs){if(p.health!=="diabetes"||p.slot==="snack")return false;var t=h.title.toLowerCase();
+    return removesGrain(t)||STAND.test(t)||h.deltaCarbs<-0.5*carbs||SPOTW.test(t)||hasGrainWord(t)&&GIVEAWAY.test(t);}
   if(!r||typeof r!=="object")return {status:"error"};
-  if(r.status==="refer")return {status:"refer",read:SAFETY};
+  if(r.status==="refer"||referred(r))return {status:"refer",read:SAFETY};
+  var dn=own(r&&r.dish&&r.dish.name,80,typed)||(typed&&typed.length<=40&&typed.split(/\s+/).length<=6&&quoted(typed.charAt(0).toUpperCase()+typed.slice(1),80))||"Your dish";
   var d=r.dish||{},n={kcal:num(d.kcal,40,4000),protein:num(d.protein,0,300),carbs:num(d.carbs,0,500),fats:num(d.fats,0,300),fiber:num(d.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!dn)return {status:"empty"};
+  /* the dish is the one the person named: a kind of food their own words name is theirs; anything else the rules bar drops it (D1, M2) */
+  if(contentsBad(d.contains,dn,p,{typed:tt})||crosses(ownWordsOut(dn,typed),p)||supp(dn))return {status:"empty",dropped:{dish:1}};
   var hacks=(Array.isArray(r.hacks)?r.hacks:[]).slice(0,4).map(function(h){
-    return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
-    .filter(function(h){return h.title&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(h.kind==="portion"?ownWordsOut(h.title,typed):h.title,p)&&!dropsGrain(h.title)&&!houseUnit(h.title);});
+    return {title:clean(h&&h.title,80),kind:HACKKIND.indexOf(h&&h.kind)>=0?h.kind:"portion",raw:h&&h.contains,deltaKcal:delta(h&&h.deltaKcal,-1500,300),deltaProtein:delta(h&&h.deltaProtein,-60,40),deltaCarbs:delta(h&&h.deltaCarbs,-300,60),deltaFats:delta(h&&h.deltaFats,-150,30),deltaFiber:delta(h&&h.deltaFiber,-10,20)};})
+    .filter(function(h){if(!h.title)return false;
+      /* a portion move eats less of the dish the person named, so their own words and kinds of food stay theirs; a move that adds food is
+         checked on its full title (BLOCKER 7, M3) */
+      var mine=h.kind==="portion"&&!ADDW.test(h.title.toLowerCase())&&h.deltaKcal<=0;
+      return !contentsBad(h.raw,h.title,p,{typed:mine?tt:[],noFood:h.kind==="move"})&&!supp(h.title)&&!CLAIM.test(h.title)&&!crosses(mine?ownWordsOut(h.title,typed):h.title,p)&&!dropsGrain(h,n.carbs)&&!houseUnit(h.title);})
+    .map(function(h){h.contains=tagList(h.raw);delete h.raw;return h;});
   if(!hacks.length)return {status:"empty"};
-  var warn=clean(d.warning,80),br=clean(d.breakdown,180);if(CLAIM.test(warn)||supp(warn))warn="";if(CLAIM.test(br)||supp(br))br="";
-  var por=clean(d.portion,60);if(houseUnit(por)||CLAIM.test(por)||/\b(?:kcal|cal|calories)\b/i.test(por))por="";
-  por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~\u2248]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"\u2248 $1");   /* a weight is an estimate and says so */
-  return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br},hacks:hacks};
+  /* the warning, the breakdown and the portion are food-checked too, the person's own words aside (M2) */
+  function fine(x){return x&&!CLAIM.test(x)&&!supp(x)&&!crosses(ownWordsOut(x,typed),p)?x:"";}
+  var warn=fine(clean(d.warning,80)),br=fine(clean(d.breakdown,180));if(houseUnit(warn))warn="";if(houseUnit(br))br="";
+  var por=fine(clean(d.portion,60));if(houseUnit(por)||/\b(?:kcal|cal|calories)\b/i.test(por))por="";
+  por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~≈]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"≈ $1");   /* a weight is an estimate and says so */
+  return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:warn,breakdown:br,contains:tagList(d.contains)},hacks:hacks};
 }
 
 /* ---------- prompts. Built only from validated fields; the server builds them itself ---------- */
@@ -1816,6 +1900,7 @@ p.bp?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":nu
 "- No percentages, no blood-sugar numbers, no mg/dL, no medical or treatment claims, no promised weight change. Do not mention mTOR, leucine, insulin, cortisol or inflammation.",
 "- No exclamation marks, no emojis, no hype words.",
 voiceText(),
+containsText(),
 "- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats."
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -1847,6 +1932,7 @@ c.text?"- They wrote: \""+c.text+"\". Answer that with the meals. If it is a cra
 "",
 rulesText(p),
 "- If they ask about symptoms, medicines, lab reports, pregnancy, kidney disease, eating disorders or a child's diet, or anything that is not what to eat, return status \"refer\" with one sentence sending them to their coach or doctor, and no meals.",
+referText(),
 "",
 "WHAT TO RETURN",
 "- status \"ok\", a one-sentence \"read\" of the situation (at most 28 words), and 3 meals (no more, no fewer), best first, clearly different from each other.",
@@ -1870,10 +1956,11 @@ c.target?"- Their target for this meal: about "+c.target.kcal+" kcal and at leas
 "",
 rulesText(p),
 "- If this is not a food or a drink, return status \"ok\" with an empty dish and no hacks. If it asks about symptoms or medicines, return status \"refer\".",
+referText(),
 "",
 "WHAT TO RETURN",
 "- status \"ok\" and dish: name, portion (one order as usually served, in pieces or grams, at most 8 words, such as \"2 naan and 1 bowl, about 300 g\"; no household units such as katori), kcal, protein, carbs, fats, fiber, warning (at most 8 words: what makes it heavy), breakdown (one plain sentence, at most 26 words, no numbers).",
-"- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).",
+"- hacks: 3 or 4 practical moves, best first. Each: title (at most 12 words), contains (the tags of any food the move names or adds; [] for a walk), kind (sequence = eat something first; portion = leave part of it; swap = trade one item; order = ask for it differently; move = a walk after), and deltas in kcal and grams versus the dish as served (0 when the move changes order, not food).",
 "- Each move stands on its own and can be combined with the others: never give two moves that change the same item (not both \"eat one bhatura\" and \"swap the bhature for rotis\"). Together they must still leave a full meal.",
 "- Moves are food, ordering, eating order or a walk only. Never a supplement, powder, husk or drink mix. An amount in a move is in pieces or grams, never a household unit such as katori.",
 p.health==="diabetes"?"- Diabetes: never a move that leaves out the roti, rice or other grain, or puts a grain-free stand-in in its place. A portion move may leave part of the grain.":null
@@ -1882,22 +1969,23 @@ p.health==="diabetes"?"- Diabetes: never a move that leaves out the roti, rice o
 
 /* ---------- JSON schemas for Gemini (responseSchema, OpenAPI subset) ---------- */
 var SCH=(function(){
-  var I={type:"INTEGER"},S={type:"STRING"};
+  var I={type:"INTEGER"},S={type:"STRING"},T={type:"ARRAY",items:{type:"STRING",enum:TAGS}};
   function obj(props,req,order){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:order||Object.keys(props)};}
+  var R={type:"STRING",enum:REFERW};
   var deltas={deltaKcal:I,deltaProtein:I,deltaCarbs:I,deltaFats:I,deltaFiber:I};
   function withD(extra){var o={};for(var k in extra)o[k]=extra[k];for(var d in deltas)o[d]=deltas[d];return o;}
-  var alch=obj(withD({titleSuffix:S,note:S,minutes:I,grain_grams_after:I}));
+  var alch=obj(withD({titleSuffix:S,note:S,minutes:I,grain_grams_after:I,contains:T}));
   var meal=obj({title:S,subtitle:S,cuisine:S,prepMinutes:I,
-    items:{type:"ARRAY",items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS}})},
+    items:{type:"ARRAY",items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS},contains:T})},contains:T,
     grain:obj({food:S,made_of:S,grams:I}),
     kcal:I,protein:I,carbs:I,fats:I,fiber:I,
     why:{type:"ARRAY",items:obj({pair:S,effect:S})},
-    swaps:obj({protein:{type:"ARRAY",items:obj(withD({food:S,grams:I}))},base:{type:"ARRAY",items:obj(withD({food:S,grams:I,made_of:S}))}}),
+    swaps:obj({protein:{type:"ARRAY",items:obj(withD({food:S,grams:I,contains:T}))},base:{type:"ARRAY",items:obj(withD({food:S,grams:I,made_of:S,contains:T}))}}),
     alchemy:obj({protein:alch,glucose:alch,express:alch,gut:alch})});
   return {
-    meals:obj({status:{type:"STRING",enum:["ok","refer"]},read:S,refer:S,meals:{type:"ARRAY",items:meal}},["status"],["status","read","refer","meals"]),
-    rescue:obj({status:{type:"STRING",enum:["ok","refer"]},dish:obj({name:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,warning:S,breakdown:S}),
-      hacks:{type:"ARRAY",items:obj(withD({title:S,kind:{type:"STRING",enum:HACKKIND}}))}},["status"],["status","dish","hacks"])
+    meals:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,read:S,refer:S,meals:{type:"ARRAY",items:meal}},["status","refer_reason"],["status","refer_reason","read","refer","meals"]),
+    rescue:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,dish:obj({name:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,warning:S,breakdown:S,contains:T}),
+      hacks:{type:"ARRAY",items:obj(withD({title:S,kind:{type:"STRING",enum:HACKKIND},contains:T}))}},["status","refer_reason"],["status","refer_reason","dish","hacks"])
   };
 })();
 
@@ -2103,10 +2191,10 @@ function planDay(p,file,meal,appetite,par){
   var remK=Math.max(0,day.kcal-ek-ak),remP=Math.max(0,day.protein-ep-apr);
   var usualK=day.kcal*par.split[meal],usualP=day.protein*par.proteinSplit[meal];
   var k=remK*par.split[meal]/wk,pr=remP*par.proteinSplit[meal]/wp;
+  var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling, before the limits, so the 0.6x floor and the 1.25x cap hold on the target shown */
   k=Math.max(usualK*par.mealFloor,Math.min(k,usualK*par.catchUp));
   pr=Math.max(usualP*par.mealFloor,Math.min(pr,usualP*par.catchUpProtein,Math.max(usualP,par.mealProteinMax*day.refKg)));
-  pr=Math.min(pr,Math.max(usualP*par.mealFloor,k*(0.85+0.03*Math.max(1,Math.min(10,Math.round(appetite||5))))*par.mealProteinEnergyMax/4));   /* a meal's protein stays within what whole food at that energy can carry (R2-B3 043-1) */
-  var a=Math.max(1,Math.min(10,Math.round(appetite||5)));k=k*(0.85+0.03*a);                 /* [S] appetite scaling */
+  pr=Math.min(pr,Math.max(usualP*par.mealFloor,k*par.mealProteinEnergyMax/4));   /* a meal's protein stays within what whole food at that energy can carry (R2-B3 043-1) */
   if(day.meds)k=Math.max(k,usualK);   /* on insulin or sugar tablets a home meal never falls below its usual size (owner decision, 15 Nov; safety invariant S6) */
   var t=file.today,mine=by[meal]&&by[meal].kind!=="skipped"?by[meal]:null;
   return {day:day,eaten:{kcal:Math.round(ek+(mine?mine.kcal:0)),protein:Math.round(ep+(mine?mine.protein:0)),fiber:Math.round(t.fiber)},left:{kcal:Math.round(remK),protein:Math.round(remP)},
@@ -2144,7 +2232,7 @@ function hooksFor(p,file,c,pl,par){
   file.patterns.forEach(function(x){
     if(x.id==="late_dinner"&&meal==="dinner"&&!lateNow)add("late_dinner","dinners run late","Their dinner was late on "+x.n+" of the last "+x.of+" dinners logged. Keep dinner lighter and easy to digest.");
     if(x.id==="skips_meal"&&x.meal===meal)add("easy_"+meal,"an easy "+mn,"They often skip "+mn+" ("+x.n+" of the last "+x.of+" days). Make it quick and simple enough to actually happen.");
-    if(x.id==="repeat"&&x.slot===slotGroup(meal)&&!rep&&(rep=1))add("repeat_"+x.food.replace(/\s+/g,"_"),"less "+x.food+" this week",x.food+" was the main food "+x.n+" times in the last week. Choose a different main.");});
+    if(x.id==="repeat"&&x.slot===slotGroup(meal)&&!crosses(x.food,p)&&!rep&&(rep=1))add("repeat_"+x.food.replace(/\s+/g,"_"),"less "+x.food+" this week",x.food+" was the main food "+x.n+" times in the last week. Choose a different main.");});
   if(lateNow)add("late_now","a late dinner","It is late for dinner. Keep it light and easy to digest, with a smaller grain portion"+(p.health==="diabetes"?" (but keep the grain)":"")+".");
   if(file.slotProtein){var low=null;SLOTS.forEach(function(m){var v=file.slotProtein[m];if(v!=null&&(low==null||v<file.slotProtein[low]))low=m;});
     if(low===meal&&Object.keys(file.slotProtein).length>=2)add("low_protein_meal","protein at "+mn,mn.charAt(0).toUpperCase()+mn.slice(1)+" has been their lowest-protein meal this week (about "+file.slotProtein[low]+" g). Lead with protein.");}
@@ -2235,6 +2323,7 @@ profileText(p,c),
 "THIS MEAL",
 "- Meal: "+lab("meal",c.meal)+" (their local time "+c.time+")",
 t?"- Target for this meal: about "+t.kcal+" kcal and at least "+t.protein+" g protein. The first plate should land within 10 percent of the kcal target.":"- No calorie target set; keep portions moderate for an adult.",
+p.medsUsual?"- They take insulin or sulfonylurea tablets, or are not sure: every plate, with any swap or change, is at least about "+p.medsUsual+" kcal, the usual size of this meal. Never only a soup or a salad.":null,
 "- Appetite: "+c.appetite+" of 10.",
 "- Mood: "+lab("mood",c.mood)+". Food today: "+cuisineText(c.cuisine,p)+".",
 "- "+lab("prep",c.prep)+", "+lab("oil",c.oil).toLowerCase()+".",
@@ -2254,11 +2343,13 @@ rulesText(p),
 "- grain: the meal's whole-grain or millet item: food copied letter for letter from items, made_of what that grain is made of (for example \"whole wheat\", \"brown rice\", \"foxtail millet\", \"jowar\"; never a vegetable, pulse, nut or seed), and its grams. A meal with no grain gives food \"\", made_of \"\" and grams 0.",
 "- planned_around: the ids from WHAT TO PLAN AROUND that this meal really acts on (1 to 4 ids; only ids listed there).",
 "- for_you: one sentence (at most 24 words) telling the person why this plate suits them today, built on what this meal is planned around. Speak to them as \"you\". No percentages.",
+referText(),
 lite?null:TUNETEXT(p)
   ].filter(function(x){return x!==null;}).join("\n");
 }
 function TUNETEXT(p){return [
 "- swaps.protein: 3 options for the main protein, each with its own grams; the first is the one already in the meal with all deltas 0. swaps.base: 2 or 3 options for the carbohydrate base, each with its own grams, the first being the current one with deltas 0. With diabetes every base option is a whole grain or millet, with its grams. Deltas are the change in kcal and grams versus the meal as written.",
+"- Each swap and each change also gives contains: for a swap, the tags of the swap food; for a change, the tags of the foods it adds or uses.",
 "- Each base swap also gives made_of: what it is made of, as for grain (never a vegetable, pulse, nut or seed). Each one-tap change also gives grain_grams_after: the grams of the plate's grain item after the change (0 if it takes the grain off)."+(p.health==="diabetes"?" With diabetes every change keeps the grain item, at least half of it.":"")+"",
 "- alchemy: four one-tap changes to this exact meal, each with titleSuffix (at most 6 words, starting with + or a bracket), note (what changes, at most 22 words; a food the change adds is named with its grams, such as \"add 50 g sprouted moong\"), minutes (new prep time) and deltas versus the meal as written:",
 "  protein = add about 12 to 18 g protein with everyday food; glucose = gentler on blood sugar (more vegetables or legumes, less refined starch"+(p.health==="diabetes"?", but keep the grain portion":"")+"); express = a 10-minute version; gut = easier to digest (less chilli and oil, fermented or cooling sides)."].join("\n");}
@@ -2271,12 +2362,13 @@ profileText(p,null),
 "THE PLATE: "+m.title+" ("+m.subtitle+")",
 "- "+m.items.map(function(i){return i.grams+" g "+i.food+" ["+i.group+"]";}).join("; "),
 "- As written: "+m.kcal+" kcal, "+m.protein+" g protein, "+m.carbs+" g carbs, "+m.fats+" g fats, "+m.fiber+" g fibre. Prep "+m.minutes+" minutes.",
+p.medsUsual?"- They take insulin or sulfonylurea tablets, or are not sure: no swap or change takes the plate under about "+p.medsUsual+" kcal, the usual size of this meal.":null,
 "",
 rulesText(p),
 "",
 "WHAT TO RETURN",
 TUNETEXT(p)
-  ].join("\n");
+  ].filter(function(x){return x!==null;}).join("\n");
 }
 function buildLogPrompt(p,c){
   return [
@@ -2291,6 +2383,7 @@ profileText(p,null),
 "- assumed: one short sentence (at most 18 words) naming the portion sizes you assumed, so they can correct you.",
 voiceText(),
 "- If this is not something a person ate, return status \"refer\".",
+referText(),
 "- Plain words. No advice, no warnings, no percentages, no exclamation marks."
   ].join("\n");
 }
@@ -2301,10 +2394,10 @@ function platesSchema(ids,lite){
   m.required=m.required.concat(["planned_around","for_you","taste"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","for_you","taste"]);return s;
 }
 SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
-SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},title:{type:"STRING"},
+SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},refer_reason:{type:"STRING",enum:REFERW},title:{type:"STRING"},
   items:{type:"ARRAY",items:{type:"OBJECT",properties:{food:{type:"STRING"},grams:{type:"INTEGER"},group:{type:"STRING",enum:GROUPS}},required:["food","grams","group"]}},
-  kcal:{type:"INTEGER"},protein:{type:"INTEGER"},carbs:{type:"INTEGER"},fats:{type:"INTEGER"},fiber:{type:"INTEGER"},assumed:{type:"STRING"}},required:["status"],
-  propertyOrdering:["status","title","items","kcal","protein","carbs","fats","fiber","assumed"]};
+  kcal:{type:"INTEGER"},protein:{type:"INTEGER"},carbs:{type:"INTEGER"},fats:{type:"INTEGER"},fiber:{type:"INTEGER"},assumed:{type:"STRING"}},required:["status","refer_reason"],
+  propertyOrdering:["status","refer_reason","title","items","kcal","protein","carbs","fats","fiber","assumed"]};
 
 /* ---------- checks ---------- */
 function checkReply6(r,p,hooks){
@@ -2328,18 +2421,18 @@ function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTAST
   return out.length>=2?out:[];
 }
 function checkTune(r,p,meal){
-  var m={};for(var k in meal)m[k]=meal[k];m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;
+  var m={};for(var k in meal)m[k]=meal[k];m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;m.why=[];
   var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
   return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
 function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
-  if(r.status==="refer")return {status:"refer"};
+  if(r.status==="refer"||referred(r))return {status:"refer"};   /* refer_reason other than "none" is a referral (S7) */
   var n={kcal:num(r.kcal,1,5000),protein:num(r.protein,0,300),carbs:num(r.carbs,0,600),fats:num(r.fats,0,300),fiber:num(r.fiber,0,100)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
   var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){return {food:own(it&&it.food,60,typed)||banOut(it&&it.food),grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};}).filter(function(i){return i.food&&i.grams;});
-  var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as))as="";else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
+  var as=clean(r.assumed,140).replace(/^assum(ed|ing|es)[:,]?\s+(that\s+)?/i,"");if(CLAIM.test(as)||houseUnit(as))as="";   /* grams and kcal only (S8) */else if(as)as=as.charAt(0).toUpperCase()+as.slice(1);
   return {status:"ok",title:own(r.title,60,typed)||"Meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:as};
 }
 
@@ -2390,8 +2483,9 @@ briefText(p,c,file,pl,hooks,true),
 "",
 rulesText(p),
 p.health==="diabetes"?"- Diabetes, when ordering out: every order keeps one measured grain. Either the dish has its own (biryani, pulao, dosa, idli, noodles) or \"with\" is a roti, naan or rice from this menu, with its count. Name that grain plainly in \"with\" or in \"portion\". Leave out a dish that cannot be ordered with a grain here.":null,
-pl&&pl.day.meds?"- They take insulin or sulfonylurea tablets, or are not sure: a dish with its side must not come in under about "+pl.usual.kcal+" kcal, the usual size of this meal. Never suggest only a soup or a salad.":null,
+p.medsUsual?"- They take insulin or sulfonylurea tablets, or are not sure: a dish with its side must not come in under about "+p.medsUsual+" kcal, the usual size of this meal. Never suggest only a soup or a salad.":null,
 "- If you cannot read a menu here (blurred, cut off, or not a menu), return status \"unreadable\" and no dishes. If the text asks about symptoms, medicines or anything that is not food to order, return status \"refer\".",
+referText(),
 "",
 "WHAT TO RETURN",
 "- status \"ok\"; place: the kind of place this menu looks like, at most 40 characters (\"North Indian restaurant\", \"South Indian tiffin room\", \"office canteen\").",
@@ -2403,19 +2497,20 @@ pl&&pl.day.meds?"- They take insulin or sulfonylurea tablets, or are not sure: a
 "  ask: one way to order it better, in the words the person would say to the waiter, at most 80 characters (\"Less butter, no cream on top\"). No numbers. Empty if nothing needs asking.",
 "  with: one side from this same menu that completes the dish for this person: a count, then the name letter for letter as written on the menu (\"2 Tandoori Roti\", \"1 Cucumber Raita\"), at most 60 characters. Empty if the dish is a meal on its own.",
 "  with_kcal, with_protein, with_carbs, with_fats, with_fiber: your estimate for that side in that amount. All 0 when \"with\" is empty.",
+"  contains: the tags of the dish itself; with_contains: the tags of the side ([] when \"with\" is empty).",
 "  grain_made_of: what the grain in this order (in the dish or its side, as eaten in the portion you give) is made of, for example \"wheat\" for naan or roti, \"rice\" for biryani or dosa; \"\" if the order as given has none. grain_grams: the grams of that grain in the portion as eaten; 0 if none.",
 "  planned_around: the ids from WHAT TO PLAN AROUND that this order really acts on (1 to 4; only ids listed there). Every order cites at least one; a health id (such as salt with BP) applies to every order you choose.",
-"- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied letter for letter) and why (at most 14 words, plain, about the food itself, no numbers).",
+"- leave: at most 3 dishes on this menu that this person could eat under their diet but should leave for another day. Each has as_written (copied letter for letter), contains, and why (at most 14 words, plain, about the food itself, no numbers).",
 "- tip: one sentence, at most 24 words, on the order of eating at this meal: what to start with and what to keep for last. No numbers."
   ].filter(function(x){return x!==null;}).join("\n");
 }
 function menuSchema(ids){
-  var I={type:"INTEGER"},S={type:"STRING"};
+  var I={type:"INTEGER"},S={type:"STRING"},T={type:"ARRAY",items:{type:"STRING",enum:TAGS}};
   function obj(props,req){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:Object.keys(props)};}
-  return obj({status:{type:"STRING",enum:["ok","refer","unreadable"]},place:S,
-    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,ask:S,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,grain_made_of:S,grain_grams:I,
+  return obj({status:{type:"STRING",enum:["ok","refer","unreadable"]},refer_reason:{type:"STRING",enum:REFERW},place:S,
+    dishes:{type:"ARRAY",items:obj({as_written:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,ask:S,"with":S,with_kcal:I,with_protein:I,with_carbs:I,with_fats:I,with_fiber:I,grain_made_of:S,grain_grams:I,contains:T,with_contains:T,
       planned_around:{type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}}})},
-    leave:{type:"ARRAY",items:obj({as_written:S,why:S})},tip:S},["status"]);
+    leave:{type:"ARRAY",items:obj({as_written:S,why:S,contains:T})},tip:S},["status","refer_reason"]);
 }
 /* Critic round 12: when the grain is in the dish name and the side holds none, a portion that names a food must also name the grain.
    "From the biryani" names where a part comes from, not what is eaten; a food after "with" is an addition ("1 plate with raita"). */
@@ -2552,14 +2647,14 @@ function soldItems(text,meal){text=String(text||"").replace(/\s\|\s(?=\s*\(?\s*(
 function scaleN(n,f){var o={};MENUK.forEach(function(k){o[k]=Math.round(n[k]*f);});return o;}
 /* When nothing fits (rule 7): the two moves whose effect code can measure on the order's own figures. Eating part of it counts only
    if that brings the order closer to the target (and, on diabetes medicine, not under the meal's usual energy); then a walk; eating order last. */
-function menuMoves(n,pl){
+function menuMoves(n,pl,p){
   var t=pl.target,f0=fitOf(n,t),best=null,M=[];
   (n.kcal>t.kcal?[[.75,"Eat about three quarters and pack the rest"],[.67,"Eat about two thirds and pack the rest"],[.5,"Eat about half and pack the rest"]]:[[2,"Order a double portion"]]).forEach(function(x){
     var s=scaleN(n,x[0]),f=fitOf(s,t);if(pl.day.meds&&s.kcal<pl.usual.kcal)return;
     if(f>f0&&(!best||f>best.fit))best={kind:"portion",title:x[1],scale:x[0],fit:f};});
   if(best)M.push(best);
   M.push({kind:"move",title:"A 15-minute walk after the meal"});
-  if(M.length<2)M.push({kind:"sequence",title:"Vegetables and protein first, the bread or rice last"});
+  if(M.length<2)M.push({kind:"sequence",title:crosses("bread or rice",p||{})?"Vegetables and protein first, the grain last":"Vegetables and protein first, the bread or rice last"});   /* text the engine writes follows the food rules too */
   return M;
 }
 function menuNote(n,t,mn){
@@ -2572,13 +2667,16 @@ function menuNote(n,t,mn){
 /* Checked reply: {status, place, orders:[{name, portion, ask, with, n, fit, rise, planned}] best first (at most 3), leave, tip, dropped, hooks, note?, moves?}.
    n is the dish plus its side. A dish that fails a check is dropped; a side that fails is taken off the order and the dish stands alone. */
 var BANDN={Gentle:0,Moderate:1,Sharp:2};
+var SCRIPTNOTE="Next Plate can read menus in English letters for now. Type the dishes in English letters.";
 function checkMenu(r,p,c,pl,hooks){
   var out={status:"ok",place:"",orders:[],leave:[],tip:"",dropped:{},hooks:{}},ids={};
   (hooks||[]).forEach(function(h){ids[h.id]=1;out.hooks[h.id]=h.tag;});
   if(!r||typeof r!=="object"){out.status="error";return out;}
-  if(r.status==="refer"){out.status="refer";out.read=SAFETY;return out;}
+  if(r.status==="refer"||referred(r)){out.status="refer";out.read=SAFETY;return out;}        /* refer_reason other than "none" is a referral (S7) */
   var raw=Array.isArray(r.dishes)?r.dishes.slice(0,8):[];
-  if(r.status==="unreadable"||!raw.length){out.status="unreadable";return out;}            /* no readable dishes: "I could not read that menu" */
+  /* a menu in a script the checks cannot read ends with a note to type it in English letters (D1) */
+  var script=NONLATIN.test(c.text||"")||raw.some(function(d){return d&&typeof d.as_written==="string"&&NONLATIN.test(d.as_written);});
+  if(r.status==="unreadable"||!raw.length){out.status=script?"script":"unreadable";if(script)out.read=SCRIPTNOTE;return out;}            /* no readable dishes: "I could not read that menu" */
   var typed=c.text?menuNorm(c.text):"",items=menuItems(c.text),t=pl?pl.target:null,seen={},list=[];
   function drop(k){out.dropped[k]=(out.dropped[k]||0)+1;}
   function bad(x){return CLAIM.test(x)||supp(x)||crosses(x,p);}
@@ -2587,32 +2685,37 @@ function checkMenu(r,p,c,pl,hooks){
   raw.forEach(function(d,i){
     if(!d||typeof d!=="object")return drop("shape");
     var name=quoted(d.as_written,60),por=clean(d.portion,60),ask=clean(d.ask,80),side=own(d["with"],60,c.text)||own(String(d["with"]||"").split(/[,(;]|\s[-\u2013\u2014]\s/)[0],60,c.text),all=name+" "+por+" "+ask+" "+side+" "+clean(d["with"],60)+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
-    if(!name||seen[key])return drop("shape");seen[key]=1;
+    if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
     if(typed&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
+    var cb=contentsBad(d.contains,name,p);if(cb)return drop(cb);                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
     if(supp(all))return drop("supplement");if(CLAIM.test(name))return drop("claim");        /* rule 4 */
     var m=menuFigs(d,"",DISHR);if(!m.n)return drop(m.drop);var n=m.n;                       /* rule 5 */
     if(CLAIM.test(ask)||FIGTXT.test(ask))ask="";
-    if(CLAIM.test(por)||/\b(katoris?|kcal|cal|calories)\b/i.test(por))por="";
+    if(CLAIM.test(por)||houseUnit(por)||/\b(katoris?|kcal|cal|calories)\b/i.test(por))por="";   /* grams and kcal only: a bowl, cup or glass without grams, a katori or phulka is not shown (S8) */
     por=por.replace(/(?:\b(?:about|around|roughly|approx\.?|approximately)\s+|[~\u2248]\s*)(?=\d)/gi,"").replace(/(\d+(?:\.\d+)?(?:\s*(?:-|\u2013|to)\s*\d+(?:\.\d+)?)?\s*(?:g|gm|grams?|ml)\b)/gi,"\u2248 $1");   /* a weight is an estimate and says so */
-    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&!sideOnMenu(side,typed)?"side-off-menu":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
+    if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&!sideOnMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
+      /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
+      var sg0=num(d.grain_grams,0,1500)||0,withG=sg0>=10&&isGrain(side)&&!isGrain(name)||GRAMS.test(side);
+      if(!off&&(/\bkatoris?\b/i.test(side)||VESSEL.test(side)&&!withG))off="side-units";
       if(off){side="";drop(off);}else MENUK.forEach(function(k){n[k]+=sf.n[k];});}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(name)&&!isGrain(side)&&!porGrain(name,por,typed?c.text:"",c.meal))||removesGrain(por+". "+ask)||STAND.test(por+". "+ask)||partOnly(name,por,side)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
-    if(pl&&pl.day.meds&&n.kcal<pl.usual.kcal)return drop("meds-low");                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
+    if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     var sg=num(d.grain_grams,0,1500)||0;   /* a grain side shows its count and its grams (owner decision, 14 Nov) */
-    list.push({name:name,portion:por,ask:ask,"with":side&&sg>=10&&isGrain(side)&&!isGrain(name)&&!/\bg\b|gram/i.test(side)?side+", \u2248\u00A0"+Math.round(sg)+"\u00A0g":side,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,por,side):"",
+    var shown=side&&sg>=10&&isGrain(side)&&!isGrain(name)&&!/\bg\b|gram/i.test(side)?side+", \u2248\u00A0"+Math.round(sg)+"\u00A0g":side;
+    list.push({name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(name,por,side):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place=clean(r.place,40);if(bad(out.place))out.place="";
   out.tip=clean(r.tip,170);if(bad(out.tip)||FIGTXT.test(out.tip))out.tip="";
-  if(!list.length){out.status="empty";return out;}
+  if(!list.length){out.status=script?"script":"empty";if(script)out.read=SCRIPTNOTE;return out;}
   /* rule 6: fit to this meal's target, then the gentler band, then fewer changes (an ask, a side); ties keep the menu's order */
   function far(n){return Math.abs(n.kcal-t.kcal)/t.kcal+Math.max(0,t.protein-n.protein)/t.protein;}      /* among orders that all score 0, the one nearest the target is the least bad */
   list.sort(function(a,b){return (b.fit||0)-(a.fit||0)||(t&&!a.fit&&!b.fit?far(a.n)-far(b.n):0)||BANDN[a.rise]-BANDN[b.rise]||a.ch-b.ch||a.i-b.i;});
-  if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl);}   /* rule 7 */
+  if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl,p);}   /* rule 7 */
   var kept={};out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;delete o.i;delete o.ch;return o;});
   out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){return {name:quoted(l&&l.as_written,60),why:clean(l&&l.why,90)};})
-    .filter(function(l){return l.name&&l.why&&(!typed||onMenu(l.name,typed))&&!leaveBad(l.name+" "+l.why)&&!onlyInBarred(l.name,items,pNoSweet)&&!FIGTXT.test(l.why)&&!kept[menuNorm(l.name)];}).slice(0,3);
+    .filter(function(l,i){return l.name&&l.why&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.name,typed))&&!leaveBad(l.name+" "+l.why)&&!onlyInBarred(l.name,items,pNoSweet)&&!FIGTXT.test(l.why)&&!kept[menuNorm(l.name)];}).slice(0,3);
   return out;
 }
 
@@ -2620,18 +2723,26 @@ function checkMenu(r,p,c,pl,hooks){
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
 KINDS=["meals","rescue","log","tune","menu"];
 /* a logged item keeps its name when a banned word is in it (a brand, say): the word goes, the food stays (review, 15 Nov) */
-function banOut(t){var q=String(t||"").replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
+function banOut(t){if(NONLATIN.test(String(t||"")))return "";var q=String(t||"").replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
 /* safety invariant S7: typed disclosures of pregnancy, breastfeeding or a kidney condition ("kidney beans" is food) */
-var REFERTXT=/\b(?:pregnan\w*|expecting a baby|breast-?feeding|nursing mother|lactating|garbh\w*|dialysis|ckd|creatinine|renal\s+(?:disease|failure|problem\w*)|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage))\b/i;
+var REFERTXT=/\b(?:pre?gn\w*|pragn\w*|pregant\w*|preggo|preggers|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|doodh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|ckd|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gurd[aeo]\s+(?:ki|ka|ke|kharab|kamzor|problem|bimari|fail\w*|me|mein|mai|damage\w*|weak|not))\b/i;
+/* the same in Devanagari and Tamil letters (JavaScript's \b does not work outside Latin letters, so these stand alone) */
+var REFERNL=/गर्भ|प्रेग्न|प्रेगन|स्तनपान|दूध\s*पिला|किडनी|गुर्द|डायलिसिस|கர்ப்ப|தாய்ப்பால்|சிறுநீரக|கிட்னி|டயாலிசிஸ்/;
+function referTyped(t){return REFERTXT.test(t)||REFERNL.test(t);}
+/* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
+   of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
+   than a person's own usual size). 0 when the person is not on that medicine. */
+function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
+  var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
 plan=function(kind,body){
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";if(REFERTXT.test(tx))return {reply:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
-  if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
+  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";if(referTyped(tx))return {reply:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";p.medsUsual=medsUsual(p,p.slot);var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
   var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
-  c.target=pl?pl.target:null;p.slot=c.meal;
+  c.target=pl?pl.target:null;p.slot=c.meal;p.medsUsual=medsUsual(p,c.meal);
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks);}};}
   if(kind==="rescue"){c.photo=!!(body&&body.image);
@@ -2862,8 +2973,8 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
   if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
-  /* plates kept from before the declared grain field (Critic round 12) were checked under the old rules: drop them, so today's plates are made again */
-  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&r.meals.some(function(m){return !m||!m.grain;})){delete STORE.res[k];
+  /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
+  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);})){delete STORE.res[k];
     Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;}});}});
   if(typeof raw.k==="string")KEYCODE=raw.k;
 }catch(e){}})();
@@ -2960,7 +3071,7 @@ function makePlates(text,again){
 var TUNING={};
 function tune(key,i){
   var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
-  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,grain:m.grain,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
+  api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,grain:m.grain,contains:m.contains,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
     delete TUNING[key+"#"+i];
     if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
     if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
@@ -3414,7 +3525,7 @@ function readMenu(text,image){
     if(askedFor()!==sent){if(!blocked()&&C.meal===meal)readMenu(text,image);else render();return;}
     if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
     else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read};
-    else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.mnone=s===200&&j.status!=="unreadable";UI.merr=s!==200?(j.code==="upstream_error"&&image?"Next Plate couldn't read your menu just now. Your photo is kept.":errText(j.code,"menu")):j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
+    else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="script"?"script":j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.mnone=s===200&&j.status!=="unreadable"&&j.status!=="script";UI.merr=s!==200?(j.code==="upstream_error"&&image?"Next Plate couldn't read your menu just now. Your photo is kept.":errText(j.code,"menu")):j.status==="script"?SCRIPTNOTE:j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}
     render();if(UI.merr)$("said").textContent=UI.merr;});
 }
 /* Rounds 29-30: the grains the person said are not available, kept for this menu and this meal only (a new menu or meal starts afresh);

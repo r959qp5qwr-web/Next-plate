@@ -7,6 +7,13 @@ const page = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
 const open = '<script id="np-core">', a = page.indexOf(open) + open.length;
 (0, eval)(page.slice(a, page.indexOf('</script>', a)));
 const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
+// This suite tests rule 3 and the word rules. Declared contents (D1) and refer_reason (S7) are tested in test/safety/check.js; here a case
+// written without them reaches the checks it was written for, as if the model had declared them. A case that declares them is checked as given.
+{ const cb = contentsBad, rf = referred;
+  contentsBad = (a, n, p, o) => a === undefined ? '' : cb(a, n, p, o);
+  referred = (r) => r && typeof r === 'object' && r.refer_reason === undefined ? false : rf(r); }
+// the Rescue fixture is a mutton biryani; cases here rename it and type other dishes, so its declared contents are left to each case
+delete fx.rescue.dish.contains; fx.rescue.hacks.forEach(h => { delete h.contains; });
 const P = { goal: 'lose', focus: 'iron', diet: 'veg', health: 'diabetes', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 let bad = 0;
 function ok(cond, what) { console.log((cond ? 'ok   ' : 'FAIL ') + what); if (!cond) bad++; }
@@ -1142,10 +1149,10 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const pl = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'dinner', text: 'mutton biryani' } });
   r.dish.name = 'A real Hyderabadi mutton biryani'; // planted on purpose
   clear('Rescue: no banned word in any shown field, the dish name included', pl.check(r));
-  const r2 = JSON.parse(JSON.stringify(fx.rescue)); r2.dish.name = 'Magic masala dosa'; // planted on purpose: the person typed this word
+  const r2 = JSON.parse(JSON.stringify(fx.rescue)); r2.dish.name = 'Magic masala dosa'; r2.dish.contains = ['grain', 'root_veg', 'onion_garlic']; // planted on purpose: the person typed this word (contents declared for a masala dosa)
   const pl2 = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'dinner', text: 'magic masala dosa' } }); // planted on purpose
   ok(pl2.check(r2).dish.name === 'Magic masala dosa', 'Rescue: a dish name keeps a word the person typed themselves'); // planted on purpose
-  const r3 = JSON.parse(JSON.stringify(fx.rescue)); r3.dish.name = 'A real treat: biryani'; // planted on purpose
+  const r3 = JSON.parse(JSON.stringify(fx.rescue)); r3.dish.name = 'A real treat: biryani'; r3.dish.contains = ['grain', 'dairy', 'onion_garlic']; // planted on purpose (contents declared for the biryani typed)
   const pl3 = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'dinner', text: 'biryani, the real one' } }); // planted on purpose
   const n3 = pl3.check(r3).dish.name; ok(n3 === 'Biryani, the real one', 'Rescue: the model\'s own use of a typed word goes; the person\'s own words stand in (' + n3 + ')'); // planted on purpose
   const r4 = JSON.parse(JSON.stringify(fx.rescue)); r4.dish.name = 'A quiet little biryani'; // planted on purpose
@@ -1194,7 +1201,7 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   ok(/never a move that leaves out the roti, rice or other grain/.test(pr), 'Rescue, diabetes: the prompt asks for no move that leaves out the grain');
 }
 { // second screen review, R2-B6 081-2: Rescue amounts are in pieces or grams, never katori or phulka, and a bowl only with its grams
-  const r = JSON.parse(JSON.stringify(fx.rescue)); r.dish.portion = '2 katori curry and 2 naan';
+  const r = JSON.parse(JSON.stringify(fx.rescue)); r.dish.portion = '2 katori curry and 2 naan'; r.dish.name = 'Paneer butter masala with naan'; // the dish typed (a dish name is food-checked, M2)
   r.hacks = [{ title: 'Have only half a katori of the gravy', kind: 'portion', deltaKcal: -150, deltaProtein: -2, deltaCarbs: -6, deltaFats: -12, deltaFiber: 0 },
     { title: 'Eat a bowl of salad first', kind: 'sequence', deltaKcal: 40, deltaProtein: 1, deltaCarbs: 6, deltaFats: 1, deltaFiber: 3 },
     { title: 'Eat 150 g salad first', kind: 'sequence', deltaKcal: 40, deltaProtein: 1, deltaCarbs: 6, deltaFats: 1, deltaFiber: 3 },
@@ -1202,11 +1209,11 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
   const out = plan('rescue', { profile: Object.assign({}, P, { health: 'none' }), ctx: { meal: 'lunch', text: 'Paneer butter masala with naan' } }).check(r), titles = out.hacks.map(h => h.title);
   ok(out.dish.portion === '', 'Rescue: a portion in katori is not shown (' + out.dish.portion + ')');
   ok(!titles.some(t => /katori|phulka|bowl of/i.test(t)) && titles.includes('Eat 150 g salad first'), 'Rescue: a move in katori, phulka or a bowl without grams is dropped; one in grams stays (' + titles.join(' | ') + ')');
-  const r2 = JSON.parse(JSON.stringify(fx.rescue)); r2.dish.portion = '1 bowl, about 300 g, and 2 naan';
+  const r2 = JSON.parse(JSON.stringify(fx.rescue)); r2.dish.portion = '1 bowl, about 300 g, and 2 naan'; r2.dish.name = 'Paneer butter masala with naan'; // the dish typed (a dish name is food-checked, M2)
   const p2 = plan('rescue', { profile: Object.assign({}, P, { health: 'none' }), ctx: { meal: 'lunch', text: 'Paneer butter masala with naan' } }).check(r2).dish.portion;
   ok(p2 === '1 bowl, \u2248 300 g, and 2 naan', 'Rescue: a portion with its grams stays, the weight marked as an estimate (' + p2 + ')');
-  const r3 = JSON.parse(JSON.stringify(fx.rescue)); r3.dish.portion = 'Full handi, as delivered';
-  ok(plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'biryani' } }).check(r3).dish.portion === '', 'Rescue: a portion in a handi with no grams is not shown');
+  const r3 = JSON.parse(JSON.stringify(fx.rescue)); r3.dish.portion = 'Full handi, as delivered'; r3.dish.name = 'Veg biryani'; // the dish typed (a dish name is food-checked, M2)
+  ok(plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'veg biryani' } }).check(r3).dish.portion === '', 'Rescue: a portion in a handi with no grams is not shown');
   const pr = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' } }).prompt;
   ok(/in pieces or grams/.test(pr) && /no household units such as katori/.test(pr), 'Rescue: the prompt asks for the portion in pieces or grams, with no katori');
 }
