@@ -1,188 +1,185 @@
 VERDICT: FAIL
-BUILD: 61247f911870ecd782b2b15694df3dd2efd168cc6a5271e7e2cdb9be0ddd2317
+BUILD: 27f30373dd9bb12a4c688e3fe1383743c88863d4c1c425af727da8e12eb910d7
 
-Safety audit of the current tree, 15 Nov 2026. Judged from scratch on the np-core script inside `hosted/v6/index.min.html` and on the
-v6 screens. The previous AUDIT.md was not used. Model replies were crafted by hand; the live model was not called.
+Safety audit of commit 06d880f, 15 Nov 2026. Judged on the np-core script inside `hosted/v6/index.min.html` and on the v6 screens. The
+builder's summary and test counts were not used. Model replies were written by hand; the live model was not called.
 
 Checks run: `npm run -s build` in a scratch copy of the build inputs gives pages byte-identical to the three committed pages, so the
-committed `hosted/v6/index.min.html` is the build of the current sources. `npm run -s safety`, `rules` and `words`: all pass. The
-fingerprint was 61247f91...2317 at the start and is the same after all probing.
+committed pages are the build of the current sources. `npm run -s safety`, `rules` and `words`: all pass. The fingerprint was 27f30373...0d7
+at the start and is the same after all probing.
 
-How each finding was reached: "engine-run" = crafted reply through `plan(kind).check()` in Node on np-core; "driven" = the v6 screen in
-headless Chrome (network blocked), on a scratch copy of the unminified `hosted/v6/index.html` with the app scope exposed and replies
-injected; "read" = code reading only.
+How each finding was reached: "engine-run" = a hand-written reply through `plan(kind).check()` in Node on np-core; "driven" = the v6 screen
+in headless Chrome (network blocked), on a scratch copy of `hosted/v6/index.html` with the app scope exposed; "read" = code reading only.
 
-9 BLOCKER, 5 MAJOR, 8 MINOR, 2 COSMETIC.
+5 BLOCKER, 2 MAJOR, 5 MINOR, 2 COSMETIC.
+
+## Recheck of the previous audit (4f6d0e5)
+
+Every counter-example written in the previous AUDIT.md was run again on this build:
+- B1 (typed "no egg", "not chicken", "no paneer", "no onion no garlic", "no chicken"): all dropped or blanked now.
+- B2 and M1 (held-out names and supplements in untagged fields, 18 cases): all blanked or dropped now.
+- B3 (referral text): the fixed SAFETY line every time. B4 (11 dish names with an empty list): all dropped as `contents-empty`.
+- B5: the dish taps carry tags and are filtered; a Jain client sees none of the eight, a vegan client sees only "Masala dosa with chutney".
+- B6 with the old characters (zero-width space, soft hyphen, accents, full-width letters): caught. Other characters still pass (BLOCKER 1).
+- B7 (driven): the untick that left 35 g of 100 g is refused; 65 g logged. B8 (driven): swap plus two changes on medicines is refused at
+  the second tap; 485 kcal logged against a usual 480. B9 (driven, through the sheet's own inputs): the kept plates are gone after the
+  body figures are typed.
+- M2 (katori and phulka in one-tap notes, menu ask and tip, subtitle): blanked. M3: `dayOf` matches the 4 am rule on 10 zones (see Probed).
+- M4 (driven): after a faked 04:05 the first tap redraws for the new day and logs nothing. M5: the v5 skip no longer passes as a check.
+
+The earlier fixes hold for the cases they were written against. The new chokepoints (`norm()`, `closedText`, `affirmed()`) have gaps
+of the same kinds, listed below.
 
 ## BLOCKER
 
-**B1. S1, S2: a food the client said no to is excused on Rescue because they typed its name (engine-run).** `typedTags()` (src/v5/core.js:545)
-gives the client every tag whose word list matches anywhere in what they typed, negations included. `checkRescue` then excuses those tags on
-the dish (core.js:682) and on portion moves (core.js:689), and `ownWordsOut()` (core.js:659) strips the typed words before the word net
-looks at the dish name, warning and breakdown (core.js:693). One JAINW word excuses both onion_garlic and root_veg; one NONVEG word excuses
-both meat and fish.
-- Vegetarian types "Veg biryani, no egg"; reply dish "Egg biryani", contains [grain, egg]: shown.
-- Vegetarian types "Paneer tikka, not chicken"; dish "Chicken tikka" [meat]: shown.
-- Dairy left out, types "Thali, no paneer"; dish "Paneer thali" [grain, dairy]: shown.
-- Jain types "Thali, no onion no garlic"; dish "Lahsuni dal thali" [grain, onion_garlic]: shown.
-- Jain types "Jain pav bhaji, no potato"; dish "Pav bhaji with lahsuni chutney" [onion_garlic, wheat]: shown.
-- Egg diet types "Egg curry, no chicken"; dish "Egg curry with bangude" [egg, fish]: shown.
-- Vegetarian types "Veg fried rice, no egg"; portion move "Eat half the egg fried rice" [egg, grain]: shown.
-- Vegetarian types "Veg thali, no chicken"; breakdown "The chicken gravy carries most of the fat", warning "Chicken pieces are fried": shown.
-- Smallest fix: run `typedTags` and `ownWordsOut` on the typed text after `NEG`/`NEGPRE` removal, so a negated word grants nothing; map
-  each tag to its own words (split JAINW into onion/garlic and roots, NONVEG into meat and fish).
+**1. S1-S4: characters that `norm()` leaves in place hide any listed food from the closed check and the word net, in every prose field.
+No wrong tag is needed (engine-run, 69 cases, 53 shown; driven, with screenshots).**
+`norm()` (src/v5/core.js:158) removes a fixed list of format characters. It leaves the tag characters (U+E0001, U+E0020 to U+E007F), the
+interlinear annotation marks (U+FFF9 to U+FFFB), the musical, shorthand and hieroglyph format controls (U+1D173 to U+1D17A, U+1BCA0 to
+U+1BCA3, U+13430 to U+1343F) and Arabic number signs (U+0600 to U+0605). These are invisible or blank on screen. It also leaves Latin
+letters that NFKC does not fold, such as script g (U+0261), dotless i (U+0131) and small capital c (U+1D04); `NONLATIN` (core.js:594)
+passes them because they are Latin script. `words()` (core.js:160) then drops every character outside a-z and 0-9, and `PROSEW`
+(core.js:554) accepts any single letter.
+- Vegetarian plate, for_you "Have a little chicken on the side today" with U+E0020 between the letters of "chicken": shown. The driven
+  screen shows "Why this plate, today / Have a little chicken on the side today".
+- Vegetarian plate, pairing tip "Add a boiled egg" with both g's as U+0261: shown. The driven screen shows "Add a boiled egg".
+- The same U+0261 egg is shown as a Rescue move ("Add a boiled egg on the side"), a menu tip and a one-tap change (suffix and note).
+- With U+E0020, U+E0001, U+1D173, U+1BCA1, U+FFFA or U+13430 between letters, these were shown in for_you: chicken and mutton to a
+  vegetarian, ghee to a vegan, garlic to a Jain client, paneer with dairy left out, cashew with nuts left out, jalebi with diabetes, papad
+  with high BP (48 of 48).
+- Dairy left out: pairing tip "Add some p(U+0251)neer" is shown ("p" is a single letter, "neer" is read as a grain word).
+- The previous B6 class is open again for these characters: plate item "Chic(U+E0020)ken tikka", "Ch(U+0131)cken tikka" and
+  "E(U+0261)(U+0261) bhurji" tagged [grain] are offered to a vegetarian.
+- Smallest fix: in `norm()` remove every `\p{Cf}` and `\p{Default_Ignorable_Code_Point}` character; after `norm()`, fail any model field that
+  still holds a letter outside a-z (fold or refuse, never split); take the single letters other than "a" and "i" out of `PROSEW`.
 
-**B2. S1-S4: model-written text that carries no tags is guarded only by the word lists, so a name outside the lists is shown (engine-run;
-the fields named are drawn at the app.js lines given).** The owner's design catches held-out names by their tags. These fields have no tag
-list, so a held-out name passes even when every tag the model sends is honest.
-- Rescue move of kind "move": `noFood:true` accepts an empty list (core.js:689). Vegetarian: "Order a side of baida roti instead of naan"
-  (egg) shown. Diabetes: "Finish with a spoon of misri", "Have a small sweet after the meal" shown (S4).
-- Menu ask (engine.js:577, drawn app.js:651), tip (engine.js:593, drawn app.js:696) and portion (drawn app.js:649): vegetarian ask "Ask
-  for a side of mahi tikka", tip "Ask them to cook it in raan stock"; dairy left out, tip "Ask for a glass of mor with it", portion
-  "1 plate topped with nei, about 300 g": all shown. S1 names the ask.
-- Plate pairing tip (engine.js:289, drawn app.js:424): vegetarian "Have a side of mahi tikka for protein", "The baida roti adds protein".
-- for_you (engine.js:287, drawn app.js:497): dairy left out "A glass of mor after the meal"; diabetes "Finish with a little misri and
-  saunf", "End with a small sweet after the meal". No SWEETS entry matches "sweet", "sweets", "meetha", "misri", "shakkar" or "cheeni".
-- Plate subtitle (drawn app.js:384): Jain "a spoon of piyaz chutney"; BP "a spoon of gongura pachadi". Reply read line (drawn app.js:487):
-  vegetarian "raan". Rescue warning and breakdown (drawn app.js:759, 761): vegetarian "Most fat is in the bheja fry side".
-- Smallest fix: drop any free-text field that names a food not on the plate, order or dish (or ask for tags on it and check them), and give
-  a Rescue "move" the same `plainFood` test as any other empty list.
+**2. S1-S4: on Rescue, a food the client said no to is still excused when the negation is not one the engine lists, and food the engine
+itself reads as not that food excuses the tag (engine-run, 45 cases, 31 counter-examples).**
+`affirmed()` (core.js:570) removes only `NEGPRE` and `NEG` spans. `NEGPOST` (core.js:126) is defined but not applied, and Hindi and short
+forms are not listed. `typedTags()` (core.js:571) does not apply `notFood()` or `PLANT`, so "almond milk", "soya keema", "peanut butter",
+"sol kadhi", "coconut milk" and "rice noodles" excuse dairy, meat or wheat. The dish name below is made only of the client's typed words,
+so the closed check passes it.
+- Vegetarian types "Veg fried rice w/o egg", "Veg fried rice, egg nahi", "Veg fried rice bina egg ke", "Veg fried rice, egg mat dalna",
+  "Egg free fried rice", "Fried rice, egg not added", "Fried rice (egg removed)" or "Fried rice, egg skipped": dish "Egg fried rice"
+  [egg, grain] is shown.
+- Jain types "Dal fry bina pyaz lahsun ke": "Dal fry with lahsun" [onion_garlic] shown. "Pav bhaji, onion garlic not added", "Pav bhaji
+  onion-less", "Pav bhaji w/o onion", "Jain pav bhaji (onion, garlic not used)": "Pav bhaji with onion" or "with garlic" shown.
+- Vegetarian types "Paneer tikka, chicken nahi", "..., chicken nai" or "..., never chicken": "Chicken tikka" [meat] shown.
+- Dairy left out, "Chicken curry, butter nahi": "Chicken curry with butter" shown. Vegan, "Veg biryani, raita nahi chahiye": "Veg biryani
+  with raita" [dairy] shown. Diabetes, "Thali, mithai nahi": "Thali with mithai" [sweet] shown (S4). High BP, "Thali, papad nahi" and
+  "Thali, achar mat do": "Thali with papad", "Thali with achar" shown (S3).
+- Vegan types "Oats with almond milk": dish "Oats with milk" [grain, dairy], warning "The milk adds most of the fat", breakdown "Most of the
+  fat is in the milk" and move "Have half the milk" are all shown. The honest name "Oats with almond milk" [grain, nuts] is dropped instead.
+- Dairy left out, "Toast with peanut butter": "Toast with butter" [dairy] shown. Vegetarian, "Soya keema pav": "Keema pav" [meat],
+  breakdown "The keema carries most of the fat" and "Eat half the keema" shown.
+- Smallest fix: in `affirmed()` apply `NEGPOST` and add the forms nahi, nai, na, bina ... ke, baghair, mat, never, w/o, "X free" and
+  "X-less"; run `notFood()` and the `PLANT` rewrite on the typed text before `typedTags()`.
 
-**B3. S2, S4 (with S8, S9): the model's referral text on a plate reply is shown after only the claim, supplement and banned-word checks
-(engine-run).** `checkReply` (core.js:649) shows `r.refer` when `status:"refer"` and `refer_reason:"none"`; the referral card draws it
-(app.js:481). Rescue, menu and log show `SAFETY` in the same case.
-- Vegetarian ask: "Ask your doctor before you eat chicken soup or 1 katori of curd." shown.
-- Diabetes: "Have some gulab jamun now and call your doctor." shown.
-- "Speak to your doctor; meanwhile a glass of Complan helps." shown (S9).
-- Smallest fix: always show `SAFETY` on a referral.
+**3. S1, S2, S4 (and S9): the menu side carries free model text that skips the closed check; on a photo menu the dish name does too
+(engine-run, 12 cases, 7 shown).**
+`sideOnMenu()` (src/v6/engine.js:336, called at engine.js:587) checks only the part of "with" before the first comma, bracket or semicolon
+(`sideName`). The whole string is shown on the order card and in "Also on this menu", and logged in the title. Its tags
+(`with_contains`) are the honest tags of the menu item. Nothing reads the rest as prose.
+- Typed menu "Dal fry 180 | Tandoori roti 30". Dairy left out: with "2 Tandoori roti, and a glass of mor" (mor is buttermilk) is shown.
+  Vegetarian: "2 Tandoori roti (with mahi tikka)" shown. Diabetes: "2 Tandoori roti, then a little misri" shown. Any profile:
+  "2 Tandoori roti, and Complan after" shown. Vegetarian: "2 Tandoori roti; add a boiled egg" (U+0261 g's) shown.
+- Photo menu (no typed text, engine.js:578 has nothing to check against): dish name "Dal fry with a side of mahi tikka" [onion_garlic] is
+  offered to a vegetarian, and with "2 Tandoori roti and a glass of mor" to a dairy-free client.
+- Smallest fix: show and log only the side head that matched the menu, with its count and grams; on a photo menu pass the dish name, the
+  side and the leave name through `closedText` with the item's own tags.
 
-**B4. S1, S2: an empty tag list is believed on dishes the engine's own text says carry a barred food (PLAINEMPTY, core.js:533-542;
-engine-run).** This is the builder's reading awaiting the owner. It lets forbidden food through, on the engine's own definitions:
-- `containsText()` (core.js:586) tells the model "dal tadka cooked in ghee with garlic is dairy and onion_garlic". "dal" and "tadka" are
-  both in `PLAINW`, so "Dal tadka" with [] is offered to a vegan, a dairy-free and a Jain client: as a plate item, a protein swap, a one-tap
-  note ("Add 100 g dal tadka on the side"), a menu order, a Rescue sequence move and a "leave for another day" entry. (The menu side probe
-  was inconclusive: its figures were 0, so it may have been dropped for that.)
-- `TAGTEXT` (core.js:519) and `JAINW` (core.js:82) put tapioca under root vegetables. "sabudana" is in `PLAINW`, and `plainFood()` rewrites
-  "sabudana khichdi" to "sabudana fasting", so "Sabudana" and "Sabudana khichdi" with [] are offered to a Jain client as a plate item, a
-  menu order and a Rescue sequence move, and "Sabudana khichdi" to a nut-free client as a plate item and a menu order.
-- Also offered with [] as plate items: rajma, chole, sambar, mixed vegetable curry, gravy, chana chaat, sarson saag, tomato soup, shorba.
-- Smallest fix: `PLAINEMPTY=false` (the literal rule), or take the dish-type and tempering words out of `PLAINW` (tadka, tarka, curry,
-  gravy, chaat, soup, shorba, stew, chutney, sambar, rasam, chole, rajma, saag, sabudana) so only named vegetables, pulses and fruit pass.
+**4. S1, S2: the closed check reads every grain word as plain grain, but the grain list holds whole dishes that carry ghee, nuts, dairy or
+onion by their usual recipe (engine-run, 13 grain-word cases, 10 shown; 6 prose-word cases, 2 shown). This is the previous B4 class at the new chokepoint.**
+In `closedText` (core.js:581) any word matching `GRAIN_RX` (`GRAINT`, core.js:112) passes once the plate declares grain (and wheat, unless
+the word is in `NOTWHEAT`, core.js:565). `GRAINT` holds pongal, puliyogare, bisibelebath, handvo, biryani, kozhukattai, pizza and granola.
+The engine's own text says to tag by what a dish is cooked with ("dal tadka cooked in ghee with garlic is dairy and onion_garlic",
+`containsText`); these words skip that.
+- Vegan: for_you "Have some pongal on the side, 100 g" (ven pongal is cooked in ghee, with cashews), "Have a little bisibelebath on the
+  side", "Have a small handvo on the side" (a curd batter), "Have a slice of pizza on the side" (cheese): shown.
+- Nuts left out: "Have some puliyogare on the side, 100 g" (peanuts in the tempering), "Have a spoon of granola on top": shown.
+- Jain: "Have a small biryani on the side" (fried onion): shown.
+- `PROSEW` also holds "rendered" and "fat": a vegetarian sees "Cook the greens in a spoon of rendered fat" (rendered fat is meat fat;
+  `TAGTEXT` puts meat fat under meat).
+- These rest on each dish's usual recipe, which a cook can change; the rule's own reading of "fail closed" (B4, PLAINW) is to drop them.
+- Smallest fix: in `closedText` accept a grain word only when it names a plain grain (rice, roti, the millets, oats and the like) or is a word
+  of a name already checked on the plate; take "rendered" out of `PROSEW`.
 
-**B5. S1, S2: an engine-written dish tap breaks the food rules (engine-run in Node on the list and filter; not driven).** The Rescue screen's
-"Or tap a common dish" list (`DISHES`, app.js:571, drawn app.js:733) is filtered by the word lists only. A vegan and a dairy-free client
-see "A slice of tiramisu after dinner": tiramisu is made with mascarpone and cream, and "tiramisu" is in SWEETS only. By the usual recipe
-the same line also carries egg (shown to vegetarian and Jain clients) and wheat sponge fingers (shown to a wheat-free client), and a Jain
-client sees "Masala dosa with chutney" (a potato filling). Smallest fix: give each built-in dish its declared contents in code and filter
-by `barredTags()`.
-
-**B6. S1, S2: an invisible or full-width character inside a listed word hides it from the word net (engine-run).** `crosses()` (core.js:507)
-and `quoted()` (core.js:571) read the raw string; `NONLATIN` lets format characters and full-width Latin through. "Chic​ken tikka"
-(zero-width space), soft hyphen, zero-width joiner, word joiner, a combining accent, "Chíckén" and full-width "Ｃｈｉｃｋｅｎ" all pass the
-word net. As a plate item with a wrong tag list ([grain]) they are offered to a vegetarian. This needs a wrong tag, but the project's own
-"word net (lying tag)" tests require a listed word to be caught when the tag is wrong; here a listed word is not. In a pairing tip they
-pass with no tag at all (the B2 path). Smallest fix: NFKC-normalise, strip Cf and Mn characters, then check; or drop any model field that
-contains them.
-
-**B7. S5: with diabetes, unticking a Rescue move takes more than half the grain (driven).** The combined check at app.js:776-777 runs only when a
-move is ticked on. Dish "Veg biryani", 100 g carbs; moves "Add a bowl of 150 g dal on the side" (+30), "Eat about two thirds of the
-biryani" (-40), "Eat about three quarters of the biryani" (-25), all passed by the engine. Tick all three (65 g), untick the first: 35 g of
-100 g. "I had this" logged carbs 40 (the 40 % floor). Ticking the two reducing moves alone is refused with "Not ticked: ..." (driven), so
-the untick is the way round it. The one-tap handler (app.js:398-400) has the same on-only check (read; no counter-example built, and the
-grain item keeps its grams there). Smallest fix: run the same sum on every tap, untick included, and refuse an untick that breaks it.
-
-**B8. S6: on medicines, a swap and two one-tap changes together take the plate under the usual size (driven).** Diabetes, meds "yes", no body
-figures: lunch usual 480 kcal (1200 x 0.40). Plate 500 kcal; a protein swap (-15) and two changes (-15 each) are each offered (each
-leaves 485). Together the screen shows 455 kcal and "I'll have this" logs 455. `viewOf` (app.js:150-162) and the tap handlers hold no
-floor. With body figures and with meds "unsure" the same code runs (read, not driven). Smallest fix: in `viewOf` or the tap handlers,
-refuse a combination under `medsUsual`, as the carbs rule is refused.
-
-**B9. S6: "Show my last plates" shows plates checked against an older usual size (driven, through the sheet's own inputs).** Diabetes, meds
-"yes": a 500 kcal lunch plate made with no body figures (floor 480). The client opens My food, types age 47, height 158, weight 72, taps
-Female and Mostly sitting, taps Done (usual now 680). The new plate request fails; "Show my last plates" (app.js:478, `lastForMeal`
-app.js:79) shows the 500 kcal plate and "I'll have this" logs it. `rules()` (app.js:793) leaves the body figures out, so `closeSheet`
-(app.js:796) keeps the plates. Smallest fix: drop kept plates under the current `medsUsual`, or add the body figures to `rules()`.
+**5. S1, S2: food the app writes as an example is shown to clients it breaks (driven, 4 profiles; read).** These are example and hint texts,
+not offers, but S2 says a Jain client never sees potato, and the design says food the app writes follows the food rules too.
+- The log sheet's placeholder "2 aloo paratha with curd" (src/v6/app.js:843) and its error line "For example: 2 aloo paratha with curd"
+  (app.js:828): aloo for a Jain client, curd for vegan and dairy-free clients, paratha with wheat left out. Seen on the driven screen.
+- The Rescue box placeholder "for example, chole bhature" (app.js:744): bhature with wheat left out; `APPDISHES` itself tags chole bhature
+  onion_garlic, root_veg and dairy, so a Jain or vegan client should not see it either. Seen on the driven screen.
+- The Builder label "Grains (roti, rice, millet)" (app.js:558) with wheat left out. Seen on the driven screen.
+- The Rescue error "for example masala dosa, 1 plate" (app.js:610): `APPDISHES` tags masala dosa root_veg and onion_garlic (Jain).
+- The menu grain step "Ask which roti or rice they have" (app.js:639) for a diabetic client with wheat left out (read; the engine's own move
+  line switches to "the grain" in the same case).
+- Smallest fix: use example text with no food in it, or pick each example from a tagged list filtered by `appFoodOK`.
 
 ## MAJOR
 
-**M1. S9: held-out supplements pass on the B2 paths (engine-run).** for_you "Take a spoon of Complan after the meal", Rescue move (kind move,
-[]) "Have Threptin after the meal", menu tip "Have Revital with it": shown. Same for Becosules, Shelcal, Pediasure, Chyawanprash and
-Liv 52. Fix with B2.
+**M1. S9: nutrient words in `PROSEW` let a supplement through every prose field (engine-run, 20 cases, 14 shown).** `PROSEW`
+(core.js:554) holds vitamin, b12, iron, calcium and drops; `supp()` (core.js:516) matches phrases such as "vitamin b12" and "iron drops"
+only. Shown: for_you "Take your b12 drops after lunch", "Take a vitamin after the meal", "Take vitamin d with this lunch", "Take iron and
+calcium after the meal", "Take calcium at night"; Rescue move "Take your b12 drops after the meal"; menu tip "Take a vitamin after the
+meal."; menu ask "Ask for water to take your iron with"; read line "Take your iron after lunch today."; pairing tip "Take a vitamin";
+one-tap changes "+ b12" with note "Take your b12 with this meal." and "+ calcium" with note "Take calcium after this meal.", offered as
+taps. Smallest fix: take vitamin, b12, iron, calcium and drops out of `PROSEW`, or fail any prose with "take" next to a nutrient word.
 
-**M2. S8: household units are shown on paths `houseUnit()` does not read (engine-run).** One-tap change "Add 1 katori of curd." offered
-(core.js:634 runs no unit check); menu ask "Ask for 2 phulkas instead of naan" and tip "Eat one katori of dal first." shown; plate subtitle
-"2 phulkas and a katori of curd", for_you "A bowl of dal and 2 phulkas" and pairing tip "a katori of salad" shown; referral text "1 katori
-of curd" (B3). Smallest fix: apply `houseUnit()` to every shown model field and clear the field.
-
-**M3. S12: on a daylight-saving phone the day does not start at 4 am on the change days (engine-run).** `dayOf` (src/v6/engine.js:15)
-subtracts four hours of milliseconds. TZ=America/New_York: 03:30 on 1 Nov 2026 counts as 1 Nov (that day starts at 03:00); 04:30 on
-14 Mar 2027 counts as 13 Mar (that day starts at 05:00). Asia/Kolkata has no daylight saving and probes clean (23:59, 00:30 and 03:59
-belong to the evening before; 04:00 starts the new day). Smallest fix: take the local date and step back one calendar day when the local
-hour is under 4.
-
-**M4. S12: four taps log before the new day is drawn (read, not driven).** "tuned" (app.js:401), "swapped" (app.js:417), "chosen" on the plate
-list (app.js:501) and on the menu list (app.js:692) call `logEv` with no `dayMoved()` check, so a tap on yesterday's screen after 4 am logs
-before the redraw. `buildFile` does not read these events, so no meal or figure changes; it breaks the letter of S12 ("before it logs
-anything"). Smallest fix: `if(dayMoved())return;` first in each handler.
-
-**M5. A test that cannot fail (read).** In `test/safety/check.js`, "S7 app ranking" on `hosted/v5/index.min.html` adds
-`/hosted\/v5/.test(process.argv[2])` as its result when `healthOf` is not found, so on that page it passes without checking anything. The
-v5 screens are not a release target, which limits the reach.
+**M2. S8: a bread count with no grams passes when the bread is not called a phulka (engine-run).** `HOUSEU` (core.js:715) holds katori,
+phulka and fulka only. With wheat on the plate, for_you "Eat 2 chapatis and stop there" is shown. The owner's decision is that a grain
+counted shows its grams. Smallest fix: add the counted bread words (roti, chapati and their plurals) to `HOUSEU` when no grams follow.
 
 ## MINOR
 
-- m1. S7: `REFERTXT`/`REFERNL` (engine.js:611-613) miss "pergnant", "preganant", "5 months along", "having a baby in march", "I nurse my
-  3 month old", "post natal", "just gave birth", "bachcha hone wala hai", "stanpan karati hoon", "kidney mein problem hai", "protein in my
-  urine", "high creatnine" and Bengali script (the only other script run). `refer_reason` is still required on every reply to typed text
-  (40 probes below hold), so a referral holds unless the model also misses.
-- m2. S5 Rescue wording: "Eat the toppings, leave the base", "Have the dal like a soup", "Eat the gravy with a spoon" and "Make it a protein
-  plate" pass `dropsGrain` when the model's deltaCarbs is small. 31 other grain-removing phrasings of mine were dropped.
-- m3. S6 gap: Rescue moves hold no floor on medicines ("Eat about half the thali", 600 to 300 kcal, lunch usual 480), while menu moves do
-  (engine.js:536). S6 does not name Rescue.
-- m4. S6 gap: a tune request with no or an unknown slot gets `medsUsual` 0 (engine.js:623). The app always sends the slot.
-- m5. A menu with one Latin dish and one Devanagari dish drops the Devanagari one without the "English letters" note.
-- m6. Prompt text names barred foods: the B12 focus reads "dairy, egg, fish or meat" and the calcium focus "curd, milk, paneer"
-  (engine.js:92) for vegan and dairy-free clients. Not shown; the output checks still apply.
-- m7. The wheat word list (core.js:84) lacks "gehun", "gehu" and "gehoon", which the engine's own GRAINT and GRAINMATW read as wheat.
-  Wheat left out: a base swap "Jowar bhakri" made of "jowar and gehun", and a grain made of "jowar with gehun", tagged [grain] only (a
-  wrong tag), are offered. The app draws no `made_of`, so only the swap name shows.
-- m8. Coverage: no case in `test/safety/check.js` negates a typed word on Rescue (B1), puts a held-out name in a field with no tags (B2, M1),
-  sends [] on a name made only of `PLAINW` words (B4; "D1 fail closed" sends no list, never []), or hides a listed word with an invisible
-  character (B6). "S1 shown fields" and "S1-S4 menu field alone" use listed words only. No state in `test/ux/review.js` unticks a Rescue
-  move (B7), combines changes on medicines (B8), shows kept plates after the body figures change (B9) or runs in a daylight-saving zone (M3).
+- m1. S7: typed text the engine does not catch goes to the model, which must then set refer_reason: "I have gestational diabetes", "GDM",
+  "I am nursing", "I am preg", "im pg", "umeed se hoon", "main maa banne wali hoon", "feeding my 2 month old", "I am 20 weeks", "baby due in
+  march", "I conceived last month", "my obgyn said...", "I have polycystic kidneys", "kidney cyst", "albumin in my urine", "proteinuria",
+  "microalbuminuria", "my KFT is high" (19 of 29). Gestational diabetes matters most in a diabetes app. refer_reason is still required on
+  every reply to typed text and fails closed.
+- m2. The menu move tap (app.js:709) runs neither `composedWhy` nor `dayMoved`. No counter-example: the engine offers at most one portion
+  move, held to the usual size on medicines (engine.js:542), "I'll order this" runs `composedWhy`, and `render()` clears yesterday's menu.
+  The invariants page says every tap on a menu order is checked; this one is not.
+- m3. Coverage. The "B6 trick characters" test uses the same characters `norm()` removes, and the "B1 typed excuse" test uses the same
+  negation words `NEGPRE` lists, so both draw their cases from the list they test. No case puts text after the side head or on a photo
+  menu, puts a `GRAIN_RX` dish word in prose, or puts a nutrient word in prose ("B2 PROSEW: no listed food is prose" leaves out `SUPPW`).
+  In test/ux/review.js `plate-random-combos` (on medicines, no body figures) the plate's lowest combination is 640 kcal against a usual 480,
+  so its S6 plate clause cannot fail; S6 stays live in `plate-random-combos-3` and in the Rescue half.
+- m4. S3 by S1's mention rule: the app's own line for high BP, "Cook with no added salt; skip pickle and papad." (app.js:444), counts as
+  showing papad ("skip" negates "pickle" alone), and `crosses()` flags it. It is advice to avoid both. Fix: "No pickle, no papad."
+- m5. `test/rules/check.js` replaces `closedText` with a looser check for its own suite (the comment says why). The rule checks therefore
+  do not exercise the closed check; only test/safety/check.js does.
 
 ## COSMETIC
 
-- c1. `docs/SAFETY-INVARIANTS.md` lists the Rescue move among tagged items, but `noFood` exempts kind "move" from the empty-list rule.
-- c2. The previous `test/safety/AUDIT.md` is replaced by this one.
+- c1. `docs/SAFETY-INVARIANTS.md` says `PROSEW` "holds no food". It holds oil, water, lemon, lime, masala, greens, salad, vegetables,
+  beans, lentils, legumes, pulses and fruit, and the words in M1.
+- c2. The previous `test/safety/AUDIT.md` (4f6d0e5) is replaced by this one.
 
 ## Probed
 
-All engine probes on np-core from `hosted/v6/index.min.html`, through `plan(kind).check()`, with my own vocabulary (regional names, Hindi
-and English mixes, negations, invisible and full-width characters). About 530 engine probes and 5 driven screen runs:
-- Rescue typed-word negation: 13 (10 counter-examples).
-- Empty tag lists: 35 plate items (29 offered; B4 names the ones that should not be); 8 on menu order, side, swap, one-tap, Rescue sequence
-  move and leave (7 offered, the side inconclusive).
-- Fields with no tags, held-out names: 19 (17 shown); supplements on three such fields: 30 (27 shown).
-- Sweet words with diabetes: 15 (none caught by the word net); referral text: 4 (4 shown).
-- refer_reason on meals, Rescue, log and menu: 10 values each (missing, null, "", "None", "NONE", " none", pregnancy, kidney, other_urgent,
-  none): 40, all hold; status "refer" with "none" on Rescue, log and menu: 3, all show `SAFETY`.
-- Character tricks: 9 forms x 2 fields (14 passed); menu script: 2.
-- Typed referral: 19 phrasings plus Bengali (14 of 20 sent to the model).
-- Day boundary: 7 Asia/Kolkata times, 1 file build, 5 New York daylight-saving times.
-- S5 Rescue wording: 35 phrasings x 4 kinds, plus the same 35 as kind move.
-- S8 units: 6 fields. S6: tune slot and Rescue on medicines.
-- Engine-written text: 8 dish taps, 4 prompts and the menu move line, for 10 profiles.
-- Driven: Rescue untick with diabetes (B7) and the refusal of the two reducing moves; swap plus two changes on medicines without body
-  figures (B8); kept plates after adding body figures, once with the profile set directly and once through the sheet's inputs (B9).
+All engine probes on np-core from `hosted/v6/index.min.html`, through `plan(kind).check()`, with vocabulary I chose (regional names, Hindi
+and English mixes, negations, Unicode format and letter tricks). 303 engine probes and 30 word-net runs on app strings; 8 driven runs.
+- Recheck of the previous findings: 90 (all previous counter-examples now held), plus the old Rescue cases with names built from typed words: 8.
+- Rescue typed excuses: 29 typed phrasings (26 shown; 24 count, since "egg optional" is not a refusal and "Butter chicken (no butter, no
+  cream)" names the dish), 8 engine-exempted pairs (7 shown), 8 swap moves that bring in a new food (0 shown).
+- Intake: 15 characters in 2 prose fields, 48 invisible-separator cases, 6 other fields: 69 (53 shown); 5 plate items with a wrong tag (5 offered).
+- Prose vocabulary: 13 supplement sentences (7 shown), 13 grain dish words (10 shown), 6 food-meaning prose words (2 shown); supplements on
+  7 more fields (7 shown).
+- Menu side tail and photo names: 12 (7 shown). Units: 11 (1 counter-example). Typed referral: 29 (19 sent to the model).
+- Day: `dayOf` against the 4 am rule every 10 minutes through 2026 and 2027 (104,976 samples per zone) in Asia/Kolkata, America/New_York,
+  Europe/London, America/Santiago, America/Havana, Asia/Beirut, Australia/Lord_Howe, Europe/Kyiv, Pacific/Chatham and America/Asuncion:
+  0 mismatches, `daysBack` with no gaps.
+- App-written strings: 6 strings x 5 profiles through `crosses()`.
+- Driven: B8 swap plus changes on medicines; B7 untick and the two reducing moves alone; B9 kept plates after body figures, set directly
+  and through the sheet; a tap after a faked 04:05; the example texts under Jain, vegan, wheat-free and dairy-free profiles; the for_you
+  and pairing-tip renders with screenshots (BLOCKER 1).
 
 ## Not inspected
 
-- The live model and the Railway service (not available; not touched). Photos (menu, Rescue, log): no image path was probed.
-- `test/rules/check.js` was run (it passes) but not read, so whether each of its cases can fail was not judged.
-- core.js 195-475 (the grain test) beyond the calls made by my probes; S5 on plates, swaps, one-tap changes and menu orders was not probed
-  (the rules check covers it).
-- The prompt builders and the menu helpers (`grainAsk`, `soldItems`, `onlyInBarred`, `porGrain`).
-- B8 with body figures and with meds "unsure" (read only); v5 screens beyond the shared core (not a release target).
-- S10 beyond reading `viewOf` and `swapAt` against the review states; S11 beyond reading `askedFor`, `ansSig` and the tune check.
-- M9 and M10 were taken from the existing tests and code reading only.
+- The live model and the Railway service (not called, not touched). Menu, Rescue and log photos: only the engine path with an image flag
+  was probed, never image content.
+- `test/ux/review.js` was read but not run (it writes into the repo). `test/rules/check.js` was run and its diff read, not read in full.
+- core.js 195-475 (the grain test) beyond what the probes called; S5 on plates, swaps and menu orders beyond the driven runs.
+- S10 and S11 beyond reading `viewOf`, `askedFor`, `ansSig` and the tune check. The v5 screens (not a release target).
+- `server.ts` was read: it returns only the checked output, except with `EVAL_CODE`, which also returns the raw reply.
