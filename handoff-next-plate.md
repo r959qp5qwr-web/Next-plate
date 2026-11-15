@@ -145,12 +145,14 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 ## 8. Data & facts (exact)
 | Item | Value |
 |---|---|
-| Repo / branch | r959qp5qwr-web/Next-plate (public), branch `claude/nice-hawking-307ljy` (latest pushed commit b890035) |
+| Repo / branch | r959qp5qwr-web/Next-plate (public), branch `claude/nice-hawking-307ljy` (latest pushed commit: see `git log`; the usefulness work of 15 Nov is the top of the branch) |
 | Live URL | https://next-plate-production.up.railway.app/ |
 | Railway project / service / environment | f006648a-5f51-4156-ba71-2898963cecc0 / 6825884e-02d9-4692-92ac-c098715f4af7 / 1e784c4d-0792-4bfc-a766-a474371b519b (production) |
 | Live now | v6 screens + v6 engine: function `hosted/v5/server.ts`, `PAGE_REF=999859516f65d2d0e93412793e326933086e025f`, page `hosted/v6/index.min.html` (deployed on the owner's "Deploy." on 14 Nov after Critic round 33; checked that day: www.nextplate.in is byte-identical to `git show 9998595:hosted/v6/index.min.html`). Everything after 9998595 on this branch (the screen-by-screen review fixes and the owner's 14 Nov decisions) is not live yet. |
 | Railway variables | GEMINI_API_KEY [secret removed: re-enter it], ACCESS_CODE [secret removed: re-enter it], DAILY_ASKS (default 150), ASKS_PER_PHONE (default 15), MODEL, FALLBACK_MODEL, THINKING=low, PHOTOS, EVAL_CODE (empty), PAGE_REF, PAGE_PATH, PAGE_FILE |
 | To put the v6 screens live | `PAGE_PATH=hosted/v6/index.min.html` and `PAGE_REF=<commit>` |
+| Deploy record (Codex B4) | The live function runs `src/v5/server.ts` with its code inlined in the start command, so a change to that file reaches live only when the inlined code is updated at deploy (a deploy step). The server's default `PAGE_PATH` is now `hosted/v6/index.min.html`. The Dockerfile is not the live path. Check what live serves with `test/deploy/verify-live.sh <base url> [PAGE_REF] [PAGE_PATH]` (reads only). |
+| Usefulness bars (15 Nov) | `node eval/usefulness/bars.js` prints the five bars on the replay corpus; each step's table is in `eval/usefulness/steps/`. Last: plates 67 of 75 (the 8 drops: 6 medicines floor, 1 grain rule, 1 the replay's tag stand-in reading "Lemon juice and spices" as sweet); requests with no plate 2, both the medicines floor (an owner rule); reason line 100 %; swaps and one-tap 259 (100 % of live); menu orders 37 of 38, no empty menu |
 | Rollback | set `PAGE_REF` back to the commit live before (now `9998595`), keeping `PAGE_PATH`; never remove `PAGE_PATH` at a newer ref (the v5 page there has the new core under the old screens). See `hosted/v6/README.md` |
 | Engine checks (live engine) | v5 26/26 (`eval/v5/results-live-final.json`); v6 18/18 (`eval/v6/results-live4.json`), both before the rescue fix |
 | Menu reader proof | code read against `docs/FEATURE-menu.md`, no defects; `node eval/v6/menu-checks.js` 19/19 on both built pages; `test/v6/shots-menu.js` 10 screens, no errors; `test/v6/shots.js` re-run: only sample text differs (committed screens are live-engine captures, kept); 8 printed-menu scenarios (`eval/v6/scenarios-menu.json`, `node eval/v6/run-menu.js <base-url> <code> [label]`) not yet run (need "Deploy.") |
@@ -177,6 +179,8 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 ## 10. Work state
 | Item | Status | Version / location | Notes |
 |---|---|---|---|
+| Safety round 5 + usefulness brief | built on the branch, not live | `src/v5/core.js`, `src/v6/` | model sentences off; names cleaned not dropped; engine reason line; Rescue dish as typed; figures agree (A2); urgent first net (B1); Builder bounds (B2); medicines note (B3); deploy record (B4); Codex probes as tests (B5); kept-plate review state. The closed name vocabulary (fa486dd) was reverted. |
+| At-risk live sample | being run by the coordinator on the live engine | `eval/` (scenarios committed in e990d03) | decides whether wrong-but-non-empty tags move to tier 1 |
 | Engine v6 | live under v5 screens | `src/v6/` | 18/18 before rescue fix |
 | Phase 1 screens + menu reader | built, not live | `hosted/v6/index.min.html` | wait for "Deploy." |
 | Menu reader proof | done except live engine | see section 8 | 8 scenarios after deploy |
@@ -187,6 +191,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 | nextplate.in | not started | — | owner adds the domain in Railway and DNS in GoDaddy |
 
 ## 11. Next steps
+0. **Now (15 Nov, usefulness brief):** the bars and tier 1 hold on the replay corpus (section 8). Next: the at-risk live sample result, then one final audit scoped to tier 1 with a fixed budget, then ask the owner for "Deploy.".
 1. **Next action:** make mock-up screens of the five adopted items (portion ring, nutrient colours, stoneware plate, pairing tips, taste notes) on the Plate screen using the Phase 1 page and the mock engine, and show them to the owner before changing the app.
 2. On approval, build them into `src/v6/` (taste notes and pairing tips need new schema fields from Gemini, food only; check them in code like the other text: no supplements, no claims).
 3. Ask for "Deploy."; then set `PAGE_REF` and `PAGE_PATH=hosted/v6/index.min.html`, run live-engine checks with a temporary `EVAL_CODE` (v5 26, v6 18, menu 8), fix failures, clear `EVAL_CODE`. These runs are also the first live check of the declared grain fields (Critic round 12: grain on each plate, made_of on each base swap, grain_grams_after on each one-tap change, grain_made_of and grain_grams on each menu order); with diabetes, a reply that leaves them empty is dropped, so the diabetes scenarios must still come back with plates and orders. In the diabetes menu scenarios, check that each order with a side or portion grain carries `grain` and that the card asks about it.
@@ -194,6 +199,11 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 5. Owner's five target choices; DAILY_ASKS (recommend 60); domain (recommend www + forwarding); hosting after the trial.
 
 ## 12. Open questions ⚠️
+- Tier split and gates: the owner decides after the at-risk live sample (not Claude's to change).
+- Urgent-symptom first net (B1): symptom scope and wording ("If you feel unwell now, contact your doctor or emergency care.") need a clinician's review. Decided conservatively: a negated mention ("no chest pain today") is still referred; "sugar-free" and "low sugar biscuits" are not; no sugar figure is used.
+- Medicines (B3): carbohydrate consistency for clients on insulin or tablets, and reconciling grain grams against carbohydrate (needs a sourced composition table), are owner and clinician decisions; nothing built.
+- Tier 2 tracked: a regional name with a wrong but non-empty tag is still offered ("Kori rotti", "Payesh", "Poondu rasam" tagged grain only; 9 of the second audit's 380 names on plates). Promote if the at-risk sample shows mis-tagging.
+- This file still holds Railway IDs in section 8 (written before the Codex B4 note "no Railway IDs in the repo"): remove them?
 - "Deploy."? Recommended once the revised look is approved.
 - WhatsApp post wording (`docs/film/WHATSAPP-post.md`): approve or edit?
 - The five target defaults: keep? Recommended yes.
