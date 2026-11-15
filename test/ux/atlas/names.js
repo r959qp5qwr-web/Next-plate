@@ -143,5 +143,16 @@ module.exports.push(
   S(P, 'plate-change-then-swap', 'Plate: sugar change, then a grain swap', 'Tap Gentler on sugar, then pick a grain swap.'),
   S(P, 'plate-after-midnight', 'Plate: the next day, app left open', 'Log a meal, leave the app open past midnight.'),
   S(PS, 'sheet-log-referred', 'Sheet: I had something else, referred', 'Type that you are pregnant in I had something else.'));
+module.exports.push(
+  S(P, 'plate-overnight-first-tap', 'Plate: the first tap the next morning', 'Leave the dinner plate open overnight; in the morning tap I\'ll have this first.'),
+  S(R, 'rescue-after-midnight', 'Rescue: yesterday\'s answer the next day', 'Work out a dish, leave the app open past the day\'s start, open Rescue.'),
+  S(M, 'menu-after-midnight', 'Menu: yesterday\'s orders the next day', 'Read a menu, leave the app open past the day\'s start, open Rescue.'),
+  S(P, 'plate-dinner-after-midnight', 'Plate: dinner logged after midnight', 'At 00:30, log dinner. It counts toward the evening before.'),
+  S(R, 'rescue-had-its-meal', 'Rescue: logged to its own meal', 'Work out a dish for lunch, switch to dinner, tap I had this.'),
+  S(P, 'plate-swap-change-logged', 'Plate: a swap and a change, logged', 'Swap the protein, tap Gentler on sugar, then I\'ll have this.'),
+  S(P, 'plate-swap-declared-grain', 'Plate: a grain swap on the declared grain', 'A plate with sweet potato and jowar roti: swap the grain.'),
+  S(P, 'plate-two-grain-changes', 'Plate: two grain changes, one at a time', 'Tap two changes that each change the grain.'),
+  S(P, 'plate-tune-stale', 'Plate: swaps for old answers', 'Change My food while the swaps are on their way.'),
+  S(M, 'menu-script-note', 'Menu: typed in another script', 'Type the menu in Devanagari letters.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

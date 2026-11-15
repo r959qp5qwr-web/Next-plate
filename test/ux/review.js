@@ -80,6 +80,14 @@ const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ n
 const rescueOff = async (p) => { const r = await p.evaluate(() => { const q = (s) => document.querySelector(s), off = (s) => !q(s) || q(s).disabled;
   return { cam: off('#mcam'), type: !q('#mtext') ? off('#mtype') : true, send: off('#v-rescue .rin .send'), chips: [...document.querySelectorAll('#v-rescue .sit')].every(b => b.disabled), go: off('#mgo') && !(q('#mgo') && q('#mgo').classList.contains('primary')) }; });
   const on = Object.keys(r).filter(k => !r[k]); if (on.length) throw new Error('controls that cannot work stay on: ' + on.join(', ')); };
+// S10 states: a plate whose first carbohydrate item is not its grain, with two changes that each change the grain (engine output shape)
+const GZ = { deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 };
+const GRAINPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Sweet potato chaat with jowar roti', subtitle: 'Sweet potato chaat, jowar roti and dal', cuisine: 'North Indian', minutes: 20,
+  items: [{ food: 'Sweet potato chaat', grams: 120, group: 'carbs', contains: ['root_veg'] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Moong dal', grams: 200, group: 'protein', contains: [] }],
+  kcal: 560, protein: 22, carbs: 84, fats: 14, fiber: 16, why: [], taste: [], planned: [], forYou: '', contains: ['grain', 'root_veg'], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, tuned: true,
+  swaps: { protein: [], base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...GZ }, { food: 'Ragi roti', made_of: 'ragi', grams: 90, contains: ['grain'], ...GZ, deltaFiber: 1 }] },
+  alchemy: { glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber salad; jowar roti down to 60 g.', minutes: 20, contains: ['grain'], grainAfter: 60, deltaKcal: -60, deltaProtein: -1, deltaCarbs: -14, deltaFats: 0, deltaFiber: 2 },
+    gut: { suffix: '(easy on the gut)', note: 'Less chilli; jowar roti down to 55 g.', minutes: 20, contains: ['grain'], grainAfter: 55, deltaKcal: -40, deltaProtein: 1, deltaCarbs: -16, deltaFats: 0, deltaFiber: -1 } } }] };
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
@@ -379,15 +387,17 @@ const STATES = [
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'body-age') throw new Error('Add your age, height and weight does not open at the age box (' + f + ')'); }],
   // ---- Critic round 36: replies made for answers changed during the wait are asked for again; the Builder preset after a reload ----
   ['menu-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/menu')) sent.push(JSON.parse(r.postData() || '{}')); });
-    await p.route('**/api/menu', async r => { await new Promise(x => setTimeout(x, 2500)); try { await r.continue(); } catch (e) {} });
+    let release; const held = new Promise(x => { release = x; }); let n = 0;   // the first answer waits until the tick is done (no fixed delay)
+    await p.route('**/api/menu', async r => { if (n++ === 0) await held; try { await r.continue(); } catch (e) {} });
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(300);
-    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300);
+    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300); release();
     await p.waitForFunction(() => !document.querySelector('#v-rescue .wait'), null, { timeout: 30000 }); await h.settle(900);
     if (sent.length < 2 || !sent[sent.length - 1].profile || !/diabetes/.test(JSON.stringify(sent[sent.length - 1].profile))) throw new Error('a menu read for the old answers was shown after Diabetes was ticked (' + sent.length + ' requests)'); }],
   ['rescue-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/rescue')) sent.push(JSON.parse(r.postData() || '{}')); });
-    await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 2500)); try { await r.continue(); } catch (e) {} });
+    let release; const held = new Promise(x => { release = x; }); let n = 0;   // the first answer waits until the tick is done (no fixed delay)
+    await p.route('**/api/rescue', async r => { if (n++ === 0) await held; try { await r.continue(); } catch (e) {} });
     await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Rajma chawal'); await p.press('#rin', 'Enter'); await h.settle(300);
-    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300);
+    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300); release();
     await p.waitForFunction(() => !document.querySelector('#v-rescue .wait'), null, { timeout: 30000 }); await h.settle(900);
     if (sent.length < 2 || !/diabetes/.test(JSON.stringify(sent[sent.length - 1].profile))) throw new Error('a Rescue answer for the old answers was shown after Diabetes was ticked (' + sent.length + ' requests)'); }],
   ['builder-ratio-reload', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle(); await p.click('#preset-steady'); await p.click('#make-ratio'); await h.plate(p);
@@ -406,6 +416,61 @@ const STATES = [
     await p.click('#have'); await h.settle(600);
     const had = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(e => e.type === 'had').length);
     if (had !== n0 + 1) throw new Error('logging today\u2019s meal after midnight erased yesterday\u2019s (' + n0 + ' before, ' + had + ' after)'); }],
+  // ---- safety invariants S5, S10, S11, S12, M8 on screen (15 Nov, declared contents round) ----
+  // S12: a tab left open overnight; the first tap of the morning is "I'll have this". It does not log yesterday's dinner plate.
+  ['plate-overnight-first-tap', seed({ app: { day: 20261112, v: { dinner: 9 } } }), async (p, h) => { await h.plate(p); await p.click('#meal-dinner'); await h.plate(p);
+    const had0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(e => e.type === 'had').length); await p.clock.fastForward('09:20:00');   // 22:30
+    await p.clock.fastForward('10:10:00'); const t1 = await p.evaluate(() => Date.now());   // 08:40 the next day, nothing tapped in between
+    await p.click('#have'); await h.settle(600); await h.plate(p);
+    const r = await p.evaluate(() => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); return { had: (x.ev || []).filter(e => e.type === 'had').length, app: JSON.stringify((x.app || {}).v || {}), appDay: (x.app || {}).day, store: Object.keys((x.store || {}).res || {}).map(k => x.store.res[k].at), storeDay: (x.store || {}).day,
+      meal: [...document.querySelectorAll('[id^="meal-"]')].filter(b => b.getAttribute('aria-checked') === 'true').map(b => b.id).join() }; });
+    if (r.had !== had0) throw new Error('the first tap after the night logged yesterday\u2019s plate (' + had0 + ' meals before, ' + r.had + ' after)');
+    if (r.meal !== 'meal-breakfast') throw new Error('after the night the meal on screen is ' + r.meal + ', not breakfast');
+    if (r.app !== '{}' || r.appDay !== 20261113) throw new Error('yesterday\u2019s appetite is still set (' + r.app + ', ' + r.appDay + ')');
+    if (r.storeDay !== 20261113 || r.store.some(at => at < t1)) throw new Error('yesterday\u2019s plates are still kept for today'); }],
+  // S12: the Rescue answer and the menu read made yesterday are gone the next day
+  ['rescue-after-midnight', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter');
+    await p.waitForSelector('#rescue-had', { timeout: 20000 }); await p.clock.fastForward('24:00:00'); await p.click('#tab-plate'); await h.settle(300); await p.click('#tab-rescue'); await h.settle(400);
+    if (await p.$('#rescue-had')) throw new Error('yesterday’s Rescue answer still shows the next day'); }],
+  ['menu-after-midnight', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo');
+    await p.waitForSelector('#order-card', { timeout: 20000 }); await p.clock.fastForward('24:00:00'); await p.click('#tab-plate'); await h.settle(300); await p.click('#tab-rescue'); await h.settle(400);
+    if (await p.$('#order-card')) throw new Error('yesterday’s menu orders still show the next day'); }],
+  // M8: a dinner logged at 00:30 counts toward the evening it belongs to; the day starts at 4 am
+  ['plate-dinner-after-midnight', seed(), async (p, h) => { await h.plate(p); await p.clock.fastForward('11:20:00'); await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(600);
+    const r = await p.evaluate(() => { const x = JSON.parse(localStorage.getItem('np6') || '{}'), ev = x.ev || [], d = ev.filter(e => e.type === 'had' && e.meal === 'dinner').pop();
+      return { day: (x.store || {}).day, logged: !!d && new Date(d.t).getDate() === 13, tick: /\u2713/.test(document.getElementById('meal-dinner').textContent), bf: /\u2713/.test(document.getElementById('meal-breakfast').textContent) }; });
+    if (r.day !== 20261112 || !r.logged || !r.tick || !r.bf) throw new Error('a dinner at 00:30 did not count toward the evening before (' + JSON.stringify(r) + ')'); }],
+  // Rescue's "I had this" logs to the meal it was worked out for
+  ['rescue-had-its-meal', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Mutton biryani, full handi'); await p.press('#rin', 'Enter');
+    await p.waitForSelector('#rescue-had', { timeout: 20000 }); await p.click('#tab-plate'); await h.settle(300); await p.click('#meal-dinner'); await h.settle(300); await p.click('#tab-rescue'); await h.settle(400);
+    const lbl = await p.textContent('#rescue-had'); await p.click('#rescue-had'); await h.settle(600);
+    const e = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(x => x.type === 'rescued').pop());
+    if (!e || e.meal !== 'lunch' || !/lunch/.test(lbl)) throw new Error('the Rescue answer for lunch was logged as ' + (e && e.meal) + ' (' + lbl + ')'); }],
+  // S10: after a swap and a change, what is logged is what the screen shows
+  ['plate-swap-change-logged', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#alc-glucose:not([disabled])', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await p.click('#swp-1'); await h.settle(); await p.click('#alc-glucose'); await h.settle(900);
+    const scr = await p.evaluate(() => { const t = document.querySelector('#plate-card h2').textContent, sx = document.querySelector('#plate-card .suffix'); return { title: t + (sx ? ', ' + sx.textContent : ''), kcal: +document.getElementById('h-k').textContent, protein: +document.getElementById('h-p').textContent, carbs: +document.getElementById('h-c').textContent }; });
+    await p.click('#have'); await h.settle(600); const e = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(x => x.type === 'had').pop());
+    if (!e || e.title !== scr.title || e.kcal !== scr.kcal || e.protein !== scr.protein || e.carbs !== scr.carbs) throw new Error('the meal logged is not the plate on screen (' + JSON.stringify(scr) + ' vs ' + JSON.stringify(e && { title: e.title, kcal: e.kcal, protein: e.protein, carbs: e.carbs }) + ')'); }],
+  // S10: a base swap replaces the declared grain item, not the first carbohydrate item; two grain changes are never on together
+  ['plate-swap-declared-grain', seed(), async (p, h) => { await h.plate(p); await p.click('#adjust'); await h.settle();
+    const lbl = await p.textContent('#swb-0'); await p.click('#swb-1'); await h.settle(600);
+    const li = await p.evaluate(() => [...document.querySelectorAll('.measures li')].map(l => l.textContent).join(' | '));
+    if (!/Jowar roti/.test(lbl) || !/Sweet potato chaat/.test(li) || /Jowar roti/.test(li) || !/Ragi roti/.test(li)) throw new Error('the grain swap did not replace the declared grain (' + lbl + ' / ' + li + ')'); }, (p) => p.route('**/api/meals', J(200, GRAINPLATE))],
+  ['plate-two-grain-changes', seed(), async (p, h) => { await h.plate(p); await p.click('#alc-glucose'); await h.settle(); await p.click('#alc-gut'); await h.settle(600);
+    const on = await p.evaluate(() => ['glucose', 'gut'].filter(k => document.getElementById('alc-' + k).getAttribute('aria-pressed') === 'true'));
+    if (on.join() !== 'gut') throw new Error('two changes to the grain are on together (' + on.join(', ') + ')'); }, (p) => p.route('**/api/meals', J(200, GRAINPLATE))],
+  // S11: swaps and changes made for answers changed during the wait are not shown
+  ['plate-tune-stale', seed(), async (p, h) => { await h.plate(p);
+    const k0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').store || {}).shown.lunch);
+    if (await p.evaluate((k) => { const r = ((JSON.parse(localStorage.getItem('np6') || '{}').store || {}).res || {})[k]; return !r || r.meals.some(m => m.tuned); }, k0)) throw new Error('the plate was tuned before the answer changed');
+    await p.click('#myfood'); await h.settle(); await p.click('#goal-hold'); await p.click('#sheet-done'); await h.settle(300); p.__release(); await h.settle(1500);
+    const stale = await p.evaluate((k) => { const r = ((JSON.parse(localStorage.getItem('np6') || '{}').store || {}).res || {})[k]; return !!(r && r.meals.some(m => m.tuned)); }, k0);
+    if (stale) throw new Error('swaps made for the old answers were kept (' + p.__tunes + ' tune requests)'); },
+    (p) => { const held = new Promise(x => { p.__release = x; }); p.__tunes = 0; return p.route('**/api/tune', async r => { if (p.__tunes++ === 0) await held; try { await r.continue(); } catch (e) {} }); }],
+  // D1: a menu typed in a script the checks cannot read ends with the note to type it in English letters
+  ['menu-script-note', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', '\u092a\u0928\u0940\u0930 \u091f\u093f\u0915\u094d\u0915\u093e 320\n\u0926\u093e\u0932 \u0924\u0921\u093c\u0915\u093e 240'); await p.click('#mgo');
+    await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the note');
+    const t = await p.textContent('#v-rescue .note'); if (!/Next Plate can read menus in English letters for now\. Type the dishes in English letters\./.test(t) || !(await p.$('#menu-type-instead'))) throw new Error('a menu in another script does not end with the note (' + t + ')'); }],
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));

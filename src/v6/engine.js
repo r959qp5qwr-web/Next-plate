@@ -9,9 +9,12 @@ var SLOTHOUR={breakfast:8.5,lunch:13.25,snack:16.75,dinner:20.25};          /* m
 
 /* ---------- the event log: append-only, on the phone, 90 days ---------- */
 var EVTYPES=["had","other","skipped","rescued","ordered","shown","chosen","swapped","tuned","next","asked","water","walk","weight"];
-function dayOf(ms){var d=new Date(ms);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
+/* the day of an event: a day starts at 4 am local, so a dinner logged after midnight counts toward the evening it belongs to (M8, S12).
+   The engine, the app, clearing a slot, the kept plates and the day change all use this one helper. */
+var DAYSTART=4;
+function dayOf(ms){var d=new Date(ms-DAYSTART*36e5);return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();}
 function hourOf(ms){var d=new Date(ms);return d.getHours()+d.getMinutes()/60;}
-function daysBack(ms,n){var d=new Date(ms);d.setHours(12,0,0,0);var out=[];for(var i=0;i<n;i++){out.push(dayOf(d.getTime()));d.setDate(d.getDate()-1);}return out;}
+function daysBack(ms,n){var d=new Date(ms-DAYSTART*36e5);d.setHours(12,0,0,0);var out=[];for(var i=0;i<n;i++){out.push(dayOf(d.getTime()));d.setDate(d.getDate()-1);}return out;}
 function mainWord(title){
   var t=String(title||"").toLowerCase().replace(/[^a-z\s]/g," ");
   var m=/\b(rajma|chole|chana|paneer|tofu|egg|eggs|chicken|fish|mutton|prawn|dal|sambar|khichdi|biryani|pulao|poha|upma|idli|dosa|paratha|chilla|oats|dalia|soya|sprouts|curd rice|rice|roti|millet|quinoa|soba|salad|soup|sandwich|wrap)\b/.exec(t);

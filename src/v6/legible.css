@@ -58,7 +58,7 @@
 #app .taste{font-size:15px;letter-spacing:.16em;color:var(--clay-t)}
 #app .prlegend{font-size:16px}
 #app .hero .sub{font-size:17px;line-height:24px}
-#app .measures .food b{font-size:17px}
+#app .measures .food b{font-size:17px;display:inline-block;max-width:100%}   /* a long name keeps its own box, so the "swapped" tag wraps below it instead of over it (full review, 320 px) */
 #app .modlog li{font-size:16px;line-height:23px}
 #app .pairs .pf{font-size:17px}#app .pairs .pe{font-size:16px;line-height:22px;margin-top:2px}   /* the italic pair line's box reached 2 px into the effect line (full review, 14 Nov) */
 #app .why h3{font:italic 600 18px/24px var(--text);letter-spacing:0;text-transform:none;color:var(--clay-t)}
