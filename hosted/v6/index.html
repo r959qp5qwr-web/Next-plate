@@ -1733,95 +1733,10 @@ function barredTags(p,sweetOK){var b=["supplement"];   /* a supplement is never 
 var PLAINEMPTY=false;
 /* a model name is shown only in this shape: ASCII letters, spaces and hyphens, every token at least 2 letters */
 var NAMESHAPE=/^[A-Za-z]{2,}(?:[ -][A-Za-z]{2,})*$/;
-function nameShape(t){return typeof t==="string"&&NAMESHAPE.test(t);}
-function nameOK(t){return nameShape(t)&&nameKnown(t);}   /* a model name: the shape, and every word known (A1); defined below */
+function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
 var TAGLISTS=function(){return {meat:MEATW,fish:FISHW,egg:EGGW,dairy:DAIRYW,wheat:LEAVEW.wheat,nuts:LEAVEW.nut,soya:LEAVEW.soya,onion_garlic:ONIONW,root_veg:ROOTW,sweet:SWEETS,salty_side:SALTY};};
-/* ---------- the name vocabulary (safety round 5, A1). Code cannot vouch for a name it does not know, so a model name is shown only when
-   every word of it is known: a word in the tag lists above, a word below, or a known dish word. A known dish word carries the tags its usual
-   recipes carry, all of them (the union), set here by hand and never guessed per reply; an item is checked on its declared tags plus these.
-   Any other word drops the item. Household measures (katori, bowl, cup, glass, spoon, plate) are not in it (S8). The Rescue dish label and
-   the log items are the client's own typed words and are not held to it. ---------- */
-/* words that name a plain food, a way of cooking or serving, a size or a kind, and add no tag */
-var NAMEPLAIN=("a an and with of in on or plus side sides style home homestyle house simple classic fresh raw cooked steamed boiled roasted toasted grilled baked sauteed saute "+
-  "stir fry fried tossed pan tawa tava dry dried soft thick thin crisp crispy crunchy spiced spicy mild tangy hot warm cold chilled light lightly low fat less oil oils no without extra "+
-  "whole split sprouted sprouts soaked mashed chopped sliced diced grated shredded cubes cubed pieces strips stuffed filled mixed mix assorted seasonal seasoned tempered "+
-  "small medium large half mini baby double green red yellow black white brown golden kala kali hara hari lal safed desi village rustic regional "+
-  "north south east west indian punjabi bengali kerala tamil andhra telangana karnataka udupi mangalorean maharashtrian rajasthani kashmiri goan konkani malvani "+
-  "chettinad hyderabadi lucknowi awadhi bihari odia assamese sindhi parsi dhaba ki ka ke di da de wala wali vali "+
-  "cucumber kakdi kheera tomato tomatoes tamatar spinach palak methi fenugreek lauki ghiya dudhi doodhi bottle gourd bitter karela ridge tori turai torai snake chichinda "+
-  "parwal tinda bhindi okra ladyfinger cabbage patta gobhi gobi cauliflower broccoli capsicum shimla bell pepper peppers beans bean french cluster gawar guar broad sem "+
-  "matar peas pea brinjal baingan eggplant aubergine pumpkin kaddu bhopla zucchini mushroom mushrooms drumstick drumsticks moringa saag sarson mustard greens bathua "+
-  "chaulai amaranth lettuce celery coriander dhania cilantro mint pudina curry leaves leaf kadi kadhi patta methi dill suva shepu spring vegetable vegetables veg veggies "+
-  "salad salads kachumber koshimbir kosambari sundal kootu poriyal thoran palya usili kalan olan erissery mezhukkupuratti pulusu koora kura "+
-  "plantain raw banana kela kachha jackfruit kathal chow chayote "+
-  "moong mung green gram dal daal dhal dals lentil lentils masoor toor tur tuvar arhar urad chana channa chickpea chickpeas kabuli chole chhole rajma kidney lobia chawli "+
-  "cowpea cowpeas moth matki kulthi horsegram horse besan sattu pigeon yellow peanut "+
-  "rice chawal basmati sona masoori matta ponni kolam jeera jeerakasala seeraga samba brown red unpolished parboiled jowar sorghum bajra pearl millet millets ragi nachni finger "+
-  "foxtail kangni kodo little kutki barnyard samvat sama proso browntop quinoa oats oat barley jau maize makki makai corn poha flattened beaten idli idly dosa dosai "+
-  "uttapam uthappam appam idiyappam puttu adai pesarattu neer set bhakri bhakhri rotla jolada khichdi khichri khichadi kichdi dalia daliya "+
-  "apple apples banana bananas papaya guava orange oranges mosambi sweet lime pomegranate anar watermelon muskmelon melon pear pears grapes berries strawberries kiwi "+
-  "pineapple mango chikoo sapota jamun amla lemon lemons lime nimbu fruit fruits "+
-  "jeera cumin ajwain carom hing asafoetida haldi turmeric rai mustard saunf fennel elaichi cardamom dalchini cinnamon clove cloves kali mirch chilli chili chillies mirchi "+
-  "garam kasuri til sesame flax flaxseed flaxseeds alsi chia sunflower seeds seed pumpkin coconut nariyal tamarind imli kokum amchur salt pepper black "+
-  "tofu tikki curd soup shorba rasa rassa sukha sukhi bhuna bhuni tadka tarka chaunk tempering jhol jhal posto bhaja bharta bhartha chokha "+
-  "thali meal combo platter kuttu buckwheat singhara rajgira "+
-  /* a completion pass after the first control count (safety round 5): generic words the first list missed */
-  "plain flour rolled base bhurji batter made fine finely for from into puffed grain grains broken handmade homemade blend chunk chunks aromatic slice slices flakes minimal stewed "+
-  "kernels cracked mash crumbled crepe savory savoury single one added alongside charred button skillet garden sabzi sabji subzi makhana bed dust dusting applied brush thinned").split(" ");
-/* known dish and kind words that carry tags of their own: every tag their usual recipes carry */
-var NAMETAGS={
-  "sweet":"sweet","rice noodles":"grain","sugar snap":"","snap":"","missi":"wheat grain","multigrain":"grain wheat","wholewheat":"grain wheat","cracker":"wheat grain","dough":"wheat","roomali":"wheat","rumali":"wheat",
-  "flatbread":"wheat grain","polenta":"grain","orzo":"wheat grain","pearled":"grain","sauce":"onion_garlic","tari":"onion_garlic","arrabbiata":"onion_garlic","bhel":"salty_side onion_garlic sweet",
-  "papdi":"salty_side wheat","slaw":"egg dairy","cappuccino":"dairy","cultured":"dairy","sweetened":"sweet","sweet potato":"root_veg","sweet corn":"grain","sweetcorn":"grain","sweet lime":"",
-  "masala":"onion_garlic","curry":"onion_garlic","gravy":"onion_garlic","tadka":"onion_garlic","tarka":"onion_garlic","hing tadka":"","jeera tadka":"",
-  "sambar":"onion_garlic","sambhar":"onion_garlic","rasam":"onion_garlic","kuzhambu":"onion_garlic","kulambu":"onion_garlic","usal":"onion_garlic","misal":"onion_garlic salty_side",
-  "pithla":"onion_garlic","zunka":"onion_garlic","jalfrezi":"onion_garlic","kadai":"onion_garlic","kadhai":"onion_garlic","bhaji":"onion_garlic root_veg","chaat":"onion_garlic",
-  "chutney":"onion_garlic sweet","coconut chutney":"","mint chutney":"","pudina chutney":"","dhania chutney":"","green chutney":"",
-  "uttapam":"grain onion_garlic","uthappam":"grain onion_garlic","poha":"grain onion_garlic root_veg nuts","upma":"grain wheat onion_garlic","pongal":"grain dairy",
-  "pulao":"grain onion_garlic dairy","pulav":"grain onion_garlic dairy","biryani":"grain onion_garlic dairy meat","biriyani":"grain onion_garlic dairy meat",
-  "veg biryani":"grain onion_garlic dairy","vegetable biryani":"grain onion_garlic dairy","jackfruit biryani":"grain onion_garlic dairy","kathal biryani":"grain onion_garlic dairy",
-  "khichdi":"grain","khichri":"grain","dosa":"grain","idli":"grain","idly":"grain","appam":"grain","idiyappam":"grain","puttu":"grain wheat","adai":"grain","neer":"grain",
-  "chilla":"onion_garlic","cheela":"onion_garlic","pesarattu":"onion_garlic","thalipeeth":"grain wheat onion_garlic","bhakri":"grain","bhakhri":"grain","rotla":"grain",
-  "dhokla":"wheat sweet","khaman":"sweet","handvo":"grain sweet","muthia":"wheat sweet","muthiya":"wheat sweet","undhiyu":"root_veg sweet","gujarati":"sweet",
-  "sandwich":"wheat dairy","wrap":"wheat","roll":"wheat","frankie":"wheat","kathi":"wheat","porridge":"grain dairy sweet","cutlet":"root_veg wheat","cutlets":"root_veg wheat",
-  "pakora":"onion_garlic","pakoda":"onion_garlic","pakodi":"onion_garlic","bhajji":"onion_garlic","vada":"onion_garlic","wada":"onion_garlic",
-  "kebab":"meat","kabab":"meat","seekh":"meat","veg seekh kebab":"onion_garlic","hara bhara kebab":"root_veg","kofta":"meat dairy onion_garlic","malai kofta":"dairy onion_garlic nuts",
-  "korma":"dairy nuts onion_garlic","kurma":"dairy nuts onion_garlic","manchurian":"wheat soya onion_garlic","hakka":"wheat soya onion_garlic","schezwan":"soya onion_garlic",
-  "tikka":"dairy onion_garlic","tandoori":"dairy onion_garlic","amritsari":"fish","avial":"dairy","pachadi":"dairy","moru":"dairy","pulissery":"dairy","kalan":"dairy",
-  "dahi":"dairy","sol kadhi":"","sol curry":"","coconut milk":"","almond milk":"nuts","oat milk":"grain","soy milk":"soya",
-  "soya keema":"soya","soya chunks":"soya","mushroom keema":"","kathal keema":"","butter beans":"","bisibele":"grain","bisi bele bath":"grain onion_garlic",
-  "puliyogare":"grain nuts","lemon rice":"grain nuts","curd rice":"grain dairy","jeera rice":"grain","ghee rice":"grain dairy","coconut rice":"grain","tomato rice":"grain onion_garlic",
-  "fried rice":"grain soya onion_garlic egg","noodles":"wheat","thali":"grain wheat dairy onion_garlic salty_side sweet","meal":"grain wheat dairy onion_garlic salty_side sweet",
-  "combo":"grain wheat dairy onion_garlic salty_side sweet","platter":"grain wheat dairy onion_garlic salty_side sweet","jhol":"onion_garlic","posto":"root_veg","bharta":"onion_garlic",
-  "bhartha":"onion_garlic","chokha":"onion_garlic root_veg","shorba":"onion_garlic","soup":"onion_garlic","sweet corn soup":"grain","tikki":"root_veg wheat","sundal":"",
-  "sattu":"grain","oats":"grain","oat":"grain","quinoa":"grain","barley":"grain","jau":"grain","rice":"grain","chawal":"grain","millet":"grain","millets":"grain","jowar":"grain",
-  "bajra":"grain","ragi":"grain","nachni":"grain","maize":"grain","makki":"grain","makai":"grain","corn":"grain","dalia":"grain wheat","daliya":"grain wheat","jolada":"grain"
-};
-var NAMEUNIT=/^(?:katori|katoris|katoras?|bowls?|cups?|glass|glasses|spoons?|tablespoons?|teaspoons?|tbsp|tsp|ladles?|fists?|handfuls?|scoops?|plates?)$/;   /* household measures (S8) */
-var NAMEKNOWN=null,NAMEPHRASE=null;
-function nameSets(){if(NAMEKNOWN)return;NAMEKNOWN={};NAMEPHRASE={};var L=TAGLISTS(),k;
-  var put=function(w){w=String(w).toLowerCase();if(w.indexOf(" ")>=0)NAMEPHRASE[w]=1;else NAMEKNOWN[w]=1;};
-  NAMEPLAIN.forEach(function(w){if(w)put(w);});for(k in NAMETAGS)put(k);for(k in L)L[k].forEach(put);}
-function wordKnown(w){if(NAMEUNIT.test(w))return false;if(NAMEKNOWN[w])return true;
-  return /ies$/.test(w)&&!!NAMEKNOWN[w.slice(0,-3)+"y"]||/es$/.test(w)&&!!NAMEKNOWN[w.slice(0,-2)]||/s$/.test(w)&&!!NAMEKNOWN[w.slice(0,-1)];}
-/* the name read as known words and phrases, longest phrase first: [entries] when every word is known, null when one is not */
-function nameParts(t){nameSets();var w=norm(t).toLowerCase().split(/[\s-]+/).filter(Boolean),out=[];
-  for(var i=0;i<w.length;){var hit=0;for(var n=Math.min(4,w.length-i);n>=2&&!hit;n--){var ph=w.slice(i,i+n).join(" ");if(NAMEPHRASE[ph]||NAMETAGS[ph]!=null){out.push(ph);i+=n;hit=1;}}
-    if(hit)continue;if(!wordKnown(w[i]))return null;out.push(w[i]);i++;}
-  return out.length?out:null;}
-function nameKnown(t){return !!nameParts(t);}
-/* the tags a name carries by its words: the dish words above, and the tag lists read as the second net reads them (no negation: "without ghee"
-   still names ghee) */
-var NAMEIMP={},NAMEIMPN=0;   /* a bounded cache: cleared at 5,000 names */
-function nameImplied(t){var ck=String(t);if(NAMEIMP[ck])return NAMEIMP[ck].slice();var parts=nameParts(t)||[],out=[],L=TAGLISTS(),k;
-  var addT=function(s){String(s||"").split(" ").forEach(function(x){if(x&&out.indexOf(x)<0)out.push(x);});};
-  parts.forEach(function(x){if(NAMETAGS[x]!=null)addT(NAMETAGS[x]);else if(/s$/.test(x)&&NAMETAGS[x.slice(0,-1)]!=null)addT(NAMETAGS[x.slice(0,-1)]);});
-  var tx=notFood(norm(t).toLowerCase()).replace(MILLETBREAD,"$1 flatbread").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1");
-  for(k in L)if(foodRx(L[k]).test(tx))addT(k);
-  if(supp(t))addT("supplement");
-  if(++NAMEIMPN>5000){NAMEIMP={};NAMEIMPN=1;}NAMEIMP[ck]=out;return out.slice();}
 /* "" when the declared contents pass; otherwise why the item is dropped. A missing, empty or unknown list fails (literal rule). */
 function contentsBad(a,name,p,o){o=o||{};
   if(!Array.isArray(a))return "contents-missing";
@@ -1829,7 +1744,6 @@ function contentsBad(a,name,p,o){o=o||{};
   if(!a.length)return "contents-empty";
   var b=barredTags(p,o.sweetOK);
   for(var j=0;j<a.length;j++)if(b.indexOf(a[j])>=0)return "contents";
-  if(name){var im=nameImplied(name);for(var q=0;q<im.length;q++)if(b.indexOf(im[q])>=0)return "contents-implied";}   /* the tags its words carry (A1) */
   return "";}
 function tagList(a){return Array.isArray(a)?a.filter(function(t,i){return TAGS.indexOf(t)>=0&&a.indexOf(t)===i;}):[];}
 /* text in a script the checks cannot read (any letter outside Latin, such as Devanagari or Tamil) is not shown in a model-written field */
@@ -1864,11 +1778,7 @@ function own(t,max,typed){var q=quoted(t,max),SW=/^(?:a|an|the|of|and|or|with|to
 var REFERW=["none","pregnancy","kidney","other_urgent"];
 /* D1 and S7 in the prompts: every food carries its declared contents; every reply to typed text carries refer_reason */
 function containsText(){return "- contains: every dish, item, swap and change carries contains, the list of these tags that are in it: "+TAGTEXT+". Tag honestly by what the food is made of and cooked with, not by its name (dal tadka cooked in ghee with garlic is dairy and onion_garlic; a gulab jamun is dairy and sweet). Each tag at most once. Never an empty list: a food with none of these tags gives [\"plain\"]. The app checks the tags against the person's rules.";}
-var NAMETEXT={};
-function nameText(p){nameSets();var key=p?JSON.stringify([p.diet,p.leave,p.health,p.bp]):"-";if(NAMETEXT[key])return NAMETEXT[key];var bad=p?badWords(p):[],ws=Object.keys(NAMEKNOWN).concat(Object.keys(NAMEPHRASE)).filter(function(w){return bad.indexOf(w)<0&&!NAMEUNIT.test(w)&&!(p&&nameImplied(w).some(function(t){return barredTags(p).indexOf(t)>=0;}));}).sort();
-  var txt="- Every name (item, swap, a food a change adds, dish, side) is plain letters, spaces and hyphens only: no digits, commas, brackets or other marks (\"Paneer tikka\", not \"Paneer tikka, charred\"). A name in any other shape is not shown.\n"+
-    "- Name every food only with words from this list (a plural is fine). A name with any other word is not shown: "+ws.join(", ")+".";
-  return (NAMETEXT[key]=txt);}
+function nameText(){return "- Every name (item, swap, a food a change adds, dish, side) is plain letters, spaces and hyphens only: no digits, commas, brackets or other marks (\"Paneer tikka\", not \"Paneer tikka, charred\"). A name in any other shape is not shown.";}
 function referText(){return "- refer_reason: \"none\", unless what they wrote says they are pregnant or breastfeeding (\"pregnancy\"), have a kidney condition (\"kidney\"), or describes something urgent for a doctor (\"other_urgent\"), in any language or spelling. Any value but \"none\" sends them to their coach or doctor.";}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
@@ -1982,7 +1892,7 @@ function checkRescue(r,p,c){
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   var dn=typed&&typed.length<=60&&typed.split(/\s+/).length<=8?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),60):"Your dish";
   if(!dn)dn="Your dish";
-  if(contentsBad(d.contains,"",p)||crosses(typed,p)||crosses(clean(d.name,80),p)||supp(typed+" "+clean(d.name,80)))return {status:"empty",reason:"diet",dropped:{dish:1}};   /* the typed label is the client's own words: the word net reads it with its negations; the name vocabulary is for model names (A1) */
+  if(contentsBad(d.contains,dn,p)||crosses(typed,p)||crosses(clean(d.name,80),p)||supp(typed+" "+clean(d.name,80)))return {status:"empty",reason:"diet",dropped:{dish:1}};
   var g=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(String(d.portion||"")),por=g?"≈ "+Math.round(+g[1])+" g":"";   /* the weight, written by the engine */
   return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:"",breakdown:"",contains:tagList(d.contains)},hacks:[]};
 }
@@ -2000,7 +1910,7 @@ p.bp?"- High blood pressure: no pickle, papad, namkeen, chips or added salt.":nu
 "- No exclamation marks, no emojis, no hype words.",
 voiceText(),
 containsText(),
-nameText(p),
+nameText(),
 "- All numbers are your honest estimates for the portion as served: grams of each item (cooked weight; ml for liquids written as grams), kcal, and grams of protein, carbs, fats and fibre. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats."
   ].filter(function(x){return x!==null;}).join("\n");
 }
@@ -2539,7 +2449,7 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
      every word of its name is a word they typed (and it has the name shape); the model's assumption line is not shown. */
   var tw={};words(norm(typed)).forEach(function(w){tw[w]=1;});
   var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){var f=quoted(it&&it.food,60);return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
-    .filter(function(i){return i.grams&&nameShape(i.food)&&words(i.food).every(function(w){return tw[w];});});
+    .filter(function(i){return i.grams&&nameOK(i.food)&&words(i.food).every(function(w){return tw[w];});});
   var tt=quoted(typed,60);if(!tt||tt.length<typed.trim().length)tt="";   /* a long typed sentence is not used as the heading */
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
 }
