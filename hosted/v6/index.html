@@ -1794,16 +1794,17 @@ var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+
 /* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
    "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
    after another number it is the price ("Chicken 65 240"). */
-function menuPrice(h,typed){h=h.replace(/\s*(?:-|:|@|rs\.?|inr|\u20B9)\s*\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
+function menuPrice(h,typed){h=h.replace(/\s*(?:[-:@]\s*(?:(?:rs\.?|inr|\u20B9)\s*)?|(?:rs\.?|inr|\u20B9)\s*)\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
   var m=/^(.*[A-Za-z].*?)((?:\s+\d+(?:\.\d+)?)+)$/.exec(h);if(!m)return h;var base=m[1],nums=m[2].trim().split(/\s+/);
   /* Critic round 39, finding 3: the menu is priced when a line shows a price plainly (after "Rs", "INR", the rupee sign, "-", ":" or "@", or
-     after another number: "Chicken 65 240", "(Half) 180 (Full) 320"), or when half its lines end in a number and those numbers differ (a list
-     "Chicken 65 / Gobi 65 / Dal Tadka" ends in one number, the name's). On a priced menu a name keeps its number when a price follows it on
+     after another number: "Chicken 65 240", "(Half) 180 (Full) 320"), or when half its lines end in a number and either every line does or those
+     numbers differ (a list "Chicken 65 / Gobi 65 / Dal Tadka", with lines that carry no number, ends in one number, the name's; "Idli 40 /
+     Vada 40" is priced). A price after a dash and a mark ("- Rs 240") goes whole. On a priced menu a name keeps its number when a price follows it on
      its line, after a price mark or a size word if there is one ("Chicken 65 Rs. 240", "Chicken 65 (Half) 180"). */
   if(typed&&typeof menuNorm==="function"){var T=menuNorm(typed),lines=String(typed).split(/\n|\s+\|\s+/).filter(function(l){return /[a-z]/i.test(l);}),   /* the menu check joins typed lines with " | " */
       ends=lines.map(function(l){var e=/(\d+(?:\.\d+)?)\s*(?:\/-)?\s*$/.exec(l);return e?e[1]:"";}).filter(Boolean),
       marked=lines.some(function(l){return /(?:\brs\.?|\binr|\u20B9|[-:@])\s*\d+(?:\.\d+)?\s*(?:\/-)?\s*$/i.test(l)||/\d[^\d\n]{1,14}\d+(?:\.\d+)?\s*(?:\/-)?\s*$/.test(l);}),
-      priced=marked||ends.length*2>=lines.length&&ends.filter(function(x,i){return ends.indexOf(x)===i;}).length>1;
+      priced=marked||ends.length*2>=lines.length&&(ends.length===lines.length||ends.filter(function(x,i){return ends.indexOf(x)===i;}).length>1);
     for(var k=nums.length;k>0;k--){var cand=base+" "+nums.slice(0,k).join(" "),cn=menuNorm(cand);if(T.indexOf(cn)>=0&&(!priced||new RegExp(cn.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?:(?:rs|inr|half|full|qtr|quarter|regular|small|medium|large|plate)\\s+)*\\d").test(T)))return cand;}
     return base;}
   return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}

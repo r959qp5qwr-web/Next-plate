@@ -422,9 +422,9 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   for (const [k, t] of [['Rs', 'Chicken 65 - Rs 240\nGobi 65 - Rs 180\nDal Tadka - Rs 200'], ['Rs.', 'Chicken 65 Rs. 240\nGobi 65 Rs. 180\nDal Tadka Rs. 200'], ['INR', 'Chicken 65 INR 240\nGobi 65 INR 180\nDal Tadka INR 200'],
       ['Half and Full', 'Chicken 65 (Half) 180 (Full) 320\nGobi 65 (Half) 120 (Full) 220\nDal Tadka 200'], ['unpriced', 'Chicken 65\nGobi 65\nDal Tadka\nTandoori Roti'], ['unpriced, three lines', 'Chicken 65\nGobi 65\nDal Tadka'],
       ['rupee sign', 'Chicken 65 \u20B9 240\nGobi 65 \u20B9180\nDal Tadka \u20B9 200'], ['dash', 'Chicken 65 - 240\nGobi 65 - 180\nDal Tadka - 200'], ['tab', 'Chicken 65\t240\nGobi 65\t180\nDal Tadka\t200']])
-    for (const aw of ['Chicken 65', 'Gobi 65']) { const r = menuName(NV, t, [[aw, ['plain']]]);
-      add('S8 menu names: a name number stays on every typed menu shape', (r.orders || []).some(o => o.name === aw), `${k} menu: "${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))} (${JSON.stringify(r.dropped)})`); }
-  for (const [t, aw, want] of [['Tea 15\nCoffee 20\nSamosa 15', 'Tea 15', 'Tea'], ['Dal Makhani 280\nPaneer Tikka 260', 'Dal Makhani 280', 'Dal Makhani'], ['Plate of 3 idli 40\nCup of tea 20', 'Plate of 3 idli', 'Idli']]) { const r = menuName(NV, t, [[aw, ['plain']]]);
+    for (const aw of ['Chicken 65', 'Gobi 65', t.split('\n')[0]]) { const r = menuName(NV, t, [[aw, ['plain']]]), want = aw === t.split('\n')[0] ? 'Chicken 65' : aw;   // as_written may copy the whole line, price and all
+      add('S8 menu names: a name number stays on every typed menu shape', (r.orders || []).some(o => o.name === want), `${k} menu: "${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))} (${JSON.stringify(r.dropped)})`); }
+  for (const [t, aw, want] of [['Tea 15\nCoffee 20\nSamosa 15', 'Tea 15', 'Tea'], ['Dal Makhani 280\nPaneer Tikka 260', 'Dal Makhani 280', 'Dal Makhani'], ['Plate of 3 idli 40\nCup of tea 20', 'Plate of 3 idli', 'Idli'], ['Idli 40\nVada 40\nDosa 40', 'Idli 40', 'Idli'], ['Masala Dosa 90', 'Masala Dosa 90', 'Masala Dosa']]) { const r = menuName(NV, t, [[aw, ['plain']]]);
     add('S8 menu names: a price or a count still goes', (r.orders || []).some(o => o.name === want), `"${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))}, not "${want}"`); }
   // a name that is only a number never shows (MENUSHAPE; safety audit m5, mutation N7)
   for (const aw of ['65', '2 3']) { const r = menuName(NV, aw + ' 180\nDal Fry 200\n', [[aw, ['plain']]]);
