@@ -169,5 +169,9 @@ module.exports.push(
 module.exports.push(
   S(P, 'plate-grain-protein-swap', 'Plate: the grain is also the protein, grain swap logged', 'A plate whose khichdi is the grain and the protein: Swap, pick the grain swap, then I\'ll have this.'),
   S(P, 'plate-grain-protein-change', 'Plate: the grain is also the protein, the sugar change', 'A plate whose khichdi is the grain and the protein: tap Gentler on sugar.'));
+module.exports.push(
+  S(X, 'rescue-urgent', 'Rescue: an urgent symptom typed, referred with the line to get help now', 'Rescue: type "chest pain after lunch" and send.'),
+  S(X, 'menu-urgent', 'Menu: an urgent symptom typed with the menu, referred with the line to get help now', 'Rescue, Type the menu: start it with "chest pain after lunch", then read it.'),
+  S(X, 'sheet-log-urgent', 'Sheet: I had something else, an urgent symptom typed', 'I had something else: type "chest pain after lunch, I had dal and rice" and send.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);
