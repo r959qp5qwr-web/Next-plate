@@ -1,246 +1,241 @@
 VERDICT: FAIL
-BUILD: 2909c1abe5cbeefcbad8c97e81640bf5e9f3b34b29b16258b13add318a69ad9c
+BUILD: ded556a7753f8c19c1137a03715f88c33c755b1c87c53b69050732501a11b0ae
 
-Safety audit of eddb00b (branch claude/nice-hawking-307ljy), 16 Nov 2026, after the fix round 11ff288..fccd687. Whole tree, two tiers
-(.claude/agents/safety-auditor.md), about 2 hours of probing. Judged on the np-core script inside `hosted/v6/index.min.html` and on
-`src/v6/app.js`. The builder's summary, test counts and mutation table were not taken on trust. The live model was not called.
+Safety audit of ba4d8dc (branch claude/nice-hawking-307ljy), 16 Nov 2026, after the fix round 3cc3021..fd602ec. Whole tree, two tiers,
+judged against docs/SAFETY-INVARIANTS.md with the owner's 16 Nov decisions (watch list for unknown count words; kidney: refer, as now; menu
+names: remove counts, keep names; menu requests shown, marked conditional). About 2 hours of probing. The builder's summary, test counts and
+mutation table were not taken on trust. The live model was not called.
 
 Checks run. The build was run in a scratch copy of HEAD (`git archive`); the three pages it writes are byte-identical to the committed
-ones. `npm run -s safety` (with the 41 Codex probes) and `rules`: pass. `npm run -s words`: FAIL at HEAD, 3 hits, all in the committed
-`test/ux/CRITIC.md` (c1). The fingerprint was 2909c1abe5cbeefcbad8c97e81640bf5e9f3b34b29b16258b13add318a69ad9c at the start and is the same after all probing.
+ones. `npm run -s safety` (with the 41 Codex probes; 4 TRACKED lines) and `npm run -s rules`: pass. `npm run -s words`: pass (last
+audit's c1 is closed). `node test/ux/review.js` was run this round (Playwright and Chromium were available): 50 safety states at 360 px,
+light, dark and 130 % text, 150 checks, no violations at HEAD; then app mutants against their own states (see Regression).
+The fingerprint was ded556a7753f8c19c1137a03715f88c33c755b1c87c53b69050732501a11b0ae at the start, mid-way and after all probing.
 
-How each finding was reached: "engine-run" = a model reply through `plan(kind).check()` in Node on np-core from the built page;
-"app-run" = the app's own `viewOf`, `swapAt` and `plateWhy`, taken from `src/v6/app.js` and run in Node on the engine's output;
-"mutation" = one line changed in a scratch copy, rebuilt, and `safety`, the Codex probes and `rules` run again; "read" = code reading.
-Each counter-example was also run on 6b5e18d (the page and app.js of that commit) to say whether it is new.
+How each finding was reached: "engine-run" = a model reply through `plan(kind).check()` in Node on np-core from the built page
+(hosted/v6/index.min.html); "app-run" = the app's own `viewOf`, `swapAt` and `plateWhy`, taken from `src/v6/app.js` and run in Node on
+the engine's output; "review-run" = test/ux/review.js on a page built from a scratch copy; "mutation" = one line changed in a scratch
+copy, rebuilt, and the checks run again. Every counter-example was also run on eddb00b (its page and app.js) to say whether it is new.
 
-1 BLOCKER, 3 MAJOR, 5 MINOR, 4 COSMETIC, 3 BACKLOG, and owner questions.
+1 BLOCKER, 2 MAJOR, 1 MINOR, 4 COSMETIC, a BACKLOG note, and owner questions.
 
 ## BLOCKER
 
-**B1. S7 (tier 1: a typed disclosure): a kidney disclosure is read as a dish when a meat word comes just before "kidney" or a dish
-word just after it, so it goes to the model and a plate can be shown (engine-run). 7 of my phrasings that 6b5e18d referred are not
-referred on this build, and 10 more with the word "kidney" are not referred on either build.**
-- `KIDNEYDISH` (src/v6/engine.js:690) turns "<mutton|goat|lamb|chicken|bakra|beef|pork|meat> kidney" and "kidney <fry|fried|masala|
-  curry|roast|gravy|...>" into "meat" anywhere in the typed text, before `REFERTXT` is read (`referTyped`, engine.js:691). When that is
-  the only kidney word in the text, the disclosure is lost.
-- Referred on 6b5e18d, not referred now, on all four text paths (ask, Rescue, menu, log):
-  "Chicken kidney ke liye theek hai?", "mutton kidney ke liye bura hai kya", "no meat kidney patient", "I avoid red meat kidney stones",
-  "chicken kidney stone patient hu", "pork kidney problem", "lamb kidney issue".
-- Not referred on either build, though S7 now says any kidney word but "kidney bean(s)" is referred, "wherever it stands":
-  - a meat word before: "Is chicken kidney friendly?", "is chicken kidney-friendly", "beef kidney safe for me?", "Is goat meat kidney
-    friendly";
-  - a dish word after: "low salt for kidney curry" (S7's own example with one word added), "for my kidney fried food ok?", "kidney fried
-    food mana hai", "kidney masala kam rakho", "kidney roast is bad for me", "my kidney gravy diet".
-- The chain to a shown plate: `plan('meals', {ctx: {text: 'Is chicken kidney friendly?'}})` builds a prompt that says "Answer that with
-  the meals" (engine.js:216); a reply with refer_reason "none" and an honest plate is shown ("Moong dal with jowar roti"). Only the
-  model's own refer_reason stands between the disclosure and a plate. The live model was not called, and no recorded reply holds a typed
-  kidney mention (searched all 73 typed `text` fields under eval/: none).
-- The dish exception is not an owner decision. The handoff records "A kidney condition or pregnancy typed in any box is referred like a
-  tick (S7)" (handoff-next-plate.md:101); docs/SAFETY-INVARIANTS.md S7 names only "kidney bean(s)". The commit fccd687 says "Every
-  referred phrasing still refers"; the 7 above do not.
-- The tests cannot see it: `notReferText` in test/safety/lexicon.json requires "had mutton kidney for lunch" not to be referred, and no
-  referral case has a meat word before "kidney".
-- Any reading of "kidney" as a dish in free text can swallow a disclosure, whichever words it keys on. Smallest safe fix: take
-  `KIDNEYDISH` out of `referTyped`, so every typed kidney word but "kidney bean(s)" refers again, as S7 and the handoff say (a typed menu
-  that lists "Kidney fry" is then referred, a safe over-referral, as on 0c50e80). Whether a kidney dish may be read as food, and where
-  (a whole menu line only, or nowhere), is the owner's decision. Add the 17 phrasings above to the held-out referral list.
+**B1. S7 (tier 1, a typed disclosure): "gurday", the common Roman spelling of gurde (Urdu and Punjabi; plural of gurda), is not
+referred by the code net on any of the four text paths, so it goes to the model and a plate can be shown (engine-run). Carried from
+eddb00b, not new.**
+- `REFERTXT` (src/v6/engine.js:692) reads gurda as `gurd(?:a{1,2}|e|ey|o|on)\b`; "gurday" fails the word boundary after "gurda".
+- Not referred, on ask, Rescue, menu and log alike (each run on all four): "Gurday kharab hain", "mere gurday weak hain", "Gurday ki
+  bimari hai", "Mere gurday kharab hain, dinner mein kya khaun?".
+- The chain to a shown plate: `plan('meals', {ctx: {text: 'Mere gurday kharab hain, dinner mein kya khaun?'}})` sends the text to the
+  model; a reply with refer_reason "none" and an honest plate is shown ("Moong dal with jowar roti"). Only the model's own refer_reason
+  stands between the disclosure and a plate, as in last round's B1.
+- S7 now says "gurda in every form (gurda, gurde, gurdey, gurdo, gurdon) on its own". The held-out referral list in
+  test/safety/lexicon.json has no "gurday", so no test can see it.
+- How I graded it, so the owner can overrule: a typed word that S7 itself names as a kidney word (kidney and its forms, gurda in every
+  form) and that the code net misses is a BLOCKER, as B1 was last round; a further misspelling is MINOR, as m2 was (see m1 below). If the
+  owner reads "every form" as the five spellings listed, this moves to m1.
+- Smallest fix: add the forms to the one clause, keeping "gurdwara" out: `gurd(?:a{1,2}|aa?y|ai|e|ey|ein|o|on)\b`. Add "gurday" phrasings to
+  the held-out list.
 
 ## MAJOR
 
-**M1. S8 (tier 1: an honest copy of a printed menu): on a menu a digit count inside a dish name now shows. 6b5e18d took every
-digit off.**
-- `MENUCOUNT` (src/v5/core.js:585) takes a number off only before a measure word it lists, or at the start or after "with", "and" or a
-  comma before a piece word, and `MENUSHAPE` (core.js:609) now lets digits stay. A count after another word stays.
-- With the typed menu, as_written copied from it, tags honest (engine-run; order and "leave" entry alike):
-  - before a piece word the engine itself lists (`CNTPIECE`, core.js:564): "Egg Curry 2 Eggs", "Egg Bhurji 3 Eggs", "Omelette 3 Egg",
-    "Veg Thali 3 Roti Dal Rice", "Mini Meals 4 Roti Rice Dal", "North Indian Thali - 4 Roti, Dal, Rice" (shows "North Indian Thali 4
-    Roti"), "2 Idli 1 Vada" (shows "Idli 1 Vada"), "Idli 2 Vada 1 Combo", "Breakfast Combo Idli 2 Vada 1 Coffee", "Poori Sagu 3 Poori";
-  - before a measure word it does not list: "Mutton Biryani 1 Kg", "Buttermilk 1 Ltr", "Biryani 1 Handi", "Veg Thali 2 Person",
-    "Family Pack Biryani 4 Persons".
-  - On 6b5e18d each of these showed with no digit.
-- Judged against the owner's decision in the brief (16 Nov, "Remove counts, keep names": a number comes out when a count, measure or food
-  word follows it) and S8's "no household count shows in a name". S8 also records a narrower sentence, the builder's wording: on a menu a
-  number goes only before a measure word, or at the start or after "with", "and" or a comma before a piece word. The build follows that
-  sentence; the two disagree on every case above, and the owner's sentence is the one this audit applies.
-- How often: no recorded typed menu under eval/ has a number inside a line (searched every multi-line `text`), so no recorded reply shows
-  it. A South Indian tiffin card ("Idli 2 Vada 1", "Parotta 2 Salna") prints this shape often.
-- The S8 menu test (test/safety/check.js:377) has no count inside a name, so it cannot fail on this.
-- Fix, direction only: a count inside a menu name must go, and kg, ltr, litre, handi and person(s) count as measure words. A rule
-  keyed on the piece word alone would also take the number off honest names this build keeps ("Chicken 65 Dosa", "Gobi 65 Kebab",
-  "Chicken 65 Momos", "Chicken 65 Pav" all show with 65 today, and dosa, kebab, momo and pav are piece words), so how to tell a count from
-  a name number is for the builder to propose and the owner to settle. Until then, dropping a menu name that holds a digit before a piece
-  or measure word fails closed. Add these lines to the S8 menu test.
+**M1. S8 (tier 1: Hindi number words, English "half", "quarter" and "one", and katori are all named by S8 or kept tier 1 by the owner):
+a count or a measure written in words still shows in a name when the word after it is not in the engine's own lists, on every name path
+(engine-run). Carried from eddb00b, not new. The S8 word-count test cannot fail on these cases.**
+- `CNTQTY` (src/v5/core.js:585) takes a Hindi number, "half" or "quarter" off only before a measure word in `CNTMEAS` (core.js:565) or a
+  piece word in `CNTPIECE` (core.js:566); the katori check is `\bkatoris?\b` (core.js:632, 774 and `countIn`, core.js:636). Shown as
+  written, on a plate item:
+  - on a typed menu, a measure in words before kg, kilo or litre (S8 lists "1 Kg" as a measure that goes): the menu lines "Chicken Biryani
+    Half Kg 450", "Hyderabadi Biryani Quarter Kg 250", "Sweet Lassi Half Litre 90", "Chicken Biryani Ek Kilo 800" and "Mutton Biryani
+    (Half Kg) 450" show as orders and "leave" entries with the measure as printed. The model copies as_written letter for letter from the
+    menu, so this needs no slip by the model, only a biryani shop's ordinary menu. On a plate, "One kg biryani" shows "Kg biryani";
+  - katori in its Hindi plural, which S8 names outright: "Katoriyan dal", "Do katoriyan dal", and in a kept bracket "Dal (do katoriyan)";
+    also "Katoree dal" (a menu line "Katoriyan Dal 90" shows as printed too);
+  - Hindi plurals of piece words the list holds only in English form: "Do parathe", "Teen parathe", "Do samose", "Do pakode",
+    "Do bhature", "Chole with do bhature", "Do kulche", "Do vade", "Teen dose", "Do idliyan", "Do kachoriyan", "Teen pakodi",
+    "Paanch golgappe";
+  - piece words not in the list: "Do luchi", "Char luchis", "Teen litti", "Do bati", "Do baati";
+  - Hindi measure words: "Ek chammach ghee", "Do chammach ghee", "Ek mutthi chana", "Do karchhi dal"; Marathi "Ek vati varan";
+  - the joining word "ki", which `CNTSKIP` (core.js:568) will not step over: "Do makki ki roti", "Do bajre ki roti";
+  - Hindi number spellings the list lacks: "Dus roti", "Gyarah idli", "Barah puri";
+  - a lone Hindi number in a short bracket: "Idli (Do)".
+- The same names show as a protein swap ("Teen samose"), a grain swap ("Do bajre ki roti", "Do parathe"), the food a one-tap change adds,
+  with its note ("Add 5 g ek chammach ghee. About 45 kcal more."), a menu order ("Do Parathe Thali") and a "leave" entry ("Do Parathe
+  Thali", "Katoriyan Dal", "Chicken Biryani Half Kg"). The plate title
+  and subtitle are written from the items, so they carry them too.
+- How often: no file under eval/ (model names and typed menus) holds a Hindi number before these words, a katori plural, or half, quarter or
+  ek before kg, kilo or litre (searched with grep). None needs a reply built to break a filter: each is how a Hindi-speaking client or a
+  printed menu writes a portion. Every case above was also run on eddb00b, with the same result.
+- The test cannot fail: the Hindi part of `COUNTWORDS` (test/safety/check.js:334) recognises only nouns from the engine's own piece list,
+  and its comment calls "kozhukattais" and "pathiris" nouns the engine does not list, though `CNTPIECE` now holds both. I added "Do
+  parathe", "Ek chammach ghee", "Do samose" and "Teen litti" to `COUNTEDW` in a scratch copy of check.js: it still passes at HEAD, with all
+  four shown.
+- Smallest fix: in the count rule, let a Hindi number, "half" and "quarter" take off the word after it when that word is a measure
+  (add kg, kilo, litre, chammach, mutthi, karchhi, vati and katori with its plurals), and add the Hindi plurals and the missing piece words
+  to `CNTPIECE`, with dus, gyarah and barah to the numbers; read katori as `katori\w*|katoree`. Then make the test's detector its own: any
+  Hindi number word followed by any word is flagged, with the honest names ("Paneer do pyaza", "Panch phoron dal") as its listed
+  exceptions, so a word the engine does not list fails the test.
+- Owner question kept apart from this finding: S8's letter keeps a Hindi number before a nut or a fruit ("Char badam", "Paanch badam",
+  "Das kaju", "Do kela", "Ek seb", "Teen khajoor"), while "Fifteen almonds" goes.
 
-**M2. S8 (tier 1): a count written as a word inside a short bracket is kept and shown, on every name path (engine-run). The same on
-6b5e18d (missed by the last audit).**
-- `showName` keeps a bracket of one to three words as a label (core.js:597, `kb`) and cleans counts only outside it.
-- Shown as written, item, title and subtitle: "Dal (one bowl)", "Rice (half plate)", "Egg curry (two eggs)", "Idli (three pieces)",
-  "Phulka (two nos)", "Boiled eggs (two whole)", "Moong chilla (two)". Only "katori" in a bracket is caught ("Rajma (one katori)" shows
-  "Rajma").
-- The same bracket is shown on a menu dish and a "leave" entry, on the declared grain and in the reason line ("The grain stays: about 90 g
-  of jowar roti (two pieces)."), on a protein and a grain swap, and as the food a one-tap change adds, with its note.
-- Also kept, outside a bracket: number words above twelve ("Fifteen almonds", "Twenty peanuts"), and number words of other Indian
-  languages written in English letters ("Rendu idli", "Moonu dosa", "Don chapati", "Be rotli", "Duto ruti", "Dui ta luchi"). None of
-  these is in the recorded names; none needs a reply built to break a filter, so they are tier 1 here.
-- How often: one recorded name has a number word in a bracket, "Whole eggs (one whisked, one boiled)"; its comma means the bracket is
-  taken off, so it shows "Whole eggs".
-- The S8 word-count test (check.js:331-343) has no bracket case and no number above twelve. Letting a bracket hold "katori" (mutation
-  N17) also passes every Node check.
-- Smallest fix: do not keep a bracket that holds a number word or a measure or piece word (or clean the bracket with the same count
-  rules); add thirteen to twenty to `CNTWORD`. Add bracket cases to `COUNTEDW`.
-
-**M3. S10 (tier 1 by the letter, see the note): a grain swap can replace the wrong item, and the plate logged is then not the plate
-the figures describe (app-run on engine output). The same on 6b5e18d.**
-- `swapAt(m, "base")` (src/v6/app.js:205) takes the first item whose name contains, or is contained in, the declared grain's name
-  (`sameFood`, core.js:492, a substring test). An earlier item whose name is a part of the grain item's name is taken first.
-- Vegetarian, no diabetes, lunch. Items "Sambar" (protein, 150 g), "Sambar rice" (carbs, 250 g), "Cucumber salad"; grain food "Rice",
-  made of rice. The engine declares "Sambar rice" as the grain. Tune adds a grain swap "Bajra khichdi" (+20 kcal).
-- Tap the grain swap. Shown and logged: 250 g Bajra khichdi, 250 g Sambar rice, 100 g Cucumber salad, title "Sambar with sambar rice,
-  with bajra khichdi in place of sambar". The figures are the plate with the rice swapped, not the sambar. `plateWhy` passes. The swap
-  drawer lists the choice under "Grains and starch" as "Sambar (on your plate)".
-- Same with "Dal" and "Dal khichdi" (grain "Khichdi"), "Curd" and "Curd rice", "Methi" and "Methi thepla".
-- With diabetes the tune request for such a plate is refused (the re-check finds no grain), so no swap is offered: the case is for clients
-  without diabetes.
-- Tier note for the owner: it needs two things no recorded reply has. The prompt asks for grain.food "copied letter for letter from
-  items" (engine.js:227), and all 1,170 recorded grain names are copied that way; and no recorded plate (0 of 452 shown) has an earlier
-  item whose name is a part of the grain item's name. It is not a reply built to break a filter, so by the letter of the tiers it is tier 1.
-- The S10 property test (check.js:566-595) cannot see it: it checks that the swapped-in food is on the plate and that the figures match
-  the app's own view, not that the grain swap replaced the grain item.
-- Smallest fix: in `swapAt` match the grain item by its exact name first (the engine sets `grain.food` to that item's own name), and in
-  `declaredGrain` prefer an exact name match before a partial one.
+**M2. S10 (tier 1 by the letter, see the note): when the grain is named by a short form of its item ("Rice" for "Jeera rice"), the plate
+now has no declared grain, and a one-tap change whose figures shrink the grain is still offered; the grams shown and the figures logged
+then describe different plates (app-run on engine output). New with the M3 fix (b19d542); the no-grain form of it is carried.**
+- `declaredGrain` (src/v5/core.js:495) now finds the grain item by its whole name only (`sameName`, core.js:494). With items "Rajma",
+  "Jeera rice" and grain food "Rice", no item matches, so `grain.food` is "" and nothing ties a change's `grain_grams_after` to the rice.
+- Non-diabetic, lunch. A "gentler on sugar" change: add 80 g sauteed beans, rice to 150 g, 120 kcal and 30 g carbs less. Tap it: shown
+  and logged 150 g Rajma, 200 g Jeera rice, 120 g Cucumber salad, 580 kcal; the note reads "Add 80 g sauteed beans. About 120 kcal
+  less." The rice is not cut, yet the energy falls by 120 kcal. On eddb00b the same reply showed "Jeera rice goes to 150 g" with 150 g
+  of rice on the list.
+- The same happens on both builds when the model gives grain food "" and a change that shrinks a carbohydrate item.
+- With diabetes such a plate is dropped at breakfast, lunch and dinner (no declared grain), so S5 holds; the case is for clients without
+  diabetes.
+- Tier note for the owner: it needs a grain name not copied letter for letter (0 of 1,170 recorded grain names; the prompt asks for a copy)
+  or a no-grain plate with a grain-shrinking change (0 of 132 recorded no-grain plates). It is not a reply built to break a filter, so by
+  the letter of the tiers it is tier 1, graded as last round's M3 was.
+- Smallest fix: in `declaredGrain` keep the whole-name match first, then accept the one item whose name holds the grain name as whole
+  words ("Jeera rice" holds "Rice"); and when no grain is declared, do not offer a change whose `grain_grams_after` is above 0
+  (core.js:766).
 
 ## MINOR
 
-- m1. S5 and S6 in the app (carried from the last audit's m1, part closed). Removing the S5 or the S6 clause of `composedWhy`
-  (app.js:81-82, mutations A2 and A3) still passes `safety`, the Codex probes and `rules`. The engine's floors on swaps and Rescue moves
-  are now caught (M9, M10 fail `safety`), and my own 64 S6 cases hold. The app clauses rest on the review states
-  `plate-random-combos-*` and `rescue-two-moves-grain`, which I could not run.
-- m2. S7 typed disclosures with no "kidney" word that the code net sends to the model, the same on both builds: "gurdon ki bimari",
-  "gurdon mein pathri" (the plural form of gurda), "mere gurde theek nahi", "kidni problem", "kindey problem", "kidneyy pain", "kidnies
-  weak". The model must set refer_reason; one missing fails closed.
-- m3. App states that still rest on review.js alone (mutations that pass every Node check): the day change at a tap (A5), a stale
-  Rescue reply (A7), `act()` skipping its check (A9), a stale tune reply (A10), and yesterday's answers kept past 4 am (A11). Each has a
-  review state (`plate-overnight-*`, `rescue-health-changed`, `plate-tune-stale`). The kept-plate stamp (A6) and the store emptied on a
-  rule change (A12) are now caught by `safety`, as the builder reported.
-- m4. App text from this fix round rests on review.js alone (mutations that pass every Node check): a conditional order with the tick
-  back (N10), the condition taken off the "Also on this menu" rows (N11), the log referral without the line to get help now (N12), the
-  get-help line moved under the referral (N16), and the app's "Planned around" lines unfiltered (N13, last audit's c1). Each has a review
-  state (`rescue-menu-*` with `order-cond`, `sheet-log-urgent`, `plate-ask-urgent`, `rescue-urgent`, `menu-urgent`), read, not run. The
-  engine's own `hookSaid` rule (N14) is caught.
-- m5. The menu name shape is a backstop no check exercises: letting a menu name open with a number (N7, `MENUSHAPE` at core.js:609)
-  passes every Node check. With it, "2 Chole Bhature" would show (the count rule does not take that "2" off, as "bhature" is not a listed
-  piece word); today the shape drops the name. No counter-example on this build.
-
+- m1. S7 phrasings the code net sends to the model, all carried from eddb00b (the model is told to refer them; a missing or odd
+  refer_reason fails closed, checked for 19 values on all four paths): misspellings "kedney", "kidaney", "kiney", "kdney", "gurdein",
+  "guurda", "gurdy"; "CKD3" (no word boundary after "ckd"; "ckd-3" and "stage 3 CKD" refer) and "creat 2.1"; pregnancy "prego",
+  "preggy", "baccha hone wala hai" ("bacha" and "bachcha" refer), "7th month chal raha hai", "delivery due next month", "due in March",
+  "BF mom", "TTC", "baby bump", "mommy to be" ("mom-to-be" refers), "jachcha", "jaccha".
 ## Owner questions (named here, not graded)
 
-- **Menu numbers the owner's sentence does not settle.** A digit before a dish word that is not a piece word ("Appam 2 Stew", "Parotta 2
-  Salna", "Chapathi 2 Kurma", "Aloo Paratha 2 Curd", "Roti 2 Sabzi 1"): the rule cannot tell these from "Chicken 65 Biryani". A digit
-  at the end with nothing after it ("Tandoori Roti 2", "Boiled Eggs 2", "Rasgulla 2", "Dal Rice Roti 3", "Chicken Leg Piece 1"). Each
-  shows as printed on this build; on 6b5e18d the digit went.
-- **"Double egg omelette"** shows as written on a plate and a menu, while "Single egg omelette" shows "Egg omelette". On a menu it is the
-  dish's name; on a plate it is a count of eggs.
-- **Still open from the last audit, owner or clinician; results on this build only:**
+- Menu numbers at the end of a name stay (the open question the owner holds): "Tandoori Roti 2", "Gulab Jamun 2", "Pani Puri 6",
+  "Golgappe 6", "Garlic Naan 2", "Neer Dosa 3", "Ragi Mudde 2", "Thali for 2", "Roti Sabzi 1" ("Roti 2 Sabzi 1").
+- Size words with no number: "Full plate thali", "Biryani Full Plate" and "Biryani Half" show as written, while "Half plate biryani" and
+  "Biryani Half Plate" show "Biryani". "Double egg omelette" and "Triple egg omelette" show as written; "Single egg omelette" and
+  "Two-egg omelette" show "Egg omelette".
+- A Hindi number before a nut or a fruit (M1, last point).
+- Still open from earlier audits, for the owner or a clinician; results on this build only:
   - Urgent symptom scope: "my sugar is 55", "sugar 60 hai", "blood sugar 400", "chest is tight", "numbness in left arm", "ghabrahat ho
-    rahi hai" and "I feel very weak and shaky" (from a client whose answers say insulin) go to the model. A model referral with
-    refer_reason "other_urgent" still shows no line to get help now.
+    rahi hai" and "I feel very weak and shaky" (insulin in the client's answers, not in the text) go to the model. A model referral with
+    refer_reason "other_urgent" shows the referral with no line to get help now.
   - Carbohydrate floors: the Codex probe still prints "a medicines plate with 1 g of carbohydrate: ok" as TRACKED.
-  - Postpartum scope: "I just had a baby" and "I delivered last month" go to the model.
+  - Postpartum: "I just had a baby" and "I delivered last month" go to the model ("postpartum", "c-section 2 weeks ago" and "new mom"
+    refer).
   - Potassium: "high potassium", "potassium high hai" and "my potassium is high" go to the model.
 
 ## COSMETIC
 
-- c1. `npm run -s words` fails at HEAD: the committed test/ux/CRITIC.md has three hits of two banned words (lines 57, 62 and 110).
-  The screen reviewer is writing that file during this audit, so its next version may clear this.
-- c2. Honest names the count rule changes (no safety effect; the name shown is shorter or odd): "Chicken sixty five" shows "Chicken
-  sixty", "Two minute noodles" shows "Minute noodles", "Half moon dosa" shows "Moon dosa", "Do pyaza paratha" shows "Pyaza paratha", "Ek
-  tara dosa" shows "Tara dosa", "Two-tone dosa" shows "Tone dosa", "Mixed dal with two kinds of rice" shows "Mixed dal with kinds of
-  rice". Some names are dropped instead of cleaned, which drops the plate: "3-4 rotis", "Teen-chaar roti", "2-egg omelette", "A bowl of
-  dal", "A glass of buttermilk", "One-and-a-half roti".
-- c3. The kidney rule now refers a typed menu that lists "Steak and kidney pie", "Kidney and liver fry" or "Kidney pudding" (a safe
-  over-referral).
-- c4. This file replaces the audit of 6b5e18d.
+- c1. eval/usefulness/names-diff.txt still states its baseline as 6b5e18d. I ran its script with the baseline set to eddb00b, writing to
+  scratch: 0 of the 3,452 recorded names change from eddb00b to ba4d8dc; with 6b5e18d it gives the same 21 lines as the committed file.
+- c2. Name shapes from the menu position rule and the count words (none hides a food; the accepted costs aside): "Chicken 65 Half" shows
+  "Chicken Half", "Chicken Biryani Half 160 Full 280" shows "Chicken Biryani Half Full", "Combo for Two" shows "Combo for", "3 In 1 Rice"
+  shows "In Rice", "7 Up" shows "Up", "Sev Puri 1 Plt" shows "Sev Puri Plt", "Chole Bhature 2 Bhature" shows "Chole Bhature Bhature", "Two
+  or three rotis" shows "Or rotis", "Ten-minute poha" shows "Minute poha".
+- c3. The invariants table lists S8 as a check on the log title and items, with "Your meal" as the fallback, but the title is the client's
+  typed text shown as typed ("2 rotis and 1 katori dal") and an item may be "katori dal" when every word was typed. The model's own
+  "assumed" line is not shown (tested). The record should say the client's own words are exempt, or the code should leave out a log
+  item named with katori.
+- c4. This file replaces the audit of eddb00b.
+
+## Last audit's findings, checked again on this build
+
+| Last audit | Fix | Result on ba4d8dc |
+|---|---|---|
+| B1 kidney dish rewrite hid disclosures | 3cc3021, fd602ec | Closed. `KIDNEYDISH` is gone; 53 of my 55 must-refer phrasings refer (the two left are potassium, an owner question); all 8 routed phrasings refer before the model on all four paths (32 of 32; eddb00b 0 of 32). Kidney beans and rajma are not referred; kidney and gurda dishes refer, the owner's accepted cost. Mutations P3, P4, P16 fail `safety`. Carried gap: B1 above. |
+| M1 menu digit counts | 2050f6d, 603f99d, 5801f1a | Closed under the owner's rule. 53 menu lines: a digit in the order name 26 on eddb00b, 10 now, all at the end of a name or "Chicken 65"-type names. 18 lines with units: 6 kept a unit, 1 now ("Half Kg", M1 above). Mutations P7, P8, P17 fail `safety`. |
+| M2 brackets, numbers above twelve, other-language counts | 23e7a30, 507892f, 84c3a38 | Closed for brackets and English numbers: 11 of my 13 bracket and large-number names showed a count, 1 now ("Double egg omelette", an owner question); the bracket is taken off on all 5 other paths. "Rendu idli", "Don chapati", "Duto ruti" and the like are on the owner's watch list (tier 2). Hindi forms remain: M1 above. Mutations P5, P6, P9, P10, P11, P13, P15 fail `safety`. |
+| M3 grain matched by substring | b19d542 | Closed: on the four part-name plates the grain swap lands on the grain item (eddb00b: on the earlier item); 452 recorded plates re-checked, 0 swaps on another item. Mutations P1, P2, P14 fail `safety`. Side effect: M2 above. |
+| m1 composedWhy S5/S6 rest on review states | 6b4e96f | Closed: removing the S6 or the S5 clause of `composedWhy` (A2, A3) now fails `safety`; review-run, A2 fails `plate-random-combos-3` and A3 fails `plate-random-combos`, `-2` and `rescue-two-moves-grain`. |
+| m2 kidney misspellings and gurdon | ebd2cac, fd602ec | Closed for the forms named ("kidni", "kindey", "kidneyy", "kidnies", "gurdon", "gurde"); others in m1 and B1 above. |
+| m3 app states rest on review.js | 6b4e96f | Closed: A5, A7, A9, A10 and A11 now fail `safety`; review-run, each also fails its own state (A5 `plate-overnight-first-tap` and `-first-change`; A7 `rescue-health-changed`; A9 `rescue-two-moves-grain`; A10 `plate-tune-stale`; A11 `rescue-after-midnight`, `menu-after-midnight`). |
+| m4 app text rests on review.js | 6b4e96f | Closed: N10, N12, N13, N16 and the new P12 (condition off the "Also on this menu" rows) fail `safety`; review-run, each fails its own state (`rescue-menu-request`, `sheet-log-urgent`, `plate-` and `menu-planned-diabetes`, the three urgent states). |
+| m5 menu name shape unexercised | none | Closed: N7 (a menu name may open with a number) now fails `safety`. |
+| c1 banned words in CRITIC.md | Critic's file | Closed: `words` passes. |
+| c2 honest names changed by the count rule | 507892f | Part closed: "Chicken sixty five" stays; "Sixty five chicken" shows "Chicken". Others in c2 above. |
+| c3 kidney dish over-referral | owner, 16 Nov | Accepted by the owner ("Refer, as now"); not a finding. |
+| c4 record | | Replaced. |
 
 ## BACKLOG (tier 2; does not fail the audit)
 
-Searched: every name field (food, as_written, with, add_item, name) and every typed `text` in the JSON files under eval/ (3,218 plate
-names and 187 menu names, distinct), and the 185 recorded replies replayed below.
+- Word lists, with a wrong but non-empty tag ("plain"): of 37 words new to my lists this round, 17 have a form that passes under the
+  profile that bars it: dalcha, chukka, laal maas, kakori, erachi, pandi, kebab, tikka (meat; the last two also name paneer dishes),
+  kalamari, bhurji and dim (egg), mattha and mor (dairy for a vegan), bati and khari (wheat), gajak (sweet), multivitamins. My older list
+  is unchanged: 94 of 389 words have such a form, as on eddb00b.
+- Counts in other Indian languages ("Rendu idli", "Moonu dosa", "Randu dosa", "Don chapati", "Be rotli", "Duto ruti", "Dui ta luchi") show
+  as written; the owner put them on the watch list (16 Nov). None is in the recorded names.
 
-1. Word-list gaps (each needs the model to send a wrong but non-empty tag): 94 of my 389 words have a form that passes with the tag
-   "plain" (95 on 6b5e18d; "noodle" is closed). Unchanged otherwise: liver, seekh, rogan, vindaloo, quail, basa, tilapia, rui, bangude,
-   chenna, khova, mozzarella, sandwich, frankie, charoli, macadamia, chikki, poondu, vengayam, chives, arvi, gud, cheeni, bellam,
-   happala, loncha, and the others listed last time. New this round: "multivitamins" (the plural) passes where "multivitamin" is caught.
-   Seen in recorded replies: as listed last time (chenna 3, sandwich 12, rui 4, tilapia 2, seekh 1), none mis-tagged.
-2. Offal dishes reach the model. A typed menu with "Kidney Fry" went to the model on 6b5e18d too; 0c50e80 referred it, and fccd687
-   sends it to the model again. "Kidney Fry", "Kidney Masala", "Gurda Fry" and "Bheja Fry" tagged "plain" are shown to a
-   vegetarian ("Gurda Kaleji" and "Kaleji Masala" are caught by "kaleji"). No recorded menu lists kidney, gurda or bheja. Smallest fix:
-   add kidney, gurda and bheja to the meat words, as `KIDNEYDISH` already reads them as meat.
-3. Carried over, unchanged on this build: a hyphen inside a word ("Chi-cken tikka" tagged plain); a count in a menu side copied as words
-   ("Two Tandoori Roti" as the side is not shown on this build: a side must be "<digits> <name>"); no_dairy_fat on a korma; Kori rotti,
-   Payesh and Poondu rasam (TRACKED in test/safety/codex.js).
+## Regression: my earlier probes, eddb00b against ba4d8dc
 
-## Regression: my earlier probes, rerun
+The scripts from the last two audits (scratchpad audit5/probes/, which holds the audit4 scripts and the mutation sets) were copied to
+audit6/probes/ and run on the eddb00b page and app.js (`git show eddb00b:...`) and on this build in the same way. Two needed a harness
+change: replay.js now finds the recorded replies inside every file under eval/ (replay2.js), and dgscan.js defines the old `sameFood` for
+its own count (dgscan2.js).
 
-The scripts from the last audit (scratchpad audit4/) were copied to audit5/probes/ with one change: the page and app.js paths can be set,
-so each runs on the 6b5e18d page and app.js (from `git archive 6b5e18d`) and on this build in the same way.
-
-| Probe | 6b5e18d | eddb00b |
+| Probe | eddb00b | ba4d8dc |
 |---|---|---|
 | h.js (loads np-core from the built page) | loads | loads |
-| tags.js: 7 tag shapes (missing, empty, string, unknown, null, upper case, plain with dairy) on 7 surfaces for a vegan | 49 cases, 0 shown; controls 7 of 7 shown | 49 cases, 0 shown; controls 7 of 7 shown |
-| replay.js: 185 recorded replies (80 at-risk window calls, the 6febc1a at-risk sample, the 26 window scenarios and menus) | 254 plates and 40 orders shown; 0 counter-examples (the hits are "jowar roti" read as wheat by my own list, "slices" read as a unit, a request line naming the ghee it takes out, and the nothing-fits line) | the same counts and the same hits |
-| lex.js, through a new wrapper (lexsweep.js): my 389 words in 5 forms each, 1,945 plate items tagged "plain", under the profile that bars each | 434 shown, 95 words with a gap | 430 shown, 94 words with a gap ("noodle" closed) |
-| s10.js: the moong dal khichdi plate (grain item = first protein item), protein swap and grain swap | both swaps offered; both taps land on the khichdi; shown 460 kcal, 26 g protein, 50 g carbs, 20 g fats for a plate of 500 / 20 / 80 / 11 (last audit's M1) | the protein swap is not offered (engine); grain swap alone shows 500 / 20 / 80 / 11, the plate on screen; a protein-swap tap state changes nothing |
-| mutate.js with muts1.js (30 engine mutations) | 6 survive: M6, M9, M10, M18, M20, M21 | 3 survive: M18, M20, M21 (nothing a client sees, as last time). M6, M9, M10 now fail `safety`. M13, M14 and M16 no longer apply (the code changed); stand-ins N1, N3 and N6 below |
-| mutate.js with muts2.js (14 app mutations) | 10 survive (A1, A8, A13 caught; A4 by the Codex probes) | 7 of 13 survive: A2, A3, A5, A7, A9, A10, A11. A6 and A12 now fail `safety`. A14 no longer applies (the card is drawn by `referHead`); stand-in N16 |
-| mutate.js with muts3.js (3) | M31 survives (last audit's M3) | M31, M32 and M33 all fail `safety` |
+| tags.js: 7 tag shapes on 7 surfaces for a vegan | 49 cases, 0 shown; controls 7 of 7 shown | the same |
+| replay2.js: 185 recorded replies from the 46 files under eval/ that hold a raw reply, and the window sample | 254 plates and 40 orders shown; 0 counter-examples (the known hits: "slices" read as a unit, "jowar roti" read as wheat by my own list, a request line naming the ghee it takes out, the nothing-fits line) | the same counts and the same hits |
+| lexsweep.js: 389 words in 5 forms, 1,945 items tagged "plain" | 430 shown, 94 words with a gap | the same |
+| kid.js: 55 phrasings that must refer, 27 kidney foods and dishes | 35 of 55 referred; 24 of 27 foods not referred | 53 of 55 referred (the 2 left: potassium); 10 of 27 not referred (the 17 kidney and gurda dishes refer, the owner's choice) |
+| kidroute.js: 8 phrasings on 4 paths | 0 of 32 referred before the model | 32 of 32 |
+| brk.js: 13 bracket and large-number names | 12 show a count word (11, plus "Double egg omelette") | 1 ("Double egg omelette", an owner question, on both builds) |
+| brk2.js: a count bracket on menu dish, leave entry, grain and reason line, both swaps, one-tap change | kept on all 5 paths | taken off on all 5 |
+| names.js: 63 honest names and 85 counted names, plate and menu forms | "Fifteen almonds", "Glass of buttermilk", "Bowl of curd", "Plate of poha" and the like show; "A bowl of dal" dropped | taken off; "Chicken sixty five" stays; the 7 other-language counts show (watch list) |
+| menunames.js: 53 typed menu lines | 26 order names with a digit | 10, each at the end of the name: "Chicken 65", "Gobi 65", "Paneer 65", "Chicken 555", and "Tandoori Roti 2", "Roti Sabzi 1", "Dal Rice Roti 3", "Boiled Eggs 2", "Chicken Leg Piece 1", "Rasgulla 2" (the owner's open question) |
+| menu2.js: 18 menu lines with units | 6 kept a unit (and "Chicken 65 Half", "Chicken 65 Full" kept their 65) | 1 kept a unit ("Chicken Biryani Half Kg", M1); "Chicken 65 Half" shows "Chicken Half" (c2) |
+| meds.js: 64 S6 cases (plate, swap, change, Rescue) | 0 failures | 0 failures |
+| s10.js: the khichdi plate, swaps and change | as last round | the same |
+| s10b.js: protein swap on a plate whose grain item is its first protein item (9 profiles, 4 meals, 5 shapes); grain swap on 4 part-name plates | 0 offered on a declared grain item; the grain swap lands on the earlier item (last round's M3) | 0 offered on a declared grain item (44 offers, all on plates where the short grain name no longer declares a grain, so no base swap shares the item); the grain swap lands on the grain item; with diabetes the 4 plates are dropped |
+| dgscan2.js: 452 recorded plates with a declared grain | 0 swaps on another item | 0 |
+| gfscan.js: recorded grain names equal to an item name | 1,170 of 1,170 | the same (the data, not the build) |
+| names-diff script, baseline set to eddb00b, output to scratch | | 0 of 3,452 recorded names change |
+| refer.js (new): 109 kidney and pregnancy phrasings on 4 paths | 61 referred | 77 referred (16 more: gurda forms and dishes, "kidneyfriendly", 7 misspellings of kidney) |
+| cnt.js (new): 91 count names, plate and menu | Hindi forms shown (M1) | the same Hindi forms shown; "Do rotiyan", "Roti (two)" and the like now cleaned |
 
-The 6b5e18d mutation column is the last audit's record; the first 28 of those mutations (M1 to M28) were run again on 6b5e18d this round and gave
-the same results, then the run was stopped to save time.
+Mutations. eddb00b column: last round's record (scratchpad audit5/mut-new.out, mut-new4.out). ba4d8dc column: run this round in scratch
+copies (one line changed, rebuilt, `safety`, the Codex probes and `rules` run).
 
-New mutations this round (muts4.js, 17), on this build:
-- Caught by `safety` (and `rules` where named): N1 the engine lets a protein swap land on the grain item (also `rules`); N2 the app's
-  `swapAt` guard off; N3 word counts kept; N4 every typed "kidney" read as a dish (also the Codex probes); N5 the dish reading off; N6 a
-  bare "kidney" not referred; N8 menu prices kept; N9 the menu piece-count rule off; N14 the engine's `hookSaid` always true; N15
-  `plateWhy` ignoring a grain change with a grain swap. The builder's table (M9, M10, A6, A12 now fail) holds.
-- Pass every Node check (rest on review.js or on nothing): N7 a menu name may open with a number (m5); N10 a conditional order keeps the
-  tick, N11 the condition off the "Also on this menu" rows, N12 the log referral without the get-help line, N13 the app's "Planned
-  around" unfiltered, N16 the get-help line under the referral (m4); N17 a bracket may hold "katori" (M2).
+| Set | eddb00b | ba4d8dc |
+|---|---|---|
+| muts1.js (30 engine mutations) | 3 survive (M18, M20, M21) | 0 of 28 survive; M18, M20, M21 now fail `safety`. M13, M14 no longer apply (stand-ins P14, P13) |
+| muts2.js (14 app mutations) | 7 survive (A2, A3, A5, A7, A9, A10, A11) | 0 of 13 survive (A14 no longer applies) |
+| muts3.js (3) | 0 survive | 0 survive |
+| muts4.js (17) | 7 survive (N7, N10, N11, N12, N13, N16, N17) | 0 of 10 survive; N1, N3, N4, N5, N9, N11, N17 no longer apply (N4 and N5 because `KIDNEYDISH` is gone; stand-ins for the others: P14, P13, P7, P12, P15) |
+| muts5.js (17, new: one per fix of this round) | | 0 survive (P1 to P17) |
+| review-run: 12 app mutants (A2, A3, A5, A7, A9, A10, A11, N10, N12, N13, N16, P12), each against its own states | not run | 12 of 12 caught, each by its own state's assertion (harness proved first on N12 with `sheet-log-urgent`) |
 
 ## Probed
 
-- Kidney referral (S7): 55 phrasings that must refer and 27 kidney foods and dishes that must not, each on both builds (kid.js), and 10
-  more with a dish word after "kidney"; 8 phrasings routed through all four text paths (32 routes); one carried to a shown plate. Result: B1; m2; c3.
-- Name cleaning (S8): 63 honest names with number-like words and 85 counted names through `showName`, plate and menu forms (296 calls);
-  53 typed-menu lines as an order and as a "leave" entry, and 18 more with units, each on both builds; 13 bracket and large-number
-  names on a plate, and the bracket on 5 more paths, on both builds; 5 names with a number in the name before a piece word.
-  Result: M1, M2, two owner questions, c2.
-- The recorded names diff, derived again from eval/ on both pages: 3,218 plate names and 187 menu names (distinct, with their typed menu
-  where one was recorded); 21 change, the same 21 as eval/usefulness/names-diff.txt.
-- S10: the protein swap on a plate whose grain item is its first protein item, for 9 profiles (diets, diabetes with and without
-  medicines, BP, a food left out), 4 meals and 5 plate shapes: 0 offered on a declared grain item (174 cases; 22 offers on "Mixed dal
-  adai", which the engine does not take as a grain, so nothing else can land on it). Grain swap index on 4 plates with a part-name item
-  (M3), on both builds. All recorded plates re-checked for the M3 shape: 0 of 452; recorded grain names copied from the items: 1,170 of
-  1,170.
-- S6: a plate at the usual size, a swap and a one-tap change 20 kcal under and over it, and a Rescue dish just under twice the usual
-  size, for medicines yes and not sure, 4 meals, 2 sexes, with and without body figures: 64 cases, 0 failures.
-- Recorded replies replayed (185), tag shapes (49 and 7 controls), word lists (1,945 forms): see the regression table.
-- Offal names with a wrong tag (7), regional number words (6), the open urgent and postpartum phrasings (10) and a model
-  "other_urgent" reply.
-- Mutations on this build: 30 + 14 + 3 from last time (4 no longer apply: M13, M14, M16, A14) and 17 new, 60 run in all.
-- Read: the whole of `viewOf`, `swapAt`, `plateWhy`, `composedWhy`, `heroCard`, `orderView`, `renderSheet` (log), `logOther`,
-  `referHead`, `rescue`, `readMenu`, `pruneKept`, `refresh`, `closeSheet`; `checkMeal`, `declaredGrain`, `showName`, `menuPrice`, the
-  count expressions, `referTyped`, `urgentTyped`, `checkMenu` names, and the review states for the new app text (order-cond, the four
-  urgent cards, sheet-log-referred).
+- S7: 109 typed phrasings of my own (63 kidney and gurda, with kidney-bean and rajma controls; 46 pregnancy, breastfeeding and postpartum), each on ask, Rescue, menu and log (436 routes), on both builds; 19 refer_reason values on 4 paths (76); 6 typed menus with
+  kidney, gurda, bheja and rajma lines; 3 gurday phrasings carried to a shown plate; 17 urgent and open-scope phrasings. Result: B1, m1.
+- S8: 91 count names of my own and 38 more Hindi and measure forms, plate and menu (258 calls), on both builds; 125 typed menu lines as
+  orders, and 7 more lines as orders and "leave" entries; 5 "Half Kg" menu lines; Hindi counts on the grain, both swaps, a one-tap change
+  and a menu order; 4 Hindi cases added to
+  a scratch copy of the S8 test. Result: M1, owner questions, c2.
+- S6: 768 cases: medicines yes and not sure, 4 meals, appetite 1 and 10, with and without body figures, a day with 3,200 kcal already
+  eaten and none, the hour 0, 3 and 23; the prompt's floor line, a plate 30 kcal under the usual size and one at it, a menu order under it
+  with a control order 20 kcal over it (the control shown in all 192 menu cases). 0 failures. Plus the 64 cases of meds.js.
+- S5: 24 base swaps, one per reply after the current grain, and 4 one-tap changes, on a diabetic plate at breakfast, lunch and dinner.
+  Offered: ragi, bajra, brown rice, kodo, oats, quinoa, rajgira, kuttu, poha, daliya, jowar (the engine reads quinoa, rajgira and kuttu
+  as grains by design). Not offered: cauliflower rice, moong dal and besan chilla, sweet potato, sabudana, makhana, singhara, shirataki,
+  lettuce, paneer, soya and almond flour rotis, sattu paratha. A change that keeps the grain or half of it is offered; one that leaves
+  30 g or takes the grain off is not. 0 counter-examples.
+- S10: swaps and changes on 4 plates whose grain name is a short form or empty, 6 tap combinations each, on both builds. Result: M2.
+- S1-S4, S9 tags and word lists: the tag shapes, the 185 replayed replies, 1,945 forms of my older list and 222 forms of 37 new words
+  (backlog).
+- App logic in the browser: 50 safety states at HEAD (150 checks) and 12 mutants against their own states.
+- Recorded data: 3,452 model names (names diff), 1,302 raw plates (grain names, no-grain plates with grain-shrinking changes), 452
+  declared-grain plates.
+- Read: `REFERTXT`, `referTyped`, `urgentTyped`, the `plan` entry and `readCtx`; `showName`, `countIn`, `cntOff`, the count expressions,
+  `MENUCOUNT`, `menuPrice`; `sameName`, `declaredGrain`, `checkMeal`'s swaps and changes, `changeNote`; `checkLog`; `checkMenu`'s condition
+  lines; app.js `swapAt`, `plateWhy`, `orderView` rows, `renderSheet` (log), `stepRatio`, `renderBuild`; src/v5/server.ts (unchanged since
+  eddb00b; text goes to `plan` unchanged); the S7 and S8 tests in test/safety/check.js and lexicon.json.
 
 ## Not inspected
 
-- test/ux/review.js was read, not run: playwright is not installed here. The app text changes (the get-help line first, the log
-  referral buttons, the condition on "Also on this menu" rows, no tick on a conditional order) are judged by reading the code and their
-  review states, and by mutation against the Node checks.
-- The live model, the Railway service and the server security items. `src/v5/server.ts` was not read again this round; it is unchanged
-  since 6b5e18d.
-- Photos (menu, Rescue, log), the grain parser beyond the paths above, the day boundary beyond reading `refresh` and `dayMoved`, and the
-  v5 screens.
-- The S6 grid, the urgent phrasing sweep and the typed-disclosure sweep from last round were not rerun in full; their code is unchanged
-  except the kidney rule.
+- The live model, the Railway service and the server's security items.
+- Photos (menu, Rescue, log), the v5 screens, and the full review set (only the 50 safety states at 360 px were run at HEAD).
+- The Critic's screens: a screen reviewer works on test/ux/CRITIC.md at the same time.
+- The urgent phrasing sweep and the S10 property sweep of earlier rounds were not rerun in full.
+- src/v6/params.js, src/v6/plate.js and the figures in handoff-next-plate.md were not opened this round (unchanged since eddb00b; this
+  round changed core.js, engine.js, the two app.js files and legible.css under src/). No clinical figure is judged here.
