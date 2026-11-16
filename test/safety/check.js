@@ -320,7 +320,7 @@ console.log(`round 5 schema walk: ${walked} string fields`);
 // ---------- S8 in names (usefulness brief): a name is cleaned, not dropped for its shape; a household count never shows in it ----------
 // (The engine-written side, "<count> <name>" with a grain side's grams, is the owner's form for a side (14 Nov) and is not a model name.)
 const COUNTW = /\b\d+\s*(?:x\s*)?(?:rotis?|phulkas?|chapatis?|katoris?|bowls?|cups?|glass(?:es)?|pcs|pieces?|slices?|spoons?|tbsp|tsp|ladles?|idlis?|dosas?|puris?|parathas?|nos)\b|\bkatoris?\b/i;
-const COUNTED = ['Chicken Curry Thali (2 roti, rice, chicken curry, salad)', 'Dal with 2 phulkas', 'Paneer tikka 2 pcs', 'Rajma chawal, 1 bowl', '1 katori moong dal', 'Idli (3 nos)'];
+const COUNTED = ['Chicken Curry Thali (2 roti, rice, chicken curry, salad)', 'Dal with 2 phulkas', 'Paneer tikka 2 pcs', 'Rajma chawal, 1 bowl', '1 katori moong dal', 'Idli (3 nos)', 'Idli (2 pcs)', 'Egg curry (2 eggs)'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTED) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -328,14 +328,16 @@ for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 
     add('S8 no household count in a shown name', !bad.length, `${kind}: "${v}" in ${pth} showed ${JSON.stringify(bad.slice(0, 2))}`); } }
 // counts written as words (final audit M2). The words and the nouns after them are this test's own, kept apart from the engine's lists:
 // count nouns the engine does not list ("kozhukattais", "pathiris") must go too, so a rule that knows only listed piece words cannot pass.
-const COUNTWORDS = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|char|aadha)\s+(?:(?!with\b|and\b)[a-z]+\s+)?(?:samosas?|plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
+const COUNTWORDS = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|hundred|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|char|aadha)\s+(?:(?!with\b|and\b)[a-z]+\s+)?(?:samosas?|plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
 const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji made with three whole eggs and onions', 'Two phulkas', 'One bowl dal', 'Half plate rice', 'Two Tandoori Roti', 'Moong dal with two phulkas',
   'Three kozhukattais', 'Four pathiris with stew', 'Buttermilk one glass', 'Single phulka', 'Pair of idlis', 'A couple of chapatis', 'Half a dozen momos', 'Quarter plate biryani', 'Ek katori dal', 'Do roti with sabzi',
   'Rajma chawal, half plate', 'Eleven pani puri', 'Seven-cup burfi',
   // Critic round 38, finding 1: a count word before a food or measure word, Hindi included
   'Two phulka', 'Teen phulka', 'Do roti', 'Two rotis with dal', 'Half plate biryani', 'Do aloo paratha', 'Char samosa', 'Aadha plate chawal', 'Charred paneer tikka with two phulka',
   // a count before a singular noun no list holds (the advisor's probes, 16 Nov)
-  'Curd with one banana', 'One apple', 'Two parotta', 'Three idiyappam', 'Four dhokla', 'Two akki rotti', 'One small bowl curd', 'Six pesarattu'];
+  'Curd with one banana', 'One apple', 'Two parotta', 'Three idiyappam', 'Four dhokla', 'Two akki rotti', 'One small bowl curd', 'Six pesarattu',
+  // a count or a portion in a short bracket, and numbers above twelve (safety audit M2)
+  'Dal (one bowl)', 'Rice (half plate)', 'Egg curry (two eggs)', 'Idli (three pieces)', 'Phulka (two nos)', 'Boiled eggs (two whole)', 'Moong chilla (two)', 'Kozhukattai (four)', 'Fifteen almonds', 'Twenty peanuts', 'Twenty five almonds', 'Thirteen pathiris'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -345,10 +347,10 @@ for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 
 for (const v of ['Two Tandoori Roti', 'One plate jeera rice', 'Half plate rice']) { const mo = menuOffered({}, 'Dal Fry', ['plain'], v, ['grain', 'wheat']);
   add('S8 no count written as a word in a menu side', (mo.orders || []).every(o => !COUNTWORDS.test(o.with || '')), `menu side "${v}" showed ${JSON.stringify((mo.orders || []).map(o => o.with))}`); }
 // the declared grain is shown too (reason line, change note): a count in it goes, on a diabetic plate whose grain is counted in words
-{ const m = platePlain(); m.items[1] = { food: 'Two jowar rotis', grams: 90, group: 'carbs', contains: ['grain'] }; m.grain = { food: 'Two jowar rotis', made_of: 'jowar', grams: 90 };
+for (const [gname, gshown] of [['Two jowar rotis', 'Jowar rotis'], ['Jowar roti (two pieces)', 'Jowar roti']]) { const m = platePlain(); m.items[1] = { food: gname, grams: 90, group: 'carbs', contains: ['grain'] }; m.grain = { food: gname, made_of: 'jowar', grams: 90 };
   m.alchemy = { glucose: { titleSuffix: '+ salad', note: 'More salad.', add_item: 'Cucumber salad', add_grams: 80, minutes: 20, grain_grams_after: 60, contains: ['plain'], deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { health: 'diabetes', meds: 'no', diet: 'veg' }), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(m)), {}), c = (r.meals || [])[0];
-  add('S8 a counted grain is shown cleaned, not dropped', !!c && c.grain.food === 'Jowar rotis', `the plate with "Two jowar rotis" as its grain: ${c ? JSON.stringify(c.grain) : 'dropped'}`);
+  add('S8 a counted grain is shown cleaned, not dropped', !!c && c.grain.food === gshown, `the plate with "${gname}" as its grain: ${c ? JSON.stringify(c.grain) : 'dropped'}`);
   add('S8 no count written as a word in the grain, reason line or change note', !!c && !allStr(c).some(x => COUNTWORDS.test(x)), `shown: ${JSON.stringify(allStr(c || {}).filter(x => COUNTWORDS.test(x)))}`); }
 // cleaned, not dropped: an honest name with brackets, a comma tail or a count is offered, shown without them
 for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka'], ['Flattened rice, softened', 'Flattened rice'], ['Steamed rice 150 g', 'Steamed rice'], ['Cucumber, tomato and onion salad', 'Cucumber, tomato and onion salad'],
@@ -362,7 +364,10 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   ['Half-fry egg', 'Half-fry egg'], ['Three bean salad', 'Three bean salad'], ['Five spice tofu', 'Five spice tofu'], ['Panchmel dal', 'Panchmel dal'], ['Do pyaza', 'Do pyaza'], ['Panch phoron', 'Panch phoron'], ['One-pot khichdi', 'One-pot khichdi'],
   // Critic round 38: what follows the number word decides. A count before a food or measure word goes; a dish name stays
   ['Two phulka', 'Phulka'], ['Teen phulka', 'Phulka'], ['Do roti', 'Roti'], ['Do aloo paratha', 'Aloo paratha'], ['Half plate biryani', 'Biryani'],
-  ['Paneer do pyaza with roti', 'Paneer do pyaza with roti'], ['Char siu tofu', 'Char siu tofu'], ['Teen phoron sabzi', 'Teen phoron sabzi']]) {
+  ['Paneer do pyaza with roti', 'Paneer do pyaza with roti'], ['Char siu tofu', 'Char siu tofu'], ['Teen phoron sabzi', 'Teen phoron sabzi'],
+  // safety audit M2: a bracket with a count or a portion comes off, a bracket that says what the food is stays; numbers above twelve
+  ['Dal (one bowl)', 'Dal'], ['Rice (half plate)', 'Rice'], ['Egg curry (two eggs)', 'Egg curry'], ['Idli (three pieces)', 'Idli'], ['Moong chilla (two)', 'Moong chilla'], ['Idli (2 pcs)', 'Idli'], ['Rajma (one katori)', 'Rajma'],
+  ['Fried rice (veg)', 'Fried rice (veg)'], ['Whole wheat phulka (no ghee)', 'Whole wheat phulka (no ghee)'], ['Biryani (egg)', 'Biryani (egg)'], ['Fifteen almonds', 'Almonds'], ['Twenty five almonds', 'Almonds'], ['Chicken sixty five', 'Chicken sixty five'], ['Thousand island salad', 'Thousand island salad'], ['Sixteen bean soup', 'Sixteen bean soup']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
   add('S8 names are cleaned, not dropped', it.includes(shown), `"${raw}" showed ${JSON.stringify(it)}, not "${shown}"`); }

@@ -572,7 +572,13 @@ var CNTAHEADP="(?="+CNTSKIP+"{0,3}?[\\s-]+(?:"+CNTPIECE+"|[a-z]*[^su\\W\\d]s)\\b
 /* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
    a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
 var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
-var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
+/* numbers above twelve (safety audit M2), by the same rule: a count when a word follows that is not a word of a dish's own name ("Fifteen
+   almonds"); at the end of a name, or before a dish word, they stay ("Chicken sixty five"). "Sixty five" is one number: its "five" is not
+   taken off alone. */
+var CNTTENS="(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
+var CNTUNIT="(?:one|two|three|four|five|six|seven|eight|nine)";
+var CNTBIG=new RegExp("(?<!\\b"+CNTTENS+"[\\s-]+)\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNTUNIT+"\\b))|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\\b(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=[\\s-]+[a-z])(?![\\s-]+(?:"+CNTTENS+"|hundred)\\b)"+CNTNAMEW+")-?","gi");
+var CNTWORD=new RegExp("(?<!\\b"+CNTTENS+"[\\s-]+)\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
 var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
@@ -595,18 +601,23 @@ function menuPrice(h,typed){h=h.replace(/\s*(?:-|:|@|rs\.?|inr|\u20B9)\s*\d+(?:\
     return base;}
   return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
-  /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
-  var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
+  /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off,
+     and so is one that holds a count or a portion ("(one bowl)", "(two eggs)", "(half plate)", "(two)", "(Half)"; safety audit M2) */
+  var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!countIn(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=menuPrice(h,typeof o.price==="string"?o.price:"");
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
   h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
-  h=h.replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
+  h=h.replace(CNTBIG," ").replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
   var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
   if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
   return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
+/* a bracket holds a count or a portion when the count rules would change it, or it names a measure, a katori or a size (S8; safety audit M2);
+   "no" alone is not the measure "nos": "(no ghee)" says what the food is */
+function countIn(b){return new RegExp("\\b(?:katoris?|"+CNTMEAS.slice(3,-1).replace("nos?|","nos|")+")\\b","i").test(b)||/^(?:half|full|quarter|single|double)$/i.test(b)||
+  b.replace(CNTBIG," ").replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
 /* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
 var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
 function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
