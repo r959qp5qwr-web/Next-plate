@@ -586,6 +586,68 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
       safe(() => cs(ctx)(), null);
       add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
     else add('S10 kept plates: closing My food after a rule change empties them at once', false, 'closeSheet not found in app.js'); }
+  // app logic that rested on the review states alone (safety audit m1, m3, m4): each function is taken from app.js and run in Node with
+  // stand-ins for the page around it. A missing function is a FAIL, not a skip.
+  { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null; return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
+    const appP = (o) => Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+    // m1: composedWhy keeps S5 (the grain stays with diabetes) and S6 (on medicines, the usual size) on every composed state
+    { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
+      const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, kcal: 4 * p + 4 * c + 9 * f }), base = fig(25, 80, 20);
+      const d = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' })), dm = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }));
+      add('m1 app S5: composedWhy refuses a grain cut below half, and a grain swapped off', !!d && !!d.composedWhy(fig(25, 30, 20), base, { meal: 'lunch' }) && !!d.composedWhy(base, base, { meal: 'lunch', grainGone: true }) && !d.composedWhy(base, base, { meal: 'lunch' }), d ? 'not refused' : 'composedWhy not found');
+      const big = fig(30, 110, 25), small = fig(14, 60, 8);
+      add('m1 app S6: composedWhy refuses a plate under the usual size on medicines', !!dm && dm.u > small.kcal && dm.u <= big.kcal && !!dm.composedWhy(small, big, { meal: 'lunch', plate: true }) && !dm.composedWhy(big, big, { meal: 'lunch', plate: true }), dm ? `usual ${dm.u}: ${JSON.stringify([dm.composedWhy(small, big, { meal: 'lunch', plate: true }), dm.composedWhy(big, big, { meal: 'lunch', plate: true })])}` : 'composedWhy not found'); }
+    // m3, A5 and A9: a tap after the day changed redraws for the new day, and a tap whose composed result fails is refused, not run
+    { let redrawn = 0; const ctx = { DAY: 'yesterday', dayOf: () => 'today', refresh: () => { redrawn++; ctx.DAY = 'today'; }, render: () => {}, $: () => ({}) }; const f = run(['dayMoved'], ctx, 'dayMoved');
+      add('m3 app S12: dayMoved sees a new day and redraws', !!f && f() === true && redrawn === 1 && f() === false, f ? `redrawn ${redrawn}` : 'dayMoved not found');
+      let ran = 0, refused = ''; const c2 = { dayMoved: () => false, refuse: (w) => { refused = w; }, render: () => {} }; const a = run(['act'], c2, 'act');
+      if (a) { a(() => 'not offered', () => { ran++; })(); a(() => '', () => { ran += 10; })(); }
+      add('m3 app: act() refuses a tap whose check fails, and runs one that passes', !!a && ran === 10 && refused === 'not offered', a ? `ran ${ran}, refused "${refused}"` : 'act not found');
+      let ranAfter = 0; const c3 = { dayMoved: () => true, refuse: () => {}, render: () => {} }; const a3 = run(['act'], c3, 'act'); if (a3) a3(() => '', () => { ranAfter++; })();
+      add('m3 app S12: act() does not run a tap made after the day changed', !!a3 && ranAfter === 0, a3 ? `ran ${ranAfter}` : 'act not found'); }
+    // m3, A11: a tab open past 4 am drops yesterday's Rescue, menu and log answers
+    { const UI = { rres: { status: 'ok' }, rmoves: { 0: true }, rtext: 'x', mres: { orders: [] }, lres: { status: 'ok' }, ltext: 'x', lerr: 'x' };
+      const ctx = { now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
+      const f = run(['refresh'], ctx, 'refresh'); if (f) safe(() => f(), null);
+      add('m3 app S12: a new day drops yesterday\'s Rescue, menu and log answers', !!f && UI.rres === null && UI.mres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
+    // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
+    { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };
+      const f = run(['rescue'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
+      add('m3 app S11: a stale Rescue reply is not shown', !!f && !!cb && UI.rres === null, f ? JSON.stringify(UI.rres) : 'rescue not found');
+      let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k' };
+      const t = run(['tune'], c2, 'tune'); if (t) { t('k', 0); tsig = 'b'; if (tcb) tcb(200, { status: 'ok', swaps: { protein: [{ food: 'x' }], base: [] }, alchemy: {} }); }
+      add('m3 app S11: a stale tune reply is not shown', !!t && !!tcb && !m.swaps && !m.tuned, t ? JSON.stringify(m) : 'tune not found'); }
+    // m4, N12: the log referral starts with the line to get help now on an urgent symptom; N16: so does the referral heading
+    { let cb = null; const UI = { sheet: 'log' }; const ctx = { UI, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: (u, b, f) => { cb = f; }, blocked: () => false, $: () => ({}), URGENTLINE, SAFETY, RETRY: () => false, errText: () => '', lockOn: () => {} };
+      const f = run(['logOther'], ctx, 'logOther'); if (f) { f('chest pain after lunch'); if (cb) cb(200, { status: 'refer', urgent: true }); }
+      add('m4 app S7: the log referral starts with the line to get help now', !!f && typeof UI.lerr === 'string' && UI.lerr.indexOf(URGENTLINE) === 0 && UI.lerr.indexOf(SAFETY) > 0, f ? JSON.stringify(UI.lerr) : 'logOther not found');
+      const kids = []; const ctx2 = { el: (tag, cls, text) => ({ tag, cls, text }), URGENTLINE, SAFETY }; const rh = run(['referHead'], ctx2, 'referHead'); if (rh) rh({ appendChild: (x) => kids.push(x) }, { urgent: true, read: SAFETY });
+      add('m4 app S7: on an urgent symptom the referral heading is the line to get help now', !!rh && kids.length === 2 && kids[0].tag === 'h2' && kids[0].text === URGENTLINE && kids[1].text === SAFETY, rh ? JSON.stringify(kids) : 'referHead not found'); }
+    // m4, N13: the app's "Planned around" lines leave out, with diabetes or medicines, the hooks the reason line leaves out
+    { const f = run(['has', 'profileOut', 'hookProf', 'hooksSaid'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' }), medsUsual, hookSaid: typeof hookSaid === 'function' ? hookSaid : undefined }, 'hooksSaid');
+      const out = f ? f(['lighter_now', 'late_now', 'protein_low'], 'lunch', { lighter_now: 'A lighter lunch', late_now: 'Late', protein_low: 'Protein' }) : null;
+      add('m4 app: with diabetes the "Planned around" lines leave out lighter and late', !!out && out.length === 1 && out[0] === 'Protein', JSON.stringify(out)); }
+    // m4, N10 and N11: a conditional menu order carries no tick on its rules chips, and its row under "Also on this menu" carries the condition.
+    // orderView is run on a stand-in page: every name the page does not give is a no-op, so only the drawn tree is read.
+    { const mkEl = (tag, cls, text) => ({ tag, className: cls || '', textContent: text == null ? '' : String(text), kids: [], style: {}, appendChild(x) { this.kids.push(x); return x; }, setAttribute() {}, addEventListener() {}, focus() {} });
+      const own = { el: mkEl, ic: (n) => mkEl('svg', 'ic-' + n), btn: (c, t) => mkEl('button', c, t), add: (p, ...k) => { k.forEach(c => c && p.appendChild(c)); return p; }, document: { createTextNode: (t) => mkEl('#text', '', t), querySelector: () => null },
+        P: { diet: 'jain', leave: ['dairy'], conds: [] }, UI: { msel: 0, mmoves: {}, mno: [], myes: {} }, C: { meal: 'lunch' }, MENUK: ['kcal', 'protein', 'carbs', 'fats', 'fiber'], lab: (k, v) => String(v), mealName: () => 'Lunch',
+        hooksSaid: () => [], grainParts: () => [], fitOf: () => 80, riseOf: () => ({ band: 'Gentle' }), bandCls: () => '', referHead: () => {}, act: () => () => {}, composedWhy: () => '', scaleN: (a) => a, setPressed: () => {} };
+      const sb = new Proxy(own, { has: (t, k) => k !== Symbol.unscopables, get: (t, k) => k in t ? t[k] : k in globalThis ? globalThis[k] : () => {} });
+      const code = grab('orderView'), ov = code ? safe(() => new Function('sb', 'with (sb) { ' + code + '\n return orderView; }')(sb), null) : null;
+      const n = { kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6 }, cond = 'Only if they can make it this way.';
+      const ord = (name, askIf) => ({ name, n, fit: 80, rise: 'Gentle', ask: askIf ? 'Make it Jain style.' : '', askIf: askIf ? cond : '', portion: '≈ 300 g', planned: [] });
+      const v = mkEl('div'); if (ov) safe(() => ov(v, { status: 'ok', meal: 'lunch', orders: [ord('Veg pulao', true), ord('Dal fry', true)], moves: [], leave: [], dropped: {}, hooks: {} }), null);
+      const all = []; const walk = (x) => { all.push(x); (x.kids || []).forEach(walk); }; walk(v);
+      const chips = all.filter(x => /\bhchip\b/.test(x.className) && x.kids.some(k => /ic-check/.test(k.className)));
+      add('m4 app: a conditional menu order has no tick on its rules chips', !!ov && all.some(x => x.textContent === 'Veg pulao') && chips.length === 0, ov ? `${chips.length} ticked chips` : 'orderView not found or threw');
+      const alt = all.filter(x => x.tag === 'small' && /≈/.test(x.textContent));
+      add('m4 app: a conditional order\'s row under "Also on this menu" carries the condition', !!ov && alt.length === 1 && alt[0].textContent.indexOf(cond) >= 0, JSON.stringify(alt.map(x => x.textContent)));
+      // control: an order that fits as served keeps its ticks
+      const v2 = mkEl('div'); if (ov) safe(() => ov(v2, { status: 'ok', meal: 'lunch', orders: [ord('Veg pulao', false)], moves: [], leave: [], dropped: {}, hooks: {} }), null);
+      const all2 = []; const walk2 = (x) => { all2.push(x); (x.kids || []).forEach(walk2); }; walk2(v2);
+      add('m4 app: an order that fits as served keeps its ticks (control)', all2.filter(x => /\bhchip\b/.test(x.className) && x.kids.some(k => /ic-check/.test(k.className))).length === 2, 'no ticked chips drawn'); }
+  }
   // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
   // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures
   // shown (which "I'll have this" logs) are the base plate plus what is on it.
