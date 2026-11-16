@@ -78,7 +78,7 @@ const errRule = async (p, name) => { const r = await p.evaluate((s) => { const e
   if (r.err !== want || r.rule !== want) throw new Error(want ? 'the error note has no clay rule (class err: ' + r.err + ', rule: ' + r.rule + ')' : 'an info note carries the error rule'); };
 // the closest order on a menu where nothing fits, as the engine returns it (checkMenu with menuNote and menuMoves)
 // mocked orders are written as the engine returns them: a grain side shows its count and its grams (second screen review, R2-B8 114-1)
-const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ name: 'Paneer Butter Masala', portion: '1 bowl, ≈ 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
+const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ name: 'Paneer Butter Masala', portion: '\u2248 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
 // second screen review, R2-B6 083, R2-B7 104 and 106: at a limit or without the link, Rescue's send controls and menu buttons are off
 const rescueOff = async (p) => { const r = await p.evaluate(() => { const q = (s) => document.querySelector(s), off = (s) => !q(s) || q(s).disabled;
   return { cam: off('#mcam'), type: !q('#mtext') ? off('#mtype') : true, send: off('#v-rescue .rin .send'), chips: [...document.querySelectorAll('#v-rescue .sit')].every(b => b.disabled), go: off('#mgo') && !(q('#mgo') && q('#mgo').classList.contains('primary')) }; });
@@ -110,7 +110,7 @@ const PLANHOOKS = { lighter_now: 'lighter after earlier meals', protein_gap: 'pr
 const PLANPLATE = Object.assign(JSON.parse(JSON.stringify(GRAINPLATE)), { hooks: PLANHOOKS }); PLANPLATE.meals[0].planned = ['lighter_now', 'protein_gap'];
 const PLANMENU = Object.assign(JSON.parse(JSON.stringify(MENUCLOSE)), { hooks: PLANHOOKS }); PLANMENU.orders[0].planned = ['lighter_now', 'protein_gap'];
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
-const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
+const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '\u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
     { title: 'Leave a third of the naan for later', kind: 'portion', contains: ['grain', 'wheat'], deltaKcal: -110, deltaProtein: -3, deltaCarbs: -35, deltaFats: -2, deltaFiber: -1 },
     { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
@@ -125,7 +125,7 @@ const RANDPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Rajma w
     glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber; less roti.', minutes: 25, contains: [], deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 },
     express: { suffix: '(10 minutes)', note: 'Quick rajma from a pressure cooker.', minutes: 10, contains: [], deltaKcal: -60, deltaProtein: 0, deltaCarbs: -15, deltaFats: 0, deltaFiber: 0 },
     gut: { suffix: '(easy on the gut)', note: 'Less chilli.', minutes: 25, contains: [], deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 0 } } }] };
-const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '1 plate, \u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
+const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '\u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
   hacks: [{ title: 'Add 150 g dal on the side', kind: 'sequence', contains: [], deltaKcal: 170, deltaProtein: 8, deltaCarbs: 30, deltaFats: 2, deltaFiber: 4 },
     { title: 'Eat about two thirds of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -256, deltaProtein: -6, deltaCarbs: -40, deltaFats: -8, deltaFiber: -2 },
     { title: 'Eat about three quarters of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -170, deltaProtein: -4, deltaCarbs: -25, deltaFats: -6, deltaFiber: -2 },
@@ -172,6 +172,17 @@ const randomCombos = (pi0) => async (p, h) => {
     await p.evaluate((ev) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); x.ev = ev; localStorage.setItem('np6', JSON.stringify(x)); }, ev0); await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(800);   // a light page for the screens
     if (bad.length) throw new Error(bad.length + ' logged meal(s) broke S5 or S6, e.g. ' + [...new Set(bad)].slice(0, 4).join('; '));
     if (!composed) throw new Error('no swapped or changed plate was logged: every tap was refused, so the run tested nothing'); };
+// plate-band-*: the Sugar rise band on the plate card fits its cell, at 100 % and at 130 % text, at every width (Critic round 39, finding 1:
+// "Moderate" was cut to "Modera" at 320 px). Figures that agree, one plate per band.
+const BANDPLATE = (kcal, protein, carbs, fats, fiber) => Object.assign({}, RANDPLATE, { meals: [Object.assign(JSON.parse(JSON.stringify(RANDPLATE.meals[0])), { kcal, protein, carbs, fats, fiber, swaps: { protein: [], base: [] }, alchemy: {} })] });
+const bandFits = (want) => async (p, h) => { await h.plate(p);
+  const m = () => p.evaluate(() => { const c = [...document.querySelectorAll('#plate-card .read4 > *')].find(x => /Sugar rise/.test(x.textContent)), s = c && c.querySelector('.v .mono'); if (!s) return null;
+    const rg = document.createRange(); rg.selectNodeContents(s); const t = rg.getBoundingClientRect(), q = c.getBoundingClientRect(); return { text: s.textContent, l: t.left, r: t.right, cl: q.left, cr: q.right }; });
+  for (const scale of [1, 1.3]) { if (scale !== 1) { await p.evaluate(bigText, scale); await h.settle(300); } const r = await m();
+    if (!r || r.text !== want) throw new Error(`the band reads ${r && r.text}, not ${want}`);
+    if (r.r > r.cr + 0.5 || r.l < r.cl - 0.5) throw new Error(`"${want}" runs past its cell at ${scale * 100} % text: x ${Math.round(r.l)}..${Math.round(r.r)} in ${Math.round(r.cl)}..${Math.round(r.cr)}`); }
+  await p.reload({ waitUntil: 'domcontentloaded' }); await h.plate(p); };
+const bandRoute = (pl) => (p) => p.route('**/api/meals', J(200, pl));
 const randomRoutes = (p) => Promise.all([p.route('**/api/meals', J(200, RANDPLATE)), p.route('**/api/rescue', J(200, RANDRESCUE))]);
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
@@ -285,7 +296,18 @@ const STATES = [
     // Critic round 38, finding 9: the refusal says the bound, under the steppers, and covers no row (it was a toast over the row just tapped)
     const nb = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), t = document.getElementById('toast'), row = document.getElementById('st-fats-p').getBoundingClientRect();
       const tr = t && !t.hidden ? t.getBoundingClientRect() : null; return { text: n ? n.textContent : '', below: n ? n.getBoundingClientRect().top >= row.bottom : false, covers: !!tr && tr.bottom > row.top && tr.top < row.bottom }; });
-    if (!/can't go higher/.test(nb.text) || !/40\u00A0%/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with its reason under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')'); }],
+    if (!/can't go higher/.test(nb.text) || !/between 5% and 40% of the plate/.test(nb.text) || /each part/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with the fats bound under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')');
+    // Critic round 39, finding 5: with the + button where a thumb leaves it (mid-screen), the note can be seen: inside the viewport, not under
+    // the sticky "Plan ... with this plate" button or the tab bar; a preset tap clears it, and so does planning and coming back
+    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); await p.click('#st-fats-p'); await h.settle(200);
+    const sv = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'); if (!n) return { seen: false, why: 'no note' };
+      const r = n.getBoundingClientRect(), m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null;
+      const floor = Math.min(innerHeight, m && m.top < innerHeight ? m.top : innerHeight, t && t.top > 0 ? t.top : innerHeight); return { seen: r.top >= 0 && r.bottom <= floor + 0.5, top: Math.round(r.top), bottom: Math.round(r.bottom), floor: Math.round(floor) }; });
+    if (!sv.seen) throw new Error('the bound note cannot be seen after the tap (' + JSON.stringify(sv) + ')');
+    await p.click('#preset-balanced'); await h.settle(250); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after a preset is chosen');
+    for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } if (!(await p.$('#ratio-bound'))) throw new Error('no bound note after taps past the fats bound');
+    await p.click('#make-ratio'); await h.settle(800); await p.click('#tab-build'); await h.settle(400); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after planning and coming back');
+    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the state ends with the note shown; the screenshots are taken at fixed scroll stops, so a slice may show it under the sticky button
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
@@ -321,7 +343,8 @@ const STATES = [
     // Critic round 38, finding 3: the alternatives carry the same condition, and the rules chips on a conditional order carry no tick
     const r = await p.evaluate(() => ({ alts: [...document.querySelectorAll('#v-rescue .alts .alt')].map(b => b.textContent), ticked: [...document.querySelectorAll('#order-card .hero-top .hchip')].filter(c => /Jain|^No /.test(c.textContent) && (c.classList.contains('fit') || c.querySelector('svg'))).map(c => c.textContent) }));
     if (r.ticked.length) throw new Error('a conditional order ticks the rules as met (' + r.ticked.join(', ') + ')');
-    if (!r.alts.length || r.alts.some(a => !a.includes('Only if they can make it this way.'))) throw new Error('an alternative that fits only on request is not marked (' + r.alts.join(' | ') + ')'); },
+    // Critic round 39, finding 6: on a row no request line comes first, so the condition names the request
+    if (!r.alts.length || r.alts.some(a => !a.includes('Only if they make it Jain style.') || a.includes('this way'))) throw new Error('an alternative that fits only on request is not marked with its request (' + r.alts.join(' | ') + ')'); },
     (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],   // the fixture plates do not matter here: the plate answer is kept still
   // owner, 16 Nov: a less-salt request takes out nothing the client's rules bar, so no condition line shows
   ['rescue-menu-less-salt', seed({ p: Object.assign({}, P, { health: 'bp', conds: ['bp'] }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);
@@ -337,8 +360,8 @@ const STATES = [
   // round 29: "No" moves to an order with another grain; reading the menu again after "No" does not bring the same grain back
   ['menu-grain-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
     await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await p.waitForSelector('#order-grain-said'); await h.settle(900); await h.inView(p, '#order-card', 'the next order');
     const top = await p.evaluate(() => { const r = document.getElementById('order-grain-said').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }); if (!top) throw new Error('after No, the "You said" line is not on screen');
@@ -355,8 +378,8 @@ const STATES = [
     await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 }); if (await p.$('#order-grain-said')) throw new Error('a No from another menu is still shown'); await h.settle(900); await h.inView(p, '#order-card', 'the order on the other menu'); }],
   ['menu-grain-two', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     const q1 = await p.textContent('#order-grain-q'); if (!/^Is steamed rice available now\?$/.test(q1)) throw new Error('first question: ' + q1);
     await p.click('#order-grain-yes'); await h.settle(300); const q2 = await p.textContent('#order-grain-q'); if (!/^Is roti available now\?$/.test(q2)) throw new Error('second question: ' + q2);
@@ -524,8 +547,8 @@ const STATES = [
   ['plate-loading-asks', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); if (!(await p.$eval('#askgo', b => b.disabled)) || !(await p.$('#ask-wait'))) throw new Error('asks look ready while the plate is being made'); }, (p, h) => h.slowApi(p, 60000)],
   ['menu-grain-yes-then-no', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
     // second screen review, R2-B8 115-1: with a Yes on record the step names the grain they confirmed
@@ -533,8 +556,8 @@ const STATES = [
   // owner, 14 Nov: Yes to rice, then No to roti on one order: the order is set aside, the next one offered, and the trace line says why
   ['menu-grain-yes-then-no-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Rajma', portion: '1 bowl, \u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Rajma', portion: '\u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
     const r = await p.evaluate(() => ({ said: (document.getElementById('order-grain-said') || {}).textContent || '', dish: (document.querySelector('#order-card .dish') || {}).textContent || '' }));
@@ -681,11 +704,17 @@ const STATES = [
   ['plate-random-combos', seed(), randomCombos(0), randomRoutes],   // on medicines, no body figures
   ['plate-random-combos-2', seed(), randomCombos(1), randomRoutes],   // not on medicines
   ['plate-random-combos-3', seed(), randomCombos(2), randomRoutes],   // "not sure", with body figures
+  // the Sugar rise band fits its cell at every width, at 100 % and 130 % text (Critic round 39, finding 1)
+  ['plate-band-moderate', seed(), bandFits('Moderate'), bandRoute(BANDPLATE(700, 26, 84, 29, 18))],
+  ['plate-band-gentle', seed(), bandFits('Gentle'), bandRoute(BANDPLATE(525, 26, 40, 29, 18))],
+  ['plate-band-sharp', seed(), bandFits('Sharp'), bandRoute(BANDPLATE(775, 20, 140, 15, 8))],
 
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral');
     // Critic round 38, finding 11: on a referral "Count it" (it only sends the words again) is not the main button, and "It is counted" is not said
-    if (await p.evaluate(() => { const g = document.getElementById('log-go'); return !!g && g.classList.contains('primary') || /It is counted, not judged/.test(document.getElementById('sheet').textContent); })) throw new Error('the log referral keeps Count it as the main button, or says it is counted'); }],
+    if (await p.evaluate(() => { const g = document.getElementById('log-go'); return !!g && g.classList.contains('primary') || /It is counted, not judged/.test(document.getElementById('sheet').textContent); })) throw new Error('the log referral keeps Count it as the main button, or says it is counted');
+    // Critic round 39, finding 8: the box and Count it stay live, so the line that typed words go to Gemini stays too
+    if (!(await p.evaluate(() => /What you type goes to Google Gemini\./.test(document.getElementById('sheet').textContent) && !!document.getElementById('login') && !document.getElementById('log-go').disabled))) throw new Error('the log referral keeps the box live but drops "What you type goes to Google Gemini."'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------
@@ -718,6 +747,14 @@ function audit(T) {
   all.forEach(e => { if (decorative(e)) return; const r = e.getBoundingClientRect(); if ((r.right > W + 0.5 || r.left < -0.5) && !scroller(e) && getComputedStyle(e).position !== 'fixed') add('off-screen', e, `x ${Math.round(r.left)}..${Math.round(r.right)} of ${W}`); });
   // 2 no clipped text, no clipped placeholder
   texty.forEach(e => { const cs = getComputedStyle(e); if (e.clientWidth <= 2 || e.clientHeight <= 2) return; if (/(hidden|clip)/.test(cs.overflowX + ' ' + cs.overflowY)) { if (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2) add('text-clipped', e, `${e.scrollWidth}x${e.scrollHeight} in ${e.clientWidth}x${e.clientHeight}`); } });
+  // a text's rendered box stays inside every ancestor that clips it and inside its own grid cell, however deeply it is nested (Critic round
+  // 39, finding 2: the band word in a block span in a flex row in a grid cell under an overflow-hidden card was cut and not seen)
+  texty.forEach(e => { if (e.clientWidth <= 2 || e.clientHeight <= 2 || e.closest('#toast')) return; const rg = document.createRange(); let L = Infinity, R = -Infinity;
+    for (const n of e.childNodes) if (n.nodeType === 3 && n.nodeValue.trim()) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width >= 0.5) { L = Math.min(L, q.left); R = Math.max(R, q.right); } }
+    if (!(R > L)) return;
+    for (let a = e.parentElement; a && a !== document.body; a = a.parentElement) { const s = getComputedStyle(a); if (/(auto|scroll)/.test(s.overflowX)) return;
+      const clip = /(hidden|clip)/.test(s.overflowX), cell = !!a.parentElement && /grid/.test(getComputedStyle(a.parentElement).display);
+      if ((clip || cell) && getComputedStyle(a).display !== 'contents') { const q = a.getBoundingClientRect(); if (q.width > 0.5 && (R > q.right + 1 || L < q.left - 1)) { add('text-clipped', e, `text x ${Math.round(L)}..${Math.round(R)} runs past ${clip ? 'a box that clips it' : 'its grid cell'} (x ${Math.round(q.left)}..${Math.round(q.right)})`); return; } } } });
   all.forEach(e => { if (decorative(e) || e.closest('#toast')) return; const cs = getComputedStyle(e); if (!/^(block|flex|grid|inline-block|inline-flex|list-item|table-cell)$/.test(cs.display) || e.clientWidth < 3) return;
     if (/(auto|scroll)/.test(cs.overflowX)) return; if (!(e.innerText || '').trim()) return;
     if ([...e.children].some(c => /^(block|flex|grid|list-item|table)$/.test(getComputedStyle(c).display))) return;   // a box of boxes: its children are measured themselves
@@ -784,6 +821,8 @@ function coverage() {
   const markup = fs.readFileSync(path.join(ROOT, 'src/v5/markup.html'), 'utf8'), VIEW = { setup: 'setup-1-goal-food', plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' };
   for (const v of new Set([...markup.matchAll(/id="v-([a-z]+)"/g)].map(m => m[1]))) if (!VIEW[v] || (!ONLY.length && !names.has(VIEW[v]))) miss.push('view "v-' + v + '" has no review state');
   for (const t of Object.keys(COVER.tab)) if (!ONLY.length && !names.has(COVER.tab[t])) miss.push('tab "' + t + '" has no review state');
+  // a scripted reply shows only what the engine can write: a menu or Rescue portion is grams only, "\u2248 300 g" (Critic round 39, finding 10)
+  for (const m of fs.readFileSync(__filename, 'utf8').matchAll(/portion: '([^'(]*)'/g)) if (!/^(?:\\u2248|\u2248) \d+ g$/.test(m[1])) miss.push('a scripted portion the engine cannot write: "' + m[1] + '"');
   const steps = (app.match(/UI\.step<2/g) || []).length ? 3 : 0; if (!ONLY.length && steps && !['setup-1-goal-food', 'setup-2-health', 'setup-3-body'].every(n => names.has(n))) miss.push('a setup step has no review state');
   return miss;
 }
@@ -815,6 +854,7 @@ async function drill(b, base) {
     mk('<input style="width:90px;font-size:16px" placeholder="planted hint far too long for this box">');
     mk('<input style="width:200px;font-size:14px" aria-label="planted small input">');
     mk('<div style="width:60px;font-size:16px;white-space:nowrap">planted run-on figure 1200 kcal</div>');
+    mk('<div style="overflow:hidden;width:180px"><div style="display:grid;grid-template-columns:60px 60px 60px"><div><span style="display:flex;white-space:nowrap;font-size:22px"><span style="display:block">planted nested band</span></span></div><div>a</div><div>b</div></div></div>');
     mk('<svg viewBox="0 0 320 40" style="width:160px" role="img" aria-label="planted chart"><text x="4" y="20" style="font-size:12px">planted tiny chart label</text></svg>');
     const last = document.createElement('p'); last.style.cssText = 'font-size:16px;margin-bottom:-600px'; last.textContent = 'planted last line'; v.appendChild(last);
     const ans = document.createElement('p'); ans.id = 'planted-answer'; ans.style.cssText = 'font-size:16px;margin-top:2400px'; ans.textContent = 'planted answer'; v.insertBefore(ans, last);
@@ -826,7 +866,7 @@ async function drill(b, base) {
   const has = (rule, txt) => res.some(v => v.rule === rule && (v.el + ' ' + v.detail).includes(txt));
   const want = [['text-too-small', 'planted small text'], ['off-screen', 'planted wide box'], ['overflow-x', 'content'], ['contrast', 'planted faint text'], ['target-small', '"x"'],
     ['no-name', 'planted-noname'], ['text-clipped', 'planted clipped text'], ['overlap', 'planted over'], ['handwriting-figures', 'planted 450 kcal'], ['handwriting-too-small', 'planted pencil note'],
-    ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-too-small', 'chart text'],
+    ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-clipped', 'planted nested band'], ['text-too-small', 'chart text'],
     ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable']];
   const missed = want.filter(([r, t]) => !has(r, t)).map(([r, t]) => r + ' (' + t + ')');
   if (!hidden) missed.push('feedback-hidden (planted answer)');

@@ -8,6 +8,8 @@ const fs = require('fs'), path = require('path');
 const page = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
 const open = '<script id="np-core">', a = page.indexOf(open) + open.length;
 (0, eval)(page.slice(a, page.indexOf('</script>', a)));
+// no regular expression in np-core looks behind: Safari before 16.4 (iOS 15 phones) rejects (?<! and (?<=, and the whole script would not run
+const LOOKBEHIND = /\(\?<[!=]/.test(page.slice(a, page.indexOf('</script>', a)));
 // helpers an older page lacks, so its guards report FAIL instead of throwing
 for (const [k, v] of [['norm', s => String(s == null ? '' : s)], ['PROSEW', /^$/], ['TAGTEXT', ''], ['containsText', () => ''], ['MEATW', []], ['FISHW', []], ['ONIONW', []], ['ROOTW', []]]) if (typeof globalThis[k] === 'undefined') { try { (0, eval)('var ' + k); } catch (e) {} globalThis[k] = v; }
 const LX = JSON.parse(fs.readFileSync(path.join(__dirname, 'lexicon.json'), 'utf8')), L = LX.known, HO = LX.heldout;
@@ -15,6 +17,7 @@ const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
 const BASE = { goal: 'lose', focus: 'none', diet: 'nonveg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 const prof = (o, slot) => { const p = readProfile(Object.assign({}, BASE, o)); p.slot = slot || 'lunch'; return p; };
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
+add('np-core has no look-behind (older phone browsers reject it)', !LOOKBEHIND, 'np-core holds (?<! or (?<=');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const plural = s => /[^aeiou]y$/.test(s) ? s.slice(0, -1) + 'ies' : /(s|sh|ch|x)$/.test(s) ? s + 's' : s + 's';
 const forms = t => [t, cap(t), plural(t), '2 ' + plural(t), cap(t) + ' curry', 'Dal with ' + plural(t) + ' and salad', 'Cooked with no oil and ' + t, 'Served with ' + t + ', no salt'];
@@ -320,7 +323,7 @@ console.log(`round 5 schema walk: ${walked} string fields`);
 // ---------- S8 in names (usefulness brief): a name is cleaned, not dropped for its shape; a household count never shows in it ----------
 // (The engine-written side, "<count> <name>" with a grain side's grams, is the owner's form for a side (14 Nov) and is not a model name.)
 const COUNTW = /\b\d+\s*(?:x\s*)?(?:rotis?|phulkas?|chapatis?|katoris?|bowls?|cups?|glass(?:es)?|pcs|pieces?|slices?|spoons?|tbsp|tsp|ladles?|idlis?|dosas?|puris?|parathas?|nos)\b|\bkatoris?\b/i;
-const COUNTED = ['Chicken Curry Thali (2 roti, rice, chicken curry, salad)', 'Dal with 2 phulkas', 'Paneer tikka 2 pcs', 'Rajma chawal, 1 bowl', '1 katori moong dal', 'Idli (3 nos)'];
+const COUNTED = ['Chicken Curry Thali (2 roti, rice, chicken curry, salad)', 'Dal with 2 phulkas', 'Paneer tikka 2 pcs', 'Rajma chawal, 1 bowl', '1 katori moong dal', 'Idli (3 nos)', 'Idli (2 pcs)', 'Egg curry (2 eggs)'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTED) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -328,14 +331,18 @@ for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 
     add('S8 no household count in a shown name', !bad.length, `${kind}: "${v}" in ${pth} showed ${JSON.stringify(bad.slice(0, 2))}`); } }
 // counts written as words (final audit M2). The words and the nouns after them are this test's own, kept apart from the engine's lists:
 // count nouns the engine does not list ("kozhukattais", "pathiris") must go too, so a rule that knows only listed piece words cannot pass.
-const COUNTWORDS = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|char|aadha)\s+(?:(?!with\b|and\b)[a-z]+\s+)?(?:samosas?|plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
+const COUNTWORDS = /\b(?:glass|bowl|cup|plate|handful|katori|tumbler|mug)s?\s+of\b|\b(?:chhe|saat|aath|nau|das)\s+(?:[a-z]+\s+)?(?:rotis?|idlis?|puris?|dosas?|eggs?|parathas?|phulkas?|chapatis?)\b|\b(?:do|teen|char)\s+(?:rotiy|chapatiy|puriy)\w*|\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|hundred|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|char|aadha)\s+(?:(?!with\b|and\b)[a-z]+\s+)?(?:samosas?|plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
 const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji made with three whole eggs and onions', 'Two phulkas', 'One bowl dal', 'Half plate rice', 'Two Tandoori Roti', 'Moong dal with two phulkas',
   'Three kozhukattais', 'Four pathiris with stew', 'Buttermilk one glass', 'Single phulka', 'Pair of idlis', 'A couple of chapatis', 'Half a dozen momos', 'Quarter plate biryani', 'Ek katori dal', 'Do roti with sabzi',
   'Rajma chawal, half plate', 'Eleven pani puri', 'Seven-cup burfi',
   // Critic round 38, finding 1: a count word before a food or measure word, Hindi included
   'Two phulka', 'Teen phulka', 'Do roti', 'Two rotis with dal', 'Half plate biryani', 'Do aloo paratha', 'Char samosa', 'Aadha plate chawal', 'Charred paneer tikka with two phulka',
   // a count before a singular noun no list holds (the advisor's probes, 16 Nov)
-  'Curd with one banana', 'One apple', 'Two parotta', 'Three idiyappam', 'Four dhokla', 'Two akki rotti', 'One small bowl curd', 'Six pesarattu'];
+  'Curd with one banana', 'One apple', 'Two parotta', 'Three idiyappam', 'Four dhokla', 'Two akki rotti', 'One small bowl curd', 'Six pesarattu',
+  // a count or a portion in a short bracket, and numbers above twelve (safety audit M2)
+  'Dal (one bowl)', 'Rice (half plate)', 'Egg curry (two eggs)', 'Idli (three pieces)', 'Phulka (two nos)', 'Boiled eggs (two whole)', 'Moong chilla (two)', 'Kozhukattai (four)', 'Fifteen almonds', 'Twenty peanuts', 'Twenty five almonds', 'Thirteen pathiris',
+  // Critic round 39, finding 4: Hindi six to ten, Hindi plurals, and a measure with no number
+  'Chhe roti', 'Saat idli', 'Aath puri', 'Das idli', 'Do rotiyan', 'Teen rotiya', 'Glass of buttermilk', 'Bowl of dal', 'Cup of curd', 'Plate of poha', 'Handful of almonds', 'A bowl of dal', 'Curd rice with a glass of buttermilk'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -345,10 +352,10 @@ for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 
 for (const v of ['Two Tandoori Roti', 'One plate jeera rice', 'Half plate rice']) { const mo = menuOffered({}, 'Dal Fry', ['plain'], v, ['grain', 'wheat']);
   add('S8 no count written as a word in a menu side', (mo.orders || []).every(o => !COUNTWORDS.test(o.with || '')), `menu side "${v}" showed ${JSON.stringify((mo.orders || []).map(o => o.with))}`); }
 // the declared grain is shown too (reason line, change note): a count in it goes, on a diabetic plate whose grain is counted in words
-{ const m = platePlain(); m.items[1] = { food: 'Two jowar rotis', grams: 90, group: 'carbs', contains: ['grain'] }; m.grain = { food: 'Two jowar rotis', made_of: 'jowar', grams: 90 };
+for (const [gname, gshown] of [['Two jowar rotis', 'Jowar rotis'], ['Jowar roti (two pieces)', 'Jowar roti']]) { const m = platePlain(); m.items[1] = { food: gname, grams: 90, group: 'carbs', contains: ['grain'] }; m.grain = { food: gname, made_of: 'jowar', grams: 90 };
   m.alchemy = { glucose: { titleSuffix: '+ salad', note: 'More salad.', add_item: 'Cucumber salad', add_grams: 80, minutes: 20, grain_grams_after: 60, contains: ['plain'], deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 2 } };
   const r = safe(() => plan('meals', { profile: Object.assign({}, BASE, { health: 'diabetes', meds: 'no', diet: 'veg' }), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(m)), {}), c = (r.meals || [])[0];
-  add('S8 a counted grain is shown cleaned, not dropped', !!c && c.grain.food === 'Jowar rotis', `the plate with "Two jowar rotis" as its grain: ${c ? JSON.stringify(c.grain) : 'dropped'}`);
+  add('S8 a counted grain is shown cleaned, not dropped', !!c && c.grain.food === gshown, `the plate with "${gname}" as its grain: ${c ? JSON.stringify(c.grain) : 'dropped'}`);
   add('S8 no count written as a word in the grain, reason line or change note', !!c && !allStr(c).some(x => COUNTWORDS.test(x)), `shown: ${JSON.stringify(allStr(c || {}).filter(x => COUNTWORDS.test(x)))}`); }
 // cleaned, not dropped: an honest name with brackets, a comma tail or a count is offered, shown without them
 for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka'], ['Flattened rice, softened', 'Flattened rice'], ['Steamed rice 150 g', 'Steamed rice'], ['Cucumber, tomato and onion salad', 'Cucumber, tomato and onion salad'],
@@ -362,7 +369,12 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   ['Half-fry egg', 'Half-fry egg'], ['Three bean salad', 'Three bean salad'], ['Five spice tofu', 'Five spice tofu'], ['Panchmel dal', 'Panchmel dal'], ['Do pyaza', 'Do pyaza'], ['Panch phoron', 'Panch phoron'], ['One-pot khichdi', 'One-pot khichdi'],
   // Critic round 38: what follows the number word decides. A count before a food or measure word goes; a dish name stays
   ['Two phulka', 'Phulka'], ['Teen phulka', 'Phulka'], ['Do roti', 'Roti'], ['Do aloo paratha', 'Aloo paratha'], ['Half plate biryani', 'Biryani'],
-  ['Paneer do pyaza with roti', 'Paneer do pyaza with roti'], ['Char siu tofu', 'Char siu tofu'], ['Teen phoron sabzi', 'Teen phoron sabzi']]) {
+  ['Paneer do pyaza with roti', 'Paneer do pyaza with roti'], ['Char siu tofu', 'Char siu tofu'], ['Teen phoron sabzi', 'Teen phoron sabzi'],
+  // safety audit M2: a bracket with a count or a portion comes off, a bracket that says what the food is stays; numbers above twelve
+  ['Dal (one bowl)', 'Dal'], ['Rice (half plate)', 'Rice'], ['Egg curry (two eggs)', 'Egg curry'], ['Idli (three pieces)', 'Idli'], ['Moong chilla (two)', 'Moong chilla'], ['Idli (2 pcs)', 'Idli'], ['Rajma (one katori)', 'Rajma'],
+  ['Fried rice (veg)', 'Fried rice (veg)'], ['Whole wheat phulka (no ghee)', 'Whole wheat phulka (no ghee)'], ['Biryani (egg)', 'Biryani (egg)'], ['Fifteen almonds', 'Almonds'], ['Twenty five almonds', 'Almonds'], ['Chicken sixty five', 'Chicken sixty five'], ['Thousand island salad', 'Thousand island salad'], ['Sixteen bean soup', 'Sixteen bean soup'],
+  // Critic round 39, finding 4: the count or measure goes, the food stays; a dish named with a measure word keeps its name
+  ['Saat idli', 'Idli'], ['Do rotiyan', 'Rotiyan'], ['Glass of buttermilk', 'Buttermilk'], ['A bowl of dal', 'Dal'], ['Cup cake', 'Cup cake'], ['Buddha bowl', 'Buddha bowl'], ['Poke bowl', 'Poke bowl'], ['Das ka dosa', 'Das ka dosa']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
   add('S8 names are cleaned, not dropped', it.includes(shown), `"${raw}" showed ${JSON.stringify(it)}, not "${shown}"`); }
@@ -375,7 +387,7 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
     dishes: dishes.map(([n, t]) => ({ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: t, contains_listed: t, with_contains: ['plain'], planned_around: [] })),
     leave: (leave || []).map(([n, t]) => ({ as_written: n, reason: 'fried', contains: t })) }), {});
   const NV = { diet: 'nonveg' }, typed = 'STARTERS\nChicken 65 240\nGobi 65 180\nChicken 65 Biryani 320\n7 Cup Barfi 90\nDal Makhani 280\nPaneer Tikka - 6 pcs 260\nTwo Tandoori Roti 60\n';
-  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken 65 Biryani', 'part of the name'],
+  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken Biryani', 'a number before a dish word goes: the owner\'s rule by position, the same kind of cost as "7 Cup Barfi" (safety audit M1; this expectation changed from "Chicken 65 Biryani")'],
       ['Chicken 65 240', ['meat'], 'Chicken 65', 'the price after a name number'], ['7 Cup Barfi', ['sweet', 'dairy'], 'Barfi', 'a number before a measure word: "7 Cup" goes, the accepted cost (owner, 16 Nov)'], ['Dal Makhani 280', ['dairy'], 'Dal Makhani', 'a price'],
       ['Paneer Tikka 6 pcs', ['dairy'], 'Paneer Tikka', 'a count'], ['Two Tandoori Roti', ['wheat', 'grain'], 'Tandoori Roti', 'a count in words']]) {
     const r = menuName(NV, typed, [[aw, tags]]);
@@ -389,7 +401,34 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   add('S8 menu names, photo: a price goes, a name number before it stays', showName('Plain Dosa 70', { price: 1 }) === 'Plain Dosa' && showName('Dal Makhani 280', { price: 1 }) === 'Dal Makhani' && showName('Chicken 65 240', { price: 1 }) === 'Chicken 65', JSON.stringify([showName('Plain Dosa 70', { price: 1 }), showName('Dal Makhani 280', { price: 1 }), showName('Chicken 65 240', { price: 1 })]));
   // a plate name still shows no number at all (the prompt asks for none)
   const pr = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(withItem('Chicken 65', ['meat']))), {});
-  add('S8 plate names show no number', !allStr(pr.meals || []).some(x => /\d/.test(x) && /chicken/i.test(x)), 'a plate item showed a number: ' + JSON.stringify(allStr(pr.meals || []).filter(x => /chicken/i.test(x)))); }
+  add('S8 plate names show no number', !allStr(pr.meals || []).some(x => /\d/.test(x) && /chicken/i.test(x)), 'a plate item showed a number: ' + JSON.stringify(allStr(pr.meals || []).filter(x => /chicken/i.test(x))));
+  // safety audit M1: the owner's rule applied by position, with no list of foods. On a typed menu, as an order and as a leave entry, a
+  // number with a word after it never shows; only a number at the end of the name may stay. Nouns no list holds ("Blorp", "Fizzle",
+  // "Kothu", "Salna") must behave like the rest, so a rule that knows only listed words cannot pass.
+  const M1 = [['Egg Curry 2 Eggs', 'Egg Curry Eggs'], ['Egg Bhurji 3 Eggs', 'Egg Bhurji Eggs'], ['Omelette 3 Egg', 'Omelette Egg'], ['Veg Thali 3 Roti Dal Rice', 'Veg Thali Roti Dal Rice'],
+    ['Mini Meals 4 Roti Rice Dal', 'Mini Meals Roti Rice Dal'], ['North Indian Thali - 4 Roti, Dal, Rice', 'North Indian Thali Roti'], ['2 Idli 1 Vada', 'Idli Vada'], ['Idli 2 Vada 1 Combo', 'Idli Vada Combo'],
+    ['Breakfast Combo Idli 2 Vada 1 Coffee', 'Breakfast Combo Idli Vada Coffee'], ['Poori Sagu 3 Poori', 'Poori Sagu Poori'], ['Mutton Biryani 1 Kg', 'Mutton Biryani'], ['Buttermilk 1 Ltr', 'Buttermilk'],
+    ['Biryani 1 Handi', 'Biryani'], ['Veg Thali 2 Person', 'Veg Thali'], ['Family Pack Biryani 4 Persons', 'Family Pack Biryani'], ['2 Chole Bhature', 'Chole Bhature'], ['Appam 2 Stew', 'Appam Stew'],
+    ['Parotta 2 Salna', 'Parotta Salna'], ['Kothu 3 Blorp Fizzle', 'Kothu Blorp Fizzle'], ['Blorp 3 Fizzle', 'Blorp Fizzle'], ['Chicken 65 Dosa', 'Chicken Dosa'], ['Gobi 65 Kebab', 'Gobi Kebab'],
+    // the owner's own examples, a price after a name number, and numbers at the end of a name, which stay by position (the owner may be asked)
+    ['Two Tandoori Roti', 'Tandoori Roti'], ['7 Cup Barfi', 'Barfi'], ['Chicken 65', 'Chicken 65'], ['Gobi 65', 'Gobi 65'], ['Tandoori Roti 2', 'Tandoori Roti 2'], ['Boiled Eggs 2', 'Boiled Eggs 2']];
+  const typedM1 = M1.map(([n], i) => n + ' ' + (120 + 10 * i)).join('\n') + '\nChicken 65 Biryani 320\nDal Fry 200\n';
+  for (const [aw, want] of M1) { const r = menuName(NV, typedM1, [[aw, ['plain']]]), r2 = menuName(NV, typedM1, [['Dal Fry', ['plain']]], [[aw, ['plain']]]), o = (r.orders || [])[0], l = (r2.leave || [])[0];
+    add('S8 menu names: the owner\'s rule by position (order)', !!o && o.name === want, `"${aw}" showed ${JSON.stringify((r.orders || []).map(x => x.name))}, not "${want}" (${JSON.stringify(r.dropped)})`);
+    add('S8 menu names: the owner\'s rule by position (leave entry)', !!l && l.name === want, `"${aw}" as a leave entry showed ${JSON.stringify(r2.leave)}, not "${want}"`);
+    for (const x of [o && o.name, l && l.name].filter(Boolean)) add('S8 menu names: no number with a word after it', !/\d[^\d]*[a-z]/i.test(x), `"${aw}" showed "${x}"`); }
+  // Critic round 39, finding 3: a name number stays on the menu shapes typed in India: "Rs", "Rs." and "INR" prices, Half and Full prices,
+  // the rupee sign, a dash, a tab, and an unpriced list; a price still goes ("Tea 15" on a priced menu shows "Tea")
+  for (const [k, t] of [['Rs', 'Chicken 65 - Rs 240\nGobi 65 - Rs 180\nDal Tadka - Rs 200'], ['Rs.', 'Chicken 65 Rs. 240\nGobi 65 Rs. 180\nDal Tadka Rs. 200'], ['INR', 'Chicken 65 INR 240\nGobi 65 INR 180\nDal Tadka INR 200'],
+      ['Half and Full', 'Chicken 65 (Half) 180 (Full) 320\nGobi 65 (Half) 120 (Full) 220\nDal Tadka 200'], ['unpriced', 'Chicken 65\nGobi 65\nDal Tadka\nTandoori Roti'], ['unpriced, three lines', 'Chicken 65\nGobi 65\nDal Tadka'],
+      ['rupee sign', 'Chicken 65 \u20B9 240\nGobi 65 \u20B9180\nDal Tadka \u20B9 200'], ['dash', 'Chicken 65 - 240\nGobi 65 - 180\nDal Tadka - 200'], ['tab', 'Chicken 65\t240\nGobi 65\t180\nDal Tadka\t200']])
+    for (const aw of ['Chicken 65', 'Gobi 65', t.split('\n')[0]]) { const r = menuName(NV, t, [[aw, ['plain']]]), want = aw === t.split('\n')[0] ? 'Chicken 65' : aw;   // as_written may copy the whole line, price and all
+      add('S8 menu names: a name number stays on every typed menu shape', (r.orders || []).some(o => o.name === want), `${k} menu: "${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))} (${JSON.stringify(r.dropped)})`); }
+  for (const [t, aw, want] of [['Tea 15\nCoffee 20\nSamosa 15', 'Tea 15', 'Tea'], ['Dal Makhani 280\nPaneer Tikka 260', 'Dal Makhani 280', 'Dal Makhani'], ['Plate of 3 idli 40\nCup of tea 20', 'Plate of 3 idli', 'Idli'], ['Idli 40\nVada 40\nDosa 40', 'Idli 40', 'Idli'], ['Masala Dosa 90', 'Masala Dosa 90', 'Masala Dosa']]) { const r = menuName(NV, t, [[aw, ['plain']]]);
+    add('S8 menu names: a price or a count still goes', (r.orders || []).some(o => o.name === want), `"${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))}, not "${want}"`); }
+  // a name that is only a number never shows (MENUSHAPE; safety audit m5, mutation N7)
+  for (const aw of ['65', '2 3']) { const r = menuName(NV, aw + ' 180\nDal Fry 200\n', [[aw, ['plain']]]);
+    add('S8 menu names: a name that is only a number is not shown', !(r.orders || []).length && showName(aw, { price: 1 }) === '' && showName(aw + ' 180', { price: aw + ' 180' }) === '', `"${aw}": ${JSON.stringify(r.orders || [])} / "${showName(aw, { price: 1 })}"`); } }
 // every check still reads the raw name, brackets included: the canteen thali with papad and pickle is dropped for high blood pressure
 for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);
@@ -563,6 +602,68 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
       safe(() => cs(ctx)(), null);
       add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
     else add('S10 kept plates: closing My food after a rule change empties them at once', false, 'closeSheet not found in app.js'); }
+  // app logic that rested on the review states alone (safety audit m1, m3, m4): each function is taken from app.js and run in Node with
+  // stand-ins for the page around it. A missing function is a FAIL, not a skip.
+  { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null; return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
+    const appP = (o) => Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+    // m1: composedWhy keeps S5 (the grain stays with diabetes) and S6 (on medicines, the usual size) on every composed state
+    { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
+      const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, kcal: 4 * p + 4 * c + 9 * f }), base = fig(25, 80, 20);
+      const d = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' })), dm = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }));
+      add('m1 app S5: composedWhy refuses a grain cut below half, and a grain swapped off', !!d && !!d.composedWhy(fig(25, 30, 20), base, { meal: 'lunch' }) && !!d.composedWhy(base, base, { meal: 'lunch', grainGone: true }) && !d.composedWhy(base, base, { meal: 'lunch' }), d ? 'not refused' : 'composedWhy not found');
+      const big = fig(30, 110, 25), small = fig(14, 60, 8);
+      add('m1 app S6: composedWhy refuses a plate under the usual size on medicines', !!dm && dm.u > small.kcal && dm.u <= big.kcal && !!dm.composedWhy(small, big, { meal: 'lunch', plate: true }) && !dm.composedWhy(big, big, { meal: 'lunch', plate: true }), dm ? `usual ${dm.u}: ${JSON.stringify([dm.composedWhy(small, big, { meal: 'lunch', plate: true }), dm.composedWhy(big, big, { meal: 'lunch', plate: true })])}` : 'composedWhy not found'); }
+    // m3, A5 and A9: a tap after the day changed redraws for the new day, and a tap whose composed result fails is refused, not run
+    { let redrawn = 0; const ctx = { DAY: 'yesterday', dayOf: () => 'today', refresh: () => { redrawn++; ctx.DAY = 'today'; }, render: () => {}, $: () => ({}) }; const f = run(['dayMoved'], ctx, 'dayMoved');
+      add('m3 app S12: dayMoved sees a new day and redraws', !!f && f() === true && redrawn === 1 && f() === false, f ? `redrawn ${redrawn}` : 'dayMoved not found');
+      let ran = 0, refused = ''; const c2 = { dayMoved: () => false, refuse: (w) => { refused = w; }, render: () => {} }; const a = run(['act'], c2, 'act');
+      if (a) { a(() => 'not offered', () => { ran++; })(); a(() => '', () => { ran += 10; })(); }
+      add('m3 app: act() refuses a tap whose check fails, and runs one that passes', !!a && ran === 10 && refused === 'not offered', a ? `ran ${ran}, refused "${refused}"` : 'act not found');
+      let ranAfter = 0; const c3 = { dayMoved: () => true, refuse: () => {}, render: () => {} }; const a3 = run(['act'], c3, 'act'); if (a3) a3(() => '', () => { ranAfter++; })();
+      add('m3 app S12: act() does not run a tap made after the day changed', !!a3 && ranAfter === 0, a3 ? `ran ${ranAfter}` : 'act not found'); }
+    // m3, A11: a tab open past 4 am drops yesterday's Rescue, menu and log answers
+    { const UI = { rres: { status: 'ok' }, rmoves: { 0: true }, rtext: 'x', mres: { orders: [] }, lres: { status: 'ok' }, ltext: 'x', lerr: 'x' };
+      const ctx = { now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
+      const f = run(['refresh'], ctx, 'refresh'); if (f) safe(() => f(), null);
+      add('m3 app S12: a new day drops yesterday\'s Rescue, menu and log answers', !!f && UI.rres === null && UI.mres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
+    // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
+    { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };
+      const f = run(['rescue'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
+      add('m3 app S11: a stale Rescue reply is not shown', !!f && !!cb && UI.rres === null, f ? JSON.stringify(UI.rres) : 'rescue not found');
+      let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k' };
+      const t = run(['tune'], c2, 'tune'); if (t) { t('k', 0); tsig = 'b'; if (tcb) tcb(200, { status: 'ok', swaps: { protein: [{ food: 'x' }], base: [] }, alchemy: {} }); }
+      add('m3 app S11: a stale tune reply is not shown', !!t && !!tcb && !m.swaps && !m.tuned, t ? JSON.stringify(m) : 'tune not found'); }
+    // m4, N12: the log referral starts with the line to get help now on an urgent symptom; N16: so does the referral heading
+    { let cb = null; const UI = { sheet: 'log' }; const ctx = { UI, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: (u, b, f) => { cb = f; }, blocked: () => false, $: () => ({}), URGENTLINE, SAFETY, RETRY: () => false, errText: () => '', lockOn: () => {} };
+      const f = run(['logOther'], ctx, 'logOther'); if (f) { f('chest pain after lunch'); if (cb) cb(200, { status: 'refer', urgent: true }); }
+      add('m4 app S7: the log referral starts with the line to get help now', !!f && typeof UI.lerr === 'string' && UI.lerr.indexOf(URGENTLINE) === 0 && UI.lerr.indexOf(SAFETY) > 0, f ? JSON.stringify(UI.lerr) : 'logOther not found');
+      const kids = []; const ctx2 = { el: (tag, cls, text) => ({ tag, cls, text }), URGENTLINE, SAFETY }; const rh = run(['referHead'], ctx2, 'referHead'); if (rh) rh({ appendChild: (x) => kids.push(x) }, { urgent: true, read: SAFETY });
+      add('m4 app S7: on an urgent symptom the referral heading is the line to get help now', !!rh && kids.length === 2 && kids[0].tag === 'h2' && kids[0].text === URGENTLINE && kids[1].text === SAFETY, rh ? JSON.stringify(kids) : 'referHead not found'); }
+    // m4, N13: the app's "Planned around" lines leave out, with diabetes or medicines, the hooks the reason line leaves out
+    { const f = run(['has', 'profileOut', 'hookProf', 'hooksSaid'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' }), medsUsual, hookSaid: typeof hookSaid === 'function' ? hookSaid : undefined }, 'hooksSaid');
+      const out = f ? f(['lighter_now', 'late_now', 'protein_low'], 'lunch', { lighter_now: 'A lighter lunch', late_now: 'Late', protein_low: 'Protein' }) : null;
+      add('m4 app: with diabetes the "Planned around" lines leave out lighter and late', !!out && out.length === 1 && out[0] === 'Protein', JSON.stringify(out)); }
+    // m4, N10 and N11: a conditional menu order carries no tick on its rules chips, and its row under "Also on this menu" carries the condition.
+    // orderView is run on a stand-in page: every name the page does not give is a no-op, so only the drawn tree is read.
+    { const mkEl = (tag, cls, text) => ({ tag, className: cls || '', textContent: text == null ? '' : String(text), kids: [], style: {}, appendChild(x) { this.kids.push(x); return x; }, setAttribute() {}, addEventListener() {}, focus() {} });
+      const own = { el: mkEl, ic: (n) => mkEl('svg', 'ic-' + n), btn: (c, t) => mkEl('button', c, t), add: (p, ...k) => { k.forEach(c => c && p.appendChild(c)); return p; }, document: { createTextNode: (t) => mkEl('#text', '', t), querySelector: () => null },
+        P: { diet: 'jain', leave: ['dairy'], conds: [] }, UI: { msel: 0, mmoves: {}, mno: [], myes: {} }, C: { meal: 'lunch' }, MENUK: ['kcal', 'protein', 'carbs', 'fats', 'fiber'], lab: (k, v) => String(v), mealName: () => 'Lunch',
+        hooksSaid: () => [], grainParts: () => [], fitOf: () => 80, riseOf: () => ({ band: 'Gentle' }), bandCls: () => '', referHead: () => {}, act: () => () => {}, composedWhy: () => '', scaleN: (a) => a, setPressed: () => {} };
+      const sb = new Proxy(own, { has: (t, k) => k !== Symbol.unscopables, get: (t, k) => k in t ? t[k] : k in globalThis ? globalThis[k] : () => {} });
+      const code = grab('orderView'), ov = code ? safe(() => new Function('sb', 'with (sb) { ' + code + '\n return orderView; }')(sb), null) : null;
+      const n = { kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6 }, cond = 'Only if they can make it this way.';
+      const ord = (name, askIf) => ({ name, n, fit: 80, rise: 'Gentle', ask: askIf ? 'Make it Jain style.' : '', askIf: askIf ? cond : '', portion: '≈ 300 g', planned: [] });
+      const v = mkEl('div'); if (ov) safe(() => ov(v, { status: 'ok', meal: 'lunch', orders: [ord('Veg pulao', true), ord('Dal fry', true)], moves: [], leave: [], dropped: {}, hooks: {} }), null);
+      const all = []; const walk = (x) => { all.push(x); (x.kids || []).forEach(walk); }; walk(v);
+      const chips = all.filter(x => /\bhchip\b/.test(x.className) && x.kids.some(k => /ic-check/.test(k.className)));
+      add('m4 app: a conditional menu order has no tick on its rules chips', !!ov && all.some(x => x.textContent === 'Veg pulao') && chips.length === 0, ov ? `${chips.length} ticked chips` : 'orderView not found or threw');
+      const alt = all.filter(x => x.tag === 'small' && /≈/.test(x.textContent));
+      add('m4 app: a conditional order\'s row under "Also on this menu" carries the condition', !!ov && alt.length === 1 && alt[0].textContent.indexOf(cond) >= 0, JSON.stringify(alt.map(x => x.textContent)));
+      // control: an order that fits as served keeps its ticks
+      const v2 = mkEl('div'); if (ov) safe(() => ov(v2, { status: 'ok', meal: 'lunch', orders: [ord('Veg pulao', false)], moves: [], leave: [], dropped: {}, hooks: {} }), null);
+      const all2 = []; const walk2 = (x) => { all2.push(x); (x.kids || []).forEach(walk2); }; walk2(v2);
+      add('m4 app: an order that fits as served keeps its ticks (control)', all2.filter(x => /\bhchip\b/.test(x.className) && x.kids.some(k => /ic-check/.test(k.className))).length === 2, 'no ticked chips drawn'); }
+  }
   // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
   // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures
   // shown (which "I'll have this" logs) are the base plate plus what is on it.
@@ -595,7 +696,33 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
     console.log(`S10 recorded plates: ${plates.length} recorded, ${seen.size} distinct, ${shownN} shown and tuned, ${statesN} tap states checked`);
     // what "I'll have this" logs is the plate on screen: the handler logs the title and figures of the same viewOf the card was drawn from
     add('S10 the meal logged is the plate shown', /function heroCard\(m,v,r\)\{[\s\S]*?var n=v\.n[\s\S]*?logEv\("had",\{title:v\.title,kcal:n\.kcal,protein:n\.protein,carbs:n\.carbs,fats:n\.fats,fiber:n\.fiber/.test(app), 'the "had" handler does not log the shown title and figures'); }
-  console.log(`S10 grain-protein plate: ${states} app tap states checked`); }
+  // plates where one item's name is a part of another's (safety audit M3): "Sambar" and "Sambar rice", "Dal" and "Dal khichdi". The grain
+  // swap takes the place of the declared grain item (or, with none declared, the first carbohydrate item), never of the item whose name is
+  // a part of it, and that item stays on the plate at its grams. With the grain declared by its whole name, the swap is offered and lands
+  // on it (control). Without diabetes and with it.
+  let partN = 0;
+  if (A) for (const [first, fg, grainItem, mo] of [['Sambar', 'protein', 'Sambar rice', 'rice'], ['Dal', 'protein', 'Dal khichdi', 'rice and moong dal'], ['Curd', 'other', 'Curd rice', 'rice'], ['Methi', 'greens', 'Methi thepla', 'wheat']])
+    for (const declared of [grainItem, grainItem.split(' ').slice(1).join(' ')]) for (const o of [{ diet: 'veg', goal: 'hold' }, { diet: 'veg', goal: 'hold', health: 'diabetes', meds: 'no' }]) {
+      const dairy = /curd/i.test(grainItem) ? ['dairy'] : [], wheat = /thepla/i.test(grainItem) ? ['wheat'] : [];
+      const raw = { title: 'x', prepMinutes: 25, items: [{ food: first, grams: 150, group: fg, contains: dairy.length ? dairy : PT }, { food: grainItem, grams: 250, group: 'carbs', contains: ['grain'].concat(dairy, wheat) }, { food: 'Cucumber salad', grams: 100, group: 'greens', contains: PT }],
+        grain: { food: declared, made_of: mo, grams: 250 }, contains: ['grain'], kcal: 600, protein: 22, carbs: 90, fats: 16, fiber: 10, why: [], swaps: { protein: [], base: [] }, alchemy: {}, planned_around: [], for_you: '', taste: [] };
+      const sh = shownPlate(o, 'lunch', raw), st = `${JSON.stringify(o)} items "${first}", "${grainItem}", grain declared "${declared}"`;
+      if (declared === grainItem && !o.health) add('S10 part-name plates: the grain declared by its whole name is shown (control)', !!sh && sh.grain.food === grainItem, `${st}: ${sh ? 'grain ' + JSON.stringify(sh.grain) : 'not shown'}`);
+      if (!sh) continue;
+      add('S10 part-name plates: the declared grain is never the item whose name is a part of it', sh.grain.food !== first, `${st}: the engine declared "${sh.grain.food}"`);
+      const t = tuned(o, 'lunch', sh, { protein: [], base: [{ food: grainItem, grams: 250, made_of: mo, contains: ['grain'], ...z }, { food: 'Bajra khichdi', grams: 250, made_of: 'bajra and moong dal', contains: ['grain'], deltaKcal: 20, deltaProtein: 2, deltaCarbs: -4, deltaFats: 2, deltaFiber: 4 }] });
+      if (!t || t.status !== 'ok') continue;
+      const m = Object.assign(J(sh), { swaps: t.swaps, alchemy: t.alchemy || {}, planned: [] });
+      if (declared === grainItem && !o.health) add('S10 part-name plates: the grain swap is offered (control)', m.swaps.base.some(s => s.food === 'Bajra khichdi'), `${st}: base swaps ${JSON.stringify(m.swaps.base)}`);
+      if (!m.swaps.base.some(s => s.food === 'Bajra khichdi')) continue;
+      const P = Object.assign({ conds: o.health ? [o.health] : [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+      const f = A(P, { meal: 'lunch' }, { swp: 0, swb: m.swaps.base.findIndex(s => s.food === 'Bajra khichdi'), alc: {} });
+      if (safe(() => f.plateWhy(m), 'threw')) continue; partN++;
+      const v = f.viewOf(m), want = sh.grain.food || grainItem;
+      add('S10 part-name plates: the grain swap takes the place of the grain item', v.swapped.length === 1 && v.swapped[0].from === want && v.items.some(i => i.food === first && i.grams === 150) && !v.items.some(i => i.food === grainItem),
+        `${st}: swapped ${JSON.stringify(v.swapped)}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}, title "${v.title}"`); }
+  add('S10 part-name plates: grain swap taps checked', partN >= 8, `only ${partN} grain swap taps on part-name plates were checked`);
+  console.log(`S10 grain-protein plate: ${states} app tap states checked; part-name plates: ${partN} grain swap taps`); }
 
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
 // A first net, not a complete list: the phrasings below are the re-audit's and their variants, so they are regression cases, not held out.
@@ -680,6 +807,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   add('nothing fits: every dish dropped says so too', r2.status === 'empty' && /Nothing on this menu fits/.test(r2.read || ''), `${r2.status}: ${r2.read}`);
   // Critic round 38, finding 5: the list reads with commas and one "or", before the last item, for the longest set of rules
   const nf = safe(() => noFitLine(readProfile(Object.assign({}, BASE, { diet: 'jain', health: 'diabetes', bp: true, leave: ['dairy'] }))), '');
+  add('nothing fits: no comma inside an item (Critic round 39, finding 7)', /\(no [^)]+\)/.test(nf) && !/\bor\b[^)]*,/.test(nf.match(/\(no [^)]+\)/)[0]) && /pickle and papad/.test(nf), nf);
   add('nothing fits: one "or" in the list', /\(no [^)]+\)/.test(nf) && (nf.match(/\(no [^)]+\)/)[0].match(/\bor\b/g) || []).length === 1, nf);
   add('nothing fits: the prompt offers the state', /nothing_fits/.test(pl.prompt || '') && JSON.stringify(pl.schema || {}).includes('nothing_fits'), 'the menu prompt or schema has no nothing_fits'); }
 
@@ -708,11 +836,14 @@ add('B4 plain tag', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', 'wheat'
 add('B4 plain tag in the schema', !!safe(() => JSON.stringify(plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).schema).includes('"plain"'), false), 'the schema does not offer the "plain" tag');
 
 // ---------- B5: food the app writes, every entry against every profile (tags here are written apart from the engine's) ----------
-{ const T = { 'Only dal, rice and curd at home': ['dairy'], 'Andhra mutton biryani': ['meat', 'dairy', 'onion_garlic'], 'Pahadi mutton rara with 2 butter rotis': ['meat', 'dairy', 'wheat', 'onion_garlic'], 'Peri-peri half chicken with spicy rice': ['meat', 'onion_garlic'],
-    'Paneer butter masala with 2 butter naan': ['dairy', 'wheat', 'onion_garlic'], 'Chole bhature': ['wheat', 'onion_garlic'], 'Veg biryani with raita': ['dairy', 'onion_garlic'], 'Masala dosa with chutney': ['root_veg', 'onion_garlic'], 'A slice of tiramisu after dinner': ['dairy', 'egg', 'wheat', 'sweet'] };
+{ const T = { 'Only dal, rice and curd at home': ['dairy'], 'Andhra mutton biryani': ['meat', 'dairy', 'onion_garlic'], 'Pahadi mutton rara with butter rotis': ['meat', 'dairy', 'wheat', 'onion_garlic'], 'Peri-peri half chicken with spicy rice': ['meat', 'onion_garlic'],
+    'Paneer butter masala with butter naan': ['dairy', 'wheat', 'onion_garlic'], 'Chole bhature': ['wheat', 'onion_garlic'], 'Veg biryani with raita': ['dairy', 'onion_garlic'], 'Masala dosa with chutney': ['root_veg', 'onion_garlic'], 'A slice of tiramisu after dinner': ['dairy', 'egg', 'wheat', 'sweet'] };
   const PROFS = []; for (const diet of ['veg', 'egg', 'nonveg', 'jain', 'vegan']) for (const leave of [[], ['dairy'], ['nut'], ['wheat'], ['soya']]) for (const h of [{ health: 'none' }, { health: 'diabetes' }, { health: 'bp' }]) PROFS.push(Object.assign({ diet, leave }, h));
   const all = (typeof APPDISHES !== 'undefined' ? APPDISHES.concat(APPASKS) : []);
   add('B5 app food is tagged', all.length === 12, 'the app’s dishes and asks are not in np-core with their tags');
+  // the app's own dishes carry no household count (S8; Critic round 39, finding 9: "with 2 butter naan")
+  add('S8 app dishes carry no count', all.length > 0 && all.every(e => !/\d/.test(e[0]) && !COUNTWORDS.test(e[0])), JSON.stringify(all.map(e => e[0]).filter(t => /\d/.test(t) || COUNTWORDS.test(t))));
+  add('S8 the prompt asks for no counts or measures in words', typeof nameText === 'function' && /no counts or measures in words/.test(nameText()), 'nameText() does not ask for it');
   for (const o of PROFS) { const p = prof(o), bar = barredTags(p); for (const e of all) if (safe(() => appFoodOK(e, p), true)) add('B5 app food against every profile', !(T[e[0]] || []).some(t => bar.includes(t)), `${JSON.stringify(o)}: "${e[0]}" is shown`); } }
 
 // ---------- B1: only what the client named, per tag ----------
