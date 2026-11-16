@@ -422,6 +422,23 @@ for (const [o, typed, d] of [[{ diet: 'veg' }, 'Chicken biryani', { kcal: 900, p
     add('Rescue moves keep the grain (S5)', !(h.kind === 'portion' && o.health === 'diabetes') || d.carbs + (h.deltaCarbs || 0) >= d.carbs * 0.5, `${JSON.stringify(o)} "${typed}": "${h.title}" takes carbs to ${d.carbs + (h.deltaCarbs || 0)} of ${d.carbs}`);
     add('Rescue moves keep the usual size (S6)', !u || h.kind !== 'portion' || d.kcal + (h.deltaKcal || 0) >= u, `${JSON.stringify(o)} "${typed}": "${h.title}" takes the meal to ${d.kcal + (h.deltaKcal || 0)} kcal, under the usual ${u}`);
     add('Rescue moves name no barred food', !crosses(h.title, pp), `${JSON.stringify(o)} "${typed}": "${h.title}"`); } }
+// S6 in the engine itself, not only at the app's tap (final audit m1: removing either floor passed every Node check). On insulin or sugar
+// tablets: a Rescue portion move that would fit the target best but go under the usual size is not offered, and a swap that takes the
+// plate under the usual size is not offered; controls show the same shapes offered when they stay at or above it.
+for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'diabetes', meds: 'unsure', goal: 'hold' }]) { const pp = prof(o), u = medsUsual(pp, 'lunch');
+  // a dish a little under twice the usual size: "Eat about half" lands just under it, and is the move nearest the target
+  const k = Math.round(u * 1.9 / 10) * 10, d = { name: 'Veg thali', kcal: k, protein: Math.round(k * 0.15 / 4), carbs: Math.round(k * 0.55 / 4), fats: Math.round(k * 0.30 / 9), fiber: 8, contains: ['grain'] };
+  const r = rescueOut(o, 'Veg thali', d, []);
+  add('S6 engine: no Rescue portion move under the usual size', r.status === 'ok' && (r.hacks || []).every(h => h.kind !== 'portion' || d.kcal + h.deltaKcal >= u), `${JSON.stringify(o)} usual ${u}: dish ${k} kcal, moves ${JSON.stringify((r.hacks || []).map(h => [h.title, h.deltaKcal]))}`);
+  const r2 = rescueOut(o, 'Veg thali', Object.assign({}, d, { kcal: k * 2, protein: d.protein * 2, carbs: d.carbs * 2, fats: d.fats * 2 }), []);
+  add('S6 engine: a portion move at or above the usual size is offered (control)', (r2.hacks || []).some(h => h.kind === 'portion'), `${JSON.stringify(o)}: dish ${k * 2} kcal, moves ${JSON.stringify((r2.hacks || []).map(h => h.title))}`);
+  // a plate 30 kcal over the usual size: a swap of -100 kcal takes it under and is not offered; a swap of -20 kcal is
+  const m = platePlain(), pk = u + 30; Object.assign(m, { kcal: pk, protein: Math.round(pk * 0.2 / 4), carbs: Math.round(pk * 0.5 / 4), fats: Math.round(pk * 0.3 / 9) }); m.items.forEach(i => { i.grams = Math.round(i.grams * pk / 500); });
+  m.grain.grams = m.items[1].grams;
+  m.swaps = { protein: [{ food: 'Sprouted moong', grams: m.items[0].grams, contains: PT, ...z }, { food: 'Steamed moong', grams: 150, contains: PT, ...z, deltaKcal: -100, deltaProtein: -5, deltaCarbs: -10, deltaFats: -4 }, { food: 'Boiled chickpeas', grams: 150, contains: PT, ...z, deltaKcal: -20, deltaProtein: -1, deltaCarbs: -2, deltaFats: -1 }], base: [] };
+  const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
+  add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
+  add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
 add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
@@ -513,6 +530,22 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
       // the title names only what is on the plate
       for (const x of (v.suffix || '').replace(/^with /, '').split(', ').filter(x => / in place of /.test(x))) add('S10 the title names only what is on the plate', v.items.some(i => i.food.toLowerCase() === x.split(' in place of ')[0]), `${st}: title "${v.title}"`); } }
   add('S10 app states checked', states >= 8, `only ${states} app states were checked`);
+  // the kept-plate rule stamp, in the app itself (final audit m4: ignoring it in pruneKept passed every Node check): a kept plate made under
+  // other rules is dropped while the app is open, and one made under these rules is kept
+  { const pk = safe(() => new Function('P', 'STORE', 'UI', 'baseWhy', [grab('rules'), grab('pruneKept')].join('\n') + '\nreturn {pruneKept, rules};'), null);
+    if (pk) { const P1 = { diet: 'veg', leave: [], conds: [], meds: 'no', age: 47, cm: 158, kg: 72, sex: 'f', act: 'low' }, ST = { res: {}, shown: {} }, U = {}, f = pk(P1, ST, U, () => '');
+      const plate = { items: [{ food: 'Dal', grams: 200 }], kcal: 400 }; ST.res.old = { meal: 'lunch', rules: '["veg",["dairy"],[],"no",47,158,72,"f","low"]', meals: [plate] }; ST.res.now = { meal: 'lunch', rules: f.rules(), meals: [plate] }; ST.shown.lunch = 'old';
+      f.pruneKept();
+      add('S10 kept plates: one stamped with other rules is dropped while the app is open', !ST.res.old && !!ST.res.now && !ST.shown.lunch, JSON.stringify({ keys: Object.keys(ST.res), shown: ST.shown })); }
+    else add('S10 kept plates: one stamped with other rules is dropped while the app is open', false, 'pruneKept or rules not found in app.js'); }
+  // My food closed after a food rule changed empties the kept plates at once (final audit m4: removing this passed every check, the review
+  // included, because pruneKept drops them on the next render; this keeps both nets)
+  { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n return closeSheet; }'), null);
+    if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, $: () => ({ hidden: false }), behind: () => {},
+        answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {} };
+      safe(() => cs(ctx)(), null);
+      add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
+    else add('S10 kept plates: closing My food after a rule change empties them at once', false, 'closeSheet not found in app.js'); }
   // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
   // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures
   // shown (which "I'll have this" logs) are the base plate plus what is on it.
