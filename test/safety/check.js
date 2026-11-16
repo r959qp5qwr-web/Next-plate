@@ -750,7 +750,38 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
       add('S10 part-name plates: the grain swap takes the place of the grain item', v.swapped.length === 1 && v.swapped[0].from === want && v.items.some(i => i.food === first && i.grams === 150) && !v.items.some(i => i.food === grainItem),
         `${st}: swapped ${JSON.stringify(v.swapped)}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}, title "${v.title}"`); }
   add('S10 part-name plates: grain swap taps checked', partN >= 8, `only ${partN} grain swap taps on part-name plates were checked`);
-  console.log(`S10 grain-protein plate: ${states} app tap states checked; part-name plates: ${partN} grain swap taps`); }
+  // plates with no declared grain (safety audit of ba4d8dc, M2): the grain named by a short form of its item ("Rice" for "Jeera rice",
+  // "Roti" for "Jowar roti"), or none at all. Nothing ties a change's grain grams to an item, so no change that changes the grain is offered,
+  // on the plate and in a tune; a change that leaves the grain alone stays (control); and over every tap state the app accepts, the figures
+  // shown (which "I'll have this" logs) are the base plate plus what is on it, and no note names a grain going up, down or off.
+  let ngN = 0;
+  if (A) for (const [items, grain] of [[[['Rajma', 150, 'protein'], ['Jeera rice', 200, 'carbs'], ['Cucumber salad', 120, 'greens']], { food: 'Rice', made_of: 'rice', grams: 200 }],
+      [[['Rajma', 150, 'protein'], ['Jeera rice', 200, 'carbs'], ['Cucumber salad', 120, 'greens']], { food: '', made_of: '', grams: 0 }],
+      [[['Moong dal', 200, 'protein'], ['Jowar roti', 90, 'carbs'], ['Cucumber salad', 100, 'greens']], { food: 'Roti', made_of: 'jowar', grams: 90 }],
+      [[['Paneer bhurji', 150, 'protein'], ['Sauteed greens', 150, 'greens']], { food: '', made_of: '', grams: 0 }]])
+    for (const o of [{ diet: 'veg', goal: 'hold' }, { diet: 'veg', goal: 'hold', health: 'bp' }]) {
+      const gg = grain.grams, ch = (after, d, item) => Object.assign({ titleSuffix: '+ ' + item.toLowerCase(), note: 'x', add_item: item, add_grams: 80, minutes: 20, contains: PT, deltaFiber: 2 }, after === undefined ? {} : { grain_grams_after: after }, d);
+      const AL = { glucose: ch(gg ? Math.round(gg * 0.75) : 150, { deltaKcal: -120, deltaProtein: 2, deltaCarbs: -30, deltaFats: 0 }, 'Sauteed beans'),   // shrinks the grain
+        express: ch(gg ? gg + 50 : 100, { deltaKcal: 80, deltaProtein: 0, deltaCarbs: 20, deltaFats: 0 }, 'Cucumber raita'),                                // grows it
+        protein: ch(undefined, { deltaKcal: 110, deltaProtein: 6, deltaCarbs: 15, deltaFats: 2 }, 'Roasted chana'),                                        // no grain grams: leaves it alone
+        gut: ch(gg, { deltaKcal: 40, deltaProtein: 2, deltaCarbs: 6, deltaFats: 1 }, 'Steamed carrots') };                                                 // the same grain grams (or 0 with none)
+      const raw = { title: 'x', prepMinutes: 25, items: items.map(([food, grams, group]) => ({ food, grams, group, contains: /rice|roti/i.test(food) ? ['grain'] : PT })), grain, contains: ['grain'],
+        kcal: 560, protein: 22, carbs: 80, fats: 16, fiber: 10, why: [], swaps: { protein: [], base: [] }, alchemy: AL, planned_around: [], for_you: '', taste: [] };
+      const st = `${JSON.stringify(o)} items ${items.map(i => '"' + i[0] + '"').join(', ')}, grain declared "${grain.food}"`;
+      const sh = shownPlate(o, 'lunch', raw); add('S10 no declared grain: the plate is shown with no grain (control)', !!sh && sh.grain.food === '', `${st}: ${sh ? 'grain ' + JSON.stringify(sh.grain) : 'not shown'}`); if (!sh) continue;
+      const t = tuned(o, 'lunch', Object.assign(J(sh), { alchemy: undefined }), { protein: [], base: [] }, AL);
+      for (const [path, al] of [['plate', sh.alchemy || {}], ['tune', (t && t.alchemy) || {}]]) {
+        add('S10 no declared grain: no change that changes the grain is offered', !al.glucose && !al.express, `${st} (${path}): offered ${Object.keys(al).join(', ')}: ${JSON.stringify(Object.keys(al).map(k => al[k].note))}`);
+        add('S10 no declared grain: a change that leaves the grain alone stays (control)', !!al.protein, `${st} (${path}): offered ${Object.keys(al).join(', ')}`); }
+      const m = Object.assign(J(sh), { planned: [] }), keys = Object.keys(m.alchemy || {});
+      const P = Object.assign({ conds: o.health ? [o.health] : [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+      for (let mask = 0; mask < (1 << keys.length); mask++) { const UI = { swp: 0, swb: 0, alc: {} }; keys.forEach((k, b) => { if (mask & (1 << b)) UI.alc[k] = true; });
+        const f = A(P, { meal: 'lunch' }, UI); if (safe(() => f.plateWhy(m), 'threw')) continue; ngN++;
+        const v = f.viewOf(m), want = sum(m, keys.filter(k => UI.alc[k]).map(k => m.alchemy[k])), s2 = `${st} ${keys.filter(k => UI.alc[k]).join('+') || 'no change'}`;
+        add('S10 no declared grain: shown, logged and recomputed figures agree', ['kcal', 'protein', 'carbs', 'fats'].every(k => Math.max(0, Math.round(want[k])) === v.n[k]), `${s2}: shown ${JSON.stringify(v.n)}, recomputed ${JSON.stringify(want)}`);
+        add('S10 no declared grain: no note names a grain change', !v.notes.some(x => / goes to \d+[\s ]g| is left out/.test(x)) && v.items.every(i => items.some(([f0, g0]) => f0 === i.food && g0 === i.grams) || !items.some(([f0]) => f0 === i.food)), `${s2}: notes ${JSON.stringify(v.notes)}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}`); } }
+  add('S10 no declared grain: tap states checked', ngN >= 16, `only ${ngN} tap states on plates with no declared grain were checked`);
+  console.log(`S10 grain-protein plate: ${states} app tap states checked; part-name plates: ${partN} grain swap taps; no declared grain: ${ngN} tap states`); }
 
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
 // A first net, not a complete list: the phrasings below are the re-audit's and their variants, so they are regression cases, not held out.

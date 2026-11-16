@@ -1972,6 +1972,11 @@ function checkMeal(m,p){
     x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(raw,n.carbs,x.deltaCarbs);CUR_SLOT="";
     if(p.health==="diabetes"&&p.slot!=="snack"&&!kg)return;   /* rule 3: the grain stays, at least half of it, and no wording takes it off */
+    /* with no declared grain item nothing ties a change's grain grams to an item on the plate, so a change that changes the grain is not
+       offered: grams after other than the reply's own grain grams ("Rice" 200 g, a change to 150 g), or any grain grams after when the reply
+       gives none (it cannot be told). Grams after equal to the reply's grain grams, or 0 with no grain, change no grain and stay (S10; safety
+       audit of ba4d8dc, M2) */
+    if(!dg&&after!=null){var gg=num(m.grain&&m.grain.grams,0,1500)||0;if(gg>0?after!==gg:after>0)return;}
     if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
