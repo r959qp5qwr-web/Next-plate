@@ -380,7 +380,7 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
     dishes: dishes.map(([n, t]) => ({ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: t, contains_listed: t, with_contains: ['plain'], planned_around: [] })),
     leave: (leave || []).map(([n, t]) => ({ as_written: n, reason: 'fried', contains: t })) }), {});
   const NV = { diet: 'nonveg' }, typed = 'STARTERS\nChicken 65 240\nGobi 65 180\nChicken 65 Biryani 320\n7 Cup Barfi 90\nDal Makhani 280\nPaneer Tikka - 6 pcs 260\nTwo Tandoori Roti 60\n';
-  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken 65 Biryani', 'part of the name'],
+  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken Biryani', 'a number before a dish word goes: the owner\'s rule by position, the same kind of cost as "7 Cup Barfi" (safety audit M1; this expectation changed from "Chicken 65 Biryani")'],
       ['Chicken 65 240', ['meat'], 'Chicken 65', 'the price after a name number'], ['7 Cup Barfi', ['sweet', 'dairy'], 'Barfi', 'a number before a measure word: "7 Cup" goes, the accepted cost (owner, 16 Nov)'], ['Dal Makhani 280', ['dairy'], 'Dal Makhani', 'a price'],
       ['Paneer Tikka 6 pcs', ['dairy'], 'Paneer Tikka', 'a count'], ['Two Tandoori Roti', ['wheat', 'grain'], 'Tandoori Roti', 'a count in words']]) {
     const r = menuName(NV, typed, [[aw, tags]]);
@@ -394,7 +394,25 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   add('S8 menu names, photo: a price goes, a name number before it stays', showName('Plain Dosa 70', { price: 1 }) === 'Plain Dosa' && showName('Dal Makhani 280', { price: 1 }) === 'Dal Makhani' && showName('Chicken 65 240', { price: 1 }) === 'Chicken 65', JSON.stringify([showName('Plain Dosa 70', { price: 1 }), showName('Dal Makhani 280', { price: 1 }), showName('Chicken 65 240', { price: 1 })]));
   // a plate name still shows no number at all (the prompt asks for none)
   const pr = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(withItem('Chicken 65', ['meat']))), {});
-  add('S8 plate names show no number', !allStr(pr.meals || []).some(x => /\d/.test(x) && /chicken/i.test(x)), 'a plate item showed a number: ' + JSON.stringify(allStr(pr.meals || []).filter(x => /chicken/i.test(x)))); }
+  add('S8 plate names show no number', !allStr(pr.meals || []).some(x => /\d/.test(x) && /chicken/i.test(x)), 'a plate item showed a number: ' + JSON.stringify(allStr(pr.meals || []).filter(x => /chicken/i.test(x))));
+  // safety audit M1: the owner's rule applied by position, with no list of foods. On a typed menu, as an order and as a leave entry, a
+  // number with a word after it never shows; only a number at the end of the name may stay. Nouns no list holds ("Blorp", "Fizzle",
+  // "Kothu", "Salna") must behave like the rest, so a rule that knows only listed words cannot pass.
+  const M1 = [['Egg Curry 2 Eggs', 'Egg Curry Eggs'], ['Egg Bhurji 3 Eggs', 'Egg Bhurji Eggs'], ['Omelette 3 Egg', 'Omelette Egg'], ['Veg Thali 3 Roti Dal Rice', 'Veg Thali Roti Dal Rice'],
+    ['Mini Meals 4 Roti Rice Dal', 'Mini Meals Roti Rice Dal'], ['North Indian Thali - 4 Roti, Dal, Rice', 'North Indian Thali Roti'], ['2 Idli 1 Vada', 'Idli Vada'], ['Idli 2 Vada 1 Combo', 'Idli Vada Combo'],
+    ['Breakfast Combo Idli 2 Vada 1 Coffee', 'Breakfast Combo Idli Vada Coffee'], ['Poori Sagu 3 Poori', 'Poori Sagu Poori'], ['Mutton Biryani 1 Kg', 'Mutton Biryani'], ['Buttermilk 1 Ltr', 'Buttermilk'],
+    ['Biryani 1 Handi', 'Biryani'], ['Veg Thali 2 Person', 'Veg Thali'], ['Family Pack Biryani 4 Persons', 'Family Pack Biryani'], ['2 Chole Bhature', 'Chole Bhature'], ['Appam 2 Stew', 'Appam Stew'],
+    ['Parotta 2 Salna', 'Parotta Salna'], ['Kothu 3 Blorp Fizzle', 'Kothu Blorp Fizzle'], ['Blorp 3 Fizzle', 'Blorp Fizzle'], ['Chicken 65 Dosa', 'Chicken Dosa'], ['Gobi 65 Kebab', 'Gobi Kebab'],
+    // the owner's own examples, a price after a name number, and numbers at the end of a name, which stay by position (the owner may be asked)
+    ['Two Tandoori Roti', 'Tandoori Roti'], ['7 Cup Barfi', 'Barfi'], ['Chicken 65', 'Chicken 65'], ['Gobi 65', 'Gobi 65'], ['Tandoori Roti 2', 'Tandoori Roti 2'], ['Boiled Eggs 2', 'Boiled Eggs 2']];
+  const typedM1 = M1.map(([n], i) => n + ' ' + (120 + 10 * i)).join('\n') + '\nChicken 65 Biryani 320\nDal Fry 200\n';
+  for (const [aw, want] of M1) { const r = menuName(NV, typedM1, [[aw, ['plain']]]), r2 = menuName(NV, typedM1, [['Dal Fry', ['plain']]], [[aw, ['plain']]]), o = (r.orders || [])[0], l = (r2.leave || [])[0];
+    add('S8 menu names: the owner\'s rule by position (order)', !!o && o.name === want, `"${aw}" showed ${JSON.stringify((r.orders || []).map(x => x.name))}, not "${want}" (${JSON.stringify(r.dropped)})`);
+    add('S8 menu names: the owner\'s rule by position (leave entry)', !!l && l.name === want, `"${aw}" as a leave entry showed ${JSON.stringify(r2.leave)}, not "${want}"`);
+    for (const x of [o && o.name, l && l.name].filter(Boolean)) add('S8 menu names: no number with a word after it', !/\d[^\d]*[a-z]/i.test(x), `"${aw}" showed "${x}"`); }
+  // a name that is only a number never shows (MENUSHAPE; safety audit m5, mutation N7)
+  for (const aw of ['65', '2 3']) { const r = menuName(NV, aw + ' 180\nDal Fry 200\n', [[aw, ['plain']]]);
+    add('S8 menu names: a name that is only a number is not shown', !(r.orders || []).length && showName(aw, { price: 1 }) === '' && showName(aw + ' 180', { price: aw + ' 180' }) === '', `"${aw}": ${JSON.stringify(r.orders || [])} / "${showName(aw, { price: 1 })}"`); } }
 // every check still reads the raw name, brackets included: the canteen thali with papad and pickle is dropped for high blood pressure
 for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);

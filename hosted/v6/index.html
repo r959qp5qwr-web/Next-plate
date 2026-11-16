@@ -1758,9 +1758,8 @@ var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|p
 var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?)";
 /* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
 var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
-/* a piece word within two words; for English numbers and menu digits, a piece word or a plural noun within three */
+/* a piece word within two words */
 var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
-var CNTAHEADP="(?="+CNTSKIP+"{0,3}?[\\s-]+(?:"+CNTPIECE+"|[a-z]*[^su\\W\\d]s)\\b)";
 /* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
    a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
 var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
@@ -1776,13 +1775,15 @@ var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
 var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
-/* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Remove counts, keep names (Recommended)"; "7 Cup Barfi" losing
-   "7 Cup" is the accepted cost).
-   On a menu a number can be part of the dish's name ("Chicken 65", "Gobi 65", "Chicken 65 Biryani"), which the client reads to the waiter
-   (Critic round 38, finding 2). There a number goes only when it is a count: a measure word follows it ("Paneer Tikka 6 pcs"; "7 Cup Barfi"
-   shows "Barfi"), or it opens the name or follows "with", "and" or a comma and a piece word or plural noun follows ("2 Roti", "Dal with 2
-   phulkas"), or it is "x2" or "2x". */
-var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"(?:\\s+of\\b)?|(^|\\b(?:with|and|plus)\\s+|,\\s*)\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s+x)?"+CNTAHEADP+"|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
+/* THE MENU NUMBER RULE, kept in this one place. The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"):
+   "Remove a number only when a count, measure or food word follows it: "Two Tandoori Roti" shows as "Tandoori Roti". "Chicken 65" and
+   "Gobi 65" stay as printed. "7 Cup Barfi" loses its "7 Cup"; that is the one cost."
+   It is applied by position, with no list of foods: a number with a word after it goes, together with that word when it is a count,
+   measure or piece word ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali 2 Person", "7 Cup Barfi"), and otherwise on its own
+   ("2 Idli 1 Vada" shows "Idli Vada"; "Chicken 65 Biryani" shows "Chicken Biryani", the same kind of cost as "7 Cup Barfi"). A number at
+   the end of the name stays ("Chicken 65"; "Tandoori Roti 2"), after the price is taken off (menuPrice). "x2" and "2x" go. (Safety audit M1.) */
+var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
+var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x)?(?=[\\s-]+[a-z])|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
 /* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
    "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
    after another number it is the price ("Chicken 65 240"). */
