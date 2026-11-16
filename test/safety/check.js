@@ -411,11 +411,13 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
 // Critic round 38, finding 2: on a menu a number that is part of the dish's name stays (the client reads it to the waiter); a count or a price goes.
 // The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"): a number goes only when a count, measure or food word
 // follows it. "Two Tandoori Roti" shows "Tandoori Roti"; "Chicken 65" and "Gobi 65" stay as printed; "7 Cup Barfi" loses "7 Cup" (the accepted cost).
+// the owner's keep-list (16 Nov, option survey: "Short keep-list (Recommended)"), the test's own copy: a number shown in a menu name sits inside one
+const KEPTNUM = /\b(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;
 { const menuName = (o, typed, dishes, leave) => safe(() => plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: typed } }).check({ status: 'ok', refer_reason: 'none',
     dishes: dishes.map(([n, t]) => ({ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: t, contains_listed: t, with_contains: ['plain'], planned_around: [] })),
     leave: (leave || []).map(([n, t]) => ({ as_written: n, reason: 'fried', contains: t })) }), {});
   const NV = { diet: 'nonveg' }, typed = 'STARTERS\nChicken 65 240\nGobi 65 180\nChicken 65 Biryani 320\n7 Cup Barfi 90\nDal Makhani 280\nPaneer Tikka - 6 pcs 260\nTwo Tandoori Roti 60\n';
-  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken Biryani', 'a number before a dish word goes: the owner\'s rule by position, the same kind of cost as "7 Cup Barfi" (safety audit M1; this expectation changed from "Chicken 65 Biryani")'],
+  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken 65 Biryani', 'a keep-list name number stays wherever it stands (owner, 16 Nov, "Short keep-list (Recommended)"; this expectation changed back from "Chicken Biryani", the rule by position)'],
       ['Chicken 65 240', ['meat'], 'Chicken 65', 'the price after a name number'], ['7 Cup Barfi', ['sweet', 'dairy'], 'Barfi', 'a number before a measure word: "7 Cup" goes, the accepted cost (owner, 16 Nov)'], ['Dal Makhani 280', ['dairy'], 'Dal Makhani', 'a price'],
       ['Paneer Tikka 6 pcs', ['dairy'], 'Paneer Tikka', 'a count'], ['Two Tandoori Roti', ['wheat', 'grain'], 'Tandoori Roti', 'a count in words']]) {
     const r = menuName(NV, typed, [[aw, tags]]);
@@ -437,14 +439,16 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
     ['Mini Meals 4 Roti Rice Dal', 'Mini Meals Roti Rice Dal'], ['North Indian Thali - 4 Roti, Dal, Rice', 'North Indian Thali Roti'], ['2 Idli 1 Vada', 'Idli Vada'], ['Idli 2 Vada 1 Combo', 'Idli Vada Combo'],
     ['Breakfast Combo Idli 2 Vada 1 Coffee', 'Breakfast Combo Idli Vada Coffee'], ['Poori Sagu 3 Poori', 'Poori Sagu Poori'], ['Mutton Biryani 1 Kg', 'Mutton Biryani'], ['Buttermilk 1 Ltr', 'Buttermilk'],
     ['Biryani 1 Handi', 'Biryani'], ['Veg Thali 2 Person', 'Veg Thali'], ['Family Pack Biryani 4 Persons', 'Family Pack Biryani'], ['2 Chole Bhature', 'Chole Bhature'], ['Appam 2 Stew', 'Appam Stew'],
-    ['Parotta 2 Salna', 'Parotta Salna'], ['Kothu 3 Blorp Fizzle', 'Kothu Blorp Fizzle'], ['Blorp 3 Fizzle', 'Blorp Fizzle'], ['Chicken 65 Dosa', 'Chicken Dosa'], ['Gobi 65 Kebab', 'Gobi Kebab'],
+    ['Parotta 2 Salna', 'Parotta Salna'], ['Kothu 3 Blorp Fizzle', 'Kothu Blorp Fizzle'], ['Blorp 3 Fizzle', 'Blorp Fizzle'],
+    // the owner's short keep-list (16 Nov): these expectations changed from "Chicken Dosa", "Gobi Kebab", "Tandoori Roti 2" and "Boiled Eggs 2"
+    ['Chicken 65 Dosa', 'Chicken 65 Dosa'], ['Gobi 65 Kebab', 'Gobi 65 Kebab'],
     // the owner's own examples, a price after a name number, and numbers at the end of a name, which stay by position (the owner may be asked)
-    ['Two Tandoori Roti', 'Tandoori Roti'], ['7 Cup Barfi', 'Barfi'], ['Chicken 65', 'Chicken 65'], ['Gobi 65', 'Gobi 65'], ['Tandoori Roti 2', 'Tandoori Roti 2'], ['Boiled Eggs 2', 'Boiled Eggs 2']];
+    ['Two Tandoori Roti', 'Tandoori Roti'], ['7 Cup Barfi', 'Barfi'], ['Chicken 65', 'Chicken 65'], ['Gobi 65', 'Gobi 65'], ['Tandoori Roti 2', 'Tandoori Roti'], ['Boiled Eggs 2', 'Boiled Eggs'], ['7 Up', '7 Up']];
   const typedM1 = M1.map(([n], i) => n + ' ' + (120 + 10 * i)).join('\n') + '\nChicken 65 Biryani 320\nDal Fry 200\n';
   for (const [aw, want] of M1) { const r = menuName(NV, typedM1, [[aw, ['plain']]]), r2 = menuName(NV, typedM1, [['Dal Fry', ['plain']]], [[aw, ['plain']]]), o = (r.orders || [])[0], l = (r2.leave || [])[0];
     add('S8 menu names: the owner\'s rule by position (order)', !!o && o.name === want, `"${aw}" showed ${JSON.stringify((r.orders || []).map(x => x.name))}, not "${want}" (${JSON.stringify(r.dropped)})`);
     add('S8 menu names: the owner\'s rule by position (leave entry)', !!l && l.name === want, `"${aw}" as a leave entry showed ${JSON.stringify(r2.leave)}, not "${want}"`);
-    for (const x of [o && o.name, l && l.name].filter(Boolean)) add('S8 menu names: no number with a word after it', !/\d[^\d]*[a-z]/i.test(x), `"${aw}" showed "${x}"`); }
+    for (const x of [o && o.name, l && l.name].filter(Boolean)) add('S8 menu names: every number shown is a keep-list name number', !/\d/.test(x.replace(KEPTNUM, '')), `"${aw}" showed "${x}"`); }
   // Critic round 39, finding 3: a name number stays on the menu shapes typed in India: "Rs", "Rs." and "INR" prices, Half and Full prices,
   // the rupee sign, a dash, a tab, and an unpriced list; a price still goes ("Tea 15" on a priced menu shows "Tea")
   for (const [k, t] of [['Rs', 'Chicken 65 - Rs 240\nGobi 65 - Rs 180\nDal Tadka - Rs 200'], ['Rs.', 'Chicken 65 Rs. 240\nGobi 65 Rs. 180\nDal Tadka Rs. 200'], ['INR', 'Chicken 65 INR 240\nGobi 65 INR 180\nDal Tadka INR 200'],
@@ -456,7 +460,26 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
     add('S8 menu names: a price or a count still goes', (r.orders || []).some(o => o.name === want), `"${aw}" showed ${JSON.stringify((r.orders || []).map(o => o.name))}, not "${want}"`); }
   // a name that is only a number never shows (MENUSHAPE; safety audit m5, mutation N7)
   for (const aw of ['65', '2 3']) { const r = menuName(NV, aw + ' 180\nDal Fry 200\n', [[aw, ['plain']]]);
-    add('S8 menu names: a name that is only a number is not shown', !(r.orders || []).length && showName(aw, { price: 1 }) === '' && showName(aw + ' 180', { price: aw + ' 180' }) === '', `"${aw}": ${JSON.stringify(r.orders || [])} / "${showName(aw, { price: 1 })}"`); } }
+    add('S8 menu names: a name that is only a number is not shown', !(r.orders || []).length && showName(aw, { price: 1 }) === '' && showName(aw + ' 180', { price: aw + ' 180' }) === '', `"${aw}": ${JSON.stringify(r.orders || [])} / "${showName(aw, { price: 1 })}"`); }
+  // the owner's short keep-list (16 Nov): "Keep a number only if it is a known name number ("65", "7 Up", and the few others in recorded menus);
+  // remove every other number. A miss costs a dish its number, never shows a price." Typed (as orders, sides and leave entries, the dish copied
+  // with its price, as the model does) and as a photo. Critic round 40, finding 1: a heading or a description line, with one price for every
+  // dish; finding 4: "65" lines on an unpriced or part-priced menu, and a one-line menu. A price of 65 is never kept ("Sweet Lassi 65").
+  const D3 = [['THALI\nVeg Thali 120\nPaneer Thali 120', 'Veg Thali 120', 'Veg Thali'], ['LUNCH\nVeg Thali 120', 'Veg Thali 120', 'Veg Thali'], ['JUICES\nOrange 60\nMosambi 60\nPineapple 60', 'Mosambi 60', 'Mosambi'],
+    ['MEALS:\nVeg Meals 80\nCurd Rice 80\nSambar Rice 80', 'Curd Rice 80', 'Curd Rice'], ["Today's special\nRajma Chawal 90\nKadhi Chawal 90", 'Rajma Chawal 90', 'Rajma Chawal'],
+    ['Veg Thali 120\nServed with 2 roti, rice, dal, sabzi', 'Veg Thali 120', 'Veg Thali'], ['Chicken 65\nGobi 65', 'Gobi 65', 'Gobi 65'], ['Chicken 65\nGobi 65\nDal Tadka 160\nRoti 30', 'Chicken 65', 'Chicken 65'],
+    ['Chicken 65', 'Chicken 65', 'Chicken 65'], ['Tandoori Roti 2\nDal Fry 200', 'Tandoori Roti 2', 'Tandoori Roti'], ['DRINKS\n7 Up 40\nTea 15', '7 Up 40', '7 Up'],
+    ['DRINKS\nSweet Lassi 65\nTea 65', 'Sweet Lassi 65', 'Sweet Lassi'], ['MAINS\nMix Veg 65\nBoiled Egg 65', 'Mix Veg 65', 'Mix Veg'], ['MAINS\nMix Veg 65\nBoiled Egg 65', 'Boiled Egg 65', 'Boiled Egg'],
+    ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Chicken 555 260', 'Chicken'], ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Paneer 65 220', 'Paneer 65'], ['TIFFIN\n3 in 1 Dosa 90\n5 Star Thali 250', '5 Star Thali 250', 'Star Thali']];
+  for (const [typed, aw, want] of D3) { const r = menuName(NV, typed, [[aw, ['plain']]]), r2 = menuName(NV, typed + '\nDal Fry 200', [['Dal Fry', ['plain']]], [[aw, ['plain']]]);
+    const r3 = safe(() => plan('menu', { profile: Object.assign({}, BASE, NV), ctx: { meal: 'lunch', text: '' }, image: 'AAAA' }).check({ status: 'ok', refer_reason: 'none', dishes: [{ as_written: aw, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['plain'], contains_listed: ['plain'], with_contains: ['plain'], planned_around: [] }], leave: [] }), {});
+    const got = [(r.orders || [])[0], (r2.leave || [])[0], (r3.orders || [])[0]].map(x => x ? x.name : '(none)');
+    add('S8 menu names: the short keep-list (orders, leave entries, photo)', got.every(x => x === want), `menu ${JSON.stringify(typed)}: "${aw}" showed ${JSON.stringify(got)}, not "${want}"`); }
+  // every number shown in a menu name, side or leave entry is inside a keep-list name, whatever the shape
+  for (const [typed, aw] of D3) for (const side of ['2 Tandoori Roti 30', '1 Plain Rice 120']) { const pl = plan('menu', { profile: Object.assign({}, BASE, NV), ctx: { meal: 'lunch', text: typed + '\nTandoori Roti 30\nPlain Rice 120' } });
+    const r = safe(() => pl.check({ status: 'ok', refer_reason: 'none', dishes: [{ as_written: aw, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: side, with_kcal: 120, with_protein: 3, with_carbs: 22, with_fats: 2, with_fiber: 1, request: 'none', contains: ['plain'], contains_listed: ['plain'], with_contains: ['grain', 'wheat'], planned_around: [] }], leave: [{ as_written: aw, reason: 'rich', contains: ['plain'] }] }), {});
+    for (const x of (r.orders || []).map(o => o.name).concat((r.orders || []).map(o => (o.with || '').replace(/^\d+\s+/, '').replace(/,.*$/, '')), (r.leave || []).map(l => l.name)))
+      add('S8 menu names: every number shown is a keep-list name number', !/\d/.test(x.replace(KEPTNUM, '')), `menu ${JSON.stringify(typed)} with "${aw}" showed "${x}"`); } }
 // every check still reads the raw name, brackets included: the canteen thali with papad and pickle is dropped for high blood pressure
 for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);

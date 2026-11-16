@@ -601,40 +601,31 @@ var KATORI=/\b(?:katori|katoree)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
 var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
-/* THE MENU NUMBER RULE, kept in this one place. The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"):
-   "Remove a number only when a count, measure or food word follows it: "Two Tandoori Roti" shows as "Tandoori Roti". "Chicken 65" and
-   "Gobi 65" stay as printed. "7 Cup Barfi" loses its "7 Cup"; that is the one cost."
-   It is applied by position, with no list of foods: a number with a word after it goes, together with that word when it is a count,
-   measure or piece word ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali 2 Person", "7 Cup Barfi"), and otherwise on its own
-   ("2 Idli 1 Vada" shows "Idli Vada"; "Chicken 65 Biryani" shows "Chicken Biryani", the same kind of cost as "7 Cup Barfi"). A number at
-   the end of the name stays ("Chicken 65"; "Tandoori Roti 2"), after the price is taken off (menuPrice). "x2" and "2x" go. (Safety audit M1.) */
-var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
-var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x)?(?=[\\s-]+[a-z])|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
-/* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
-   "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
-   after another number it is the price ("Chicken 65 240"). */
-function menuPrice(h,typed){h=h.replace(/\s*(?:[-:@]\s*(?:(?:rs\.?|inr|\u20B9)\s*)?|(?:rs\.?|inr|\u20B9)\s*)\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
-  var m=/^(.*[A-Za-z].*?)((?:\s+\d+(?:\.\d+)?)+)$/.exec(h);if(!m)return h;var base=m[1],nums=m[2].trim().split(/\s+/);
-  /* Critic round 39, finding 3: the menu is priced when a line shows a price plainly (after "Rs", "INR", the rupee sign, "-", ":" or "@", or
-     after another number: "Chicken 65 240", "(Half) 180 (Full) 320"), or when half its lines end in a number and either every line does or those
-     numbers differ (a list "Chicken 65 / Gobi 65 / Dal Tadka", with lines that carry no number, ends in one number, the name's; "Idli 40 /
-     Vada 40" is priced). A price after a dash and a mark ("- Rs 240") goes whole. On a priced menu a name keeps its number when a price follows it on
-     its line, after a price mark or a size word if there is one ("Chicken 65 Rs. 240", "Chicken 65 (Half) 180"). */
-  if(typed&&typeof menuNorm==="function"){var T=menuNorm(typed),lines=String(typed).split(/\n|\s+\|\s+/).filter(function(l){return /[a-z]/i.test(l);}),   /* the menu check joins typed lines with " | " */
-      ends=lines.map(function(l){var e=/(\d+(?:\.\d+)?)\s*(?:\/-)?\s*$/.exec(l);return e?e[1]:"";}).filter(Boolean),
-      marked=lines.some(function(l){return /(?:\brs\.?|\binr|\u20B9|[-:@])\s*\d+(?:\.\d+)?\s*(?:\/-)?\s*$/i.test(l)||/\d[^\d\n]{1,14}\d+(?:\.\d+)?\s*(?:\/-)?\s*$/.test(l);}),
-      priced=marked||ends.length*2>=lines.length&&(ends.length===lines.length||ends.filter(function(x,i){return ends.indexOf(x)===i;}).length>1);
-    for(var k=nums.length;k>0;k--){var cand=base+" "+nums.slice(0,k).join(" "),cn=menuNorm(cand);if(T.indexOf(cn)>=0&&(!priced||new RegExp(cn.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?:(?:rs|inr|half|full|qtr|quarter|regular|small|medium|large|plate)\\s+)*\\d").test(T)))return cand;}
-    return base;}
-  return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}
+/* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Short keep-list (Recommended)"): "Keep a number only if it is
+   a known name number ("65", "7 Up", and the few others in recorded menus); remove every other number. A miss costs a dish its number, never
+   shows a price. "Tandoori Roti 2" becomes "Tandoori Roti"." It replaces the rule by position and the price guessing from the typed menu.
+   - The keep-list. The recorded menus under eval/ (typed and photo, as_written too) hold no number that is part of a dish's name: every
+     number in them is a price, a count or grams. So the list is the owner's two examples. "65" is kept only after a word of the dishes
+     named that way ("Chicken 65", "Gobi 65", "Paneer 65"), never on its own, where it would be a price ("Sweet Lassi 65", "Tea 65"); for
+     the same reason not after "veg" or "egg" ("Mix Veg 65", "Boiled Egg 65"), so "Veg 65" and "Egg 65" lose it, the accepted cost.
+   - Every other number goes, with its count, measure or piece word if one follows ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali
+     2 Person", "7 Cup Barfi", "3 in 1"), and the price with it ("Veg Thali 120", "Tandoori Roti 2", "Chicken 555", "5 Star Thali" shows "Star Thali").
+   - A marked price goes whole first, with its mark ("- Rs 240", "Rs. 240", "\u20B9240", "240/-", ": 240", "@ 240"). */
+var MENUKEEP=/\b(?:(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65|7[\s-]*up)\b/gi;
+var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katori\\w*|plates?|plts?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
+var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
+function menuCount(h){var keep=[],m;MENUKEEP.lastIndex=0;while((m=MENUKEEP.exec(h)))keep.push([m.index,m.index+m[0].length]);
+  return h.replace(MENUCOUNT,function(x){var at=arguments[arguments.length-2];return keep.some(function(k){return at>=k[0]&&at<k[1];})?x:" ";});}
+/* a menu name's marked price, with its mark, at the end ("Chicken 65 - Rs 240", "Dal Tadka \u20B9200", "Thali 120/-") */
+function menuPrice(h){return h.replace(/\s*(?:[-:@]\s*(?:(?:rs\.?|inr|\u20B9)\s*)?|(?:rs\.?|inr|\u20B9)\s*)\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();}
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
   /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off,
      and so is one that holds a count or a portion ("(one bowl)", "(two eggs)", "(half plate)", "(two)", "(Half)"; safety audit M2) */
   var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!countIn(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
-  if(o.price)h=menuPrice(h,typeof o.price==="string"?o.price:"");
+  if(o.price)h=menuPrice(h);
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
   h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
@@ -648,9 +639,10 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
    "no" alone is not the measure "nos": "(no ghee)" says what the food is, and "gram" alone is a pulse: "(gram flour)", "(Bengal gram)" */
 function countIn(b){return new RegExp("\\b(?:"+CNTMEAS.slice(3,-1).replace("nos?|","nos|").replace("|g|gms?|grams?","")+")\\b","i").test(b)||new RegExp("^(?:half|full|quarter|single|double|"+CNTHINDI+")$","i").test(b)||
   cntOff(cntOff(b,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
-/* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
-var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
-function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
+/* a menu name has the name shape once its keep-list numbers are read as words: every digit shown sits inside a keep-list name ("Chicken 65",
+   "7 Up"); a name that is only a number is not shown */
+var MENUSHAPE=NAMESHAPE;
+function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t.replace(MENUKEEP,function(k){return k.replace(/\d+/g,"Num");}));}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
