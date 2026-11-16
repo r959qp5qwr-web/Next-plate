@@ -3150,7 +3150,7 @@ var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",r
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
-var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=false,REMADE={};
+var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=false,REMADE={},REMADEWHY={};
 (function load(){try{
   var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
   if(!raw){old=JSON.parse(localStorage.getItem("np5")||"null");if(old)raw={p:old.p,c:old.c,k:old.k};}
@@ -3168,7 +3168,7 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
   /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
   Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
-    Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;}});}});
+    var why=typeof r.rules==="string"&&r.rules!==rules()?"answers":"app";Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;REMADEWHY[s]=why;}});}});   /* the note names the cause (Critic round 38, finding 6) */
   if(typeof raw.k==="string")KEYCODE=raw.k;
 }catch(e){}})();
 /* the code from the coach's link is kept on the phone at once, so a reload or a closed tab during set-up keeps it (Critic round 34) */
@@ -3673,7 +3673,7 @@ function renderPlate(){
       var back=btn("linkbtn","Back to my plates",null,"back");back.addEventListener("click",function(){STORE.shown[C.meal]=null;UI.sel=0;UI.alc={};render();});rl.appendChild(back);v.appendChild(rl);}
     var m=curMeal();if(plateWhy(m)){UI.alc={};UI.swp=0;UI.swb=0;}var vw=viewOf(m);   /* a tap state that no longer holds is cleared at render */
     var made=curKey()+"@"+r.at+"#"+UI.sel;if(REMADE[C.meal]===1)REMADE[C.meal]=made;if(REMADE[C.meal]&&REMADE[C.meal]!==made)delete REMADE[C.meal];   /* the note is for the plates made again only; it goes once they change (R2-B1 013-1) */
-    if(REMADE[C.meal]&&!asked){var rn=el("div","note");rn.id="remade";rn.setAttribute("role","note");rn.appendChild(ic("info"));rn.appendChild(el("p",null,"Plates were updated after an app change, so this plate is new."));v.appendChild(rn);}
+    if(REMADE[C.meal]&&!asked){var rn=el("div","note");rn.id="remade";rn.setAttribute("role","note");rn.appendChild(ic("info"));rn.appendChild(el("p",null,REMADEWHY[C.meal]==="answers"?"Your answers changed since this plate was made, so this plate is new.":"Plates were updated after an app change, so this plate is new."));v.appendChild(rn);}
     if(!PL){var bn=el("div","note");bn.id="not-sized";bn.setAttribute("role","note");bn.appendChild(ic("info"));var bt=el("div");bt.appendChild(el("p",null,"These portions are not yet sized for you."));
       var ba=btn("linkbtn","Add your "+bodyMissing().text,null,"add-body-top");ba.addEventListener("click",function(){openSheet("food",bodyMissing().at);});bt.appendChild(ba);bn.appendChild(bt);v.appendChild(bn);}
     v.appendChild(heroCard(m,vw,r));

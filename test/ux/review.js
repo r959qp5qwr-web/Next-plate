@@ -216,10 +216,12 @@ const STATES = [
     if (!r.leave.includes('dairy')) throw new Error('the changed food rule was not kept over the reload');
     if (r.stamps.some(t => !t || !t.includes('dairy'))) throw new Error('a plate made under the old rules is still kept: ' + JSON.stringify(r.stamps));
     if (/Plate made under other rules/.test(r.text)) throw new Error('a kept plate stamped with other rules is shown');
-    if (/\b(paneer|curd|ghee|raita|dahi|butter)\b/i.test(r.text)) throw new Error('a dairy food shows after dairy was left out'); }],
+    if (/\b(paneer|curd|ghee|raita|dahi|butter)\b/i.test(r.text)) throw new Error('a dairy food shows after dairy was left out');
+    // Critic round 38, finding 6: the note names the cause the client can see, their own changed answers, not an app change
+    if (/after an app change/.test(r.text)) throw new Error('the note blames an app change for the client\'s own change'); }],
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
-    async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
+    async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); if (!/after an app change/.test(await p.textContent('#remade'))) throw new Error('a plate kept from an older build is not said to be made again after an app change'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
   ['plate-leave-two', seed({ p: Object.assign({}, P, { leave: ['dairy', 'nut'] }) }), async (p, h) => { await h.plate(p); await asks(p, ASKS.slice(1)); }],
   ['plate-dial-open', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-appetite'); await h.settle(); if (await p.$eval('#dial-appetite', b => b.getBoundingClientRect().right > innerWidth)) throw new Error('the appetite pill that closes the panel is off the screen'); }],
   ['plate-swap-open', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await h.next(p, { text: '(on\u00A0your\u00A0plate)' }, 'Swap: the option on the plate'); }],
