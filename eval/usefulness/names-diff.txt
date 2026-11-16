@@ -1,24 +1,4 @@
-# names-diff: 3452 recorded model names (3218 plate path; 234 menu path, 104 with their typed menu) from 52 files under eval/; 21 change between 6b5e18d and this build.
+# names-diff: 3452 recorded model names (3218 plate path; 234 menu path, 104 with their typed menu) from 52 files under eval/; 0 change between ba4d8dc and this build.
 # Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).
 # kind | as recorded | old shown -> new shown ("" = not shown)
-plate | "Boiled egg whites and one whole egg" | "Boiled egg whites and one whole egg" -> "Boiled egg whites and whole egg"
-plate | "Egg Curry with Two Eggs" | "Egg Curry with Two Eggs" -> "Egg Curry with Eggs"
-plate | "Egg bhurji made with three whole eggs and onions" | "Egg bhurji made with three whole eggs and onions" -> "Egg bhurji made with whole eggs and onions"
-plate | "Egg bhurji made with two eggs" | "Egg bhurji made with two eggs" -> "Egg bhurji made with eggs"
-plate | "Egg curry made with three whole eggs" | "Egg curry made with three whole eggs" -> "Egg curry made with whole eggs"
-plate | "Egg curry with two eggs" | "Egg curry with two eggs" -> "Egg curry with eggs"
-plate | "Four egg whites and one whole egg" | "Four egg whites and one whole egg" -> "Egg whites and whole egg"
-plate | "Four poached whites and one egg" | "Four poached whites and one egg" -> "Poached whites and egg"
-plate | "Four whites and one whole egg" | "Four whites and one whole egg" -> "Whites and whole egg"
-plate | "One phulka with half portion dal" | "One phulka with half portion dal" -> "Phulka with dal"
-plate | "Single slice toast" | "Single slice toast" -> "Toast"
-plate | "South Indian egg podimas with two whole eggs" | "South Indian egg podimas with two whole eggs" -> "South Indian egg podimas with whole eggs"
-plate | "Steamed egg whites with one yolk" | "Steamed egg whites with one yolk" -> "Steamed egg whites with yolk"
-plate | "Tandoori egg whites and one whole egg" | "Tandoori egg whites and one whole egg" -> "Tandoori egg whites and whole egg"
-plate | "Three soft boiled eggs" | "Three soft boiled eggs" -> "Soft boiled eggs"
-plate | "Three whole eggs" | "Three whole eggs" -> "Whole eggs"
-plate | "Two eggs and two whites" | "Two eggs and two whites" -> "Eggs and whites"
-plate | "Two hard boiled eggs in peas gravy" | "Two hard boiled eggs in peas gravy" -> "Hard boiled eggs in peas gravy"
-plate | "Two soft-boiled eggs" | "Two soft-boiled eggs" -> "Soft-boiled eggs"
-plate | "Two whole eggs" | "Two whole eggs" -> "Whole eggs"
-plate | "Two whole eggs and one white" | "Two whole eggs and one white" -> "Whole eggs and white"
+
