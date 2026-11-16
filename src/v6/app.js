@@ -752,7 +752,7 @@ function orderView(v,r){
     v.appendChild(mv);}
   if(r.orders.length>1){var ah=el("div","sec-h");ah.appendChild(el("h3",null,"Also on this menu"));v.appendChild(ah);
     var wrap=el("div","alts");r.orders.forEach(function(x,i){if(i===UI.msel)return;var b=el("button","alt menu");b.type="button";b.id="order-alt-"+i;
-      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+"\u00A0· ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal\u00A0· ≈\u00A0"+x.n.protein+"\u00A0g\u00A0protein"+(x.fit!=null?"\u00A0· Close to your target:\u00A0"+x.fit+"\u00A0/\u00A0100":"")+(x.askIf?"\u00A0· "+x.askIf:"")));   /* the same condition as on the order card (Critic round 38, finding 3) */   /* a line never starts with a separator (R2-B6 091-2) */
+      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+"\u00A0· ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal\u00A0· ≈\u00A0"+x.n.protein+"\u00A0g\u00A0protein"+(x.fit!=null?"\u00A0· Close to your target:\u00A0"+x.fit+"\u00A0/\u00A0100":"")+(x.askIf?"\u00A0· "+(x.askRow||x.askIf):"")));   /* the same condition as on the order card (Critic round 38, finding 3) */   /* a line never starts with a separator (R2-B6 091-2) */
       add(b,tx,ic("chev"));b.addEventListener("click",act(null,function(){logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}));wrap.appendChild(b);});
     v.appendChild(wrap);}
   if(r.leave.length){var lh=el("div","sec-h");lh.appendChild(el("h3",null,"Leave for another day"));v.appendChild(lh);

@@ -598,6 +598,8 @@ var BANDN={Gentle:0,Moderate:1,Sharp:2};
    takes out meat, fish or egg. An order whose listed tags lose any other tag is dropped. */
 var REQKINDS=["none","jain","no_dairy_fat","no_egg","less_salt"],REQREMOVE={none:[],jain:["onion_garlic","root_veg"],no_dairy_fat:["dairy"],no_egg:[],less_salt:[]};
 var REQIF="Only if they can make it this way.";   /* shown after a request line when the order fits only because of the request */
+/* the same condition on an "Also on this menu" row, where no request line comes before it, so it names the request (Critic round 39, finding 6) */
+var REQROW={jain:"Only if they make it Jain style.",no_dairy_fat:"Only if they make it with oil instead of ghee or butter.",no_egg:"Only if they make it without egg.",less_salt:"Only if they go easy on the salt."};
 var REQTEXT={jain:"Make it Jain style, with no onion, garlic or root vegetables.",no_dairy_fat:"Make it with oil instead of ghee or butter.",no_egg:"Make it without egg.",less_salt:"Go easy on the salt."};   /* shown after "Ask the waiter:" */
 function requestBad(d){var k=REQKINDS.indexOf(d&&d.request)>=0?d.request:"none",listed=Array.isArray(d&&d.contains_listed)?d.contains_listed:null,served=Array.isArray(d&&d.contains)?d.contains:[];
   if(!listed)return k==="none"?"":"request-unlisted";   /* a request with no listed tags cannot be checked */
@@ -649,7 +651,7 @@ function checkMenu(r,p,c,pl,hooks){
     /* owner, 16 Nov, option survey ("Show, marked conditional (Recommended)"): an order that fits only because its request takes out a tag the
        client's rules bar says so, in a second engine line */
     var lst=Array.isArray(d.contains_listed)?d.contains_listed:[],srv=tagList(d.contains),bar=barredTags(p),cond=!!ask&&lst.some(function(t){return srv.indexOf(t)<0&&bar.indexOf(t)>=0;});
-    list.push({tags:dt,name:name,portion:por,ask:ask,askIf:cond?REQIF:"","with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
+    list.push({tags:dt,name:name,portion:por,ask:ask,askIf:cond?REQIF:"",askRow:cond?REQROW[d.request]||REQIF:"","with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place="";   /* not shown (safety round 5) */
