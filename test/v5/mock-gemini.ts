@@ -18,6 +18,8 @@ Bun.serve({ port: Number(Bun.env.MOCK_PORT || 8787), async fetch(req) {
     const ids = [...text.matchAll(/^- \[([a-z0-9_]+)\]/gm)].map(m => m[1]), img = b.contents[0].parts[1]?.inline_data?.data;
     which = typeof img === "string" && img.length < 12000 ? { status: "unreadable", refer_reason: "none", place: "", dishes: [], leave: [], tip: "" }
       : { ...fxMenu.reply, dishes: fxMenu.reply.dishes.map((d: any, i: number) => ({ ...d, planned_around: ids.slice(i % Math.max(1, ids.length - 1), (i % Math.max(1, ids.length - 1)) + 2) })) };
+    // a menu that says salt can be cut on request: each dish is asked for less salt, its tags unchanged (nothing barred is taken out)
+    if (/less salt on request/i.test(text) && which.dishes) which = { ...which, dishes: which.dishes.map((d: any) => ({ ...d, request: "less_salt", contains_listed: d.contains })) };
     // a Jain client: each dish is asked for Jain style, with its tags as listed (onion and garlic in) and as served (taken out)
     if (/Diet is absolute: Jain/.test(text) && which.dishes) which = { ...which, dishes: which.dishes.map((d: any) => ({ ...d, request: "jain", contains_listed: [...new Set([...(d.contains || []), "onion_garlic"])], contains: (d.contains || []).filter((t: string) => t !== "onion_garlic" && t !== "root_veg").concat((d.contains || []).every((t: string) => t === "onion_garlic" || t === "root_veg") ? ["plain"] : []) })) };
   }

@@ -285,8 +285,16 @@ const STATES = [
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.waitForSelector('#mtext', { timeout: 5000 }); await p.fill('#mtext', fx.typed); await p.click('#mgo');
     try { await p.waitForSelector('#order-card', { timeout: 20000 }); } catch (e) { throw new Error('no order card: ' + (await p.evaluate(() => (document.getElementById('said') || {}).textContent))); }
     await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
-    const t = await p.textContent('#order-card .oask'); if (!/Ask the waiter: Make it Jain style, with no onion, garlic or root vegetables\./.test(t)) throw new Error('the request line is not the engine\'s (' + t + ')'); },
+    const t = await p.textContent('#order-card .oask'); if (!/Ask the waiter: Make it Jain style, with no onion, garlic or root vegetables\./.test(t)) throw new Error('the request line is not the engine\'s (' + t + ')');
+    // owner, 16 Nov: the order fits only because of the request, so it is marked conditional
+    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')'); },
     (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],   // the fixture plates do not matter here: the plate answer is kept still
+  // owner, 16 Nov: a less-salt request takes out nothing the client's rules bar, so no condition line shows
+  ['rescue-menu-less-salt', seed({ p: Object.assign({}, P, { health: 'bp', conds: ['bp'] }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.waitForSelector('#mtext', { timeout: 5000 }); await p.fill('#mtext', fx.typed + '\nLess salt on request'); await p.click('#mgo');
+    await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
+    const r = await p.evaluate(() => ({ t: (document.querySelector('#order-card .oask') || {}).textContent || '', c: !!document.getElementById('order-cond') }));
+    if (!/Ask the waiter: Go easy on the salt\./.test(r.t)) throw new Error('the less-salt request line is missing (' + r.t + ')'); if (r.c) throw new Error('a less-salt request is marked conditional'); }],
   ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the menu order'); await closeTo(p, ['#order-card .hero-top', '#v-rescue .alts']); }],
   // round 28 (owner decision): the grain question on a menu order with diabetes, after "Yes" and after "No"
   ['menu-grain-yes', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.waitForSelector('#order-go'); await h.settle(600); await h.inView(p, '#order-card', 'the confirmed order'); }],

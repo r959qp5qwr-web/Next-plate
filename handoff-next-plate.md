@@ -147,7 +147,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 |---|---|
 | Repo / branch | r959qp5qwr-web/Next-plate (public), branch `claude/nice-hawking-307ljy` (latest pushed commit: see `git log`; the usefulness work of 15 Nov is the top of the branch) |
 | Live URL | https://next-plate-production.up.railway.app/ |
-| Railway project / service / environment | f006648a-5f51-4156-ba71-2898963cecc0 / 6825884e-02d9-4692-92ac-c098715f4af7 / 1e784c4d-0792-4bfc-a766-a474371b519b (production) |
+| Railway | the Next Plate project, its one Bun Function service, environment "production" (the live URL above). IDs are not kept in the repo: find them in the Railway dashboard or with the Railway connector's list tools. Procedure unchanged: deploy only on "Deploy."; set `PAGE_REF` and `PAGE_PATH`; check with `test/deploy/verify-live.sh`. |
 | Live now | v6 screens + v6 engine: function `hosted/v5/server.ts`, `PAGE_REF=999859516f65d2d0e93412793e326933086e025f`, page `hosted/v6/index.min.html` (deployed on the owner's "Deploy." on 14 Nov after Critic round 33; checked that day: www.nextplate.in is byte-identical to `git show 9998595:hosted/v6/index.min.html`). Everything after 9998595 on this branch (the screen-by-screen review fixes and the owner's 14 Nov decisions) is not live yet. |
 | Railway variables | GEMINI_API_KEY [secret removed: re-enter it], ACCESS_CODE [secret removed: re-enter it], DAILY_ASKS (default 150), ASKS_PER_PHONE (default 15), MODEL, FALLBACK_MODEL, THINKING=low, PHOTOS, EVAL_CODE (empty), PAGE_REF, PAGE_PATH, PAGE_FILE |
 | To put the v6 screens live | `PAGE_PATH=hosted/v6/index.min.html` and `PAGE_REF=<commit>` |
@@ -199,11 +199,12 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 5. Owner's five target choices; DAILY_ASKS (recommend 60); domain (recommend www + forwarding); hosting after the trial.
 
 ## 12. Open questions ⚠️
+- Decided (owner, 16 Nov, option survey): menu requests are shown, marked conditional ("Show, marked conditional (Recommended)"): an order that fits only because its request takes out a barred tag shows "Only if they can make it this way." after the request line; a less-salt request, or one that takes out nothing barred, shows no condition line.
+- Decided (owner, 16 Nov, option survey): two tiers for safety findings ("Two tiers (Recommended)"); see `docs/SAFETY-INVARIANTS.md`, Tiers.
 - Tier split and gates: the owner decides after the at-risk live sample (not Claude's to change).
 - Urgent-symptom first net (B1): symptom scope and wording ("If you feel unwell now, contact your doctor or emergency care.") need a clinician's review. Decided conservatively: a negated mention ("no chest pain today") is still referred; "sugar-free" and "low sugar biscuits" are not; no sugar figure is used.
 - Medicines (B3): carbohydrate consistency for clients on insulin or tablets, and reconciling grain grams against carbohydrate (needs a sourced composition table), are owner and clinician decisions; nothing built.
 - Tier 2 tracked: a regional name with a wrong but non-empty tag is still offered ("Kori rotti", "Payesh", "Poondu rasam" tagged grain only; 175 of the second audit's 380 names pass on a plate with a wrong tag, measured on this build; with the right tag 0). Promote if the at-risk sample shows mis-tagging.
-- This file still holds Railway IDs in section 8 (written before the Codex B4 note "no Railway IDs in the repo"): remove them?
 - "Deploy."? Recommended once the revised look is approved.
 - WhatsApp post wording (`docs/film/WHATSAPP-post.md`): approve or edit?
 - The five target defaults: keep? Recommended yes.

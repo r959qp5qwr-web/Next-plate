@@ -8,9 +8,22 @@ These are the owner's rules written as properties a test can check. Each holds o
 
 `test/safety/check.js` tests them on the built engine (np-core); `test/safety/codex.js` holds the Codex re-audit's probes with their assertions inverted (a defect fails); `test/rules/check.js` and the review states in `test/ux/review.js` hold the rest. Cases come from `test/safety/lexicon.json`, kept apart from the engine's own word lists: "known" names may be copied into the word lists, "heldout" names never are (the test asserts none appears in `src/v5/core.js` or `src/v6/engine.js`). `test/safety/audit-names.json` (the second audit's 380 names) and `test/safety/controls.json` (573 names the live model wrote) are kept as test data.
 
-**Tiers** (usefulness brief, `docs/review/usefulness-brief.md`, 15 Nov). Tier 1 promises block release and each has a test that fails on a regression. Tier 2 refinements go to a backlog, monitored by sampling; the owner sets the split after the at-risk live sample.
-- Tier 1: S1-S4 and S9 by declared tags (word lists as the second net); S5 and S6 on the composed state; S7 by tick and by typed text, plus the urgent-symptom first net; figures agree (15 %); S8 units, in names too; app logic (kept plates and rule changes, day change, stale replies, Builder bounds).
-- Tier 2 (tracked, not blocking now): a regional name with a wrong but non-empty tag ("Kori rotti" tagged grain only; promoted to tier 1 if the at-risk sample shows mis-tagging); look-alike letters in sentences; negation in typed text; sentence meaning; edge spellings of supplements or units; carbohydrate amounts on insulin or tablets (owner and clinician).
+## Tiers (owner, 16 Nov, option survey: "Two tiers (Recommended)")
+
+**Tier 1 blocks release.** Each has a deterministic check and a test that fails on a regression:
+- food rules held by declared tags and the word lists (S1-S4, S9);
+- the grain stays (S5);
+- the medicines floor (S6);
+- referral, ticked or typed, plus the urgent-symptom first net (S7);
+- figures agree (S13);
+- grams and kcal only (S8);
+- app logic: S10-S12, the kept-plate rule stamp, Builder bounds (S14).
+
+**Tier 2 is a watched backlog**, with a frequency note and the weekly live sample. It blocks only if seen in ordinary use. It covers counter-examples that need a scripted model reply built to break a filter, with no live occurrence:
+- odd or look-alike characters;
+- negation parsing;
+- sentence meaning;
+- a wrong but non-empty tag on a name the lists do not know (tracked: 175 of the second audit's 380 names pass with a wrong tag; `test/safety/codex.js` prints Kori rotti, Payesh and Poondu rasam as TRACKED).
 
 How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Recommended)"):
 - The model tags every plate item, swap, one-tap change, menu order and side, "leave for another day" entry and Rescue dish from a fixed list: meat, fish, egg, dairy, wheat, nuts, soya, onion_garlic, root_veg, sweet, salty_side, grain, supplement, plain. A food with none of the others declares "plain". Code drops anything whose tags break the client's rules. A missing list, an empty list (the owner's literal rule) or an unknown tag is dropped.
@@ -37,6 +50,7 @@ How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Rec
 | Menu dish, side, leave entry | 2 (matched to a menu line, raw or cleaned) | tags, word lists (raw), shape | the order, side or entry is dropped |
 | Menu portion | 1 (grams from the reply) | grams only | no portion line |
 | Menu preparation request ("Ask the waiter: ...") | 1 (a fixed line per kind from a closed list: none, jain, no_dairy_fat, no_egg, less_salt) | the order's tags as served decide; a kind may take out only the tags it can (jain: onion_garlic, root_veg; no_dairy_fat: dairy, with the word net still dropping paneer, curd or cream); nothing takes out meat, fish or egg | the order is dropped |
+| Menu condition line | 1 ("Only if they can make it this way.", owner, 16 Nov, option survey: "Show, marked conditional (Recommended)") | shown only when the request takes out a tag the client's rules bar; not for less_salt or a request that takes out nothing barred | — |
 | Menu when nothing fits | 1 ("Nothing on this menu fits your food rules (no ...). Ask what they can make for you, or name the dish you want.") | a readable menu with no fitting dish is never called unreadable | — |
 | Menu place | not shown | — | — |
 | Menu tip | 4 (one fixed line) | — | — |
