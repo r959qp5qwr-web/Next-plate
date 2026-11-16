@@ -342,8 +342,13 @@ const STATES = [
     const hitAt = (x, y) => p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y), c = e && e.closest('button,a,input,select,textarea,[role=button],[role=radio]'); return c ? (c.id || c.textContent.trim().slice(0, 30)) : ''; }, [x, y]);
     const note = () => p.evaluate(() => { const n = document.getElementById('ratio-bound'); return n ? n.textContent : ''; });
     let taps = 0, movedN = 0, offN = 0, triples = 0, unseen = 0; const ex = [];
-    const tap = async ([x, y], what) => { const a = await rects(), hit = await hitAt(x, y); await p.mouse.click(x, y); await h.settle(110); taps++;
-      const m = moved(a, await rects()); if (m > 0.5) { movedN++; if (ex.length < 8) ex.push(`${what}: the steppers moved ${Math.round(m)} px`); } return hit; };
+    // the held slot keeps its place and height through every tap once it is there (a refusal, a clearing tap, a short or a long note)
+    const slot = () => p.evaluate(() => { const e = document.getElementById('ratio-slot'); if (!e) return null; const r = e.getBoundingClientRect(); return [r.top, r.height]; });
+    let slotN = 0;
+    const tap = async ([x, y], what) => { const a = await rects(), s0 = await slot(), hit = await hitAt(x, y); await p.mouse.click(x, y); await h.settle(110); taps++;
+      const m = moved(a, await rects()); if (m > 0.5) { movedN++; if (ex.length < 8) ex.push(`${what}: the steppers moved ${Math.round(m)} px`); }
+      const s1 = await slot(); if (s0 && s1 && (Math.abs(s0[0] - s1[0]) > 0.5 || Math.abs(s0[1] - s1[1]) > 0.5)) { slotN++; if (ex.length < 8) ex.push(`${what}: the held slot went from ${Math.round(s0[1])} px at ${Math.round(s0[0])} to ${Math.round(s1[1])} px at ${Math.round(s1[0])}`); }
+      return hit; };
     const seenWhole = () => p.evaluate(() => { const n = document.getElementById('ratio-bound'); if (!n) return null; const r = n.getBoundingClientRect(), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'), sc = document.getElementById('scroll'), said = document.getElementById('said');
       const m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null, head = sc ? sc.getBoundingClientRect().top : 0;
       const floor = Math.min(innerHeight, m && m.top > r.top && m.top < innerHeight ? m.top : innerHeight, t && t.top > r.top ? t.top : innerHeight);
@@ -371,8 +376,8 @@ const STATES = [
         for (let i = 0; i < 3; i++) hits.push(await tap(pt, `after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused, tap ${i + 1} at ${t}`));
         if (hits.includes('make-ratio')) throw new Error(`a tap at ${t} after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused landed on "Plan ... with this plate"`);
         if (hits.some(x => x && x !== t)) { offN++; if (ex.length < 8) ex.push(`after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused, three taps at ${t} landed on ${hits.map(x => x || '(no control)').join(', ')}`); } } }
-    if (process.env.NP_STILL_LOG) console.log(`builder-still @${vw}${dark ? ' dark' : ''}${run.big !== 1 ? ' 130 %' : ''}: ${taps} taps, ${triples} three-tap runs, ${movedN} moved, ${offN} off, ${unseen} unseen`);
-    if (movedN || offN || unseen) throw new Error(`Builder taps: ${movedN} of ${taps} taps moved a stepper, ${offN} tap sequences (of ${triples} three-tap runs and the taps to each bound) landed on another control, ${unseen} of 8 notes not seen whole; ${ex.join('; ')}`); }],
+    if (process.env.NP_STILL_LOG) console.log(`builder-still @${vw}${dark ? ' dark' : ''}${run.big !== 1 ? ' 130 %' : ''}: ${taps} taps, ${triples} three-tap runs, ${movedN} moved, ${offN} off, ${unseen} unseen, ${slotN} slot changes, slot ${JSON.stringify(await slot())}`);
+    if (movedN || offN || unseen || slotN) throw new Error(`Builder taps: ${movedN} of ${taps} taps moved a stepper, ${slotN} taps changed the held slot, ${offN} tap sequences (of ${triples} three-tap runs and the taps to each bound) landed on another control, ${unseen} of 8 notes not seen whole; ${ex.join('; ')}`); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await h.inView(p, '#rescue-lede', 'what Rescue gives'); await h.next(p, { has: ['#dish-cap'] }, 'Rescue start');
     if ((await p.textContent('#v-rescue .panel-h h2')).trim() !== 'Eating out') throw new Error('the Rescue title is not "Eating out"'); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Hyderabadi veg biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); await h.next(p, { text: 'Moves you can make' }, 'Rescue answer'); await closeTo(p, ['#v-rescue .inst']); }],

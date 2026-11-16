@@ -3824,10 +3824,10 @@ function changedNote(){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appe
 /* the held slot keeps the height of the tallest thing it can say at this width and text size (every bound note and the "Changed." line),
    measured in its own place with its own type, and only grows while the share is being changed; it sits right on the held button */
 function holdSlot(){var s=$("ratio-slot"),mk=$("make-ratio");if(!s||!mk)return;
-  var cur=s.firstChild,cs=cur?getComputedStyle(cur):null,keep=[].slice.call(s.childNodes),texts=[];
+  var cur=s.firstChild,cs=cur?getComputedStyle(cur):null,fs=cs?cs.fontSize:"",lh=cs?cs.lineHeight:"",keep=[].slice.call(s.childNodes),texts=[];   /* read before the node is taken out */
   RATIOK.forEach(function(k){[5,-5].forEach(function(d){texts.push(boundText(k,d,true),boundText(k,d,false));});});texts.push("Changed. Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it.");
   s.style.minHeight="";var h=s.offsetHeight;keep.forEach(function(n){s.removeChild(n);});
-  texts.forEach(function(t){var q=el("p","tip"+(/^Changed/.test(t)?" chg":""),t);if(cs){q.style.fontSize=cs.fontSize;q.style.lineHeight=cs.lineHeight;}s.appendChild(q);h=Math.max(h,s.offsetHeight);s.removeChild(q);});
+  texts.forEach(function(t){var q=el("p","tip"+(/^Changed/.test(t)?" chg":""),t);if(fs){q.style.fontSize=fs;if(lh&&lh!=="normal")q.style.lineHeight=lh;}s.appendChild(q);h=Math.max(h,s.offsetHeight);s.removeChild(q);});
   keep.forEach(function(n){s.appendChild(n);});
   UI.slotH=Math.max(UI.slotH||0,Math.ceil(h));s.style.minHeight=UI.slotH+"px";
   UI.slotB=Math.round(mk.getBoundingClientRect().height)-16;s.style.bottom=UI.slotB+"px";}
