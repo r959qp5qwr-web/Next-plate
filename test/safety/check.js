@@ -416,11 +416,14 @@ add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with prot
   const hs = typeof hookSaid === 'function', appSrc = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8');
   add('c1 one rule for the reason line and Planned around', hs && (appSrc.match(/Planned around: /g) || []).length === (appSrc.match(/=hooksSaid\(|=noHooks\?\[\]:hooksSaid\(/g) || []).length, hs ? 'a "Planned around" line in app.js does not go through hooksSaid' : 'no hookSaid on this page');
   for (const o of [{ health: 'diabetes', meds: 'no' }, { health: 'diabetes', meds: 'yes' }, { health: 'none' }]) { const pp = prof(o); pp.medsUsual = medsUsual(pp, 'lunch'); const pl = planDay(pp, readFile({}), 'lunch', 5);
-    for (const h of HK) { if (/^(diabetes_grain|steady_carbs)$/.test(h.id)) continue; const said = hs && hookSaid(h.id, pp), inLine = reasonLine(platePlain(), [h], pl, pp, 'lunch').includes(h.tag);
+    for (const h of HK) { if (/^(diabetes_grain|steady_carbs)$/.test(h.id)) continue; const said = hs && hookSaid(h.id, pp), line1 = reasonLine(platePlain(), [h], pl, pp, 'lunch'), inLine = line1.includes(h.tag) || h.id === 'protein_gap' && line1.includes('catch up on protein');
       add('c1 Planned around says what the reason line says', hs && said === inLine && (o.health === 'none' || !said || !/lighter|skip|late|less/.test(h.tag)), `${JSON.stringify(o)} ${h.id}: hookSaid ${said}, in the reason line ${inLine}`); } }
   // Critic round 38, finding 7: the subtitle joins its items with one "and" ("..., buckwheat soba, bok choy and edamame")
   { const sub = safe(() => engineSub([{ food: 'Miso glazed tofu' }, { food: 'Buckwheat soba' }, { food: 'Bok choy and edamame' }]), '');
     add('subtitle: no "and ... and"', sub === 'Miso glazed tofu, buckwheat soba, bok choy and edamame' && engineSub([{ food: 'Dal' }, { food: 'Rice' }, { food: 'Salad' }]) === 'Dal, rice and salad', sub); }
+  // Critic round 38, finding 8: protein to catch up is said once, as a hook or as the sentence, never both
+  for (const prot of [5, 60]) { const pp = prof({}), pl = planDay(pp, readFile({}), 'lunch', 5), line = reasonLine(Object.assign(platePlain(), { protein: prot }), HK.filter(h => h.id === 'protein_gap' || h.id === 'goal_lose'), pl, pp, 'lunch');
+    add('reason line: catching up on protein is said once', (line.match(/catch up/g) || []).length === 1, `protein ${prot} g: "${line}"`); }
   // on a whole reply: every shown plate has a line, and it is the engine's, never the model's for_you
   const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(Object.assign(platePlain(), { for_you: 'Zqxjvoq says eat less rice.' }))), {});
   add('reason line on every shown plate', (r.meals || []).length > 0 && (r.meals || []).every(x => x.forYou && !/zqxjvoq|less rice/i.test(x.forYou)), `reason lines: ${JSON.stringify((r.meals || []).map(x => x.forYou))}`); }

@@ -2516,12 +2516,14 @@ var REASONOFF=/^(?:lighter_now|skipped_|repeat_|late_now|late_dinner|easy_)/;
    and the app's "Planned around" lines both use this one rule (final audit c1) */
 function hookSaid(id,p){return !((p.health==="diabetes"||p.medsUsual)&&REASONOFF.test(id));}
 function reasonLine(m,cited,pl,p,mn){
-  var tg=cited.filter(function(h){return hookSaid(h.id,p)&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];   /* the grain hooks: the line says the grain in a sentence of its own */
+  var T=pl&&pl.target,caught=cited.some(function(h){return h.id==="protein_gap";})&&T&&m.protein>=T.protein*0.9;
+  /* the grain hooks: the line says the grain in a sentence of its own; protein to catch up is said once, by the sentence when the figures
+     show it caught up, else as a hook (Critic round 38, finding 8) */
+  var tg=cited.filter(function(h){return hookSaid(h.id,p)&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs"&&!(caught&&h.id==="protein_gap");}).map(function(h){return h.tag;}),s=[];
   if(tg.length)s.push("Planned around "+(tg.length>1?tg.slice(0,-1).join(", ")+" and "+tg[tg.length-1]:tg[0])+".");
-  var T=pl&&pl.target;
   if(T&&T.kcal)s.push("Your "+mn+" should carry about "+T.kcal+"\u00A0kcal and "+T.protein+"\u00A0g protein; this plate gives about "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g.");
   else s.push("About "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g protein.");
-  if(cited.some(function(h){return h.id==="protein_gap";})&&T&&m.protein>=T.protein*0.9)s.push("It helps you catch up on protein today.");
+  if(caught)s.push("It helps you catch up on protein today.");
   if(p.health==="diabetes"&&m.grain&&m.grain.grams)s.push("The grain stays: about "+m.grain.grams+"\u00A0g of "+m.grain.food.toLowerCase()+".");
   return s.join(" ");}
 function checkReply6(r,p,hooks,pl,meal){
