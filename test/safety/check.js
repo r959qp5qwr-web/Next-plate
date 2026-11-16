@@ -623,6 +623,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
 // ---------- B3 (Codex re-audit): the note to clients on medicines promises only what the code enforces ----------
 { const p = readProfile(Object.assign({}, BASE, { health: 'diabetes', meds: 'yes', goal: 'lose', kg: 80 }));
   const txt = JSON.stringify(safe(() => dayTargets6(p).notes, []));
+  add('B3 the medicines note is in plain words (Critic round 38, finding 12)', !/checked to agree/.test(txt) && /add up with the protein, carbs and fats/.test(txt), 'the note says: ' + txt.slice(0, 400));
   add('B3 the medicines note promises what is enforced', /usual size/.test(txt) && /doctor sets how much carbohydrate/.test(txt) && !/even amount|same amount|consistent carb|steady carb/i.test(txt), 'the note says: ' + txt.slice(0, 400)); }
 
 // ---------- at-risk sample, fix 2: a preparation request on a menu order is a closed kind; the line is the engine's; the tags as served decide ----------
