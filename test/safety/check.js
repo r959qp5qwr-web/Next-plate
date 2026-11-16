@@ -204,6 +204,18 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
       add('S7 refer_reason', r.status === 'refer', `${kind}: refer_reason ${why} gave status ${r.status}`); }
     const r = safe(() => pl.check(replies[kind]({ refer_reason: 'none' })), {}); add('S7 refer_reason none', r.status !== 'refer', `${kind}: refer_reason none was referred`);
     add('S7 schema', !!safe(() => JSON.stringify(pl.schema).includes('refer_reason') && (pl.schema.required || []).includes('refer_reason'), false), `${kind}: the schema does not require refer_reason`); } }
+// a kidney or gurda dish on a PHOTO menu refers the client, as the typed menu does, whatever refer_reason the model gives (owner, 16 Nov:
+// "Any typed kidney word (except kidney beans/rajma) refers the client to coach or doctor, even when it is a dish on a menu"; Critic round
+// 40, for the auditor). On a dish, a side and a leave entry. Kidney beans, rajma and a gurdwara's langar are not referred (control).
+{ const photo = (dishes, leave) => { const pl = plan('menu', { profile: Object.assign({}, BASE, { diet: 'nonveg' }), ctx: { meal: 'lunch', text: '' }, image: 'AAAA' });
+    return safe(() => pl.check({ status: 'ok', refer_reason: 'none', dishes: dishes.map(([n, t, w]) => ({ as_written: n, portion: 'about 300 g', kcal: 560, protein: 26, carbs: 50, fats: 28, fiber: 6, grain_made_of: '', grain_grams: 0, with: w || '', with_kcal: w ? 120 : 0, with_protein: w ? 3 : 0, with_carbs: w ? 22 : 0, with_fats: w ? 2 : 0, with_fiber: w ? 1 : 0, request: 'none', contains: t, contains_listed: t, with_contains: w ? ['wheat', 'grain'] : ['plain'], planned_around: [] })),
+      leave: (leave || []).map(n => ({ as_written: n, reason: 'rich', contains: ['meat'] })) }), {}); };
+  const BC = ['Butter Chicken', ['meat', 'dairy']];
+  for (const [what, dishes, leave] of [['dish "Gurda Fry"', [BC, ['Gurda Fry', ['meat']]]], ['dish "Mutton Kidney Masala"', [BC, ['Mutton Kidney Masala', ['meat']]]], ['dish "Kapoora Gurday"', [BC, ['Kapoora Gurday', ['meat']]]],
+      ['side "2 Gurda Fry"', [['Butter Chicken', ['meat', 'dairy'], '2 Gurda Fry']]], ['leave entry "Gurda Fry"', [BC], ['Gurda Fry']]]) {
+    const r = photo(dishes, leave); add('S7 photo menu: a kidney or gurda dish refers', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  for (const n of ['Rajma Masala', 'Kidney Bean Curry', 'Red Kidney Beans Salad']) { const r = photo([BC, [n, ['plain']]]);
+    add('S7 photo menu: kidney beans and rajma are not referred (control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); } }
 for (const conds of [['kidney'], ['preg'], ['diabetes', 'kidney'], ['diabetes', 'preg'], ['bp', 'kidney']]) {
   const h = conds.includes('kidney') ? 'kidney' : 'preg'; const pl = plan('meals', { profile: Object.assign({}, BASE, { health: h, conds }), ctx: { meal: 'lunch' } });
   add('S7 ticked', !!(pl && pl.reply && pl.reply.status === 'refer'), `ticked ${conds.join(' + ')} was planned`); }
