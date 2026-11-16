@@ -91,7 +91,7 @@ function whyLine(m,vw,r){if(typeof reasonLine!=="function")return m.forYou||"";v
   var cited=(m.planned||[]).map(function(id){return {id:id,tag:r.hooks&&r.hooks[id]};}).filter(function(h){return !!h.tag;});
   return reasonLine({kcal:vw.n.kcal,protein:vw.n.protein,grain:gi&&gi.grams?{food:gi.food,grams:gi.grams}:{food:"",grams:0}},cited,PL,pp,mealName(C.meal).toLowerCase());}
 function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;if(v.grainMiss)return "This change works on the planned grain, so it does not go with a grain swap.";
-  var gone=!!g&&!v.items.some(function(it){return sameFood(it.food,g)||it.tag==="swapped"&&m.swaps.base.some(function(s){return s.food===it.food;});});
+  var gone=!!g&&!v.items.some(function(it){return sameName(it.food,g)||it.tag==="swapped"&&m.swaps.base.some(function(s){return s.food===it.food;});});
   return composedWhy(v.n,m,{meal:meal,grainGone:gone,plate:true});}
 function baseWhy(m,meal){var s0={alc:UI.alc,swp:UI.swp,swb:UI.swb};UI.alc={};UI.swp=0;UI.swb=0;var w=plateWhy(m,meal);UI.alc=s0.alc;UI.swp=s0.swp;UI.swb=s0.swb;return w;}
 function rescueSum(r,moves){var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber};r.hacks.forEach(function(h,k){if(!moves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;});return a;}
@@ -202,7 +202,7 @@ function viewOf(m){
 }
 /* the item a swap takes the place of: the first protein item, or for the base the declared grain item (the first carbohydrate item when
    none is declared); -1 when the plate has none, and then that swap is not offered */
-function swapAt(m,kind){var g=m.grain&&m.grain.food,at=-1;for(var i=0;i<m.items.length;i++){var it=m.items[i];if(kind==="base"?(g?sameFood(it.food,g):it.group==="carbs"):it.group==="protein"){at=i;break;}}
+function swapAt(m,kind){var g=m.grain&&m.grain.food,at=-1;for(var i=0;i<m.items.length;i++){var it=m.items[i];if(kind==="base"?(g?sameName(it.food,g):it.group==="carbs"):it.group==="protein"){at=i;break;}}
   /* a protein swap never takes the place of the declared grain item, also on a plate kept from an older build: two swaps on one item would
      log a plate that is not the one shown (S10; final audit M1) */
   return kind==="protein"&&at>=0&&at===swapAt(m,"base")?-1:at;}

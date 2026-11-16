@@ -595,7 +595,33 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
     console.log(`S10 recorded plates: ${plates.length} recorded, ${seen.size} distinct, ${shownN} shown and tuned, ${statesN} tap states checked`);
     // what "I'll have this" logs is the plate on screen: the handler logs the title and figures of the same viewOf the card was drawn from
     add('S10 the meal logged is the plate shown', /function heroCard\(m,v,r\)\{[\s\S]*?var n=v\.n[\s\S]*?logEv\("had",\{title:v\.title,kcal:n\.kcal,protein:n\.protein,carbs:n\.carbs,fats:n\.fats,fiber:n\.fiber/.test(app), 'the "had" handler does not log the shown title and figures'); }
-  console.log(`S10 grain-protein plate: ${states} app tap states checked`); }
+  // plates where one item's name is a part of another's (safety audit M3): "Sambar" and "Sambar rice", "Dal" and "Dal khichdi". The grain
+  // swap takes the place of the declared grain item (or, with none declared, the first carbohydrate item), never of the item whose name is
+  // a part of it, and that item stays on the plate at its grams. With the grain declared by its whole name, the swap is offered and lands
+  // on it (control). Without diabetes and with it.
+  let partN = 0;
+  if (A) for (const [first, fg, grainItem, mo] of [['Sambar', 'protein', 'Sambar rice', 'rice'], ['Dal', 'protein', 'Dal khichdi', 'rice and moong dal'], ['Curd', 'other', 'Curd rice', 'rice'], ['Methi', 'greens', 'Methi thepla', 'wheat']])
+    for (const declared of [grainItem, grainItem.split(' ').slice(1).join(' ')]) for (const o of [{ diet: 'veg', goal: 'hold' }, { diet: 'veg', goal: 'hold', health: 'diabetes', meds: 'no' }]) {
+      const dairy = /curd/i.test(grainItem) ? ['dairy'] : [], wheat = /thepla/i.test(grainItem) ? ['wheat'] : [];
+      const raw = { title: 'x', prepMinutes: 25, items: [{ food: first, grams: 150, group: fg, contains: dairy.length ? dairy : PT }, { food: grainItem, grams: 250, group: 'carbs', contains: ['grain'].concat(dairy, wheat) }, { food: 'Cucumber salad', grams: 100, group: 'greens', contains: PT }],
+        grain: { food: declared, made_of: mo, grams: 250 }, contains: ['grain'], kcal: 600, protein: 22, carbs: 90, fats: 16, fiber: 10, why: [], swaps: { protein: [], base: [] }, alchemy: {}, planned_around: [], for_you: '', taste: [] };
+      const sh = shownPlate(o, 'lunch', raw), st = `${JSON.stringify(o)} items "${first}", "${grainItem}", grain declared "${declared}"`;
+      if (declared === grainItem && !o.health) add('S10 part-name plates: the grain declared by its whole name is shown (control)', !!sh && sh.grain.food === grainItem, `${st}: ${sh ? 'grain ' + JSON.stringify(sh.grain) : 'not shown'}`);
+      if (!sh) continue;
+      add('S10 part-name plates: the declared grain is never the item whose name is a part of it', sh.grain.food !== first, `${st}: the engine declared "${sh.grain.food}"`);
+      const t = tuned(o, 'lunch', sh, { protein: [], base: [{ food: grainItem, grams: 250, made_of: mo, contains: ['grain'], ...z }, { food: 'Bajra khichdi', grams: 250, made_of: 'bajra and moong dal', contains: ['grain'], deltaKcal: 20, deltaProtein: 2, deltaCarbs: -4, deltaFats: 2, deltaFiber: 4 }] });
+      if (!t || t.status !== 'ok') continue;
+      const m = Object.assign(J(sh), { swaps: t.swaps, alchemy: t.alchemy || {}, planned: [] });
+      if (declared === grainItem && !o.health) add('S10 part-name plates: the grain swap is offered (control)', m.swaps.base.some(s => s.food === 'Bajra khichdi'), `${st}: base swaps ${JSON.stringify(m.swaps.base)}`);
+      if (!m.swaps.base.some(s => s.food === 'Bajra khichdi')) continue;
+      const P = Object.assign({ conds: o.health ? [o.health] : [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+      const f = A(P, { meal: 'lunch' }, { swp: 0, swb: m.swaps.base.findIndex(s => s.food === 'Bajra khichdi'), alc: {} });
+      if (safe(() => f.plateWhy(m), 'threw')) continue; partN++;
+      const v = f.viewOf(m), want = sh.grain.food || grainItem;
+      add('S10 part-name plates: the grain swap takes the place of the grain item', v.swapped.length === 1 && v.swapped[0].from === want && v.items.some(i => i.food === first && i.grams === 150) && !v.items.some(i => i.food === grainItem),
+        `${st}: swapped ${JSON.stringify(v.swapped)}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}, title "${v.title}"`); }
+  add('S10 part-name plates: grain swap taps checked', partN >= 8, `only ${partN} grain swap taps on part-name plates were checked`);
+  console.log(`S10 grain-protein plate: ${states} app tap states checked; part-name plates: ${partN} grain swap taps`); }
 
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
 // A first net, not a complete list: the phrasings below are the re-audit's and their variants, so they are regression cases, not held out.

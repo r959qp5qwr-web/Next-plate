@@ -489,10 +489,12 @@ var PULSEFLOUR=/\b(?:moong|mung|urad|chana|besan|gram|chickpeas?|masoor|toor|soy
 function isGrainMaterial(t){var s=attaNorm(String(t||"").toLowerCase()),w=words(s);
   if(PULSEFLOUR.test(s)||/\b(?:dal|daal)\s+(?:atta|flour)\b/.test(String(t||"").toLowerCase()))return false;                                             /* "besan atta", "wheat and chickpea flour": a pulse, nut or seed flour is not the grain (round 13) */
   return w.some(function(x){return GRAINMAT.test(x);})&&w.every(function(x){return GRAINMAT.test(x)||MATFILL.test(x)||MATCOMP.test(x)||(GRAIN_RX.test(x)&&x!=="thali"&&x!=="sattu");})&&!STAND.test(s);}   /* "rice and moong dal", "rice, dal and vegetables", "whole wheat bread", "idli rice"; not "oat milk", "rice bran" */
-function sameFood(a,b){a=words(a).join(" ");b=words(b).join(" ");return !!a&&!!b&&(a===b||a.indexOf(b)>=0||b.indexOf(a)>=0);}
+/* the declared grain is one item, matched by its whole name (case and punctuation aside), never by a part of it: "Sambar" is not "Sambar
+   rice" (S10; safety audit M3) */
+function sameName(a,b){a=words(a).join(" ");b=words(b).join(" ");return !!a&&a===b;}
 function declaredGrain(g,items){g=g&&typeof g==="object"?g:{};var food=showName(rawName(g.food))||quoted(g.food,60),mo=quoted(g.made_of,40);
   if(!food||!isGrainMaterial(mo))return null;
-  var it=items.filter(function(i){return sameFood(i.food,food)||!!i.rawFood&&sameFood(i.rawFood,quoted(g.food,200));})[0];
+  var it=items.filter(function(i){return sameName(i.food,food)||!!i.rawFood&&sameName(i.rawFood,quoted(g.food,200));})[0];
   if(!it||!(it.grams>=30)||!isGrain(it.rawFood||it.food))return null;
   return {food:it.food,made_of:mo,grams:it.grams};}
 /* a one-tap change keeps the grain: it names no stand-in, leaves at least half the plate's carbs, and takes no grain off */
@@ -718,7 +720,7 @@ function checkMeal(m,p){
       /* round 13: a protein swap takes the place of the first protein item. It may not take the place of the declared grain item, for any
          client at any meal: a protein swap and a grain swap would both land on that one item, and the plate logged would not be the plate
          shown (S10; final audit M1) */
-      !(kind==="protein"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
+      !(kind==="protein"&&dg&&firstProt&&sameName(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   /* one-tap changes: the engine writes the label and the note from the change's structure (the food it adds, by name, with its grams; the
