@@ -568,10 +568,19 @@ function rebalance(r,key,d){
   return u;
 }
 var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
-/* a step the bounds refuse is said under the steppers with its reason, not in a toast over the row just tapped (Critic round 38, finding 9) */
+/* a step the bounds refuse is said under the row just tapped with its reason, not in a toast over it (Critic round 38, finding 9), and
+   brought into view above the held "Plan ... with this plate" button and the tab bar: at 320 px a note under the last row sat under the
+   button for most rows (Critic round 40, finding 2) */
 function stepRatio(key,d){var u=rebalance(UI.ratio,key,d),b=RATIOB[key],nx=UI.ratio[key]+d;
-  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");render();$("said").textContent=UI.rbound;return;}
-  UI.rbound="";UI.ratio=u;UI.preset="";render();}
+  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");UI.rkey=key;render();$("said").textContent=UI.rbound;showBound();return;}
+  UI.rbound="";UI.rkey="";UI.ratio=u;UI.preset="";render();}
+/* the least scroll that shows the whole note above the held button, the tab bar and the screen's bottom edge */
+function showBound(){var n=$("ratio-bound"),s=$("scroll");if(!n||!s)return;
+  for(var i=0;i<2;i++){var r=n.getBoundingClientRect(),floor=Math.min(innerHeight,s.getBoundingClientRect().bottom),mk=$("make-ratio"),tb=$("tabs");
+    if(mk&&getComputedStyle(mk).position==="sticky"){var m=mk.getBoundingClientRect();if(m.top>r.top&&m.top<floor)floor=m.top;}
+    if(tb){var t=tb.getBoundingClientRect();if(t.top>r.top&&t.top<floor)floor=t.top;}
+    if(r.bottom<=floor-6)return;s.scrollTop+=Math.ceil(r.bottom-floor+12);}}
+function boundNote(){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));return rb;}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -595,11 +604,12 @@ function renderBuild(){
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
     mn.addEventListener("click",function(){stepRatio(x[0],-5);});pl.addEventListener("click",function(){stepRatio(x[0],5);});
-    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
+    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);
+    /* a refused step says why directly under the row tapped (Critic round 39, finding 5; round 40, finding 2). The bound named is the
+       tapped part's own, from RATIOB. */
+    if(UI.rbound&&UI.rkey===x[0])stp.appendChild(boundNote());});
   add(c,rw,stp);
-  /* a refused step says why inside the stepper card, under the rows, where the tap was: below the card it sat under the sticky button at
-     320 px (Critic round 39, finding 5). The bound named is the tapped part's own, from RATIOB. */
-  if(UI.rbound){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));c.appendChild(rb);}
+  if(UI.rbound&&!UI.rkey)c.appendChild(boundNote());
   v.appendChild(c);
   /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */
   var cur=C.ratio||MODEPLATE[C.mode];if(["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];})){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));v.appendChild(chg);}

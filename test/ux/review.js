@@ -307,6 +307,23 @@ const STATES = [
     await p.click('#preset-balanced'); await h.settle(250); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after a preset is chosen');
     for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } if (!(await p.$('#ratio-bound'))) throw new Error('no bound note after taps past the fats bound');
     await p.click('#make-ratio'); await h.settle(800); await p.click('#tab-build'); await h.settle(400); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after planning and coming back');
+    // Critic round 40, finding 2: for every row, with the row at 60 % of the screen height when the refused tap is made, the note says that
+    // row's bound and is seen whole: under the masthead, above the held "Plan ... with this plate" button, the tab bar and the screen's edge
+    const NAME = { protein: 'Protein', greens: 'Vegetables and greens', carbs: 'Grains', fats: 'Fats and seeds' };
+    for (const [k, dir] of [['protein', 'p'], ['greens', 'p'], ['carbs', 'p'], ['fats', 'p'], ['carbs', 'm'], ['protein', 'm'], ['greens', 'm'], ['fats', 'm']]) {
+      await p.click('#preset-balanced'); await h.settle(150); let seen = null;
+      for (let i = 0; i < 16 && !seen; i++) {
+        await p.evaluate((id) => { const s = document.getElementById('scroll'), b = document.getElementById(id).getBoundingClientRect(); s.scrollTop += b.top + b.height / 2 - innerHeight * 0.6; }, `st-${k}-${dir}`); await h.settle(60);
+        const y = await p.$eval(`#st-${k}-${dir}`, (b) => { const r = b.getBoundingClientRect(); return Math.round((r.top + r.height / 2) / innerHeight * 100); });
+        await p.click(`#st-${k}-${dir}`); await h.settle(150);
+        seen = await p.evaluate((nm) => { const n = document.getElementById('ratio-bound'); if (!n || n.textContent.indexOf(nm) !== 0) return null;
+          const r = n.getBoundingClientRect(), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'), sc = document.getElementById('scroll');
+          const m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null, head = sc ? sc.getBoundingClientRect().top : 0;
+          const floor = Math.min(innerHeight, m && m.top > r.top && m.top < innerHeight ? m.top : innerHeight, t && t.top > r.top ? t.top : innerHeight);
+          return { ok: r.top >= head - 0.5 && r.bottom <= floor + 0.5, top: Math.round(r.top), bottom: Math.round(r.bottom), floor: Math.round(floor), head: Math.round(head), text: n.textContent }; }, NAME[k]);
+        if (seen) seen.rowAt = y; }
+      if (!seen) throw new Error(`no bound note for ${NAME[k]} ${dir === 'p' ? '+' : '-'} after 16 taps`);
+      if (!seen.ok) throw new Error(`the bound note for ${NAME[k]} ${dir === 'p' ? '+' : '-'}, tapped with the row at ${seen.rowAt} % of the screen, is not seen whole (${JSON.stringify(seen)})`); }
     await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the state ends with the note shown; the screenshots are taken at fixed scroll stops, so a slice may show it under the sticky button
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
