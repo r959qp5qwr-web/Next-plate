@@ -645,7 +645,7 @@ function checkMenu(r,p,c,pl,hooks){
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
-      if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
+      if(!off&&(KATORI.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
       if(!off&&!figsAgree(addN(n,{deltaKcal:sf.n.kcal,deltaProtein:sf.n.protein,deltaCarbs:sf.n.carbs,deltaFats:sf.n.fats,deltaFiber:sf.n.fiber})))off="side-numbers";   /* the order with its side agrees too (A2) */
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */

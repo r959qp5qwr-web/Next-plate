@@ -1758,12 +1758,18 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
    "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
    "double" counts only before a measure word. The article "a" is never taken off alone. */
-var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
-var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?)";
+/* measure words, with the Hindi ones and katori in every form ("katoriyan", "katoree"), and weights and volumes ("Half Kg", "Ek Kilo",
+   "Hundred grams"; safety audit of ba4d8dc, M1; Critic round 40, finding 5) */
+var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|kaps?|glass(?:es)?|katori\\w*|katoree\\w*|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?|chammach\\w*|chamach\\w*|chammuch|mutth?i\\w*|karc?hhi\\w*|karchi|vatis?|kgs?|kilos?|kilograms?|litres?|liters?|ltrs?|ml|g|gms?|grams?)";
+var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|vade|wade|vadon|dose|doson|pakode|pakore|pakodon|pakodis?|pakodiy(?:an|aan|on)|idliy(?:an|aan|on)|kachoriy(?:an|aan|on)|tikkiy(?:an|aan)|golgappe|golgappas?|anday|andey|andon|luchis?|luchchis?|littis?|baatis?|batis?|theple|chille|cheele|dhokle|rotiyon|puriyon|chapatiyon|rotle|rotliy(?:an|aan)|bhakriy(?:an|aan))";
+/* (the last line: Hindi plurals in -e, -on and -iyan, and piece words the list lacked: luchi, litti, baati; safety audit of ba4d8dc, M1;
+   Critic round 40, finding 3) */
 /* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
 var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
 /* a piece word within two words */
-var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
+/* a piece word within two words, or after a word and "ki" ("Do makki ki roti", "Do bajre ki roti"); a number right before the joining word
+   is not a count ("Das ka dosa") */
+var CNTAHEAD="(?=(?:"+CNTSKIP+"{1,2}[\\s-]+(?:ki|ka|ke|di|da|de))?"+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
 /* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
    a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
 var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
@@ -1778,9 +1784,16 @@ var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNT
 var CNTTENSBEFORE=new RegExp("\\b"+CNTTENS+"[\\s-]+$","i");
 function cntOff(h,rx){return h.replace(rx,function(m){var at=arguments[arguments.length-2],str=arguments[arguments.length-1];return CNTTENSBEFORE.test(str.slice(0,at))?m:" ";});}
 var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
-var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
+/* the Hindi numbers, with the spellings "dus", "gyarah" and "barah" (safety audit of ba4d8dc, M1) */
+var CNTHINDI="ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|dus|gyarah|gyaarah|barah|baarah|aadha|adha|aadhi|adhi|dedh|dhai|dhaai";
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+of\\s+","gi");
+/* a measure word with no number that opens a name is a household measure too ("Glass buttermilk", "Bowl dal"; Critic round 40, finding 3);
+   "Cup cake", "Mug cake" and "Glass noodles" keep their names */
+var MEASBARE=/^(?:an?\s+)?(?:(?:small|medium|large|big)\s+)?(?:glass(?:es)?|bowls?|katori\w*|katoree\w*|plates?|tumblers?|handfuls?|cups?|mugs?)\s+(?!(?:cakes?|noodles|vermicelli)\b)(?=[a-z])/i;
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
+/* katori in every form ("katori", "katoris", "katoriyan", "katoree") is a household measure (S8) */
+var KATORI=/\b(?:katori|katoree)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
 var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
@@ -1822,14 +1835,14 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
   h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
      "Cup cake" and "Buddha bowl" keep their names (S8; Critic round 39, finding 4) */
-  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(/\s+/g," ").trim();
+  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(MEASBARE,"").replace(/\s+/g," ").trim();
   var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
+  if(KATORI.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
   return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
 /* a bracket holds a count or a portion when the count rules would change it, or it names a measure, a katori or a size (S8; safety audit M2);
-   "no" alone is not the measure "nos": "(no ghee)" says what the food is */
-function countIn(b){return new RegExp("\\b(?:katoris?|"+CNTMEAS.slice(3,-1).replace("nos?|","nos|")+")\\b","i").test(b)||/^(?:half|full|quarter|single|double)$/i.test(b)||
+   "no" alone is not the measure "nos": "(no ghee)" says what the food is, and "gram" alone is a pulse: "(gram flour)", "(Bengal gram)" */
+function countIn(b){return new RegExp("\\b(?:"+CNTMEAS.slice(3,-1).replace("nos?|","nos|").replace("|g|gms?|grams?","")+")\\b","i").test(b)||new RegExp("^(?:half|full|quarter|single|double|"+CNTHINDI+")$","i").test(b)||
   cntOff(cntOff(b,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
 /* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
 var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
@@ -1967,7 +1980,6 @@ function checkMeal(m,p){
   return {meal:{title:title,subtitle:sub,cuisine:"",minutes:num(m.prepMinutes,0,180)||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:[],swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
-var KATORI=/\bkatoris?\b/i;
 /* the plate title and subtitle the engine writes from the checked items (names only) */
 function engineTitle(items){var pr=items.filter(function(i){return i.group==="protein";})[0]||items[0],gr=items.filter(function(i){return i!==pr&&(i.group==="carbs"||i.group==="other");})[0]||items.filter(function(i){return i!==pr;})[0];
   var t=pr.food+(gr?" with "+gr.food.toLowerCase():"");return t.length>70?pr.food.slice(0,70):t;}
@@ -2000,7 +2012,7 @@ function ownWordsOut(title,typed){var w=String(typed||"").toLowerCase().match(/[
    its place, is dropped, as the menu drops such a portion or ask (engine.js checkMenu); a move that leaves part of the grain stays */
 /* grams and kcal only (owner): a portion or move in katori or phulka, or in a bowl, cup, glass or ladle with no grams, is not shown, as the
    menu clears such a portion (second screen review, R2-B6 081-2) */
-var HOUSEU=/\b(?:katoris?|katori|phulkas?|fulkas?)\b/i,VESSEL=/\b(?:bowls?|cups?|glass(?:es)?|ladles?|handis?|tumblers?)\b/i,GRAMS=/\d\s*(?:g|gm|grams?|ml)\b/i;
+var HOUSEU=/\b(?:katori\w*|katoree\w*|phulkas?|fulkas?)\b/i,VESSEL=/\b(?:bowls?|cups?|glass(?:es)?|ladles?|handis?|tumblers?)\b/i,GRAMS=/\d\s*(?:g|gm|grams?|ml)\b/i;
 function houseUnit(t){return HOUSEU.test(t)||VESSEL.test(t)&&!GRAMS.test(t);}
 /* S5 for Rescue: a move that gives the grain to someone else, puts something else in its spot, or wraps the food in a leaf takes the grain
    off, whatever its wording ("Give the rice to your family", "Let the kids have the chawal", "Have salad in the naan's spot", "Wrap the
@@ -2904,7 +2916,7 @@ function checkMenu(r,p,c,pl,hooks){
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
-      if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
+      if(!off&&(KATORI.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
       if(!off&&!figsAgree(addN(n,{deltaKcal:sf.n.kcal,deltaProtein:sf.n.protein,deltaCarbs:sf.n.carbs,deltaFats:sf.n.fats,deltaFiber:sf.n.fiber})))off="side-numbers";   /* the order with its side agrees too (A2) */
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
