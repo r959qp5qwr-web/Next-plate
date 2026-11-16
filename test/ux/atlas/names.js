@@ -173,5 +173,8 @@ module.exports.push(
   S(X, 'rescue-urgent', 'Rescue: an urgent symptom typed, referred with the line to get help now', 'Rescue: type "chest pain after lunch" and send.'),
   S(X, 'menu-urgent', 'Menu: an urgent symptom typed with the menu, referred with the line to get help now', 'Rescue, Type the menu: start it with "chest pain after lunch", then read it.'),
   S(X, 'sheet-log-urgent', 'Sheet: I had something else, an urgent symptom typed', 'I had something else: type "chest pain after lunch, I had dal and rice" and send.'));
+module.exports.push(
+  S(P, 'plate-planned-diabetes', 'Plate, diabetes: Planned around leaves out "lighter"', 'Diabetes: a plate planned around a lighter meal after earlier ones and protein to catch up.'),
+  S(M, 'menu-planned-diabetes', 'Menu, diabetes: Planned around leaves out "lighter"', 'Diabetes: read a menu whose order is planned around a lighter meal and protein to catch up.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

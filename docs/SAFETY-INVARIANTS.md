@@ -42,7 +42,7 @@ How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Rec
 | Plate title, subtitle | 1 (from the item names) | items checked first | the plate is not offered |
 | Plate items, swaps | 2 | tags, word lists (raw), name shape after cleaning | the plate or swap is not offered |
 | Why this plate, today | 1 (cited hooks, figures against the meal's target, the grain kept with diabetes, protein caught up only when the figures show it; never lighter, less or skip with diabetes or medicines) | written from checked fields | always shown |
-| Planned around | 1 (hook tags the plate cited, from the offered list) | an uncited or unknown hook is dropped | nothing |
+| Planned around | 1 (hook tags the plate or order cited, from the offered list) | an uncited or unknown hook is dropped; with diabetes or medicines a "lighter", "skip", "late" or "less" hook is not said, by the reason line's own rule (`hookSaid`; final audit c1) | nothing |
 | Taste notes | single words from a closed list (`TASTEW`) | closed list | no taste notes |
 | Cuisine, pairing tip, model for_you, reply read line | not shown | — | — |
 | One-tap change label and note | 1 (the food it adds is origin 2) | tags, word lists, grain kept, usual size, figures agree | the change is not offered |

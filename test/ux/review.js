@@ -102,6 +102,10 @@ const plateOnScreen = (p) => p.evaluate(() => { const t = document.querySelector
   return { title: t + (sx ? ', ' + sx.textContent : ''), kcal: +document.getElementById('h-k').textContent, protein: +document.getElementById('h-p').textContent, carbs: +document.getElementById('h-c').textContent, fats: +document.getElementById('h-f').textContent,
     items: [...document.querySelectorAll('.measures li')].map(l => l.querySelector('.food b').textContent), list: [...document.querySelectorAll('.measures li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()),
     notes: [...document.querySelectorAll('.modlog li')].map(l => l.textContent) }; });
+// *-planned-diabetes (final audit c1): a plate and an order that cite a "lighter" hook and a protein hook, for a client with diabetes
+const PLANHOOKS = { lighter_now: 'lighter after earlier meals', protein_gap: 'protein to catch up' };
+const PLANPLATE = Object.assign(JSON.parse(JSON.stringify(GRAINPLATE)), { hooks: PLANHOOKS }); PLANPLATE.meals[0].planned = ['lighter_now', 'protein_gap'];
+const PLANMENU = Object.assign(JSON.parse(JSON.stringify(MENUCLOSE)), { hooks: PLANHOOKS }); PLANMENU.orders[0].planned = ['lighter_now', 'protein_gap'];
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
 const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
@@ -609,6 +613,13 @@ const STATES = [
     await p.click('#alc-glucose'); await h.settle(600); const scr = await plateOnScreen(p);
     const bad = scr.notes.flatMap(n => [...n.matchAll(/([A-Z][A-Za-z ]+?) goes to (\d+)[\s\u00A0]g/g)]).filter(g => !scr.list.some(l => l.includes(g[1]) && new RegExp('^' + g[2] + '\\s*g').test(l)));
     if (prot || bad.length || !scr.notes.length) throw new Error('the change note names what is not on the plate (' + scr.notes.join(' ') + ' / ' + scr.list.join(' | ') + (prot ? '; a protein swap is offered on the grain item' : '') + ')'); }, (p) => p.route('**/api/meals', J(200, KHPLATE))],
+  // c1 (final audit): with diabetes the "Planned around" line leaves out the hooks the reason line leaves out ("lighter", "skip", "late")
+  ['plate-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#planned', { timeout: 20000 });
+    const t = await p.textContent('#planned'), w = await p.textContent('#why-line').catch(() => '');
+    if (/lighter/i.test(t) || !/protein to catch up/.test(t) || /lighter/i.test(w)) throw new Error('with diabetes the plate is planned around "lighter" (' + t + ' / ' + w + ')'); }, (p) => p.route('**/api/meals', J(200, PLANPLATE))],
+  ['menu-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, PLANMENU));
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-planned', { timeout: 20000 }); await h.settle();
+    const t = await p.textContent('#order-planned'); if (/lighter/i.test(t) || !/protein to catch up/.test(t)) throw new Error('with diabetes the order is planned around "lighter" (' + t + ')'); }],
   // S11: swaps and changes made for answers changed during the wait are not shown
   ['plate-tune-stale', seed(), async (p, h) => { await h.plate(p);
     const k0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').store || {}).shown.lunch);

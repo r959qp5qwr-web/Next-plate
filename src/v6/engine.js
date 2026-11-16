@@ -287,8 +287,11 @@ SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},re
    keeps with diabetes, and protein caught up only when the figures show it. Nothing in it is a claim the figures do not carry. With diabetes
    or on medicines it never says lighter, less or skip: those hooks are not named in the line. */
 var REASONOFF=/^(?:lighter_now|skipped_|repeat_|late_now|late_dinner|easy_)/;
+/* whether a hook may be named to this client: with diabetes or on medicines, not one that says lighter, less, late or skip. The reason line
+   and the app's "Planned around" lines both use this one rule (final audit c1) */
+function hookSaid(id,p){return !((p.health==="diabetes"||p.medsUsual)&&REASONOFF.test(id));}
 function reasonLine(m,cited,pl,p,mn){
-  var med=p.health==="diabetes"||p.medsUsual,tg=cited.filter(function(h){return !(med&&REASONOFF.test(h.id))&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];
+  var tg=cited.filter(function(h){return hookSaid(h.id,p)&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];   /* the grain hooks: the line says the grain in a sentence of its own */
   if(tg.length)s.push("Planned around "+(tg.length>1?tg.slice(0,-1).join(", ")+" and "+tg[tg.length-1]:tg[0])+".");
   var T=pl&&pl.target;
   if(T&&T.kcal)s.push("Your "+mn+" should carry about "+T.kcal+"\u00A0kcal and "+T.protein+"\u00A0g protein; this plate gives about "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g.");

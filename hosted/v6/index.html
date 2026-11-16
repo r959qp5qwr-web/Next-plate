@@ -2509,8 +2509,11 @@ SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},re
    keeps with diabetes, and protein caught up only when the figures show it. Nothing in it is a claim the figures do not carry. With diabetes
    or on medicines it never says lighter, less or skip: those hooks are not named in the line. */
 var REASONOFF=/^(?:lighter_now|skipped_|repeat_|late_now|late_dinner|easy_)/;
+/* whether a hook may be named to this client: with diabetes or on medicines, not one that says lighter, less, late or skip. The reason line
+   and the app's "Planned around" lines both use this one rule (final audit c1) */
+function hookSaid(id,p){return !((p.health==="diabetes"||p.medsUsual)&&REASONOFF.test(id));}
 function reasonLine(m,cited,pl,p,mn){
-  var med=p.health==="diabetes"||p.medsUsual,tg=cited.filter(function(h){return !(med&&REASONOFF.test(h.id))&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];
+  var tg=cited.filter(function(h){return hookSaid(h.id,p)&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];   /* the grain hooks: the line says the grain in a sentence of its own */
   if(tg.length)s.push("Planned around "+(tg.length>1?tg.slice(0,-1).join(", ")+" and "+tg[tg.length-1]:tg[0])+".");
   var T=pl&&pl.target;
   if(T&&T.kcal)s.push("Your "+mn+" should carry about "+T.kcal+"\u00A0kcal and "+T.protein+"\u00A0g protein; this plate gives about "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g.");
@@ -3219,8 +3222,11 @@ function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
   return "";}
 /* "Why this plate, today", rebuilt from the plate as it now is (after any swap or change), by the engine's own reasonLine: the figures and the
    grain it names are always the ones on screen (usefulness brief) */
+function hookProf(meal){return {health:has("diabetes")?"diabetes":"none",medsUsual:medsUsual(profileOut(),meal)};}
+/* the "Planned around" lines leave out the hooks the reason line leaves out, by the engine's one rule (final audit c1) */
+function hooksSaid(ids,meal,tags){var pp=hookProf(meal);return ids.filter(function(id){return typeof hookSaid!=="function"||hookSaid(id,pp);}).map(function(id){return tags&&tags[id];}).filter(Boolean);}
 function whyLine(m,vw,r){if(typeof reasonLine!=="function")return m.forYou||"";var at=swapAt(m,"base"),gi=at>=0?vw.items[at]:null;
-  var pp={health:has("diabetes")?"diabetes":"none",medsUsual:medsUsual(profileOut(),C.meal)};
+  var pp=hookProf(C.meal);
   var cited=(m.planned||[]).map(function(id){return {id:id,tag:r.hooks&&r.hooks[id]};}).filter(function(h){return !!h.tag;});
   return reasonLine({kcal:vw.n.kcal,protein:vw.n.protein,grain:gi&&gi.grams?{food:gi.food,grams:gi.grams}:{food:"",grams:0}},cited,PL,pp,mealName(C.meal).toLowerCase());}
 function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;if(v.grainMiss)return "This change works on the planned grain, so it does not go with a grain swap.";
@@ -3517,7 +3523,8 @@ function waitLine(text){var p=el("p","ans-read wait"),k=text.lastIndexOf(" ");p.
 function waitCard(text,label,noHooks,more){
   var c=el("article","plate wait"),h=el("div","hero"),band=el("div","band");band.appendChild(vine(false));band.appendChild(vine(true));h.appendChild(band);
   var main=el("div","hero-main");main.appendChild(thali([],0,label||"Your plate is being planned",C.meal));var tx=el("div");tx.appendChild(waitLine(text));tx.appendChild(el("p","tsub","It can take a minute or so."+(more?" "+more:"")));
-  if(HOOKS.length&&!noHooks)tx.appendChild(el("p","planned","Planned around: "+HOOKS.slice(0,3).map(function(h){return h.tag;}).join("\u00A0· ")));main.appendChild(tx);h.appendChild(main);c.appendChild(h);return c;
+  var ht=noHooks?[]:hooksSaid(HOOKS.map(function(h){return h.id;}),C.meal,HOOKS.reduce(function(a,h){a[h.id]=h.tag;return a;},{})).slice(0,3);
+  if(ht.length)tx.appendChild(el("p","planned","Planned around: "+ht.join("\u00A0· ")));main.appendChild(tx);h.appendChild(main);c.appendChild(h);return c;
 }
 function loggedCard(s){
   var c=el("article","card logged"),nm=mealName(s.meal),kind={had:"from your plates",other:"your own meal",rescued:"eaten out",ordered:"ordered from the menu",skipped:"skipped"}[s.kind];
@@ -3555,7 +3562,7 @@ function heroCard(m,v,r){
   if(tastes.length){var ts=el("p","taste");ts.setAttribute("aria-label","Tastes "+tastes.join(", "));tastes.forEach(function(w){ts.appendChild(el("span",null,w));});txt.appendChild(ts);}
   txt.appendChild(el("h2",m.title.length>34?"long":null,m.title));if(v.suffix)txt.appendChild(el("p","suffix",v.suffix));
   txt.appendChild(el("p","sub",engineSub(v.items)));
-  var tags=(m.planned||[]).map(function(id){return r.hooks&&r.hooks[id];}).filter(Boolean);
+  var tags=hooksSaid(m.planned||[],r.meal||C.meal,r.hooks);
   if(tags.length){var pa=el("p","planned");pa.id="planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode("\u00A0· "));pa.appendChild(el("span",null,t));});txt.appendChild(pa);}
   main.appendChild(txt);
   var rd=el("div","read4 six");
@@ -3840,7 +3847,7 @@ function orderView(v,r){
     var x=el("span","v"+(cls?" "+cls:""));if(unit)x.appendChild(el("i","apx","≈"));x.appendChild(el("span","mono",val));if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   /* with a move ticked each figure shows the change, as the score does: as served, then after the move */
   add(rd,cell("Energy",String(a.kcal),"kcal",null,o.n.kcal),cell("Protein",String(a.protein),"g",null,o.n.protein),cell("Sugar rise",band,null,bandCls(band),o.rise));var rw=el("div","rw ord");rw.appendChild(rd);card.appendChild(rw);
-  var tags=(o.planned||[]).map(function(id){return r.hooks[id];}).filter(Boolean);
+  var tags=hooksSaid(o.planned||[],r.meal||C.meal,r.hooks);
   if(tags.length){var pa=el("p","planned");pa.id="order-planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode("\u00A0· "));pa.appendChild(el("span",null,t));});card.appendChild(pa);}
   var go=btn("btn primary","I'll order this","check","order-go");
   go.addEventListener("click",act(function(){var w=composedWhy(orderSum(r,o,UI.mmoves),o.n,{meal:r.meal});if(w)UI.mmoves={};return w;},function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+String(o["with"]).replace(/, (\u2248\u00A0\d+\u00A0g)$/," ($1)"):"")+(share?" ("+share+")":""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
