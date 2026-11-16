@@ -1,194 +1,255 @@
 VERDICT: FAIL
-BUILD: 88d93f0f1ca6770ad235fbd21ad06772232a05fa02ca2b89b2d04c610ff03781
+BUILD: 2909c1abe5cbeefcbad8c97e81640bf5e9f3b34b29b16258b13add318a69ad9c
 
-Critic round 38.
-- Tree: branch claude/nice-hawking-307ljy at 6b5e18d. Diff judged: 6febc1a..6b5e18d (6febc1a is the live build).
-- During the round the safety auditor committed 0e423e8. It changes only test/safety/AUDIT.md, which the fingerprint leaves out.
-- The fingerprint was 88d93f0f...3781 at the start, halfway through, and after all measuring and probing.
-- I did not read AUDIT.md. Its commit subject mentions "word counts in names"; I checked that issue myself (finding 1).
+Critic round 39.
+- Tree: branch claude/nice-hawking-307ljy at eddb00b. Fixes judged: 6b5e18d..eddb00b. Verdict is on the whole app against live 6febc1a.
+- During the round the safety auditor committed 425f898. It changes only test/safety/AUDIT.md, which the fingerprint leaves out.
+  I did not read AUDIT.md.
+- The fingerprint was 2909c1ab...ad9c at the start, midway, and after all measuring and probing. It is unchanged.
 
 Why FAIL:
-- One MAJOR finding (1): owner rule 2, which is an automatic FAIL on its own.
-- Three MINOR findings (2-4).
-- Every measured check passed.
+- One MAJOR finding (1): the after-meal rise band "Moderate" is cut to "Modera" on the plate card at 320 px, and runs past its cell at 360 px.
+  It is carried over from live, not new, but it is on the main screen for the narrowest phones this audience holds.
+- Four MINOR findings (2-5).
+- Every measured check passed, apart from the words check, which failed only on my own round 38 file (see Measured).
 
 ## Measured (run by me on this tree)
-- npm run review: exit 0. 9 runs, 159 states, 1,431 checks, no violations (report 2026-11-16T04:31Z).
-  - My first run was stopped at about 30 minutes by my own tool's background time limit, not by a check; the browser closed under it.
-  - The second run, with a longer limit, passed first time. In that one complete run I saw no network flake and no menu-photo-error
-    wait failure. One run cannot show whether a flake recurs.
-- npm run drill: exit 0, "every planted fault was caught". This is a separate run, not the drill line printed inside the review log.
-- npm run rules: exit 0 on hosted/v6/index.html, hosted/v6/index.min.html and hosted/v5/index.min.html.
-  621 ok lines, no FAIL; 833 names that are not a grain and 612 true grains.
-- npm run words: exit 0. No banned words outside the 42 listed exceptions.
+- npm run review: exit 0. 9 runs, 166 states, 1,494 checks, no violations (report 2026-11-16T08:15Z). It ran in the background,
+  in one go, with no stop. test/ux/out/report.md names no unreached state and no page error.
+- npm run drill: exit 0, "every planted fault was caught" (a separate run from the drill line inside the review).
+- npm run rules: exit 0 on all three built pages, "every rule check holds".
 - npm run films: exit 0. All four films have picture from 0 s, no decode errors and no 7 s freeze, at -16.7 to -16.8 dB.
   No film or post changed in this diff.
-- test/ux/allow.json: empty ([]).
-- test/words/allow.json: unchanged since 6febc1a.
-  - Every entry is the rule itself, a quoted record, a web address, or a constant name in the owner's own file.
-  - Every reason holds up.
+- npm run words: before I wrote this file it failed with 3 hits, all in my own round 38 CRITIC.md (lines 57, 62, 110). None were in the
+  build, its notes or AUDIT.md. After I wrote this file it passes: exit 0, no banned words outside the listed exceptions.
+- test/ux/allow.json: empty ([]). test/words/allow.json: unchanged since 6febc1a.
+- Probes (scratchpad, read and measure only):
+  - name and menu probes through showName, checkMeal, checkMenu and noFitLine, run on hosted/v6/index.html, index.min.html and
+    hosted/v5/index.min.html. All three give the same results.
+  - a browser probe (r39/probe.js) on index.min.html and on the live page from 6febc1a. It measures the band cell and the Builder note.
+
+## Round 38 findings, checked
+- MAJOR 1 (counts as words): fixed for every form I raised.
+  - "Two phulka", "Teen phulka", "Do roti", "Do aloo paratha", "Half plate biryani", "One katori dal", "Two rotis with dal",
+    "Buttermilk one glass", "A couple of rotis", "Ek plate poha" all lose the count.
+  - "Three bean salad", "Five spice tofu", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "One-pot khichdi" keep their names.
+  - Other forms remain (finding 4).
+- MINOR 2 (menu names lose their numbers): partly fixed. It still happens on common typed menus (finding 3).
+- MINOR 3 (condition on "Also on this menu", and the tick): fixed.
+  - Each conditional row ends "· Only if they can make it this way."
+  - On a conditional order the "Jain" chip has no tick.
+  - The rows were seen at 320, 360, 390 and 412, light and dark, and at 360 px with 130 % text. The unticked chip was seen at 320
+    light and dark and at 412 light. One cosmetic remains (finding 6).
+- MINOR 4 (get-help line order and weight): fixed on all four surfaces.
+  - On the plate ask, Rescue and the menu it is the heading, with the referral under it.
+  - In the log it is the bold first line of a referral note, not an error note.
+  - Where I saw it:
+    - plate ask: 320, 360, 390 and 412 dark, 320 and 390 light, and 130 %;
+    - Rescue: 320 light, and 360, 390 and 412 dark;
+    - menu: 320 and 412 light, and 360, 390 and 412 dark;
+    - log: 320 light and dark, 412 light, and 130 %.
+- Cosmetic 5 (nothing-fits line): fixed. The state shows the engine's own line. One wording cosmetic remains (finding 7).
+- Cosmetic 6: fixed. plate-rules-reload says "Your answers changed since this plate was made, so this plate is new."
+  plate-old-saved keeps the app-change wording. Plates from the live build carry no stamp, so ship day shows the app-change note.
+- Cosmetic 7: fixed. The subtitle reads "Miso glazed tofu, buckwheat soba, bok choy and edamame".
+- Cosmetic 8: fixed. The reason line says protein once.
+- Cosmetic 9 (Builder bound): the toast is gone, but the new note has defects (finding 5).
+- Cosmetic 11: fixed. On the log referral "Count it" is not the main button, and "It is counted, not judged" is not shown.
+  A side effect is finding 8.
+- Cosmetic 12 (medicines note): the new wording is "the calories shown add up with the protein, carbs and fats". That is plain.
+  I read it in params.js; no review state shows it.
+- Not fixed on purpose. I judged each screen without the examples:
+  - "Grains" in the Builder is clear on its own.
+  - "Ask which grain they have, then name your dish with it." (menu-grain-no) follows "You said tandoori roti is not available".
+    In that context it reads clearly.
+  - The placeholders "the dish, as on the menu" and "What you ate, and how much" say what to type.
+  - The BP cook line without "pickle and papad": the BP note on the plate still names them.
+  - None of these leaves a screen unclear. Photo menus showing "Chicken" for "Chicken 65" is an accepted cost.
 
 ## Findings, most serious first
 
-1. MAJOR (owner rule 2): household counts written as words reach the plate and the menu card.
-   - What is wrong:
-     - showName (src/v5/core.js:561) removes only counts written in digits.
-     - The prompt now forbids digits in names (nameText, core.js:611: "plain letters, spaces and hyphens only: no digits"), which steers
-       the model toward words.
-   - Measured on the built np-core, through checkMeal (the fixture plate with its grain item renamed):
-     - "Two phulka" is kept. The item shows "Two phulka" beside its grams, and the title is "Charred paneer tikka with two phulka".
-     - "Teen phulka", "Do roti" and "Two rotis with dal" are kept the same way.
-     - "Half plate biryani" is kept, with "plate" as the measure.
-   - Through checkMenu: the orders "Two phulka" and "Half plate biryani" are offered.
-   - The katori forms ("One katori dal", "A bowl of rajma") are dropped as "shape".
-   - Probe script: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/words.js.
+1. MAJOR: the after-meal rise band "Moderate" is cut off on the plate card.
+   - Surface: Plate, "Nutrients in this plate", the Sugar rise cell, on any plate whose band is Moderate.
+   - Evidence: 320-light/plate-random-combos-2.png and 320-dark/plate-random-combos-2.png show "Modera".
+     360-light/plate-random-combos-2.png and 360-dark/plate-random-combos-2.png show the final "e" cut at the ticket edge.
+   - Measured (r39/probe.js, plate of 700 kcal and 84 g carbs, diabetes profile):
+     - 320 px: the word runs from x 215 to 302 in a cell from 207 to 287, so 15 px past the cell. The .v box is scrollWidth 86 in
+       clientWidth 62. On screen it is cut at about the cell's right edge. I did not identify the clipping element: .hero, the plate
+       card, #scroll and #app have overflow hidden, no clip-path or contain, and the page styles have no mask.
+     - 360 px: 86 in 75, the word ending 1 px past the cell.
+     - 390, 412 and 360 at 130 %: it fits.
+     - Live 6febc1a measures the same, so this is carried over. The cell's styles have not changed since live
+       (legible.css:44, 50, 142-144, 197: nowrap with a 22 px band face in a three-column grid).
    - Why it matters:
-     - The owner's rule is grams and kcal only, never phulka as a unit. "80 g Two phulka" counts in phulkas.
-     - It contradicts the claim that no household counts such as "2 roti" show.
-   - Criteria: owner rule 2, A17 (B7).
+     - The band is the one sugar signal the owner allows (rule 2: Gentle, Moderate, Sharp), and it matters most to clients with diabetes.
+     - "Modera" is not a word. Older iPhones (320) and small Androids (360) are this audience's phones.
+     - "Gentle" fits (seen). "Sharp" is shorter; I did not see it in this cell.
+   - Criteria: A2, B3, owner rule 2 (the band must be readable to be a band).
+   - Smallest correction: let the band value wrap or shrink inside its cell, for example .read4 .v.band-m{white-space:normal} or a
+     smaller clamp. Or use the two-column grid that the container query already gives at 14.9em, at 320 and 360 too.
+     Then add a review state with a Moderate plate at 320 that fails on this build.
+
+2. MINOR: the measured clip check (A2) does not see finding 1, and passes it.
+   - What is wrong: review.js:719-724 skips a box whose children are blocks ("a box of boxes"). It checks only a texty element's own
+     overflow when that is hidden.
+     - Here .v is a flex row whose only child (span.mono) is blocked, so .v is skipped.
+     - The span is as wide as its text, so it does not overflow its own box.
+     - The overflow-hidden ancestors (.hero and up) have no text of their own.
+   - Result: 1,494 checks and "No violations" while a band word is cut at 320 light and dark.
+     plate-random-combos-2 is in the gate set, so the state was reached and screened.
+   - Why it matters: the gate claims A2 coverage for this class of defect, and the drill's planted "run-on figure" does not
+     use this nesting.
+   - Criteria: A2, A12.
    - Smallest correction:
-     - In showName, treat number words as counts, as digits are: one to ten, half, a, ek, do, teen, char, aadha, and the like.
-     - Remove a measure word that follows them: plate, bowl, katori, piece.
-     - Add rules cases that fail on this build.
+     - For every text node, compare its rendered rect with its own cell's box and with every ancestor that clips or masks.
+     - Plant a nested flex figure in the drill.
 
-2. MINOR (regression from live): menu names that contain a number lose it.
-   - What is wrong: showName drops every digit run, not only counts. checkMenu (src/v6/engine.js:625) uses it for orders and for
-     "Leave for another day" (engine.js:659).
-   - Measured with a typed menu "Chicken 65 240 / Gobi 65 180" and as_written copied exactly:
-     - the orders come out "Chicken" and "Gobi", with dropped = {};
-     - a leave entry "Chicken 65" shows as "Chicken. Deep-fried, so heavy for this meal.";
-     - probe scripts: /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/menu65.js and words.js.
-   - "7 Cup Barfi" becomes "Barfi".
-   - Live (6febc1a engine.js:552) showed as_written exactly as written.
-   - Why it matters: the client reads the order to the waiter. "Chicken" is not on that menu, and the figures are for the fried Chicken 65.
-   - Criteria: A17 (menu names keep their words), B7.
+3. MINOR (round 38, finding 2, partly fixed): numbered dish names still lose their number on common typed menus. That breaks the owner's
+   fixed decision that "Chicken 65" and "Gobi 65" stay.
+   - What is wrong: menuPrice (src/v5/core.js:589-594) decides whether the menu is priced by counting lines that end in a digit, then keeps
+     "Chicken 65" only if a digit follows it in the typed text.
+   - Measured through checkMenu on index.min.html (r39menu.js; typed menus, as_written "Chicken 65" and "Gobi 65"):
+     - "Chicken 65 240 / Gobi 65 180 / ...": kept.
+     - "Chicken 65 - Rs 240 / ..." and "Chicken 65 Rs. 240 / ...": "Chicken", "Gobi".
+     - an unpriced list "Chicken 65 / Gobi 65 / Dal Tadka / Tandoori Roti": "Chicken", "Gobi". Half the lines end in "65", so the menu
+       is taken as priced.
+     - "Chicken 65 (Half) 180 (Full) 320": "Chicken".
+     - Kept: "₹ 240", "- 240", ": 240", "240/-", "240 rs" and tab-separated.
+   - Why it matters:
+     - The client reads the order to the waiter, and "Chicken" is not on that menu.
+     - "Rs" prices and unpriced lists typed off a board are ordinary in India.
+     - The owner accepted the loss only for photo menus.
+   - Criteria: owner decision (16 Nov, "Remove counts, keep names"), A17, B7.
    - Smallest correction:
-     - On menu names, remove a number only when it opens the name or a measure or piece word follows it.
-     - Keep "Chicken 65" and "7 Cup Barfi".
+     - In menuPrice, treat "Rs", "Rs." and "INR" before a number as a price mark, as ₹ already is.
+     - Call a menu priced only by lines whose last number is not the dish's own: a line priced has two numbers, or one after a price mark.
+     - Keep the name when the typed line is the name alone.
+     - Add rules cases for these four formats.
 
-3. MINOR: an order that fits only if the kitchen agrees is not marked as such in "Also on this menu", and its "Jain" tick reads as unconditional.
-   - Surface: rescue-menu-request at 320, 360 and 390, light and dark, and at 360 px with 130 % text.
-   - Evidence: 320-light/rescue-menu-request-1.png, -2.png, -3.png; 360-dark/rescue-menu-request-2.png.
-   - The order card itself is right: "Ask the waiter: Make it Jain style ..." is followed by "Only if they can make it this way." in the
-     same style.
-   - Problem 1, the chip: the card's first line is a green tick chip "Jain", with no condition.
-   - Problem 2, the alternatives:
-     - The Dal Tadka and Palak Paneer rows show only the side, kcal, protein and score.
-     - checkMenu on the review fixture with the Jain plan marks all three orders on screen (Paneer Tikka, Dal Tadka, Palak Paneer)
-       askIf = "Only if they can make it this way." (words.js).
-   - Why it matters: a Jain client who scans the list, or trusts the tick, takes Dal Tadka as fitting their rules. It fits only if the
-     kitchen leaves out onion and garlic.
-   - The owner decided requests are shown and marked conditional. This finding asks only that the mark appear wherever the order appears.
-   - Criteria: B6, B11.
+4. MINOR (round 38, finding 1, residue): some household counts and measures still reach a plate name, beside its grams.
+   - Measured through checkMeal (r39b.js, index.min.html):
+     - Hindi six to ten are kept: "Chhe roti", "Saat idli", "Aath puri", "Das idli". CNTQTY in core.js:574 stops at paanch.
+     - Hindi plurals are kept: "Do rotiyan", "Teen rotiya". CNTPIECE (core.js:564) has no rotiyan, rotiya or chapatiyan.
+     - A measure with no number is kept: "Glass of buttermilk", "Bowl of dal", "Cup of curd", "Plate of poha", "Handful of almonds".
+       The title becomes "Charred paneer tikka with glass of buttermilk".
+     - Menu path: "Plate of 3 idli" is kept with its digit, because MENUCOUNT (core.js:585) removes a digit count only at the start or after
+       with, and, plus or a comma.
+     - "Couple rotis" and "Triple egg omelette" are kept. Both are rarer.
+   - Not seen in the 3,452 recorded model names (eval/usefulness/names-diff.txt; I grepped eval/ for these forms and found none).
+     That is why this is MINOR, not MAJOR. The prompt (nameText, core.js:656) forbids digits but not count words or measure words.
+   - Why it matters: "120 g Glass of buttermilk" and "Saat idli" count in household units (owner rule 2; S8 says no household count
+     shows in a name).
+   - Criteria: owner rule 2, S8, B7.
    - Smallest correction:
-     - Add "· only if made Jain style" (or the request's short form) to a conditional alternative's small line.
-     - On a conditional order, show the diet chip without the tick.
+     - Add chhe, saat, aath, nau and das to CNTQTY, and rotiyan, rotiya and chapatiyan to CNTPIECE.
+     - Take a leading measure phrase off a name, as the katori rule does ("bowl of", "glass of", "cup of", "plate of", "handful of").
+     - In MENUCOUNT, also remove a digit after "of".
+     - Add one line to nameText: "no counts or measures in words".
+     - Add rules cases.
 
-4. MINOR: on an urgent symptom, the line telling the client to get help now is the lighter second line.
-   - Surface: plate-ask-urgent ("chest pain after lunch") at every width and scheme.
-   - Evidence: 320-light/plate-ask-urgent-1.png, 390-light/plate-ask-urgent-1.png, 360-light-big/plate-ask-urgent-1.png.
-   - What the card shows:
-     - The large dark heading is "Your coach and doctor should plan this with you." For chest pain this reads as a planning matter.
-     - Under it, in muted body text: "If you feel unwell now, contact your doctor or emergency care."
-   - Code: the line is a plain <p class="urgent"> (app.js renderPlate, orderView, renderRescue0). The built page has no .urgent style.
-   - The wording is fixed and pending a clinician's review; the order and weight are presentation.
-   - Why it matters: this is the one card where acting now matters, for readers with weaker near vision who read the heading first.
-   - Criteria: B1, B6.
-   - Smallest correction: when urgent is set, show URGENTLINE as the heading (or above it, in ink at heading weight) and the SAFETY line
-     under it. Do the same on Rescue, the menu and the log.
+5. MINOR: the Builder's bound note says something untrue, is out of sight at 320 px, and stays after it stops applying.
+   - Surface: Builder after a refused step (builder-saved-out-of-bounds), at every width.
+   - The copy: "Fats and seeds can't go higher: each part of the plate stays between 5 % and 40 %."
+     - Only fats has 5-40. Protein, vegetables and grains go to 70 (RATIOB, core.js:44).
+     - A client then sees grains at 50 % and the note contradicts the screen.
+     - The note also writes "40 %" with a space, while the steppers write "37%".
+   - Out of view at 320 (r39/probe.js, plus button centred as a thumb would leave it):
+     - The note sits at y 488-599 in a 568 px viewport.
+     - It is under the sticky "Plan lunch with this plate" button (y 443-491), so noteVisible is false.
+     - A tap on + changes nothing that can be seen. At 360 it is visible (y 571-657 of 740).
+     - The review only asserts that the note is below the row (review.js:286-288), not that it can be seen.
+     - Screens: 320-light/builder-saved-out-of-bounds-2.png (steppers, no note) and -3.png (the note, after scrolling).
+   - Stale (probe, at 320 and 360): after tapping "Balanced" (shares 35/35/20/10) and after "Plan lunch with this plate" and coming back to
+     Builder, the note still says fats can't go higher. UI.rbound is cleared only by a successful step (app.js:572-574).
+   - Why it matters: on the client's own phone width the refusal is invisible, then wrong.
+   - Criteria: B5, B6, B7.
+   - Smallest correction:
+     - Name the part's own bounds: "Fats and seeds stay between 5% and 40% of the plate."
+     - Clear UI.rbound on a preset, on clear-ratio and on make-ratio.
+     - Show the note where the tapped row is: under the stepper card, or as a status line under the steppers inside the card, above the
+       sticky button.
+     - Assert in the review that it is inside the viewport and not under the sticky button.
 
-5. COSMETIC: the engine's "nothing fits" line for menus is never shown on screen in the review.
-   - The state menu-nothing-fits mocks {"status":"ok","orders":[]}, so it shows the old fallback line.
-   - Measured for a Jain client with diabetes, no dairy and high BP: "Nothing on this menu fits your food rules (no meat, fish, egg, onion or
-     garlic, root vegetables, dairy, pickle or papad or sweets). Ask what they can make for you, or name the dish you want."
-     - It is long and stacks three "or"s.
-     - I have not seen it rendered.
-   - Correction: add a state that returns the engine's empty reply, and join the list with commas, "or" only before the last item.
+6. COSMETIC: on an "Also on this menu" row, "Only if they can make it this way." has nothing for "this way" to point to.
+   - The request ("Make it Jain style, with no onion, garlic or root vegetables") is only on the selected order's card.
+   - Evidence: 320-light/rescue-menu-request-2.png and -3.png; 390-light/rescue-menu-request-2.png.
+   - Criteria: B7.
+   - Correction: use the request's short form on rows, for example "Only if made Jain style".
 
-6. COSMETIC: "Plates were updated after an app change, so this plate is new." shows in plate-rules-reload (320-light/plate-rules-reload-1.png),
-   where the visible cause is the client's own "No dairy".
-   - In real use the note comes from the load-time drop (r.rules!==rules()).
-   - The day this build ships, every kept plate lacks a rules stamp, so there the wording is true.
-   - When the client changes My food, closeSheet empties the store and no note shows.
+7. COSMETIC: the nothing-fits list now has a comma inside an item.
+   - For a Jain client with BP who leaves out dairy, nuts, wheat and soya it reads "... dairy, nuts, wheat, soya or pickle, papad".
+   - "Pickle, papad" looks like two items, after the "or".
+   - Measured with noFitLine (r39b.js). The Vegetarian state reads well: "(no meat, fish, egg or sweets)".
+   - Correction: "pickle and papad" (and "onion and garlic") inside an item.
 
-7. COSMETIC: engineSub (core.js:701) joins item names that already contain "and".
-   - Example: "Miso glazed tofu, buckwheat soba and bok choy and edamame" (320-light/plate-rules-reload-2.png).
+8. COSMETIC: on the log referral the line "What you type goes to Google Gemini." is removed, but the box and "Count it" stay live.
+   - Evidence: sheet-log-urgent-2.png and sheet-log-referred-1.png at 320 light.
+   - The line was on screen before the first send, and the referral itself is decided before the model. Edited words sent from here go to
+     Gemini with no line saying so.
+   - Criteria: B12.
+   - Correction: keep that one sentence under the referral note, or disable "Count it" until the words change.
 
-8. COSMETIC: the reason line says "protein to catch up" and then "It helps you catch up on protein today".
-   - It is a 9-line italic block at 320 px (320-light/plate-hero-5.png, 360-light-big/plate-hero-5.png).
-   - Correction: drop the second sentence when protein_gap is already named among the hooks.
+9. COSMETIC: Rescue's common-dish chips carry counts.
+   - The chips: "Paneer butter masala with 2 butter naan" and "Pahadi mutton rara with 2 butter rotis" (src/v5/app.js:506,
+     engine.js:673).
+   - Evidence: 320-light/menu-photo-error-2.png; 412-light/menu-urgent-1.png.
+   - The dish then shows as typed. It is the client's own words once tapped, but the app wrote them.
+   - Carried over from live.
+   - Criteria: S8 (in spirit), B7.
+   - Correction: drop the "2".
 
-9. COSMETIC: in the Builder, "Fats and seeds can't go higher." shows at 37 %, with no reason given (the bound is 40 %, the step 5).
-   - The toast covers the row just tapped, or the "Changed." note at 130 % text.
-   - Evidence: 320-light and 360-dark builder-saved-out-of-bounds-1.png, 360-light-big/-2.png.
-   - Grains at 12 % with diabetes is inside RATIOB (5-70).
+10. COSMETIC (review fidelity): the menu mocks show portions the engine cannot produce.
+    - MENUCLOSE and the menu-grain-* replies (review.js:81, 341, 358, 527, 536) use portion "1 bowl, ≈ 300 g".
+    - checkMenu writes the portion from grams only ("≈ 300 g").
+    - So menu-closest, menu-grain-two and others show "1 bowl" on screen, a household unit no client sees. Screens judged for rule 2 should
+      be the engine's output.
+    - Correction: make the mocks "≈ 300 g" (or route them through engineCheck, as menu-nothing-fits now does).
 
-10. COSMETIC: plain examples were removed.
-    - Builder: "Grains (roti, rice, millet)" became "Grains".
-    - Menu: "Ask which roti or rice they have" became "Ask which grain they have".
-    - Dish placeholder: "for example, chole bhature" became "the dish, as on the menu". It also shows at a function.
-    - Log placeholder: "2 aloo paratha with curd" became "What you ate, and how much".
-    - Correction: filter the examples by the client's rules (as APPASKS does) rather than removing them.
-
-11. COSMETIC: the log referral (sheet-log-referred-1.png) has three small problems.
-    - It shows as an error note.
-    - "Count it" stays the primary button.
-    - The hint under it, "It is counted, not judged...", sits beside "Next Plate does not count meals for this."
-
-12. COSMETIC: the reworded medicines note (params.js) is not plain enough for these readers.
-    - It says "... and the figures are checked to agree."
-    - I did not open a screen showing it.
-
-13. COSMETIC (removed line, no defect found): the high-BP cook's line went from "Cook with no added salt; skip pickle and papad." to "Cook with
-    no added salt."
-    - The BP note under the card still says "With high BP these plates leave out pickle, papad and added salt."
-    - The engine bars salty sides with BP (barredTags), so the information is still on screen.
-
-## Diff read
+## Code read
 - In full:
-  - src/v6/app.js;
-  - src/v6/legible.css, src/v6/params.js, src/v5/server.ts, build6.js;
-  - test/v6/fixture-menu.js and test/v5/mock-gemini.ts;
-  - the removed lines of test/ux/review.js. No assertion was loosened: "in place of" now also accepts "charred", because the fixture item
-    is "Charred paneer tikka".
-- In part:
-  - src/v6/engine.js: reasonLine, the menu request and nothing-fits code, the app examples, the urgent net.
-  - src/v5/core.js: showName, checkRescue, the new prompt strings.
-  - test/rules/check.js: the head only. It shims contentsBad and referred for cases that declare none; the reason given, that
-    test/safety/check.js covers those, holds.
-- Not read: the rest of the core.js and engine.js diffs, the page styles beyond searching for .urgent, the eval/ and test/safety/ files.
+  - the diffs of src/v5/core.js, src/v6/engine.js, src/v6/app.js and src/v6/params.js;
+  - test/ux/review.js. No assertion was loosened. The bound check now asserts position, not visibility. New states were added.
+  - test/rules/check.js. One check inverted, by design: without diabetes the protein swap on the grain item is no longer offered (M1).
+  - test/ux/atlas/names.js, docs/SAFETY-INVARIANTS.md, eval/usefulness/names-diff.js and its output.
+- Not read: test/safety/check.js and lexicon.json beyond the stat (the auditor's scope); AUDIT.md.
+- Behaviour changes I noted, for the auditor rather than a UX finding:
+  - any typed "kidney" other than kidney beans or a kidney dish now refers (S7);
+  - the protein swap on the grain item is gone for every client.
+- No removed safety line, no unit change, no banned word, no lost label or focus.
+- The new referral heading reuses the h2 style, and the log referral note uses the plain note style, not the error one.
 
 ## Owner rules, read explicitly
-- Look: Raw Linen is held in every state I opened, and dark mode keeps the paper. The new lines use the existing styles.
-- Units: broken by finding 1.
-  - Elsewhere, grams and kcal, and the rise is a band.
-  - The Rescue title is the client's own typed words (core.js:744). "2 katori dal" typed there is quoted back, not used by the app as a
-    unit; the weight is engine-written in grams. Not a breach.
-- Supplements: "Rescue helps with a meal, not a supplement or a powder." refuses one and recommends none. Not a breach.
-- Safety (rule 3): the kidney and pregnancy referral is unchanged. The log referral shows the fixed line. With diabetes the grain stays,
-  and the refusal toast "Not changed. With diabetes the grain stays, at least half of it." reads clearly at 320 px.
-- Words: the check passes, and the new strings contain no banned word. The brand line was not changed.
-- Missing figures: they stay empty.
+- Look: Raw Linen holds in every state I opened, light and dark. Dark keeps the paper. The new notes and headings use existing styles.
+- Units:
+  - Grams and kcal throughout.
+  - The rise is a band, but it is cut at 320 (finding 1).
+  - The residual name forms are in finding 4.
+  - The side count with grams is the owner's decision (14 Nov).
+- Supplements: none seen.
+- Safety (rule 3):
+  - Kidney and pregnancy refer on every surface I opened (setup-2-referred, plate-blocked-kidney, sheet-log-referred).
+  - The urgent line now leads.
+  - With diabetes the grain stays ("The grain stays: about 100 g of jowar roti").
+- Words: no banned word in the build. The brand line ("Next Plate. Made for you.") is unchanged on the stamp.
+- Missing figures stay empty (Builder with no target).
 
 ## Not inspected
-- Screens I opened:
-  - 320 light and dark: the new and changed states listed above.
-  - 360 light and dark: the request card and the Builder.
-  - 390 light and dark: the urgent card and plate-hero.
-  - 360 px with 130 % text: the request, urgent, Builder and why-line states.
-  - plus rescue-two-moves-grain and plate-two-grain-changes at 320 light.
-- Not every slice of every state, and nothing at 412.
-- New states I did not open at any width:
-  - plate-swap-then-change, plate-change-then-swap, plate-swap-change-logged, plate-swap-declared-grain, plate-tune-stale,
-    plate-plan-next-fresh;
-  - plate-after-midnight, plate-overnight-first-tap, plate-overnight-first-change, plate-dinner-after-midnight, rescue-after-midnight,
-    menu-after-midnight, sheet-log-day-changed;
-  - rescue-had-its-meal, plate-rescued, menu-photo-error;
-  - plate-random-combos 1 to 3.
-- The urgent line on Rescue, the menu and the log: no review state shows it.
-- The engine's nothing-fits line and the medicines note on screen.
-- test/safety (the auditor's scope; I did not run npm run safety); AUDIT.md.
-- Live Gemini replies, and how often word counts, numbered menu names, conditional requests and urgent wordings come up.
-- The owner's own phone model, Android font rendering, and text scaling beyond 130 %.
-- The films by ear (unchanged in this diff; measured check only).
-- Whether clients understand "Only if they can make it this way." and the reason line.
+- Screens opened:
+  - 320 light: every priority state, every state listed as not inspected last round, and plate-swap-declared-grain.
+  - 320 dark: plate-ask-urgent, sheet-log-urgent, rescue-menu-request, plate-rules-reload, the Builder bound and random-combos.
+  - 360 light: the Builder bound, the request rows and random-combos.
+  - 360, 390 and 412 dark: the request rows, plate-ask-urgent, rescue-urgent, menu-urgent and random-combos.
+  - 390 light: the urgent, request, random-combos, Builder and nothing-fits states.
+  - 412 light: log-urgent, request, rules-reload, grain-protein-change and menu-urgent.
+  - 360 at 130 %: urgent, log-urgent, request, Builder and nothing-fits.
+- Not opened: every slice of every state at every width; the other states in the dark runs at 360, 390 and 412; sheet-log-urgent
+  in dark above 320; menu-after-midnight, sheet-log-day-changed, plate-tune-stale and plate-plan-next-fresh.
+- The element that clips the band word (finding 1).
+- The medicines note on screen. No review state opens it; I read the string.
+- The grainMiss refusal ("This change works on the planned grain, so it does not go with a grain swap."). No review state shows it.
+- test/safety and npm run safety (the auditor's), and AUDIT.md.
+- Live Gemini replies: how often count words, measures, numbered dishes, Rs-priced or unpriced typed menus, and conditional requests
+  come up.
+- The owner's own phone model, Android font rendering, system font scaling beyond 130 %, and dark mode on a device.
+- The films by ear (unchanged; measured check only).
+- Whether clients understand "Only if they can make it this way." and "Ask which grain they have".
