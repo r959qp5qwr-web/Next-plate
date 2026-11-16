@@ -606,15 +606,16 @@ var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?",
    shows a price. "Tandoori Roti 2" becomes "Tandoori Roti"." It replaces the rule by position and the price guessing from the typed menu.
    - The keep-list. The recorded menus under eval/ (typed and photo, as_written too) hold no number that is part of a dish's name: every
      number in them is a price, a count or grams. So the list is the owner's two examples. "65" is kept only after a word of the dishes
-     named that way ("Chicken 65", "Gobi 65", "Paneer 65"), never on its own, where it would be a price ("Sweet Lassi 65", "Tea 65"); for
-     the same reason not after "veg" or "egg" ("Mix Veg 65", "Boiled Egg 65"), so "Veg 65" and "Egg 65" lose it, the accepted cost.
+     named that way when that word opens the name ("Chicken 65", "Gobi 65", "Paneer 65", "Chicken 65 Biryani"), never on its own or after
+     another word, where it would be a price ("Sweet Lassi 65", "Tea 65", "Aloo Gobi 65", "Butter Chicken 65"); for the same reason not
+     after "veg" or "egg" ("Mix Veg 65", "Boiled Egg 65"). So "Veg 65", "Egg 65" and "Andhra Chicken 65" lose it, the accepted cost.
    - Every other number goes, with its count, measure or piece word if one follows ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali
      2 Person", "7 Cup Barfi", "3 in 1"), and the price with it ("Veg Thali 120", "Tandoori Roti 2", "Chicken 555", "5 Star Thali" shows "Star Thali").
    - A marked price goes whole first, with its mark ("- Rs 240", "Rs. 240", "\u20B9240", "240/-", ": 240", "@ 240"). */
-var MENUKEEP=/\b(?:(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65|7[\s-]*up)\b/gi;
+var MENUKEEP=/^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;
 var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katori\\w*|plates?|plts?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
 var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
-/* a count before a last word the name already holds goes with that word ("Chole Bhature 2 Bhature" shows "Chole Bhature"; "Paneer Butter
+/* a count before a last word the name already holds goes with that word ("Chole Bhature 2 Bhature 120" shows "Chole Bhature"; "Paneer Butter
    Masala with 2 Butter Naan" keeps its "Butter"; safety audit c2) */
 function menuCount(h){var keep=[],m;MENUKEEP.lastIndex=0;while((m=MENUKEEP.exec(h)))keep.push([m.index,m.index+m[0].length]);
   return h.replace(MENUCOUNT,function(x){var at=arguments[arguments.length-2];return keep.some(function(k){return at>=k[0]&&at<k[1];})?x:" ";});}
@@ -627,7 +628,7 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=menuPrice(h);
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h.replace(/\b([a-z]+)\b(.*?)\s+\d+\s+\1$/i,"$1$2")):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h.replace(/\b([a-z]+)\b(.*?)\s+\d+\s+\1((?:\s+\d+(?:\.\d+)?)*)$/i,"$1$2$3")):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
   h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").trim().replace(/^(?:of|and|with|or|for)\s+|\s+(?:of|and|with|x|or|for)$/gi,"").trim();   /* no joining word is left alone at an end: "Combo for Two" shows "Combo", "Two or three rotis" "Rotis" (safety audit c2); "folded in" keeps its "in" */
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;

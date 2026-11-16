@@ -414,7 +414,7 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
 // The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"): a number goes only when a count, measure or food word
 // follows it. "Two Tandoori Roti" shows "Tandoori Roti"; "Chicken 65" and "Gobi 65" stay as printed; "7 Cup Barfi" loses "7 Cup" (the accepted cost).
 // the owner's keep-list (16 Nov, option survey: "Short keep-list (Recommended)"), the test's own copy: a number shown in a menu name sits inside one
-const KEPTNUM = /\b(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;
+const KEPTNUM = /^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;   // "65" only where the dish word opens the name
 { const menuName = (o, typed, dishes, leave) => safe(() => plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: typed } }).check({ status: 'ok', refer_reason: 'none',
     dishes: dishes.map(([n, t]) => ({ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: t, contains_listed: t, with_contains: ['plain'], planned_around: [] })),
     leave: (leave || []).map(([n, t]) => ({ as_written: n, reason: 'fried', contains: t })) }), {});
@@ -472,7 +472,12 @@ const KEPTNUM = /\b(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|bab
     ['Veg Thali 120\nServed with 2 roti, rice, dal, sabzi', 'Veg Thali 120', 'Veg Thali'], ['Chicken 65\nGobi 65', 'Gobi 65', 'Gobi 65'], ['Chicken 65\nGobi 65\nDal Tadka 160\nRoti 30', 'Chicken 65', 'Chicken 65'],
     ['Chicken 65', 'Chicken 65', 'Chicken 65'], ['Tandoori Roti 2\nDal Fry 200', 'Tandoori Roti 2', 'Tandoori Roti'], ['DRINKS\n7 Up 40\nTea 15', '7 Up 40', '7 Up'],
     ['DRINKS\nSweet Lassi 65\nTea 65', 'Sweet Lassi 65', 'Sweet Lassi'], ['MAINS\nMix Veg 65\nBoiled Egg 65', 'Mix Veg 65', 'Mix Veg'], ['MAINS\nMix Veg 65\nBoiled Egg 65', 'Boiled Egg 65', 'Boiled Egg'],
-    ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Chicken 555 260', 'Chicken'], ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Paneer 65 220', 'Paneer 65'], ['TIFFIN\n3 in 1 Dosa 90\n5 Star Thali 250', '5 Star Thali 250', 'Star Thali']];
+    ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Chicken 555 260', 'Chicken'], ['STARTERS\nChicken 555 260\nPaneer 65 220', 'Paneer 65 220', 'Paneer 65'], ['TIFFIN\n3 in 1 Dosa 90\n5 Star Thali 250', '5 Star Thali 250', 'Star Thali'],
+    // a keep word after another word is a dish priced at 65, not a keep-list name ("Aloo Gobi 65"): the price never shows; "Andhra Chicken 65" loses its number, the cost
+    ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Aloo Gobi 65', 'Aloo Gobi'], ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Palak Paneer 65', 'Palak Paneer'],
+    ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Butter Chicken 65', 'Butter Chicken'], ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Chilli Mushroom 65', 'Chilli Mushroom'],
+    ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Fried Fish 65', 'Fried Fish'], ['STARTERS\nAndhra Chicken 65 240\nDal Fry 200', 'Andhra Chicken 65 240', 'Andhra Chicken'],
+    ['STARTERS\nChicken 65 Biryani 320\nDal Fry 200', 'Chicken 65 Biryani 320', 'Chicken 65 Biryani'], ['MAINS\nChole Bhature 2 Bhature 120\nDal Fry 200', 'Chole Bhature 2 Bhature 120', 'Chole Bhature']];
   for (const [typed, aw, want] of D3) { const r = menuName(NV, typed, [[aw, ['plain']]]), r2 = menuName(NV, typed + '\nDal Fry 200', [['Dal Fry', ['plain']]], [[aw, ['plain']]]);
     const r3 = safe(() => plan('menu', { profile: Object.assign({}, BASE, NV), ctx: { meal: 'lunch', text: '' }, image: 'AAAA' }).check({ status: 'ok', refer_reason: 'none', dishes: [{ as_written: aw, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['plain'], contains_listed: ['plain'], with_contains: ['plain'], planned_around: [] }], leave: [] }), {});
     const got = [(r.orders || [])[0], (r2.leave || [])[0], (r3.orders || [])[0]].map(x => x ? x.name : '(none)');

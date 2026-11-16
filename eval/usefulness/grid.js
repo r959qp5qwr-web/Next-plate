@@ -15,7 +15,8 @@ if (KIND === 'menus') {
   // "same" prices are all 65, so a price that equals a name number is in every same-price menu.
   const HEAD = [['none', ''], ['CAPS', 'STARTERS'], ['colon', 'Starters:']];
   const PRICE = [['plain', (p) => ' ' + p], ['Rs', (p) => ' Rs ' + p], ['rupee', (p) => ' ₹' + p], ['/-', (p) => ' ' + p + '/-'], ['Half/Full', (p) => ' Half ' + p + ' Full ' + (p + 100)], ['none', () => '']];
-  const NAMES = [['none', 'Paneer Tikka'], ['65', 'Chicken 65'], ['7 Up', '7 Up'], ['count + piece', 'Paneer Tikka 6 Pcs'], ['measure', 'Chicken Biryani 1 Kg']];
+  const NAMES = [['none', 'Paneer Tikka'], ['65', 'Chicken 65'], ['7 Up', '7 Up'], ['count + piece', 'Paneer Tikka 6 Pcs'], ['measure', 'Chicken Biryani 1 Kg'],
+    ['a keep word after another word', 'Aloo Gobi'], ['a keep word after another word', 'Butter Chicken']];   // priced 65 in every priced menu: "Aloo Gobi 65" is a price, not a keep-list name
   for (const [hk, h] of HEAD) for (const [pk, pf] of PRICE) for (const same of [true, false]) for (const [nk, nm] of NAMES) {
     const prices = same ? [65, 65, 65] : [65, 120, 240], lines = [nm + pf(prices[0]), 'Veg Thali' + pf(prices[1]), 'Sweet Lassi' + pf(prices[2])].map(l => l.trim()), typed = (h ? h + '\n' : '') + lines.join('\n');
     // one cell per menu: the three dishes on the typed menu, then the first dish read from a photo of it
