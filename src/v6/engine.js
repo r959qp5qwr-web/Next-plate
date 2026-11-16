@@ -603,7 +603,7 @@ function requestBad(d){var k=REQKINDS.indexOf(d&&d.request)>=0?d.request:"none",
   if(!listed)return k==="none"?"":"request-unlisted";   /* a request with no listed tags cannot be checked */
   for(var i=0;i<listed.length;i++)if(served.indexOf(listed[i])<0&&REQREMOVE[k].indexOf(listed[i])<0)return "request";
   return "";}
-var NOFITNAME={meat:"meat",fish:"fish",egg:"egg",dairy:"dairy",wheat:"wheat",nuts:"nuts",soya:"soya",onion_garlic:"onion, garlic",root_veg:"root vegetables",sweet:"sweets",salty_side:"pickle, papad"};   /* one "or", before the last (Critic round 38, finding 5) */
+var NOFITNAME={meat:"meat",fish:"fish",egg:"egg",dairy:"dairy",wheat:"wheat",nuts:"nuts",soya:"soya",onion_garlic:"onion and garlic",root_veg:"root vegetables",sweet:"sweets",salty_side:"pickle and papad"};   /* one "or", before the last (Critic round 38, finding 5); no comma inside an item (Critic round 39, finding 7) */
 function noFitLine(p){var b=barredTags(p).map(function(t){return NOFITNAME[t];}).filter(Boolean);
   return "Nothing on this menu fits your food rules"+(b.length?" (no "+(b.length>1?b.slice(0,-1).join(", ")+" or "+b[b.length-1]:b[0])+")":"")+". Ask what they can make for you, or name the dish you want.";}
 var LEAVEWHY=["fried","sweet","rich","refined"],LEAVETEXT={fried:"Deep-fried, so heavy for this meal.",sweet:"A sweet, better kept for another day.",rich:"Rich and oily, a lot for this meal.",refined:"Mostly refined starch, low in fibre."};

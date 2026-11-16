@@ -804,6 +804,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   add('nothing fits: every dish dropped says so too', r2.status === 'empty' && /Nothing on this menu fits/.test(r2.read || ''), `${r2.status}: ${r2.read}`);
   // Critic round 38, finding 5: the list reads with commas and one "or", before the last item, for the longest set of rules
   const nf = safe(() => noFitLine(readProfile(Object.assign({}, BASE, { diet: 'jain', health: 'diabetes', bp: true, leave: ['dairy'] }))), '');
+  add('nothing fits: no comma inside an item (Critic round 39, finding 7)', /\(no [^)]+\)/.test(nf) && !/\bor\b[^)]*,/.test(nf.match(/\(no [^)]+\)/)[0]) && /pickle and papad/.test(nf), nf);
   add('nothing fits: one "or" in the list', /\(no [^)]+\)/.test(nf) && (nf.match(/\(no [^)]+\)/)[0].match(/\bor\b/g) || []).length === 1, nf);
   add('nothing fits: the prompt offers the state', /nothing_fits/.test(pl.prompt || '') && JSON.stringify(pl.schema || {}).includes('nothing_fits'), 'the menu prompt or schema has no nothing_fits'); }
 
