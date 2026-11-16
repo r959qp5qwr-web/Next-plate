@@ -193,7 +193,8 @@ for (const meds of ['yes', 'unsure']) { const p = readProfile(Object.assign({}, 
 // ---------- safety audit of b4633dd, backlog head ("Fix found, then watch", owner, 16 Nov, D1): the names it found pass with a "plain" tag,
 // so the word lists must hold them, as a plate item and as a menu order, under the profile that bars each ----------
 const FOUND = [
-  ...['Parathe', 'Paranthe', 'Rotiyaan', 'Chapatiyan', 'Puriyan', 'Samose', 'Theple', 'Rotiyon', 'Puriyon', 'Bati', 'Dal bati', 'Luchchis', 'Aloo parathe', 'Dal bati churma'].map(n => [n, { leave: ['wheat'] }])];
+  ...['Parathe', 'Paranthe', 'Rotiyaan', 'Chapatiyan', 'Puriyan', 'Samose', 'Theple', 'Rotiyon', 'Puriyon', 'Bati', 'Dal bati', 'Luchchis', 'Aloo parathe', 'Dal bati churma'].map(n => [n, { leave: ['wheat'] }]),
+  ...['Bhindi Do Pyaza', 'Paneer do pyaza', 'Lasooni palak', 'Lasooni dal tadka', 'Piyaji'].map(n => [n, { diet: 'jain' }])];
 for (const [n, o] of FOUND) {
   add('Found gaps (safety audit of b4633dd): a plate item with a "plain" tag', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
   add('Found gaps (safety audit of b4633dd): a menu order with a "plain" tag', !(menuOffered(o, n, ['plain']).orders || []).length, `${JSON.stringify(o)}: menu order "${n}" tagged plain was offered`);
