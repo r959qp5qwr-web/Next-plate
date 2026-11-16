@@ -46,7 +46,7 @@ How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Rec
 | Taste notes | single words from a closed list (`TASTEW`) | closed list | no taste notes |
 | Cuisine, pairing tip, model for_you, reply read line | not shown | — | — |
 | One-tap change label and note | 1 (the food it adds is origin 2) | tags, word lists, grain kept, usual size, figures agree | the change is not offered |
-| Referral | 4: the fixed `SAFETY` line; with an urgent symptom also "If you feel unwell now, contact your doctor or emergency care." | referral before the model | — |
+| Referral | 4: the fixed `SAFETY` line; with an urgent symptom "If you feel unwell now, contact your doctor or emergency care." comes first, as the heading, with the `SAFETY` line under it (Critic round 38, finding 4) | referral before the model | — |
 | Menu dish, side, leave entry | 2 (matched to a menu line, raw or cleaned) | tags, word lists (raw), shape | the order, side or entry is dropped |
 | Menu portion | 1 (grams from the reply) | grams only | no portion line |
 | Menu preparation request ("Ask the waiter: ...") | 1 (a fixed line per kind from a closed list: none, jain, no_dairy_fat, no_egg, less_salt) | the order's tags as served decide; a kind may take out only the tags it can (jain: onion_garlic, root_veg; no_dairy_fat: dairy, with the word net still dropping paneer, curd or cream); nothing takes out meat, fish or egg | the order is dropped |
