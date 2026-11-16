@@ -180,7 +180,7 @@ Claude's working defaults, not yet confirmed: the five target choices in `docs/R
 | Item | Status | Version / location | Notes |
 |---|---|---|---|
 | Safety round 5 + usefulness brief | built on the branch, not live | `src/v5/core.js`, `src/v6/` | model sentences off; names cleaned not dropped; engine reason line; Rescue dish as typed; figures agree (A2); urgent first net (B1); Builder bounds (B2); medicines note (B3); deploy record (B4); Codex probes as tests (B5); kept-plate review state. The closed name vocabulary (fa486dd) was reverted. |
-| At-risk live sample | being run by the coordinator on the live engine | `eval/` (scenarios committed in e990d03) | decides whether wrong-but-non-empty tags move to tier 1 |
+| At-risk live sample | run (80 calls, 0 of 962 names barred by hand label) | `eval/atrisk/` | three fixes built: on medicines the prompt states the usual size as a minimum (at least, never below, up to 10 percent above); menu preparation requests as a closed kind with tags as listed and as served (`eval/atrisk/requests.js`); a nothing-fits state for a readable menu. The medicines effect needs the owner's sample window: the recorded replies were made under the old prompt. |
 | Engine v6 | live under v5 screens | `src/v6/` | 18/18 before rescue fix |
 | Phase 1 screens + menu reader | built, not live | `hosted/v6/index.min.html` | wait for "Deploy." |
 | Menu reader proof | done except live engine | see section 8 | 8 scenarios after deploy |
