@@ -438,6 +438,25 @@
    "Chef's special thali",
    "Today's dal-chawal"
   ],
+  "referFound": [
+   "pregancy diet please",
+   "I am in my pregancy, lunch?",
+   "my kednee is weak",
+   "kednee problem hai",
+   "on dialyses twice a week",
+   "dialyses patient, dinner?",
+   "morning sickness, what can I eat"
+  ],
+  "urgentFound": [
+   "chest pains after lunch",
+   "having chest pains since morning"
+  ],
+  "notReferFound": [
+   "Kednee beans curry",
+   "kednee bean salad",
+   "morning snack ideas",
+   "good morning, something light"
+  ],
   "addedFromReports": {
    "meat": [
     "machli",

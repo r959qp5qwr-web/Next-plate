@@ -211,7 +211,12 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const t of L.referWindow) add('S7 typed (referral window, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
   // the same phrasings in their nearest spellings: each extension of the window's patterns has its own case (D4)
   for (const t of L.referWindowFamily) add('S7 typed (referral window spelling family, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
-  for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`); }
+  for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  // spellings the safety audit of b4633dd found ("pregancy", "kednee", "dialyses", "morning sickness"; owner, 16 Nov, D1), and their food-text controls
+  for (const t of L.referFound || []) add('S7 typed (found by the safety audit of b4633dd)', refers(kind, t) && refers(kind, t.split('').join('\u200B')), `${kind}: "${t}" went to the model`);
+  for (const t of L.notReferFound || []) add('S7 no false hit (controls for the found spellings)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  for (const t of L.urgentFound || []) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
+    add('B1 urgent text (found by the safety audit of b4633dd): referred with the line to get help now', !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent === URGENTLINE && !pl.prompt), `${kind}: "${t}" ${pl.reply ? JSON.stringify(pl.reply).slice(0, 80) : 'went to the model'}`); } }
 // the model's refer_reason: any value but "none" is a referral, on every reply that answers typed text; a missing one fails closed
 { const P0 = Object.assign({}, BASE, { diet: 'veg' });
   const replies = { meals: (rr) => Object.assign(mealsReply(platePlain()), rr), menu: (rr) => Object.assign(J(fxm.reply), rr), rescue: (rr) => Object.assign(J(fx.rescue), rr, { dish: Object.assign({}, fx.rescue.dish, { name: 'Veg thali', contains: ['grain'] }) }), log: (rr) => Object.assign(J(fx.log), rr) };
@@ -236,6 +241,11 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const [what, dishes, leave] of [['dish "Kydney fry"', [BC, ['Kydney fry', ['meat']]]], ['dish "Gurrda masala"', [BC, ['Gurrda masala', ['meat']]]], ['dish "Mutton kideney curry"', [BC, ['Mutton kideney curry', ['meat']]]],
       ['dish "Vrukka fry"', [BC, ['Vrukka fry', ['meat']]]], ['dish "Mutrapind curry"', [BC, ['Mutrapind curry', ['meat']]]], ['side "Kydney fry"', [['Butter Chicken', ['meat', 'dairy'], 'Kydney fry']]], ['leave entry "Gurrda masala"', [BC], ['Gurrda masala']]]) {
     const r = photo(dishes, leave); add('S7 photo menu: a referral-window kidney dish refers (D4)', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  // "kednee" (safety audit of b4633dd) on a dish name, a side and a leave entry; its bean neighbour is not referred
+  for (const [what, dishes, leave] of [['dish "Kednee fry"', [BC, ['Kednee fry', ['meat']]]], ['side "Kednee masala"', [['Butter Chicken', ['meat', 'dairy'], 'Kednee masala']]], ['leave entry "Mutton kednee curry"', [BC], ['Mutton kednee curry']]]) {
+    const r = photo(dishes, leave); add('S7 photo menu: a found kidney spelling refers (safety audit of b4633dd)', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  for (const n of ['Kednee Beans Curry', 'Kednee Bean Salad']) { const r = photo([BC, [n, ['plain']]]);
+    add('S7 photo menu: the found spelling\'s bean neighbour is not referred (control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); }
   for (const n of ['Kydney Beans Curry', 'Gurrdwara langar dal', 'Baby Corn Manchurian', 'Tricolour Pulao', 'Bun Maska']) { const r = photo([BC, [n, ['plain']]]);
     add('S7 photo menu: referral-window neighbours are not referred (D4 control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); } }
 for (const conds of [['kidney'], ['preg'], ['diabetes', 'kidney'], ['diabetes', 'preg'], ['bp', 'kidney']]) {
