@@ -45,7 +45,8 @@
    "kachori",
    "pasta",
    "noodles",
-   "wheat"
+   "wheat",
+   "noodle"
   ],
   "nut": [
    "kaju",
@@ -190,7 +191,9 @@
    "appalam",
    "namkeen",
    "bhujia",
-   "farsan"
+   "farsan",
+   "chip",
+   "wafer"
   ],
   "sweet": [
    "jalebi",
@@ -216,7 +219,8 @@
    "dosa",
    "poha",
    "makki roti",
-   "rajgira"
+   "rajgira",
+   "rice noodle stir fry"
   ],
   "notNut": [
    "paneer",

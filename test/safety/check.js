@@ -361,6 +361,10 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
 for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);
   add('S3 brackets are read', !(menuOffered(o, 'Veg Thali (dal, sabzi, papad, pickle)', ['grain']).orders || []).length, `${JSON.stringify(o)}: menu "Veg Thali (dal, sabzi, papad, pickle)" was offered`); }
+// singular forms of listed plurals (final audit): a wrong "plain" tag on a singular name is still caught by the word net
+for (const [name, o] of [['Veg hakka noodle', { leave: ['wheat'] }], ['Banana chip', { health: 'bp' }], ['Potato wafer', { health: 'bp' }], ['Masala chip', { health: 'diabetes', bp: true }]])
+  add('S1-S3 singular forms are read', !plateOffered(o, withItem(name, PT.length ? PT : ['grain'])).ok && !(menuOffered(o, name, PT.length ? PT : ['grain']).orders || []).length, `${JSON.stringify(o)}: "${name}" tagged plain was offered`);
+add('S1 no false hit: rice noodle', plateOffered({ leave: ['wheat'] }, withItem('Rice noodle stir fry', ['grain'])).ok, 'wheat-free: "Rice noodle stir fry" was dropped');
 add('S2 brackets are read', !plateOffered({ diet: 'veg' }, withItem('Veg thali (with chicken curry)', ['grain'])).ok, 'vegetarian: "Veg thali (with chicken curry)" was offered');
 add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with protein powder)', ['grain'])).ok, '"Oats porridge (with protein powder)" was offered');
 
