@@ -672,6 +672,9 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const d = { as_written: 'Margherita', portion: 'about 300 g', kcal: 700, protein: 28, carbs: 80, fats: 30, fiber: 4, grain_made_of: 'wheat', grain_grams: 150, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains_listed: ['wheat', 'dairy', 'grain'], contains: ['wheat', 'dairy', 'grain'], with_contains: ['plain'], planned_around: [] };
   const r2 = safe(() => pl.check({ status: 'ok', refer_reason: 'none', dishes: [d], leave: [] }), {});
   add('nothing fits: every dish dropped says so too', r2.status === 'empty' && /Nothing on this menu fits/.test(r2.read || ''), `${r2.status}: ${r2.read}`);
+  // Critic round 38, finding 5: the list reads with commas and one "or", before the last item, for the longest set of rules
+  const nf = safe(() => noFitLine(readProfile(Object.assign({}, BASE, { diet: 'jain', health: 'diabetes', bp: true, leave: ['dairy'] }))), '');
+  add('nothing fits: one "or" in the list', /\(no [^)]+\)/.test(nf) && (nf.match(/\(no [^)]+\)/)[0].match(/\bor\b/g) || []).length === 1, nf);
   add('nothing fits: the prompt offers the state', /nothing_fits/.test(pl.prompt || '') && JSON.stringify(pl.schema || {}).includes('nothing_fits'), 'the menu prompt or schema has no nothing_fits'); }
 
 // a referral always shows the fixed line
