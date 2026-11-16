@@ -198,6 +198,8 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const t of L.notReferText.concat([fxm.typed])) add('S7 no false hit', !refers(kind, t), `${kind}: "${t.slice(0, 40)}" was referred`);
   // the referral window's 29 phrasings refer, and food text that shares a word with them does not (owner, 16 Nov, D4; eval/referral/WINDOW.md)
   for (const t of L.referWindow) add('S7 typed (referral window, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
+  // the same phrasings in their nearest spellings: each extension of the window's patterns has its own case (D4)
+  for (const t of L.referWindowFamily) add('S7 typed (referral window spelling family, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
   for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`); }
 // the model's refer_reason: any value but "none" is a referral, on every reply that answers typed text; a missing one fails closed
 { const P0 = Object.assign({}, BASE, { diet: 'veg' });
