@@ -172,6 +172,17 @@ const randomCombos = (pi0) => async (p, h) => {
     await p.evaluate((ev) => { const x = JSON.parse(localStorage.getItem('np6') || '{}'); x.ev = ev; localStorage.setItem('np6', JSON.stringify(x)); }, ev0); await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(800);   // a light page for the screens
     if (bad.length) throw new Error(bad.length + ' logged meal(s) broke S5 or S6, e.g. ' + [...new Set(bad)].slice(0, 4).join('; '));
     if (!composed) throw new Error('no swapped or changed plate was logged: every tap was refused, so the run tested nothing'); };
+// plate-band-*: the Sugar rise band on the plate card fits its cell, at 100 % and at 130 % text, at every width (Critic round 39, finding 1:
+// "Moderate" was cut to "Modera" at 320 px). Figures that agree, one plate per band.
+const BANDPLATE = (kcal, protein, carbs, fats, fiber) => Object.assign({}, RANDPLATE, { meals: [Object.assign(JSON.parse(JSON.stringify(RANDPLATE.meals[0])), { kcal, protein, carbs, fats, fiber, swaps: { protein: [], base: [] }, alchemy: {} })] });
+const bandFits = (want) => async (p, h) => { await h.plate(p);
+  const m = () => p.evaluate(() => { const c = [...document.querySelectorAll('#plate-card .read4 > *')].find(x => /Sugar rise/.test(x.textContent)), s = c && c.querySelector('.v .mono'); if (!s) return null;
+    const rg = document.createRange(); rg.selectNodeContents(s); const t = rg.getBoundingClientRect(), q = c.getBoundingClientRect(); return { text: s.textContent, l: t.left, r: t.right, cl: q.left, cr: q.right }; });
+  for (const scale of [1, 1.3]) { if (scale !== 1) { await p.evaluate(bigText, scale); await h.settle(300); } const r = await m();
+    if (!r || r.text !== want) throw new Error(`the band reads ${r && r.text}, not ${want}`);
+    if (r.r > r.cr + 0.5 || r.l < r.cl - 0.5) throw new Error(`"${want}" runs past its cell at ${scale * 100} % text: x ${Math.round(r.l)}..${Math.round(r.r)} in ${Math.round(r.cl)}..${Math.round(r.cr)}`); }
+  await p.reload({ waitUntil: 'domcontentloaded' }); await h.plate(p); };
+const bandRoute = (pl) => (p) => p.route('**/api/meals', J(200, pl));
 const randomRoutes = (p) => Promise.all([p.route('**/api/meals', J(200, RANDPLATE)), p.route('**/api/rescue', J(200, RANDRESCUE))]);
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
@@ -681,6 +692,10 @@ const STATES = [
   ['plate-random-combos', seed(), randomCombos(0), randomRoutes],   // on medicines, no body figures
   ['plate-random-combos-2', seed(), randomCombos(1), randomRoutes],   // not on medicines
   ['plate-random-combos-3', seed(), randomCombos(2), randomRoutes],   // "not sure", with body figures
+  // the Sugar rise band fits its cell at every width, at 100 % and 130 % text (Critic round 39, finding 1)
+  ['plate-band-moderate', seed(), bandFits('Moderate'), bandRoute(BANDPLATE(700, 26, 84, 29, 18))],
+  ['plate-band-gentle', seed(), bandFits('Gentle'), bandRoute(BANDPLATE(525, 26, 40, 29, 18))],
+  ['plate-band-sharp', seed(), bandFits('Sharp'), bandRoute(BANDPLATE(775, 20, 140, 15, 8))],
 
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral');
@@ -718,6 +733,14 @@ function audit(T) {
   all.forEach(e => { if (decorative(e)) return; const r = e.getBoundingClientRect(); if ((r.right > W + 0.5 || r.left < -0.5) && !scroller(e) && getComputedStyle(e).position !== 'fixed') add('off-screen', e, `x ${Math.round(r.left)}..${Math.round(r.right)} of ${W}`); });
   // 2 no clipped text, no clipped placeholder
   texty.forEach(e => { const cs = getComputedStyle(e); if (e.clientWidth <= 2 || e.clientHeight <= 2) return; if (/(hidden|clip)/.test(cs.overflowX + ' ' + cs.overflowY)) { if (e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 2) add('text-clipped', e, `${e.scrollWidth}x${e.scrollHeight} in ${e.clientWidth}x${e.clientHeight}`); } });
+  // a text's rendered box stays inside every ancestor that clips it and inside its own grid cell, however deeply it is nested (Critic round
+  // 39, finding 2: the band word in a block span in a flex row in a grid cell under an overflow-hidden card was cut and not seen)
+  texty.forEach(e => { if (e.clientWidth <= 2 || e.clientHeight <= 2 || e.closest('#toast')) return; const rg = document.createRange(); let L = Infinity, R = -Infinity;
+    for (const n of e.childNodes) if (n.nodeType === 3 && n.nodeValue.trim()) { rg.selectNodeContents(n); for (const q of rg.getClientRects()) if (q.width >= 0.5) { L = Math.min(L, q.left); R = Math.max(R, q.right); } }
+    if (!(R > L)) return;
+    for (let a = e.parentElement; a && a !== document.body; a = a.parentElement) { const s = getComputedStyle(a); if (/(auto|scroll)/.test(s.overflowX)) return;
+      const clip = /(hidden|clip)/.test(s.overflowX), cell = !!a.parentElement && /grid/.test(getComputedStyle(a.parentElement).display);
+      if ((clip || cell) && getComputedStyle(a).display !== 'contents') { const q = a.getBoundingClientRect(); if (q.width > 0.5 && (R > q.right + 1 || L < q.left - 1)) { add('text-clipped', e, `text x ${Math.round(L)}..${Math.round(R)} runs past ${clip ? 'a box that clips it' : 'its grid cell'} (x ${Math.round(q.left)}..${Math.round(q.right)})`); return; } } } });
   all.forEach(e => { if (decorative(e) || e.closest('#toast')) return; const cs = getComputedStyle(e); if (!/^(block|flex|grid|inline-block|inline-flex|list-item|table-cell)$/.test(cs.display) || e.clientWidth < 3) return;
     if (/(auto|scroll)/.test(cs.overflowX)) return; if (!(e.innerText || '').trim()) return;
     if ([...e.children].some(c => /^(block|flex|grid|list-item|table)$/.test(getComputedStyle(c).display))) return;   // a box of boxes: its children are measured themselves
@@ -815,6 +838,7 @@ async function drill(b, base) {
     mk('<input style="width:90px;font-size:16px" placeholder="planted hint far too long for this box">');
     mk('<input style="width:200px;font-size:14px" aria-label="planted small input">');
     mk('<div style="width:60px;font-size:16px;white-space:nowrap">planted run-on figure 1200 kcal</div>');
+    mk('<div style="overflow:hidden;width:180px"><div style="display:grid;grid-template-columns:60px 60px 60px"><div><span style="display:flex;white-space:nowrap;font-size:22px"><span style="display:block">planted nested band</span></span></div><div>a</div><div>b</div></div></div>');
     mk('<svg viewBox="0 0 320 40" style="width:160px" role="img" aria-label="planted chart"><text x="4" y="20" style="font-size:12px">planted tiny chart label</text></svg>');
     const last = document.createElement('p'); last.style.cssText = 'font-size:16px;margin-bottom:-600px'; last.textContent = 'planted last line'; v.appendChild(last);
     const ans = document.createElement('p'); ans.id = 'planted-answer'; ans.style.cssText = 'font-size:16px;margin-top:2400px'; ans.textContent = 'planted answer'; v.insertBefore(ans, last);
@@ -826,7 +850,7 @@ async function drill(b, base) {
   const has = (rule, txt) => res.some(v => v.rule === rule && (v.el + ' ' + v.detail).includes(txt));
   const want = [['text-too-small', 'planted small text'], ['off-screen', 'planted wide box'], ['overflow-x', 'content'], ['contrast', 'planted faint text'], ['target-small', '"x"'],
     ['no-name', 'planted-noname'], ['text-clipped', 'planted clipped text'], ['overlap', 'planted over'], ['handwriting-figures', 'planted 450 kcal'], ['handwriting-too-small', 'planted pencil note'],
-    ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-too-small', 'chart text'],
+    ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-clipped', 'planted nested band'], ['text-too-small', 'chart text'],
     ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable']];
   const missed = want.filter(([r, t]) => !has(r, t)).map(([r, t]) => r + ' (' + t + ')');
   if (!hidden) missed.push('feedback-hidden (planted answer)');

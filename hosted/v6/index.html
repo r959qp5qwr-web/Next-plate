@@ -973,7 +973,9 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
    two columns below 15 em (360-390 px at 130 % text); the order card with its "≈" needs two columns below 19 em (320-375 px). */
 #app .rw{container-type:inline-size}
 #app .read4 .v{flex-wrap:nowrap;white-space:nowrap}
-@container (max-width:14.9em){#app .rw:not(.ord) .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Critic round 39, finding 1: the Sugar rise band "Moderate" (22 px, semi-bold) did not fit a third of the plate card below about 20 em
+   (320, 360 and 390 px), so the plate figures take two columns there too, the same two-column look as with enlarged text */
+@container (max-width:20.2em){#app .rw:not(.ord) .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @container (max-width:18.9em){#app .rw.ord .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}#app .rw.ord .read4.six>:nth-child(3):last-child{grid-column:1/-1}}
 #app .cmp-row .val .fu{white-space:nowrap}
 /* Critic round 6: at enlarged text a button label or a link never breaks inside itself. Each sizes to its words; when two do not fit
