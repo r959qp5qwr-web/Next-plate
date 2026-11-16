@@ -195,7 +195,10 @@ const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({},
 for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const t of L.referText) add('S7 typed', refers(kind, t), `${kind}: "${t}" went to the model`);
   for (const t of HO.referText) add('S7 typed (held-out)', refers(kind, t), `${kind}: "${t}" went to the model`);
-  for (const t of L.notReferText.concat([fxm.typed])) add('S7 no false hit', !refers(kind, t), `${kind}: "${t.slice(0, 40)}" was referred`); }
+  for (const t of L.notReferText.concat([fxm.typed])) add('S7 no false hit', !refers(kind, t), `${kind}: "${t.slice(0, 40)}" was referred`);
+  // the referral window's 29 phrasings refer, and food text that shares a word with them does not (owner, 16 Nov, D4; eval/referral/WINDOW.md)
+  for (const t of L.referWindow) add('S7 typed (referral window, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
+  for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`); }
 // the model's refer_reason: any value but "none" is a referral, on every reply that answers typed text; a missing one fails closed
 { const P0 = Object.assign({}, BASE, { diet: 'veg' });
   const replies = { meals: (rr) => Object.assign(mealsReply(platePlain()), rr), menu: (rr) => Object.assign(J(fxm.reply), rr), rescue: (rr) => Object.assign(J(fx.rescue), rr, { dish: Object.assign({}, fx.rescue.dish, { name: 'Veg thali', contains: ['grain'] }) }), log: (rr) => Object.assign(J(fx.log), rr) };
@@ -215,7 +218,13 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
       ['side "2 Gurda Fry"', [['Butter Chicken', ['meat', 'dairy'], '2 Gurda Fry']]], ['leave entry "Gurda Fry"', [BC], ['Gurda Fry']]]) {
     const r = photo(dishes, leave); add('S7 photo menu: a kidney or gurda dish refers', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
   for (const n of ['Rajma Masala', 'Kidney Bean Curry', 'Red Kidney Beans Salad']) { const r = photo([BC, [n, ['plain']]]);
-    add('S7 photo menu: kidney beans and rajma are not referred (control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); } }
+    add('S7 photo menu: kidney beans and rajma are not referred (control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); }
+  // the referral window's kidney words on a dish name (owner, 16 Nov, D4), with their bean and gurdwara neighbours as controls
+  for (const [what, dishes, leave] of [['dish "Kydney fry"', [BC, ['Kydney fry', ['meat']]]], ['dish "Gurrda masala"', [BC, ['Gurrda masala', ['meat']]]], ['dish "Mutton kideney curry"', [BC, ['Mutton kideney curry', ['meat']]]],
+      ['dish "Vrukka fry"', [BC, ['Vrukka fry', ['meat']]]], ['dish "Mutrapind curry"', [BC, ['Mutrapind curry', ['meat']]]], ['side "Kydney fry"', [['Butter Chicken', ['meat', 'dairy'], 'Kydney fry']]], ['leave entry "Gurrda masala"', [BC], ['Gurrda masala']]]) {
+    const r = photo(dishes, leave); add('S7 photo menu: a referral-window kidney dish refers (D4)', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  for (const n of ['Kydney Beans Curry', 'Gurrdwara langar dal', 'Baby Corn Manchurian', 'Tricolour Pulao', 'Bun Maska']) { const r = photo([BC, [n, ['plain']]]);
+    add('S7 photo menu: referral-window neighbours are not referred (D4 control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); } }
 for (const conds of [['kidney'], ['preg'], ['diabetes', 'kidney'], ['diabetes', 'preg'], ['bp', 'kidney']]) {
   const h = conds.includes('kidney') ? 'kidney' : 'preg'; const pl = plan('meals', { profile: Object.assign({}, BASE, { health: h, conds }), ctx: { meal: 'lunch' } });
   add('S7 ticked', !!(pl && pl.reply && pl.reply.status === 'refer'), `ticked ${conds.join(' + ')} was planned`); }
@@ -917,6 +926,7 @@ for (const [tag, name] of WALKNAMES) for (const x of tricked(name).filter((_, i)
   add('B6 trick characters (held-out, prose)', !shown(r, name), `${JSON.stringify(o)}: for_you with "${JSON.stringify(x)}" was shown`); }
 // typed referrals keep working after intake normalisation (Devanagari and Tamil marks are kept)
 for (const t of HO.referText.concat(L.referText)) add('B6 intake keeps S7', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
+for (const t of L.referWindow) add('B6 intake keeps S7 (referral window, D4)', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
 
 // ---------- B4, round 5: the literal empty-list rule. An empty or missing list drops any name, plain or not; "plain" is how a plain food declares ----------
 for (const n of ['Dal tadka', 'Sabudana', 'Sabudana khichdi', 'Rajma', 'Sprouted moong', 'Cucumber', 'Banana split', 'Lemon squash', 'Orange squash', 'Coconut slice', 'Baked beans'])
