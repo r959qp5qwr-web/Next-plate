@@ -1,4 +1,5 @@
-# names-diff: 3363 recorded model names (3218 plate path, 145 menu path) from 52 files under eval/; 21 change between 6b5e18d and this build.
+# names-diff: 3452 recorded model names (3218 plate path; 234 menu path, 104 with their typed menu) from 52 files under eval/; 21 change between 6b5e18d and this build.
+# Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).
 # kind | as recorded | old shown -> new shown ("" = not shown)
 plate | "Boiled egg whites and one whole egg" | "Boiled egg whites and one whole egg" -> "Boiled egg whites and whole egg"
 plate | "Egg Curry with Two Eggs" | "Egg Curry with Two Eggs" -> "Egg Curry with Eggs"

@@ -1746,19 +1746,23 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
 /* counts written as words (S8; final audit M2; Critic round 38, finding 1). A number word is a count only by what follows it:
    - a measure word ("One bowl dal", "Half plate rice", "Buttermilk one glass"): the number and the measure word go;
-   - a piece word or a plural noun within the next three words, not across a joining word ("Two phulka", "with two whole eggs", "Three
-     appams with stew", "Do roti", "Teen phulka", "Do aloo paratha"): the number goes, the food stays.
+   - for an English number, any food word but a word of a dish's own name (below): the number goes, the food stays;
+   - for "half", "single", "quarter" and the Hindi numbers, a piece word within the next two words, not across a joining word ("Do roti",
+     "Teen phulka", "Do aloo paratha").
    So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
    "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
    "double" counts only before a measure word. The article "a" is never taken off alone. */
 var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
-var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?)";
+var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?)";
 /* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
 var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
 /* a piece word within two words; for English numbers and menu digits, a piece word or a plural noun within three */
 var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
 var CNTAHEADP="(?="+CNTSKIP+"{0,3}?[\\s-]+(?:"+CNTPIECE+"|[a-z]*[^su\\W\\d]s)\\b)";
-var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEADP+")-?","gi");
+/* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
+   a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
+var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
+var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
 var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */

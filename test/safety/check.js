@@ -333,7 +333,9 @@ const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji ma
   'Three kozhukattais', 'Four pathiris with stew', 'Buttermilk one glass', 'Single phulka', 'Pair of idlis', 'A couple of chapatis', 'Half a dozen momos', 'Quarter plate biryani', 'Ek katori dal', 'Do roti with sabzi',
   'Rajma chawal, half plate', 'Eleven pani puri', 'Seven-cup burfi',
   // Critic round 38, finding 1: a count word before a food or measure word, Hindi included
-  'Two phulka', 'Teen phulka', 'Do roti', 'Two rotis with dal', 'Half plate biryani', 'Do aloo paratha', 'Char samosa', 'Aadha plate chawal', 'Charred paneer tikka with two phulka'];
+  'Two phulka', 'Teen phulka', 'Do roti', 'Two rotis with dal', 'Half plate biryani', 'Do aloo paratha', 'Char samosa', 'Aadha plate chawal', 'Charred paneer tikka with two phulka',
+  // a count before a singular noun no list holds (the advisor's probes, 16 Nov)
+  'Curd with one banana', 'One apple', 'Two parotta', 'Three idiyappam', 'Four dhokla', 'Two akki rotti', 'One small bowl curd', 'Six pesarattu'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -355,6 +357,8 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   ['Paneer do pyaza', 'Paneer do pyaza'], ['Panch phoron dal', 'Panch phoron dal'], ['Paneer tikka', 'Paneer tikka'], ['Egg half fry', 'Egg half fry'], ['Double ka meetha', 'Double ka meetha'], ['Teen dal tadka', 'Teen dal tadka'],
   ['Navratan korma', 'Navratan korma'], ['Half boiled egg', 'Half boiled egg'], ['Single origin coffee', 'Single origin coffee'],
   // the coordinator's controls (16 Nov): dish names with number-like words stay as written
+  ['Steamed tender green beans', 'Steamed tender green beans'], ['Skinless chicken tenders', 'Skinless chicken tenders'], ['Tender soya chunks curry', 'Tender soya chunks curry'], ['Lone pepper chicken', 'Lone pepper chicken'],
+  ['Two parotta', 'Parotta'], ['Four dhokla', 'Dhokla'], ['Curd with one banana', 'Curd with banana'], ['Two akki rotti', 'Akki rotti'], ['Four cheese pizza', 'Four cheese pizza'],
   ['Half-fry egg', 'Half-fry egg'], ['Three bean salad', 'Three bean salad'], ['Five spice tofu', 'Five spice tofu'], ['Panchmel dal', 'Panchmel dal'], ['Do pyaza', 'Do pyaza'], ['Panch phoron', 'Panch phoron'], ['One-pot khichdi', 'One-pot khichdi'],
   // Critic round 38: what follows the number word decides. A count before a food or measure word goes; a dish name stays
   ['Two phulka', 'Phulka'], ['Teen phulka', 'Phulka'], ['Do roti', 'Roti'], ['Do aloo paratha', 'Aloo paratha'], ['Half plate biryani', 'Biryani'],
