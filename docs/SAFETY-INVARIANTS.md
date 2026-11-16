@@ -4,7 +4,7 @@ These are the owner's rules written as properties a test can check. Each holds o
 - plates (meals, ask, tune: swaps and one-tap changes);
 - menu orders;
 - Rescue (dish and moves);
-- "I had something else" (log), for S7 and S8 only. The log is what the client says they ate, their own record and not an offer, so it is not filtered by the food rules (S1-S5, S9). What it shows back is in the client's own words.
+- "I had something else" (log), for S7, and for S8 in what the engine writes there (the figures; the model's "assumed" line is not shown). The log is what the client says they ate, their own record and not an offer, so it is not filtered by the food rules (S1-S5, S9). What it shows back is in the client's own words.
 
 `test/safety/check.js` tests them on the built engine (np-core); `test/safety/codex.js` holds the Codex re-audit's probes with their assertions inverted (a defect fails); `test/rules/check.js` and the review states in `test/ux/review.js` hold the rest. Cases come from `test/safety/lexicon.json`, kept apart from the engine's own word lists: "known" names may be copied into the word lists, "heldout" names never are (the test asserts none appears in `src/v5/core.js` or `src/v6/engine.js`). `test/safety/audit-names.json` (the second audit's 380 names) and `test/safety/controls.json` (573 names the live model wrote) are kept as test data.
 
@@ -25,6 +25,12 @@ These are the owner's rules written as properties a test can check. Each holds o
 - sentence meaning;
 - a wrong but non-empty tag on a name the lists do not know (tracked: 175 of the second audit's 380 names pass with a wrong tag; `test/safety/codex.js` prints Kori rotti, Payesh and Poondu rasam as TRACKED);
 - counts written in words the app does not know, with no occurrence in the recorded live replies ("Rendu idli", "Don chapati", "Duto ruti"): on the watch list, checked in the weekly 20-reply sample; they block only once one is seen in ordinary use. English and Hindi number words, digits and brackets stay tier 1 (owner, 16 Nov, option survey: "Watch list (Recommended)").
+
+**List gaps (owner, 16 Nov, option survey: "Fix found, then watch (Recommended)").** Every gap an audit or review finds is fixed and tested. A new unlisted spelling, plural or word with no live occurrence is tier 2: it goes on the watch list and into the weekly 20-reply sample, and it does not fail an audit. This refines the count-word decision above: Hindi gaps that are found are fixed (safety audit of ba4d8dc, M1: parathe, samose, luchi, litti, chammach, mutthi, dus, gyarah and the rest), and Hindi gaps not yet found are watched.
+
+**Referral spellings (owner, 16 Nov, option survey: "Measure, then decide (Recommended)").** Every kidney and pregnancy spelling found so far is fixed (safety audit of ba4d8dc, B1 and m1: gurday, gurdae, goorda, gurdha, gurdein, gurdy, kedney, kidaney, CKD3, creat 2.1, prego, baccha hone wala hai, BF mom, TTC, mommy to be, jachcha and the rest). The coordinator then runs a short live sample to measure how often the model's own referral (refer_reason) catches spellings the code net does not list; the owner decides after that. **S7 spelling gaps are pending this measurement**: until the owner decides, the tier of an S7 spelling gap is not changed.
+
+**Menu numbers (owner, 16 Nov, option survey: "Short keep-list (Recommended)").** "Keep a number only if it is a known name number ("65", "7 Up", and the few others in recorded menus); remove every other number. A miss costs a dish its number, never shows a price. "Tandoori Roti 2" becomes "Tandoori Roti"." This replaces the rule by position and the price guessing for names (S8 below).
 
 How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Recommended)"):
 - The model tags every plate item, swap, one-tap change, menu order and side, "leave for another day" entry and Rescue dish from a fixed list: meat, fish, egg, dairy, wheat, nuts, soya, onion_garlic, root_veg, sweet, salty_side, grain, supplement, plain. A food with none of the others declares "plain". Code drops anything whose tags break the client's rules. A missing list, an empty list (the owner's literal rule) or an unknown tag is dropped.
@@ -59,7 +65,7 @@ How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Rec
 | Rescue dish label | 3 (as typed; "Your dish" for a long text) | a supplement is not helped | "couldn't work out that dish" |
 | Rescue portion | 1 (grams from the reply) | figures agree | no portion line |
 | Rescue moves | 1 (engine-written from the figures; no food named) | S5, S6, figures agree on every set of moves | the move is not offered |
-| Log title, items | 3 (an item only in words the client typed) | S7, S8 | "Your meal"; the item is left out |
+| Log title, items | 3 (the client's own words, shown as typed: the title is the typed text, "2 rotis and 1 katori dal"; an item only in words the client typed, so it may read "katori dal") | S7 on the typed text; S8 does not apply to the client's own words, as for the Rescue dish label; the model's "assumed" line is not shown, and the figures are grams and kcal (safety audit of ba4d8dc, c3: this row used to name S8 as a check on the title and items) | "Your meal"; the item is left out |
 | Placeholders, labels | 4 | food-neutral | — |
 
 Every tap that logs or shows a composed state goes through one wrapper (`act()` in the app): the day is checked first (S12), then the composed result (`composedWhy`: figures agree, S5, S6). A static guard in `test/safety/check.js` reads `src/v6/app.js` and fails if a click handler that logs, clears or composes is not wrapped. Kept plates carry the rules they were made under and are dropped at load and render on a mismatch (review state `plate-rules-reload`).
