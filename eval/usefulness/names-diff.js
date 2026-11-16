@@ -15,7 +15,7 @@ const walk = (o, k, inMenu, typed) => {
     if (/^\s*[\[{]/.test(o)) { try { walk(JSON.parse(o), k, inMenu, typed); return; } catch (e) {} }
     if (o.length > 200) return;
     const addM = (t) => { const key = t + '\u0000' + (typed || ''); if (!names.menu.has(key)) names.menu.set(key, [t, typed || '']); };
-    if (k === 'food' || k === 'add_item') names.plate.add(o);
+    if (k === 'food' || k === 'add_item' || k === 'items') names.plate.add(o);   // 'items': older records hold plate items as plain strings (safety audit of b4633dd follow-up)
     else if (k === 'as_written' || k === 'name' && inMenu) addM(o);
     else if (k === 'with' && inMenu) addM(o.replace(/^\d{1,2}\s+/, ''));   // a side: the engine takes its leading count off first
     return; }
