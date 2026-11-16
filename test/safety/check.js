@@ -929,6 +929,25 @@ for (const [tag, name] of WALKNAMES) for (const x of tricked(name).filter((_, i)
 // typed referrals keep working after intake normalisation (Devanagari and Tamil marks are kept)
 for (const t of HO.referText.concat(L.referText)) add('B6 intake keeps S7', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
 for (const t of L.referWindow) add('B6 intake keeps S7 (referral window, D4)', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
+// safety audit of b4633dd, B1: a phone keyboard types a curly apostrophe (U+2019) and text pasted from a chat or a notes app carries typographic
+// dashes. Every S7 and urgent phrasing whose pattern spells an apostrophe or a hyphen refers on the four typed paths in each of these forms,
+// the urgent ones with the line to get help now; the food-text controls whose exclusion spells a hyphen stay unreferred in each form. The
+// forms are this test's own list, kept apart from the engine's fold.
+const APOS = ['‘', '’', '‛', 'ʼ', 'ʹ', '`', '´', '′', '＇'];
+const DASH = ['‐', '‑', '‒', '–', '—', '―', '−', '﹘', '﹣', '－'];
+const SPACES = [' ', ' ', ' ', ' ', ' ', ' ', '　'];
+const typo = (t) => { const v = []; if (t.includes("'")) for (const a of APOS) v.push(t.split("'").join(a)); if (t.includes('-')) for (const d of DASH) v.push(t.split('-').join(d));
+  if (t.includes("'") && t.includes('-')) v.push(t.split("'").join('’').split('-').join('‐')); return v; };
+const typoWrap = (t) => { const b = t.split("'").join('’').split('-').join('‑'); return SPACES.map(s => b.split(' ').join(s)).concat([b.split('').join('​'), ' ' + b + '⁠']); };
+const typoRoute = (kind, t) => { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {}); return pl && pl.reply && pl.reply.status === 'refer' ? (pl.reply.urgent === URGENTLINE ? 'U' : 'R') : 'M'; };
+const cpOf = (t) => [...t].filter(c => c.charCodeAt(0) > 126 || c === '\u0060').map(c => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')).filter((c, i, a) => a.indexOf(c) === i).join(' ');
+for (const kind of ['meals', 'menu', 'rescue', 'log']) {
+  for (const t of L.referPunct || []) for (const v of typo(t).concat(typoWrap(t))) add('S7 typed, typographic apostrophes, dashes and spaces (safety audit of b4633dd, B1)', typoRoute(kind, v) !== 'M', `${kind}: "${t}" with ${cpOf(v)} went to the model`);
+  for (const t of L.urgentPunct || []) for (const v of typo(t).concat(typoWrap(t))) add('B1 urgent text, typographic apostrophes (safety audit of b4633dd, B1): referred with the line to get help now', typoRoute(kind, v) === 'U', `${kind}: "${t}" with ${cpOf(v)} gave ${typoRoute(kind, v)}`);
+  for (const t of L.notReferPunct || []) for (const v of typo(t)) add('S7 no false hit, typographic apostrophes and dashes (safety audit of b4633dd, B1)', typoRoute(kind, v) === 'M', `${kind}: "${t}" with ${cpOf(v)} was referred`); }
+// the ASCII forms themselves: the cases above are only worth something if the straight forms refer, and the controls do not
+for (const t of (L.referPunct || []).concat(L.urgentPunct || [])) add('S7 typed, typographic cases (ASCII form)', ['meals', 'menu', 'rescue', 'log'].every(k => typoRoute(k, t) !== 'M'), `"${t}" went to the model`);
+for (const t of L.notReferPunct || []) add('S7 no false hit, typographic cases (ASCII form)', ['meals', 'menu', 'rescue', 'log'].every(k => typoRoute(k, t) === 'M'), `"${t}" was referred`);
 
 // ---------- B4, round 5: the literal empty-list rule. An empty or missing list drops any name, plain or not; "plain" is how a plain food declares ----------
 for (const n of ['Dal tadka', 'Sabudana', 'Sabudana khichdi', 'Rajma', 'Sprouted moong', 'Cucumber', 'Banana split', 'Lemon squash', 'Orange squash', 'Coconut slice', 'Baked beans'])

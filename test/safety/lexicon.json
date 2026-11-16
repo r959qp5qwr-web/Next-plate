@@ -399,6 +399,45 @@
    "protein in my lunch",
    "feed the kids dinner"
   ],
+  "referPunct": [
+   "I'm 20 weeks",
+   "I'm 32 weeks, lunch ideas",
+   "I'm pg",
+   "I'm nursing",
+   "post-natal diet",
+   "ante-natal check up today, lunch?",
+   "breast-feeding, what should I eat",
+   "post-partum diet",
+   "post-delivery diet",
+   "mom-to-be lunch",
+   "mum-to-be, dinner please",
+   "mother-to-be thali",
+   "c-section last month",
+   "ob-gyn said eat more iron",
+   "low-potassium diet",
+   "BF-ing, lunch ideas",
+   "pumping breast-milk, need protein",
+   "brest-feeding mom",
+   "feeding my 3-month old, lunch?"
+  ],
+  "urgentPunct": [
+   "I can't breathe",
+   "can't breathe properly",
+   "can't breath after walking",
+   "I can't breathe, what should I eat for dinner?"
+  ],
+  "notReferPunct": [
+   "kidney-bean salad",
+   "red kidney-beans curry",
+   "Kidney-beans curry",
+   "Kydney-beans curry",
+   "tri-colour salad",
+   "third tri-colour salad",
+   "low sugar-free biscuits",
+   "they delivered a baby-corn pizza",
+   "Chef's special thali",
+   "Today's dal-chawal"
+  ],
   "addedFromReports": {
    "meat": [
     "machli",
