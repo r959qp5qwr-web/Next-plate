@@ -1,10 +1,11 @@
-// Every model name recorded under eval/, cleaned by the OLD showName (6b5e18d, the build the final audit and Critic round 38 judged) and by
+// Every model name recorded under eval/, cleaned by the OLD showName (ba4d8dc, the build the safety audit and Critic round 40 judged; OLDREF
+// sets another, e.g. OLDREF=6b5e18d for the build the final audit and Critic round 38 judged) and by
 // the NEW one (hosted/v6/index.html), on the path the name takes: plate items, swaps and one-tap items on the plate path; menu dishes,
 // sides and leave entries on the menu path (no typed menu, as for a photo). Every name that changes is written to names-diff.txt as
 // old -> new, for reading by hand: a change may only take off a count or a portion.
 //   node eval/usefulness/names-diff.js            (writes eval/usefulness/names-diff.txt; exit 0)
 const fs = require('fs'), path = require('path'), vm = require('vm'), { execSync } = require('child_process');
-const ROOT = path.join(__dirname, '..', '..'), OLDREF = process.env.OLDREF || '6b5e18d';
+const ROOT = path.join(__dirname, '..', '..'), OLDREF = process.env.OLDREF || 'ba4d8dc';
 const core = (page) => { const o = '<script id="np-core">', a = page.indexOf(o) + o.length, ctx = vm.createContext({ console }); vm.runInContext(page.slice(a, page.indexOf('</script>', a)), ctx); return ctx; };
 const OLD = core(execSync(`git show ${OLDREF}:hosted/v6/index.html`, { cwd: ROOT, maxBuffer: 64 << 20 }).toString()), NEW = core(fs.readFileSync(path.join(ROOT, 'hosted/v6/index.html'), 'utf8'));
 const files = execSync('git ls-files eval', { cwd: ROOT }).toString().split('\n').filter(f => /\.json$/.test(f));

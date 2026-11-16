@@ -78,7 +78,7 @@ const errRule = async (p, name) => { const r = await p.evaluate((s) => { const e
   if (r.err !== want || r.rule !== want) throw new Error(want ? 'the error note has no clay rule (class err: ' + r.err + ', rule: ' + r.rule + ')' : 'an info note carries the error rule'); };
 // the closest order on a menu where nothing fits, as the engine returns it (checkMenu with menuNote and menuMoves)
 // mocked orders are written as the engine returns them: a grain side shows its count and its grams (second screen review, R2-B8 114-1)
-const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ name: 'Paneer Butter Masala', portion: '\u2248 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
+const MENUCLOSE = { status: 'ok', place: '', orders: [{ name: 'Paneer Butter Masala', portion: '\u2248 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
 // second screen review, R2-B6 083, R2-B7 104 and 106: at a limit or without the link, Rescue's send controls and menu buttons are off
 const rescueOff = async (p) => { const r = await p.evaluate(() => { const q = (s) => document.querySelector(s), off = (s) => !q(s) || q(s).disabled;
   return { cam: off('#mcam'), type: !q('#mtext') ? off('#mtype') : true, send: off('#v-rescue .rin .send'), chips: [...document.querySelectorAll('#v-rescue .sit')].every(b => b.disabled), go: off('#mgo') && !(q('#mgo') && q('#mgo').classList.contains('primary')) }; });
@@ -307,6 +307,23 @@ const STATES = [
     await p.click('#preset-balanced'); await h.settle(250); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after a preset is chosen');
     for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } if (!(await p.$('#ratio-bound'))) throw new Error('no bound note after taps past the fats bound');
     await p.click('#make-ratio'); await h.settle(800); await p.click('#tab-build'); await h.settle(400); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after planning and coming back');
+    // Critic round 40, finding 2: for every row, with the row at 60 % of the screen height when the refused tap is made, the note says that
+    // row's bound and is seen whole: under the masthead, above the held "Plan ... with this plate" button, the tab bar and the screen's edge
+    const NAME = { protein: 'Protein', greens: 'Vegetables and greens', carbs: 'Grains', fats: 'Fats and seeds' };
+    for (const [k, dir] of [['protein', 'p'], ['greens', 'p'], ['carbs', 'p'], ['fats', 'p'], ['carbs', 'm'], ['protein', 'm'], ['greens', 'm'], ['fats', 'm']]) {
+      await p.click('#preset-balanced'); await h.settle(150); let seen = null;
+      for (let i = 0; i < 16 && !seen; i++) {
+        await p.evaluate((id) => { const s = document.getElementById('scroll'), b = document.getElementById(id).getBoundingClientRect(); s.scrollTop += b.top + b.height / 2 - innerHeight * 0.6; }, `st-${k}-${dir}`); await h.settle(60);
+        const y = await p.$eval(`#st-${k}-${dir}`, (b) => { const r = b.getBoundingClientRect(); return Math.round((r.top + r.height / 2) / innerHeight * 100); });
+        await p.click(`#st-${k}-${dir}`); await h.settle(150);
+        seen = await p.evaluate((nm) => { const n = document.getElementById('ratio-bound'); if (!n || n.textContent.indexOf(nm) !== 0) return null;
+          const r = n.getBoundingClientRect(), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'), sc = document.getElementById('scroll');
+          const m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null, head = sc ? sc.getBoundingClientRect().top : 0;
+          const floor = Math.min(innerHeight, m && m.top > r.top && m.top < innerHeight ? m.top : innerHeight, t && t.top > r.top ? t.top : innerHeight);
+          return { ok: r.top >= head - 0.5 && r.bottom <= floor + 0.5, top: Math.round(r.top), bottom: Math.round(r.bottom), floor: Math.round(floor), head: Math.round(head), text: n.textContent }; }, NAME[k]);
+        if (seen) seen.rowAt = y; }
+      if (!seen) throw new Error(`no bound note for ${NAME[k]} ${dir === 'p' ? '+' : '-'} after 16 taps`);
+      if (!seen.ok) throw new Error(`the bound note for ${NAME[k]} ${dir === 'p' ? '+' : '-'}, tapped with the row at ${seen.rowAt} % of the screen, is not seen whole (${JSON.stringify(seen)})`); }
     await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the state ends with the note shown; the screenshots are taken at fixed scroll stops, so a slice may show it under the sticky button
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
@@ -359,7 +376,7 @@ const STATES = [
     const f = await p.evaluate(() => { const a = document.activeElement; return !!a && !!a.closest && !!a.closest('#v-rescue .note'); }); if (!f) throw new Error('after the last No, focus is not on the note'); await h.next(p, { has: ['#menu-name-dish'], text: 'every order Next Plate picked from this menu' }, 'No grain left'); }],
   // round 29: "No" moves to an order with another grain; reading the menu again after "No" does not bring the same grain back
   ['menu-grain-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
       { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
       { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
@@ -377,7 +394,7 @@ const STATES = [
     await p.click('#order-grain-no'); await p.waitForSelector('#menu-grain-undo'); if (!(await p.$('#mtext'))) await p.click('#mtype'); await h.settle(200); await p.fill('#mtext', fx.typed + '\nLassi 80');
     await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 }); if (await p.$('#order-grain-said')) throw new Error('a No from another menu is still shown'); await h.settle(900); await h.inView(p, '#order-card', 'the order on the other menu'); }],
   ['menu-grain-two', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
       { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
       { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
@@ -546,7 +563,7 @@ const STATES = [
     if (!(await p.$('#slot-change')) || await p.$('#have')) throw new Error('an asked plate, once eaten, does not show as eaten'); }],
   ['plate-loading-asks', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); if (!(await p.$eval('#askgo', b => b.disabled)) || !(await p.$('#ask-wait'))) throw new Error('asks look ready while the plate is being made'); }, (p, h) => h.slowApi(p, 60000)],
   ['menu-grain-yes-then-no', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
       { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
       { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
@@ -555,7 +572,7 @@ const STATES = [
     if (!/You said roti is not available\. .*You said steamed rice is available: name your dish with it instead\./.test(await p.textContent('#v-rescue'))) throw new Error('after Yes then No the note forgets the Yes, or tells them to ask about it'); }],
   // owner, 14 Nov: Yes to rice, then No to roti on one order: the order is set aside, the next one offered, and the trace line says why
   ['menu-grain-yes-then-no-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
+    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
       { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
       { name: 'Rajma', portion: '\u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
@@ -823,6 +840,8 @@ function coverage() {
   for (const t of Object.keys(COVER.tab)) if (!ONLY.length && !names.has(COVER.tab[t])) miss.push('tab "' + t + '" has no review state');
   // a scripted reply shows only what the engine can write: a menu or Rescue portion is grams only, "\u2248 300 g" (Critic round 39, finding 10)
   for (const m of fs.readFileSync(__filename, 'utf8').matchAll(/portion: '([^'(]*)'/g)) if (!/^(?:\\u2248|\u2248) \d+ g$/.test(m[1])) miss.push('a scripted portion the engine cannot write: "' + m[1] + '"');
+  // and a menu place is never shown: the engine sets it to "" (safety round 5), so a scripted reply carries place '' (Critic round 40, finding 6)
+  for (const m of fs.readFileSync(__filename, 'utf8').matchAll(new RegExp('\\bplace' + ": '([^']*)'", 'g'))) if (m[1] !== '') miss.push('a scripted menu place the engine cannot write: "' + m[1] + '"');
   const steps = (app.match(/UI\.step<2/g) || []).length ? 3 : 0; if (!ONLY.length && steps && !['setup-1-goal-food', 'setup-2-health', 'setup-3-body'].every(n => names.has(n))) miss.push('a setup step has no review state');
   return miss;
 }

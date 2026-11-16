@@ -1758,15 +1758,21 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
    "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
    "double" counts only before a measure word. The article "a" is never taken off alone. */
-var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
-var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?)";
+/* measure words, with the Hindi ones and katori in every form ("katoriyan", "katoree"), and weights and volumes ("Half Kg", "Ek Kilo",
+   "Hundred grams"; safety audit of ba4d8dc, M1; Critic round 40, finding 5) */
+var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|kaps?|glass(?:es)?|katori\\w*|katoree\\w*|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?|chammach\\w*|chamach\\w*|chammuch|mutth?i\\w*|karc?hhi\\w*|karchi|vatis?|kgs?|kilos?|kilograms?|litres?|liters?|ltrs?|ml|g|gms?|grams?)";
+var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|vade|wade|vadon|dose|doson|pakode|pakore|pakodon|pakodis?|pakodiy(?:an|aan|on)|idliy(?:an|aan|on)|kachoriy(?:an|aan|on)|tikkiy(?:an|aan)|golgappe|golgappas?|anday|andey|andon|luchis?|luchchis?|littis?|baatis?|batis?|theple|chille|cheele|dhokle|rotiyon|puriyon|chapatiyon|rotle|rotliy(?:an|aan)|bhakriy(?:an|aan))";
+/* (the last line: Hindi plurals in -e, -on and -iyan, and piece words the list lacked: luchi, litti, baati; safety audit of ba4d8dc, M1;
+   Critic round 40, finding 3) */
 /* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
 var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
 /* a piece word within two words */
-var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
+/* a piece word within two words, or after a word and "ki" ("Do makki ki roti", "Do bajre ki roti"); a number right before the joining word
+   is not a count ("Das ka dosa") */
+var CNTAHEAD="(?=(?:"+CNTSKIP+"{1,2}[\\s-]+(?:ki|ka|ke|di|da|de))?"+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
 /* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
    a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
-var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
+var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r|minutes?|up)\\b)";   /* "Ten-minute poha", "Two-minute noodles", "Seven Up" (safety audit c2) */
 /* numbers above twelve (safety audit M2), by the same rule: a count when a word follows that is not a word of a dish's own name ("Fifteen
    almonds"); at the end of a name, or before a dish word, they stay ("Chicken sixty five"). "Sixty five" is one number: its "five" is not
    taken off alone (cntOff, below). */
@@ -1778,62 +1784,64 @@ var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNT
 var CNTTENSBEFORE=new RegExp("\\b"+CNTTENS+"[\\s-]+$","i");
 function cntOff(h,rx){return h.replace(rx,function(m){var at=arguments[arguments.length-2],str=arguments[arguments.length-1];return CNTTENSBEFORE.test(str.slice(0,at))?m:" ";});}
 var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
-var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
+/* the Hindi numbers, with the spellings "dus", "gyarah" and "barah" (safety audit of ba4d8dc, M1) */
+var CNTHINDI="ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|dus|gyarah|gyaarah|barah|baarah|aadha|adha|aadhi|adhi|dedh|dhai|dhaai";
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+of\\s+","gi");
+/* a measure word with no number that opens a name is a household measure too ("Glass buttermilk", "Bowl dal"; Critic round 40, finding 3);
+   "Cup cake", "Mug cake" and "Glass noodles" keep their names */
+var MEASBARE=/^(?:an?\s+)?(?:(?:small|medium|large|big)\s+)?(?:glass(?:es)?|bowls?|katori\w*|katoree\w*|plates?|tumblers?|handfuls?|cups?|mugs?)\s+(?!(?:cakes?|noodles|vermicelli)\b)(?=[a-z])/i;
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
+/* katori in every form ("katori", "katoris", "katoriyan", "katoree") is a household measure (S8) */
+var KATORI=/\b(?:katori|katoree)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
 var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
-/* THE MENU NUMBER RULE, kept in this one place. The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"):
-   "Remove a number only when a count, measure or food word follows it: "Two Tandoori Roti" shows as "Tandoori Roti". "Chicken 65" and
-   "Gobi 65" stay as printed. "7 Cup Barfi" loses its "7 Cup"; that is the one cost."
-   It is applied by position, with no list of foods: a number with a word after it goes, together with that word when it is a count,
-   measure or piece word ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali 2 Person", "7 Cup Barfi"), and otherwise on its own
-   ("2 Idli 1 Vada" shows "Idli Vada"; "Chicken 65 Biryani" shows "Chicken Biryani", the same kind of cost as "7 Cup Barfi"). A number at
-   the end of the name stays ("Chicken 65"; "Tandoori Roti 2"), after the price is taken off (menuPrice). "x2" and "2x" go. (Safety audit M1.) */
-var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
-var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x)?(?=[\\s-]+[a-z])|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
-/* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
-   "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
-   after another number it is the price ("Chicken 65 240"). */
-function menuPrice(h,typed){h=h.replace(/\s*(?:[-:@]\s*(?:(?:rs\.?|inr|\u20B9)\s*)?|(?:rs\.?|inr|\u20B9)\s*)\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
-  var m=/^(.*[A-Za-z].*?)((?:\s+\d+(?:\.\d+)?)+)$/.exec(h);if(!m)return h;var base=m[1],nums=m[2].trim().split(/\s+/);
-  /* Critic round 39, finding 3: the menu is priced when a line shows a price plainly (after "Rs", "INR", the rupee sign, "-", ":" or "@", or
-     after another number: "Chicken 65 240", "(Half) 180 (Full) 320"), or when half its lines end in a number and either every line does or those
-     numbers differ (a list "Chicken 65 / Gobi 65 / Dal Tadka", with lines that carry no number, ends in one number, the name's; "Idli 40 /
-     Vada 40" is priced). A price after a dash and a mark ("- Rs 240") goes whole. On a priced menu a name keeps its number when a price follows it on
-     its line, after a price mark or a size word if there is one ("Chicken 65 Rs. 240", "Chicken 65 (Half) 180"). */
-  if(typed&&typeof menuNorm==="function"){var T=menuNorm(typed),lines=String(typed).split(/\n|\s+\|\s+/).filter(function(l){return /[a-z]/i.test(l);}),   /* the menu check joins typed lines with " | " */
-      ends=lines.map(function(l){var e=/(\d+(?:\.\d+)?)\s*(?:\/-)?\s*$/.exec(l);return e?e[1]:"";}).filter(Boolean),
-      marked=lines.some(function(l){return /(?:\brs\.?|\binr|\u20B9|[-:@])\s*\d+(?:\.\d+)?\s*(?:\/-)?\s*$/i.test(l)||/\d[^\d\n]{1,14}\d+(?:\.\d+)?\s*(?:\/-)?\s*$/.test(l);}),
-      priced=marked||ends.length*2>=lines.length&&(ends.length===lines.length||ends.filter(function(x,i){return ends.indexOf(x)===i;}).length>1);
-    for(var k=nums.length;k>0;k--){var cand=base+" "+nums.slice(0,k).join(" "),cn=menuNorm(cand);if(T.indexOf(cn)>=0&&(!priced||new RegExp(cn.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(?:(?:rs|inr|half|full|qtr|quarter|regular|small|medium|large|plate)\\s+)*\\d").test(T)))return cand;}
-    return base;}
-  return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}
+/* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Short keep-list (Recommended)"): "Keep a number only if it is
+   a known name number ("65", "7 Up", and the few others in recorded menus); remove every other number. A miss costs a dish its number, never
+   shows a price. "Tandoori Roti 2" becomes "Tandoori Roti"." It replaces the rule by position and the price guessing from the typed menu.
+   - The keep-list. The recorded menus under eval/ (typed and photo, as_written too) hold no number that is part of a dish's name: every
+     number in them is a price, a count or grams. So the list is the owner's two examples. "65" is kept only after a word of the dishes
+     named that way when that word opens the name ("Chicken 65", "Gobi 65", "Paneer 65", "Chicken 65 Biryani"), never on its own or after
+     another word, where it would be a price ("Sweet Lassi 65", "Tea 65", "Aloo Gobi 65", "Butter Chicken 65"); for the same reason not
+     after "veg" or "egg" ("Mix Veg 65", "Boiled Egg 65"). So "Veg 65", "Egg 65" and "Andhra Chicken 65" lose it, the accepted cost.
+   - Every other number goes, with its count, measure or piece word if one follows ("Paneer Tikka 6 pcs", "Mutton Biryani 1 Kg", "Veg Thali
+     2 Person", "7 Cup Barfi", "3 in 1"), and the price with it ("Veg Thali 120", "Tandoori Roti 2", "Chicken 555", "5 Star Thali" shows "Star Thali").
+   - A marked price goes whole first, with its mark ("- Rs 240", "Rs. 240", "\u20B9240", "240/-", ": 240", "@ 240"). */
+var MENUKEEP=/^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;
+var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katori\\w*|plates?|plts?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
+var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
+/* a count before a last word the name already holds goes with that word ("Chole Bhature 2 Bhature 120" shows "Chole Bhature"; "Paneer Butter
+   Masala with 2 Butter Naan" keeps its "Butter"; safety audit c2) */
+function menuCount(h){var keep=[],m;MENUKEEP.lastIndex=0;while((m=MENUKEEP.exec(h)))keep.push([m.index,m.index+m[0].length]);
+  return h.replace(MENUCOUNT,function(x){var at=arguments[arguments.length-2];return keep.some(function(k){return at>=k[0]&&at<k[1];})?x:" ";});}
+/* a menu name's marked price, with its mark, at the end ("Chicken 65 - Rs 240", "Dal Tadka \u20B9200", "Thali 120/-") */
+function menuPrice(h){return h.replace(/\s*(?:[-:@]\s*(?:(?:rs\.?|inr|\u20B9)\s*)?|(?:rs\.?|inr|\u20B9)\s*)\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();}
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
   /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off,
      and so is one that holds a count or a portion ("(one bowl)", "(two eggs)", "(half plate)", "(two)", "(Half)"; safety audit M2) */
   var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!countIn(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
-  if(o.price)h=menuPrice(h,typeof o.price==="string"?o.price:"");
+  if(o.price)h=menuPrice(h);
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h.replace(/\b([a-z]+)\b(.*?)\s+\d+\s+\1((?:\s+\d+(?:\.\d+)?)*)$/i,"$1$2$3")):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
-  h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
+  h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").trim().replace(/^(?:of|and|with|or|for)\s+|\s+(?:of|and|with|x|or|for)$/gi,"").trim();   /* no joining word is left alone at an end: "Combo for Two" shows "Combo", "Two or three rotis" "Rotis" (safety audit c2); "folded in" keeps its "in" */
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
      "Cup cake" and "Buddha bowl" keep their names (S8; Critic round 39, finding 4) */
-  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(/\s+/g," ").trim();
+  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(MEASBARE,"").replace(/\s+/g," ").trim();
   var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
+  if(KATORI.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
   return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
 /* a bracket holds a count or a portion when the count rules would change it, or it names a measure, a katori or a size (S8; safety audit M2);
-   "no" alone is not the measure "nos": "(no ghee)" says what the food is */
-function countIn(b){return new RegExp("\\b(?:katoris?|"+CNTMEAS.slice(3,-1).replace("nos?|","nos|")+")\\b","i").test(b)||/^(?:half|full|quarter|single|double)$/i.test(b)||
+   "no" alone is not the measure "nos": "(no ghee)" says what the food is, and "gram" alone is a pulse: "(gram flour)", "(Bengal gram)" */
+function countIn(b){return new RegExp("\\b(?:"+CNTMEAS.slice(3,-1).replace("nos?|","nos|").replace("|g|gms?|grams?","")+")\\b","i").test(b)||new RegExp("^(?:half|full|quarter|single|double|"+CNTHINDI+")$","i").test(b)||
   cntOff(cntOff(b,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
-/* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
-var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
-function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
+/* a menu name has the name shape once its keep-list numbers are read as words: every digit shown sits inside a keep-list name ("Chicken 65",
+   "7 Up"); a name that is only a number is not shown */
+var MENUSHAPE=NAMESHAPE;
+function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t.replace(MENUKEEP,function(k){return k.replace(/\d+/g,"Num");}));}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
@@ -1959,6 +1967,11 @@ function checkMeal(m,p){
     x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(raw,n.carbs,x.deltaCarbs);CUR_SLOT="";
     if(p.health==="diabetes"&&p.slot!=="snack"&&!kg)return;   /* rule 3: the grain stays, at least half of it, and no wording takes it off */
+    /* with no declared grain item nothing ties a change's grain grams to an item on the plate, so a change that changes the grain is not
+       offered: grams after other than the reply's own grain grams ("Rice" 200 g, a change to 150 g), or any grain grams after when the reply
+       gives none (it cannot be told). Grams after equal to the reply's grain grams, or 0 with no grain, change no grain and stay (S10; safety
+       audit of ba4d8dc, M2) */
+    if(!dg&&after!=null){var gg=num(m.grain&&m.grain.grams,0,1500)||0;if(gg>0?after!==gg:after>0)return;}
     if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
@@ -1967,7 +1980,6 @@ function checkMeal(m,p){
   return {meal:{title:title,subtitle:sub,cuisine:"",minutes:num(m.prepMinutes,0,180)||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:[],swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
-var KATORI=/\bkatoris?\b/i;
 /* the plate title and subtitle the engine writes from the checked items (names only) */
 function engineTitle(items){var pr=items.filter(function(i){return i.group==="protein";})[0]||items[0],gr=items.filter(function(i){return i!==pr&&(i.group==="carbs"||i.group==="other");})[0]||items.filter(function(i){return i!==pr;})[0];
   var t=pr.food+(gr?" with "+gr.food.toLowerCase():"");return t.length>70?pr.food.slice(0,70):t;}
@@ -2000,7 +2012,7 @@ function ownWordsOut(title,typed){var w=String(typed||"").toLowerCase().match(/[
    its place, is dropped, as the menu drops such a portion or ask (engine.js checkMenu); a move that leaves part of the grain stays */
 /* grams and kcal only (owner): a portion or move in katori or phulka, or in a bowl, cup, glass or ladle with no grams, is not shown, as the
    menu clears such a portion (second screen review, R2-B6 081-2) */
-var HOUSEU=/\b(?:katoris?|katori|phulkas?|fulkas?)\b/i,VESSEL=/\b(?:bowls?|cups?|glass(?:es)?|ladles?|handis?|tumblers?)\b/i,GRAMS=/\d\s*(?:g|gm|grams?|ml)\b/i;
+var HOUSEU=/\b(?:katori\w*|katoree\w*|phulkas?|fulkas?)\b/i,VESSEL=/\b(?:bowls?|cups?|glass(?:es)?|ladles?|handis?|tumblers?)\b/i,GRAMS=/\d\s*(?:g|gm|grams?|ml)\b/i;
 function houseUnit(t){return HOUSEU.test(t)||VESSEL.test(t)&&!GRAMS.test(t);}
 /* S5 for Rescue: a move that gives the grain to someone else, puts something else in its spot, or wraps the food in a leaf takes the grain
    off, whatever its wording ("Give the rice to your family", "Let the kids have the chawal", "Have salad in the naan's spot", "Wrap the
@@ -2874,6 +2886,10 @@ function checkMenu(r,p,c,pl,hooks){
   (hooks||[]).forEach(function(h){ids[h.id]=1;out.hooks[h.id]=h.tag;});
   if(!r||typeof r!=="object"){out.status="error";return out;}
   if(r.status==="refer"||referred(r)){out.status="refer";out.read=SAFETY;return out;}        /* refer_reason other than "none" is a referral (S7) */
+  /* a kidney or gurda dish on the menu refers the client on a photo as on a typed menu, whatever refer_reason says: the owner's rule (16 Nov,
+     "Refer, as now (Recommended)"): "Any typed kidney word (except kidney beans/rajma) refers the client to coach or doctor, even when it is a
+     dish on a menu." Read on every dish, side and leave entry the model copied from the menu (Critic round 40, for the auditor) */
+  if([].concat(Array.isArray(r.dishes)?r.dishes:[],Array.isArray(r.leave)?r.leave:[]).some(function(d){return !!d&&typeof d==="object"&&[d.as_written,d["with"],d.name].some(referDish);})){out.status="refer";out.read=SAFETY;return out;}
   var raw=Array.isArray(r.dishes)?r.dishes.slice(0,8):[];
   /* a menu in a script the checks cannot read ends with a note to type it in English letters (D1) */
   var script=NONLATIN.test(c.text||"")||raw.some(function(d){return d&&typeof d.as_written==="string"&&NONLATIN.test(d.as_written);});
@@ -2900,7 +2916,7 @@ function checkMenu(r,p,c,pl,hooks){
     if(rawSide&&!side){drop("side-shape");}   /* a side that is not "<count> <name>" in the name shape is taken off the order */
     if(side){var sf=menuFigs(d,"with_",SIDER),off=typed&&items.indexOf(menuNorm(side))<0&&items.indexOf(menuNorm(sideRaw))<0&&!onMenu(sideRaw,typed)&&!onMenu(side,typed)?"side-off-menu":contentsBad(d.with_contains,side,p)?"side-contents":onlyInBarred(sideName(sideRaw),items,p)||onlyInBarred(sideName(side),items,p)?"side-diet":!sf.n?"side-numbers":CLAIM.test(side)?"side-claim":"";
       /* grams and kcal only: a side in a bowl, cup or glass with no grams, or in katori, is taken off the order (S8); a grain side is shown with its grams */
-      if(!off&&(/\bkatoris?\b/i.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
+      if(!off&&(KATORI.test(sideRaw)||VESSEL.test(sideRaw)&&!GRAMS.test(sideRaw)))off="side-units";
       if(!off&&!figsAgree(addN(n,{deltaKcal:sf.n.kcal,deltaProtein:sf.n.protein,deltaCarbs:sf.n.carbs,deltaFats:sf.n.fats,deltaFiber:sf.n.fiber})))off="side-numbers";   /* the order with its side agrees too (A2) */
       if(off){side="";drop(off);}else{MENUK.forEach(function(k){n[k]+=sf.n[k];});dt=dt.concat(tagList(d.with_contains));}}
     if(p.health==="diabetes"&&p.slot!=="snack"&&(!isGrainMaterial(d.grain_made_of)||!(num(d.grain_grams,0,1500)>=30)||(!isGrain(rawN)&&!isGrain(sideRaw)&&!porGrain(rawN,rawPor,typed?c.text:"",c.meal))||removesGrain(rawPor+". "+rawAsk)||STAND.test(rawPor+". "+rawAsk)||partOnly(rawN,rawPor,sideRaw)))return drop("diabetes-grain");   /* rule 3: the grain is declared, it is in the dish, its side or its portion ("1 bowl dal with 1 roti"), and neither the portion nor the ask leaves it out */
@@ -2948,10 +2964,23 @@ function banOut(t){t=norm(t);if(NONLATIN.test(t))return "";var q=t.replace(/[\r\
 /* safety invariant S7: typed disclosures of pregnancy, breastfeeding or a kidney condition ("kidney beans" is food). Any kidney word that is not
    "kidney bean(s)" is referred, wherever it stands ("low salt for kidney"): the owner's rule is that a typed kidney mention is referred, and a
    list of the words that may follow it missed the ones it did not hold (final audit, 16 Nov) */
-var REFERTXT=/\b(?:kidneys?(?![\s-]*beans?\b)|pre?gn\w*|pragn\w*|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bach(?:ch)?a\s+hone\s+wala|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gurd(?:a{1,2}|e|ey|o|on)\b|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidny|kideny|kidn(?!ap)(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kind(?:e|ne)y\w*|kiddne?y\w*|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft)\b/i;
+/* kidney words: kidney and its misspellings ("kidni", "kindey", "kedney", "kidaney", "kiney"), and gurda in every form (gurda, gurde,
+   gurdey, gurdo, gurdon, gurday, gurdae, gurdai, gurdein, gurdy, goorda, guurda, gurdha), but not "kidney bean(s)", "kidnap", "Gurdwara",
+   "Gurudwara" or "Gurdeep". The one list both typed text and a menu's dish names are read with (safety audit B1, m1). */
+var REFERKIDW=/kidneys?(?![\s-]*beans?\b)|kidny|kideny|kidn(?!ap)(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kind(?:e|ne)y\w*|kiddne?y\w*|k[ei]da?ney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|k[id]ney(?![\s-]*beans?\b)|g(?:u{1,2}|oo)rdh?(?:a{1,2}|a{1,2}y|ae|ai|e|ey|ein|o|on|y)/;
+var REFERKID=new RegExp("\\b(?:"+REFERKIDW.source+")\\b","i");
+/* the rest of S7 in typed text: kidney conditions, pregnancy, breastfeeding. "BF" counts only as breastfeeding ("BF mom", "BF-ing", "EBF"),
+   never alone, where it is breakfast; "due" only before a month ("due in March", "due next month"), never "due in 20 minutes"; "prego" only
+   with no pasta or sauce word in the text, where it is the sauce (referTyped) */
+var REFEROTHER=/pre?gn\w*|pragn\w*|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bac{1,2}h{1,2}(?:ch)?a\s+hone\s+wal\w*|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd\d*|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother|mommy|mummy|momma|mama)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft|creat|preggy|ttc|ebf|bf[\s-]?ing|bf\s+(?:mom|mum|mother|mama|baby|my\s+(?:baby|son|daughter|newborn|infant))|baby\s+bump|jac{1,2}h{1,2}(?:ch)?a|\d+(?:st|nd|rd|th)\s+month\s+(?:chal|of\s+(?:my\s+)?pregnancy)|due\s+(?:in\s+|on\s+|by\s+)?(?:next\s+month|this\s+month|(?:jan|feb|march|april|may|june|july|aug|sept?|oct|nov|dec)\w*)|navjaat\w*\s+(?:ko|ke)\s+d(?:oo|u)dh/;
+var REFERTXT=new RegExp("\\b(?:"+REFERKIDW.source+"|"+REFEROTHER.source+")\\b","i");
+var PREGO=/\bprego\b/i,PREGOFOOD=/\b(?:sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles)\b/i;
 /* the same in Devanagari and Tamil letters (JavaScript's \b does not work outside Latin letters, so these stand alone) */
-var REFERNL=/গর্ভ|কিডনি|স্তন্যপান|ডায়ালাইসিস|गर्भ|प्रेग्न|प्रेगन|स्तनपान|दूध\s*पिला|किडनी|गुर्द|डायलिसिस|கர்ப்ப|தாய்ப்பால்|சிறுநீரக|கிட்னி|டயாலிசிஸ்|గర్భ|కిడ్నీ|మూత్రపిండ|డయాలసిస్|ಗರ್ಭ|ಕಿಡ್ನಿ|ಮೂತ್ರಪಿಂಡ|ഗർഭ|ഗര്ഭ|കിഡ്നി|വൃക്ക|ગર્ભ|કિડની|ਗਰਭ|ਕਿਡਨੀ|ਗੁਰਦ|حاملہ|حمل|گردے|گردہ|کڈنی|ڈائلیسس|गरोदर|मूत्रपिंड/;
-function referTyped(t){return REFERTXT.test(t)||REFERNL.test(t)||urgentTyped(t);}
+var REFERNLKID=/কিডনি|डायलिसिस|किडनी|गुर्द|சிறுநீரக|கிட்னி|కిడ్నీ|మూత్రపిండ|ಕಿಡ್ನಿ|ಮೂತ್ರಪಿಂಡ|കിഡ്നി|വൃക്ക|કિડની|ਕਿਡਨੀ|ਗੁਰਦ|گردے|گردہ|کڈنی|मूत्रपिंड/;
+var REFERNL=new RegExp(REFERNLKID.source+"|"+/গর্ভ|স্তন্যপান|ডায়ালাইসিস|गर्भ|प्रेग्न|प्रेगन|स्तनपान|दूध\s*पिला|கர்ப்ப|தாய்ப்பால்|டயாலிசிஸ்|గర్భ|డయాలసిస్|ಗರ್ಭ|ഗർഭ|ഗര്ഭ|ગર્ભ|ਗਰਭ|حاملہ|حمل|ڈائلیسس|गरोदर/.source);
+function referTyped(t){return REFERTXT.test(t)||PREGO.test(t)&&!PREGOFOOD.test(t)||REFERNL.test(t)||urgentTyped(t);}
+/* a menu's dish names are read with the kidney words alone: a kidney or gurda dish refers the client (below, checkMenu) */
+function referDish(t){t=norm(String(t||""));return REFERKID.test(t)||REFERNLKID.test(t);}
 /* B1 (Codex re-audit, 15 Nov): urgent symptoms typed in any box are referred before the model, with a line to get help now. A first net,
    not a complete list, and not clinically reviewed: low-sugar signs (shaky, sweating, dizzy or confused with insulin, tablets or sugar; sugar
    low or dropping; hypo), chest pain, fainting, breathlessness, and confusion with insulin, tablets or sugar, in English, Hinglish and common misspellings. No sugar
@@ -3752,10 +3781,19 @@ function rebalance(r,key,d){
   return u;
 }
 var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
-/* a step the bounds refuse is said under the steppers with its reason, not in a toast over the row just tapped (Critic round 38, finding 9) */
+/* a step the bounds refuse is said under the row just tapped with its reason, not in a toast over it (Critic round 38, finding 9), and
+   brought into view above the held "Plan ... with this plate" button and the tab bar: at 320 px a note under the last row sat under the
+   button for most rows (Critic round 40, finding 2) */
 function stepRatio(key,d){var u=rebalance(UI.ratio,key,d),b=RATIOB[key],nx=UI.ratio[key]+d;
-  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");render();$("said").textContent=UI.rbound;return;}
-  UI.rbound="";UI.ratio=u;UI.preset="";render();}
+  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");UI.rkey=key;render();$("said").textContent=UI.rbound;showBound();return;}
+  UI.rbound="";UI.rkey="";UI.ratio=u;UI.preset="";render();}
+/* the least scroll that shows the whole note above the held button, the tab bar and the screen's bottom edge */
+function showBound(){var n=$("ratio-bound"),s=$("scroll");if(!n||!s)return;
+  for(var i=0;i<2;i++){var r=n.getBoundingClientRect(),floor=Math.min(innerHeight,s.getBoundingClientRect().bottom),mk=$("make-ratio"),tb=$("tabs");
+    if(mk&&getComputedStyle(mk).position==="sticky"){var m=mk.getBoundingClientRect();if(m.top>r.top&&m.top<floor)floor=m.top;}
+    if(tb){var t=tb.getBoundingClientRect();if(t.top>r.top&&t.top<floor)floor=t.top;}
+    if(r.bottom<=floor-6)return;s.scrollTop+=Math.ceil(r.bottom-floor+12);}}
+function boundNote(){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));return rb;}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -3779,11 +3817,12 @@ function renderBuild(){
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
     mn.addEventListener("click",function(){stepRatio(x[0],-5);});pl.addEventListener("click",function(){stepRatio(x[0],5);});
-    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
+    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);
+    /* a refused step says why directly under the row tapped (Critic round 39, finding 5; round 40, finding 2). The bound named is the
+       tapped part's own, from RATIOB. */
+    if(UI.rbound&&UI.rkey===x[0])stp.appendChild(boundNote());});
   add(c,rw,stp);
-  /* a refused step says why inside the stepper card, under the rows, where the tap was: below the card it sat under the sticky button at
-     320 px (Critic round 39, finding 5). The bound named is the tapped part's own, from RATIOB. */
-  if(UI.rbound){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));c.appendChild(rb);}
+  if(UI.rbound&&!UI.rkey)c.appendChild(boundNote());
   v.appendChild(c);
   /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */
   var cur=C.ratio||MODEPLATE[C.mode];if(["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];})){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));v.appendChild(chg);}
