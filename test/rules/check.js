@@ -563,7 +563,9 @@ console.log(`fixed lists: ${STANDINS.length} names that are not a grain, ${GRAIN
   const kc = checkMeal(JSON.parse(JSON.stringify(km)), p);
   ok(!!kc.meal && !kc.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'round 13: with diabetes no protein swap takes the place of a grain item grouped as protein');
   const kn = checkMeal(JSON.parse(JSON.stringify(km)), (() => { const q = readProfile(Object.assign({}, P, { health: 'none' })); q.slot = 'dinner'; return q; })());
-  ok(!!kn.meal && kn.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'round 13: without diabetes that protein swap stays on offer');
+  // final audit M1 (16 Nov): without diabetes too, since a grain swap would land on the same item and the plate logged would not be the plate shown.
+  // This replaces the round 13 check that the swap stayed on offer without diabetes (the design changed; listed in the commit).
+  ok(!!kn.meal && !kn.meal.swaps.protein.some(s => s.food === 'Paneer bhurji'), 'final audit M1: without diabetes that protein swap is not offered either');
   const tap = (note, after) => { const m = JSON.parse(JSON.stringify(meal)); m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
     const c = checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); };
   const oRemoves = [

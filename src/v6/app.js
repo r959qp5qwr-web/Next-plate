@@ -87,7 +87,7 @@ function whyLine(m,vw,r){if(typeof reasonLine!=="function")return m.forYou||"";v
   var pp={health:has("diabetes")?"diabetes":"none",medsUsual:medsUsual(profileOut(),C.meal)};
   var cited=(m.planned||[]).map(function(id){return {id:id,tag:r.hooks&&r.hooks[id]};}).filter(function(h){return !!h.tag;});
   return reasonLine({kcal:vw.n.kcal,protein:vw.n.protein,grain:gi&&gi.grams?{food:gi.food,grams:gi.grams}:{food:"",grams:0}},cited,PL,pp,mealName(C.meal).toLowerCase());}
-function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;
+function plateWhy(m,meal){var v=viewOf(m),g=m.grain&&m.grain.food;if(v.grainMiss)return "This change works on the planned grain, so it does not go with a grain swap.";
   var gone=!!g&&!v.items.some(function(it){return sameFood(it.food,g)||it.tag==="swapped"&&m.swaps.base.some(function(s){return s.food===it.food;});});
   return composedWhy(v.n,m,{meal:meal,grainGone:gone,plate:true});}
 function baseWhy(m,meal){var s0={alc:UI.alc,swp:UI.swp,swb:UI.swb};UI.alc={};UI.swp=0;UI.swb=0;var w=plateWhy(m,meal);UI.alc=s0.alc;UI.swp=s0.swp;UI.swb=s0.swb;return w;}
@@ -186,15 +186,20 @@ function viewOf(m){
   /* a swap replaces its own item (a base swap the declared grain item) and changes the figures only when that item is on the plate (S10) */
   function swapIn(list,idx,kind){var s=list[idx],at=swapAt(m,kind);if(!s||!idx||at<0)return;apply(s);var it=items[at];swapped.push({from:it.food,to:s.food,group:it.group});items[at]={food:s.food,grams:s.grams||null,group:it.group,tag:"swapped"};}
   swapIn(m.swaps.protein,UI.swp,"protein");swapIn(m.swaps.base,UI.swb,"base");
-  var suffix=[];ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food)for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
+  /* a change to the grain works on the planned grain item only: when that item is not on the plate as planned (swapped away), the state is
+     refused by plateWhy, so no note names an item that is not on the plate (S10; final audit M1) */
+  var suffix=[],grainMiss=false;ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food){var gf=false;for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){gf=true;if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}if(!gf)grainMiss=true;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
   ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.max(0,Math.round(n[k]));});
   /* a swap is named in the title and in what is logged: "..., with tofu bhurji in place of paneer tikka" (second screen review, R2-B2 025-1) */
   var parts=swapped.map(function(x){return x.to.toLowerCase()+" in place of "+x.from.toLowerCase().replace(/,.*$/,"");}).concat(suffix.map(function(x){return x.toLowerCase();}));
-  return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped};
+  return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped,grainMiss:grainMiss};
 }
 /* the item a swap takes the place of: the first protein item, or for the base the declared grain item (the first carbohydrate item when
    none is declared); -1 when the plate has none, and then that swap is not offered */
-function swapAt(m,kind){var g=m.grain&&m.grain.food;for(var i=0;i<m.items.length;i++){var it=m.items[i];if(kind==="base"?(g?sameFood(it.food,g):it.group==="carbs"):it.group==="protein")return i;}return -1;}
+function swapAt(m,kind){var g=m.grain&&m.grain.food,at=-1;for(var i=0;i<m.items.length;i++){var it=m.items[i];if(kind==="base"?(g?sameFood(it.food,g):it.group==="carbs"):it.group==="protein"){at=i;break;}}
+  /* a protein swap never takes the place of the declared grain item, also on a plate kept from an older build: two swaps on one item would
+     log a plate that is not the one shown (S10; final audit M1) */
+  return kind==="protein"&&at>=0&&at===swapAt(m,"base")?-1:at;}
 function curMeal(){var r=curRes();if(!r||!r.meals||!r.meals.length)return null;if(UI.sel>=r.meals.length)UI.sel=0;return r.meals[UI.sel];}
 function clearSlot(meal){var d=DAY;EV=EV.filter(function(e){return !(dayOf(e.t)===d&&e.meal===meal&&(isMealEv(e)||e.type==="skipped"));});save();}
 /* an asked plate, once the meal is logged, gives way so the logged card shows (screen review B2) */

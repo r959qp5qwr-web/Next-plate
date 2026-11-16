@@ -88,6 +88,20 @@ const GRAINPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Sweet 
   swaps: { protein: [], base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...GZ }, { food: 'Ragi roti', made_of: 'ragi', grams: 90, contains: ['grain'], ...GZ, deltaFiber: 1 }] },
   alchemy: { glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber salad; jowar roti down to 60 g.', minutes: 20, contains: ['grain'], grainAfter: 60, deltaKcal: -60, deltaProtein: -1, deltaCarbs: -14, deltaFats: 0, deltaFiber: 2 },
     gut: { suffix: '(easy on the gut)', note: 'Less chilli; jowar roti down to 55 g.', minutes: 20, contains: ['grain'], grainAfter: 55, deltaKcal: -40, deltaProtein: 1, deltaCarbs: -16, deltaFats: 0, deltaFiber: -1 } } }] };
+// plate-grain-protein-*: the declared grain item is also the main protein (final audit M1). The swaps are the colliding ones an older build
+// kept on the phone: a protein swap and a grain swap that both take the place of the khichdi (engine output shape)
+const KHPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Moong dal khichdi with cucumber salad', subtitle: 'Moong dal khichdi, cucumber salad and tomato slices', cuisine: '', minutes: 25, tuned: true,
+  items: [{ food: 'Moong dal khichdi', grams: 300, group: 'protein', contains: ['grain'] }, { food: 'Cucumber salad', grams: 120, group: 'greens', contains: ['plain'] }, { food: 'Tomato slices', grams: 60, group: 'greens', contains: ['plain'] }],
+  kcal: 480, protein: 18, carbs: 78, fats: 10, fiber: 9, why: [], taste: [], planned: [], forYou: '', contains: ['grain'], grain: { food: 'Moong dal khichdi', made_of: 'rice and moong dal', grams: 300 },
+  swaps: { protein: [{ food: 'Moong dal khichdi', grams: 300, contains: ['grain'], ...GZ }, { food: 'Sprouted moong chilla', grams: 150, contains: ['plain'], deltaKcal: -40, deltaProtein: 6, deltaCarbs: -30, deltaFats: 9, deltaFiber: -4 }],
+    base: [{ food: 'Moong dal khichdi', made_of: 'rice and moong dal', grams: 300, contains: ['grain'], ...GZ }, { food: 'Bajra khichdi', made_of: 'bajra and moong dal', grams: 300, contains: ['grain'], deltaKcal: 20, deltaProtein: 2, deltaCarbs: 2, deltaFats: 1, deltaFiber: 4 }] },
+  alchemy: { glucose: { suffix: 'gentler on sugar', note: 'Add 80\u00A0g sauteed beans. Moong dal khichdi goes to 200\u00A0g. About 60\u00A0kcal less.', minutes: 25, contains: ['plain'], grainAfter: 200, item: 'Sauteed beans', itemGrams: 80,
+    deltaKcal: -60, deltaProtein: 0, deltaCarbs: -22, deltaFats: 2, deltaFiber: 3 } } }] };
+// what the screen shows: the title, the figures and the serving list
+const plateOnScreen = (p) => p.evaluate(() => { const t = document.querySelector('#plate-card h2').textContent, sx = document.querySelector('#plate-card .suffix');
+  return { title: t + (sx ? ', ' + sx.textContent : ''), kcal: +document.getElementById('h-k').textContent, protein: +document.getElementById('h-p').textContent, carbs: +document.getElementById('h-c').textContent, fats: +document.getElementById('h-f').textContent,
+    items: [...document.querySelectorAll('.measures li')].map(l => l.querySelector('.food b').textContent), list: [...document.querySelectorAll('.measures li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()),
+    notes: [...document.querySelectorAll('.modlog li')].map(l => l.textContent) }; });
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
 const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
@@ -570,6 +584,22 @@ const STATES = [
   ['plate-two-grain-changes', seed(), async (p, h) => { await h.plate(p); await p.click('#alc-glucose'); await h.settle(); await p.click('#alc-gut'); await h.settle(600);
     const on = await p.evaluate(() => ['glucose', 'gut'].filter(k => document.getElementById('alc-' + k).getAttribute('aria-pressed') === 'true'));
     if (on.join() !== 'gut') throw new Error('two changes to the grain are on together (' + on.join(', ') + ')'); }, (p) => p.route('**/api/meals', J(200, GRAINPLATE))],
+  // S10 (final audit M1): on a plate whose grain item is also its protein, a protein swap is not offered; a grain swap then logs the plate shown
+  ['plate-grain-protein-swap', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#adjust'); await h.settle();
+    const prot = !!(await p.$('#swp-1')); if (prot) { await p.click('#swp-1'); await h.settle(); }   // an older build offered it
+    await p.click('#swb-1'); await h.settle(600); const scr = await plateOnScreen(p), K = KHPLATE.meals[0], ds = [];
+    if (scr.items.includes('Sprouted moong chilla')) ds.push(K.swaps.protein[1]); if (scr.items.includes('Bajra khichdi')) ds.push(K.swaps.base[1]);
+    const want = ds.reduce((a, d) => ({ kcal: a.kcal + d.deltaKcal, protein: a.protein + d.deltaProtein, carbs: a.carbs + d.deltaCarbs, fats: a.fats + d.deltaFats }), { kcal: K.kcal, protein: K.protein, carbs: K.carbs, fats: K.fats });
+    if (['kcal', 'protein', 'carbs', 'fats'].some(k => scr[k] !== want[k])) throw new Error('the figures shown are not the plate on screen (' + JSON.stringify(scr) + ', the plate is ' + JSON.stringify(want) + ')');
+    if (prot) throw new Error('a protein swap is offered on the declared grain item (' + scr.list.join(' | ') + ')');
+    await p.click('#have'); await h.settle(600); const e = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(x => x.type === 'had').pop());
+    if (!e || e.title !== scr.title || ['kcal', 'protein', 'carbs', 'fats'].some(k => e[k] !== scr[k])) throw new Error('the meal logged is not the plate on screen (' + JSON.stringify(scr) + ' vs ' + JSON.stringify(e) + ')'); }, (p) => p.route('**/api/meals', J(200, KHPLATE))],
+  // S10 (final audit M1): the grain change's note names the grain only while it is on the plate, at the grams it says
+  ['plate-grain-protein-change', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#adjust'); await h.settle();
+    const prot = !!(await p.$('#swp-1')); if (prot) { await p.click('#swp-1'); await h.settle(); }   // an older build offered it
+    await p.click('#alc-glucose'); await h.settle(600); const scr = await plateOnScreen(p);
+    const bad = scr.notes.flatMap(n => [...n.matchAll(/([A-Z][A-Za-z ]+?) goes to (\d+)[\s\u00A0]g/g)]).filter(g => !scr.list.some(l => l.includes(g[1]) && new RegExp('^' + g[2] + '\\s*g').test(l)));
+    if (prot || bad.length || !scr.notes.length) throw new Error('the change note names what is not on the plate (' + scr.notes.join(' ') + ' / ' + scr.list.join(' | ') + (prot ? '; a protein swap is offered on the grain item' : '') + ')'); }, (p) => p.route('**/api/meals', J(200, KHPLATE))],
   // S11: swaps and changes made for answers changed during the wait are not shown
   ['plate-tune-stale', seed(), async (p, h) => { await h.plate(p);
     const k0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').store || {}).shown.lunch);

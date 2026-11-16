@@ -400,6 +400,62 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const r4 = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(retag(m4))), {}), c4 = (r4.meals || [])[0] || { swaps: { protein: [] }, alchemy: {} };
   add('A2 honest swaps and changes stay on offer', c4.swaps.protein.some(s => s.food === 'Boiled chickpeas') && !!c4.alchemy.protein, `offered: ${JSON.stringify(c4.swaps.protein.map(s => s.food))}, changes ${JSON.stringify(Object.keys(c4.alchemy))}`); }
 
+// ---------- S10 (final audit M1): when the declared grain item is also the first protein item, a protein swap never lands on it ----------
+// The plate: moong dal khichdi is the declared grain and the main protein. On the 6b5e18d build a protein swap and a grain swap both
+// replaced that one item, so the figures carried both while the plate showed one. The engine now drops such protein swaps for every
+// profile; the app refuses them too on a plate kept from an older build, and a grain change counts only while the planned grain is on the plate.
+{ const KH = () => ({ title: 'Moong dal khichdi with cucumber', prepMinutes: 25,
+    items: [{ food: 'Moong dal khichdi', grams: 300, group: 'protein', contains: ['grain'] }, { food: 'Cucumber salad', grams: 120, group: 'greens', contains: PT }, { food: 'Tomato slices', grams: 60, group: 'greens', contains: PT }],
+    grain: { food: 'Moong dal khichdi', made_of: 'rice and moong dal', grams: 300 }, contains: ['grain'], kcal: 480, protein: 18, carbs: 78, fats: 10, fiber: 9, planned_around: [], taste: [] });
+  const SW = () => ({ protein: [{ food: 'Moong dal khichdi', grams: 300, contains: ['grain'], ...z }, { food: 'Sprouted moong chilla', grams: 150, contains: PT, deltaKcal: -40, deltaProtein: 6, deltaCarbs: -30, deltaFats: 9, deltaFiber: -4 }],
+    base: [{ food: 'Moong dal khichdi', grams: 300, made_of: 'rice and moong dal', contains: ['grain'], ...z }, { food: 'Bajra khichdi', grams: 300, made_of: 'bajra and moong dal', contains: ['grain'], deltaKcal: 20, deltaProtein: 2, deltaCarbs: 2, deltaFats: 1, deltaFiber: 4 }] });
+  const GL = { glucose: { titleSuffix: '+ sauteed beans', note: 'Add beans, less khichdi.', add_item: 'Sauteed beans', add_grams: 80, minutes: 25, grain_grams_after: 200, contains: PT, deltaKcal: -60, deltaProtein: 0, deltaCarbs: -22, deltaFats: 2, deltaFiber: 3 } };
+  const PROFS = [[{ diet: 'veg', goal: 'hold' }, 'lunch'], [{ diet: 'nonveg', goal: 'hold' }, 'dinner'], [{ diet: 'veg', goal: 'hold' }, 'snack'], [{ diet: 'veg', goal: 'hold', health: 'bp' }, 'lunch'],
+    [{ diet: 'veg', goal: 'hold', health: 'diabetes', meds: 'no' }, 'lunch'], [{ diet: 'veg', goal: 'hold', health: 'diabetes', meds: 'no' }, 'snack']];
+  const shownPlate = (o, slot, m) => (safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: slot } }).check(mealsReply(m)), {}).meals || [])[0];
+  const tuned = (o, slot, m, swaps, alch) => safe(() => plan('tune', { profile: Object.assign({}, BASE, o), slot, meal: Object.assign({}, m, { minutes: 25 }) }).check({ swaps, alchemy: alch || {} }), {});
+  for (const [o, slot] of PROFS) { const m = shownPlate(o, slot, KH());
+    add('S10 grain-protein plate: the honest plate is shown (control)', !!m, `${JSON.stringify(o)} ${slot}: the khichdi plate was not shown`); if (!m) continue;
+    const t = tuned(o, slot, m, SW());
+    add('S10 no protein swap on the declared grain item, any profile', t.status === 'ok' && !(t.swaps.protein || []).some(s => s.food === 'Sprouted moong chilla'), `${JSON.stringify(o)} ${slot}: protein swaps offered ${JSON.stringify((t.swaps || {}).protein)}`);
+    add('S10 the grain swap is still offered (control)', t.status === 'ok' && (t.swaps.base || []).some(s => s.food === 'Bajra khichdi'), `${JSON.stringify(o)} ${slot}: grain swaps ${JSON.stringify((t.swaps || {}).base)}`);
+    // control: on a plate whose first protein item is not the grain, the same protein swap stays on offer
+    const pm = shownPlate(o, slot, Object.assign(platePlain(), { swaps: undefined })), pt = pm && tuned(o, slot, pm, { protein: [{ food: 'Sprouted moong', grams: 200, contains: PT, ...z }, { food: 'Sprouted moong chilla', grams: 150, contains: PT, deltaKcal: -40, deltaProtein: 6, deltaCarbs: -30, deltaFats: 9, deltaFiber: -4 }], base: [] });
+    add('S10 a protein swap on a plain plate stays on offer (control)', !!pt && pt.status === 'ok' && pt.swaps.protein.some(s => s.food === 'Sprouted moong chilla'), `${JSON.stringify(o)} ${slot}: ${JSON.stringify(pt && pt.swaps)}`); }
+  // the app (src/v6/app.js, or NP_APP): every tap state on this plate, with the colliding swaps handed to it as a kept plate from an older build
+  const app = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8');
+  const grab = (name) => { const i = app.indexOf('function ' + name + '('); if (i < 0) return ''; let d = 0, j = app.indexOf('{', i); for (; j < app.length; j++) { if (app[j] === '{') d++; else if (app[j] === '}') { d--; if (!d) break; } } return app.slice(i, j + 1); };
+  const src = ['has', 'profileOut', 'viewOf', 'swapAt', 'composedWhy', 'plateWhy'].map(grab);
+  const A = safe(() => new Function('P', 'C', 'UI', src.join('\n') + '\nreturn {viewOf, plateWhy};'), null);
+  add('S10 app functions found', !!A && src.every(Boolean), 'viewOf, swapAt, composedWhy or plateWhy was not found in app.js');
+  const sum = (b, ds) => { const n = { kcal: b.kcal, protein: b.protein, carbs: b.carbs, fats: b.fats }; ds.forEach(d => { n.kcal += d.deltaKcal; n.protein += d.deltaProtein; n.carbs += d.deltaCarbs; n.fats += d.deltaFats; }); return n; };
+  let states = 0;
+  if (A) for (const [o, slot] of PROFS.filter(x => x[1] !== 'snack')) { const m0 = shownPlate(o, slot, KH()); if (!m0) continue;
+    const al = tuned(o, slot, m0, { protein: [], base: [] }, GL).alchemy || {};
+    add('S10 the grain change is offered (control)', !!al.glucose, `${JSON.stringify(o)}: no grain change offered`);
+    const m = Object.assign(J(m0), { swaps: SW(), alchemy: al, planned: [] });   // the colliding swaps, as an older build kept them
+    const P = Object.assign({ conds: o.health && o.health !== 'none' ? [o.health] : [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o), C = { meal: slot };
+    const keys = Object.keys(al);
+    for (let swp = 0; swp < 2; swp++) for (let swb = 0; swb < 2; swb++) for (let mask = 0; mask < (1 << keys.length); mask++) {
+      const UI = { swp, swb, alc: {} }; keys.forEach((k, b) => { if (mask & (1 << b)) UI.alc[k] = true; });
+      const f = A(P, C, UI), why = safe(() => f.plateWhy(m), 'threw'); if (why) continue;   // a state the app refuses is neither shown nor logged
+      states++; const v = f.viewOf(m), st = `${JSON.stringify(o)} swp ${swp} swb ${swb} ${keys.filter(k => UI.alc[k]).join('+') || 'no change'}`;
+      const onPlate = (food) => v.items.some(i => i.food === food);
+      // every swap counted in the figures is on the plate, and no item is replaced twice
+      add('S10 every swap in the figures is on the plate', v.swapped.every(x => onPlate(x.to)) && new Set(v.swapped.map(x => x.from)).size === v.swapped.length, `${st}: swapped ${JSON.stringify(v.swapped)}, plate ${v.items.map(i => i.food).join(', ')}`);
+      // the figures shown (and logged, the same v.n) are the base plate plus what is on it, and nothing else
+      const ds = []; if (swp) { const s = m.swaps.protein[swp]; if (onPlate(s.food)) ds.push(s); } if (swb) { const s = m.swaps.base[swb]; if (onPlate(s.food)) ds.push(s); } keys.forEach(k => { if (UI.alc[k]) ds.push(m.alchemy[k]); });
+      const want = sum(m, ds);
+      add('S10 the figures are the plate on screen', ['kcal', 'protein', 'carbs', 'fats'].every(k => Math.max(0, Math.round(want[k])) === v.n[k]), `${st}: shown ${JSON.stringify(v.n)}, the plate on screen is ${JSON.stringify(want)} (${v.items.map(i => i.grams + ' g ' + i.food).join(', ')})`);
+      // a change note names the grain only while it is on the plate, at the grams it says
+      if (keys.some(k => UI.alc[k] && m.alchemy[k].grainAfter != null)) add('S10 a grain change note is read', v.notes.some(x => / goes to \d+[\s\u00A0]g/.test(x)), `${st}: notes ${JSON.stringify(v.notes)}`);
+      for (const note of v.notes) for (const g of note.matchAll(/([A-Z][A-Za-z ]+?) goes to (\d+)[\s\u00A0]g/g))
+        add('S10 a change note names only what is on the plate', v.items.some(i => i.food === g[1] && i.grams === +g[2]), `${st}: the note "${note}" names ${g[1]}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}`);
+      // the title names only what is on the plate
+      for (const x of (v.suffix || '').replace(/^with /, '').split(', ').filter(x => / in place of /.test(x))) add('S10 the title names only what is on the plate', v.items.some(i => i.food.toLowerCase() === x.split(' in place of ')[0]), `${st}: title "${v.title}"`); } }
+  add('S10 app states checked', states >= 8, `only ${states} app states were checked`);
+  console.log(`S10 grain-protein plate: ${states} app tap states checked`); }
+
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
 // A first net, not a complete list: the phrasings below are the re-audit's and their variants, so they are regression cases, not held out.
 { const URG = ['I took insulin and feel shaky', 'my sugar dropped to 50 and I feel dizzy', 'my sugar is very low and I am sweating', 'chest pain after lunch', 'feeling faint and confused',

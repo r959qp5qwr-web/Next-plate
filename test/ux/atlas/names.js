@@ -166,5 +166,8 @@ module.exports.push(
   S(P, 'plate-random-combos-2', 'Plate and Rescue: random taps, then logged (not on medicines)', 'Random swap, change, tick and untick sequences, each then logged.'),
   S(P, 'plate-random-combos-3', 'Plate and Rescue: random taps, then logged (medicines "not sure")', 'Random swap, change, tick and untick sequences, each then logged.'),
   S(PS, 'sheet-log-day-changed', 'Sheet: I had something else, the day changed during the wait', 'Send what you had; the day starts (4 am) before the estimate comes back.'));
+module.exports.push(
+  S(P, 'plate-grain-protein-swap', 'Plate: the grain is also the protein, grain swap logged', 'A plate whose khichdi is the grain and the protein: Swap, pick the grain swap, then I\'ll have this.'),
+  S(P, 'plate-grain-protein-change', 'Plate: the grain is also the protein, the sugar change', 'A plate whose khichdi is the grain and the protein: tap Gentler on sugar.'));
 const ORDER = [A, P, PS, PE, B, R, M, MG, X];
 module.exports = module.exports.map((s, i) => [s, i]).sort((a, b) => ORDER.indexOf(a[0].group) - ORDER.indexOf(b[0].group) || a[1] - b[1]).map(x => x[0]);

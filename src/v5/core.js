@@ -670,8 +670,10 @@ function checkMeal(m,p){
     .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.rawFood)&&s.grams>=30))&&
-      /* round 13: a protein swap takes the place of the first protein item; with diabetes it may not take the place of the grain item */
-      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
+      /* round 13: a protein swap takes the place of the first protein item. It may not take the place of the declared grain item, for any
+         client at any meal: a protein swap and a grain swap would both land on that one item, and the plate logged would not be the plate
+         shown (S10; final audit M1) */
+      !(kind==="protein"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   /* one-tap changes: the engine writes the label and the note from the change's structure (the food it adds, by name, with its grams; the
