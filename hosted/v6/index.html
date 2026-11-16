@@ -4069,6 +4069,7 @@ function renderSheet(){
         if(UI.ltext&&UI.lretry){var lb=btn("btn primary","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
         n.appendChild(nt);c.appendChild(n);}
       if(!lref)c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
+      else c.appendChild(el("p","fine","What you type goes to Google Gemini."));   /* the box and "Count it" stay live on a referral, so the notice stays too (Critic round 39, finding 8) */
       sh.appendChild(c);setTimeout(function(){var nn=$("log-note");if(nn){nn.focus();return;}var x=$("login");if(x&&!UI.lbusy)x.focus();},60);return;}   /* after an error the note has focus, so no keyboard covers it */
     var r=UI.lres;c.appendChild(el("h3","dish",r.title));
     var ul2=el("ul","measures");r.items.forEach(function(it){var li=el("li"),qy=el("span","qty g");qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));var fd=el("span","food");fd.appendChild(el("b",null,it.food));add(li,qy,fd);ul2.appendChild(li);});c.appendChild(ul2);
