@@ -592,6 +592,7 @@ var BANDN={Gentle:0,Moderate:1,Sharp:2};
    no_dairy_fat for dairy (the fat; the word net still drops paneer, curd or cream in the name); no_egg and less_salt take out no tag. Nothing
    takes out meat, fish or egg. An order whose listed tags lose any other tag is dropped. */
 var REQKINDS=["none","jain","no_dairy_fat","no_egg","less_salt"],REQREMOVE={none:[],jain:["onion_garlic","root_veg"],no_dairy_fat:["dairy"],no_egg:[],less_salt:[]};
+var REQIF="Only if they can make it this way.";   /* shown after a request line when the order fits only because of the request */
 var REQTEXT={jain:"Make it Jain style, with no onion, garlic or root vegetables.",no_dairy_fat:"Make it with oil instead of ghee or butter.",no_egg:"Make it without egg.",less_salt:"Go easy on the salt."};   /* shown after "Ask the waiter:" */
 function requestBad(d){var k=REQKINDS.indexOf(d&&d.request)>=0?d.request:"none",listed=Array.isArray(d&&d.contains_listed)?d.contains_listed:null,served=Array.isArray(d&&d.contains)?d.contains:[];
   if(!listed)return k==="none"?"":"request-unlisted";   /* a request with no listed tags cannot be checked */
@@ -640,7 +641,10 @@ function checkMenu(r,p,c,pl,hooks){
     if(p.medsUsual&&n.kcal<p.medsUsual)return drop("meds-low");                             /* also with no body figures (M10) */                      /* rule 3: on insulin or sulfonylurea the order is not under the meal's usual energy */
     var sg=num(d.grain_grams,0,1500)||0;   /* a grain side shows its count and its grams (owner decision, 14 Nov) */
     var shown=side?sideCount+" "+side+(sg>=10&&isGrain(sideRaw)&&!isGrain(rawN)?", \u2248\u00A0"+Math.round(sg)+"\u00A0g":""):"";   /* "<count> <name>", written by the engine */
-    list.push({tags:dt,name:name,portion:por,ask:ask,"with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
+    /* owner, 16 Nov, option survey ("Show, marked conditional (Recommended)"): an order that fits only because its request takes out a tag the
+       client's rules bar says so, in a second engine line */
+    var lst=Array.isArray(d.contains_listed)?d.contains_listed:[],srv=tagList(d.contains),bar=barredTags(p),cond=!!ask&&lst.some(function(t){return srv.indexOf(t)<0&&bar.indexOf(t)>=0;});
+    list.push({tags:dt,name:name,portion:por,ask:ask,askIf:cond?REQIF:"","with":shown,n:n,fit:fitOf(n,t),rise:riseOf(n,null).band,grain:p.health==="diabetes"&&p.slot!=="snack"?grainAsk(rawN,rawPor,sideRaw):"",
       planned:(Array.isArray(d.planned_around)?d.planned_around:[]).filter(function(id,j,a){return ids[id]&&a.indexOf(id)===j;}).slice(0,4),i:i,ch:(ask?1:0)+(side?1:0)});
   });
   out.place="";   /* not shown (safety round 5) */

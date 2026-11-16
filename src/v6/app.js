@@ -691,7 +691,8 @@ function orderView(v,r){
   add(card,top,el("h3","dish",o.name));
   if(o.portion||share)card.appendChild(el("p","por",(o.portion||"")+(share?(o.portion?" ":"")+"("+share+")":"")));
   if(o["with"]){var w=el("p","owith");w.appendChild(el("span","cap","with"));w.appendChild(document.createTextNode(" "+o["with"]));card.appendChild(w);}
-  if(o.ask){var oa=el("p","oask");oa.appendChild(el("b",null,"Ask the waiter: "));oa.appendChild(document.createTextNode(o.ask));card.appendChild(oa);}
+  if(o.ask){var oa=el("p","oask");oa.appendChild(el("b",null,"Ask the waiter: "));oa.appendChild(document.createTextNode(o.ask));card.appendChild(oa);
+    if(o.askIf){var oc=el("p","oask",o.askIf);oc.id="order-cond";card.appendChild(oc);}}   /* the order fits only if they make it that way (owner, 16 Nov) */
   var rd=el("div","read4 six");
   function cell(cap,val,unit,cls,was){var d=el("div","tcard");d.appendChild(el("p","cap",cap));
     if(was!=null&&String(was)!==String(val)){var w=el("p","was",was+(unit?"\u00A0"+unit:"")+"\u00A0\u2192");w.setAttribute("aria-label","as served "+was+(unit?" "+unit:"")+", now");d.appendChild(w);}   /* as served, then after the move */

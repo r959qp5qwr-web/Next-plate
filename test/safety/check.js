@@ -442,6 +442,11 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   const REQLINES = safe(() => Object.values(REQTEXT), []);
   const r1 = menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy'], 'jain');
   add('request: Jain style makes an honest dish fit, with the engine\'s line', (r1.orders || []).length === 1 && r1.orders[0].ask === safe(() => REQTEXT.jain, '?'), `Jain: Kadai Paneer with a Jain request: ${JSON.stringify(r1.orders || r1.dropped)}`);
+  // owner, 16 Nov: an order that fits only because of its request is marked conditional; a request that takes out nothing barred is not
+  add('request: conditional when the request takes out a barred tag', (r1.orders || [])[0] && r1.orders[0].askIf === safe(() => REQIF, '?'), `Jain Kadai Paneer: ${JSON.stringify((r1.orders || [])[0] || {}).slice(0, 200)}`);
+  const r5 = menuReq({ health: 'bp' }, 'Dal Fry', ['plain'], ['plain'], 'less_salt'), r6 = menuReq({ diet: 'veg' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy'], 'jain');
+  add('request: no condition line when nothing barred is taken out', (r5.orders || []).length === 1 && r5.orders[0].ask === safe(() => REQTEXT.less_salt, '?') && !r5.orders[0].askIf && (r6.orders || []).length === 1 && !r6.orders[0].askIf,
+    `less_salt: ${JSON.stringify((r5.orders || [])[0] || r5.dropped)}; jain for a vegetarian: ${JSON.stringify((r6.orders || [])[0] || r6.dropped)}`);
   add('request: no request, tags as served break the rule', !(menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy', 'onion_garlic'], 'none').orders || []).length, 'Jain: Kadai Paneer served with onion was offered');
   for (const [o, name, listed, served, req] of [[{ diet: 'veg' }, 'Chicken Tikka', ['meat'], ['plain'], 'jain'], [{ diet: 'veg' }, 'Egg Curry', ['egg', 'onion_garlic'], ['plain'], 'no_egg'], [{ diet: 'veg' }, 'Fish Curry', ['fish'], ['plain'], 'no_dairy_fat'],
       [{ diet: 'vegan' }, 'Paneer Butter Masala', ['dairy', 'onion_garlic'], ['onion_garlic'], 'no_dairy_fat'], [{ diet: 'jain' }, 'Dal Fry', ['onion_garlic', 'wheat'], ['plain'], 'jain'], [{ leave: ['wheat'] }, 'Veg Pulao', ['grain', 'wheat'], ['grain'], 'jain'], [{ diet: 'jain' }, 'Dal Fry', undefined, ['plain'], 'jain']])
