@@ -190,6 +190,15 @@ for (const meds of ['yes', 'unsure']) { const p = readProfile(Object.assign({}, 
     add('S6 prompt', /usual size of this meal/.test(plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }).prompt || ''), `${JSON.stringify(o)}: the plates prompt does not state the usual size`); }
   add('S6 no false hit', plateOffered({ health: 'diabetes', meds: 'no' }, platePlain()).ok, 'not on medicine: a 500 kcal lunch plate was dropped'); }
 
+// ---------- safety audit of b4633dd, backlog head ("Fix found, then watch", owner, 16 Nov, D1): the names it found pass with a "plain" tag,
+// so the word lists must hold them, as a plate item and as a menu order, under the profile that bars each ----------
+const FOUND = [
+  ...['Parathe', 'Paranthe', 'Rotiyaan', 'Chapatiyan', 'Puriyan', 'Samose', 'Theple', 'Rotiyon', 'Puriyon', 'Bati', 'Dal bati', 'Luchchis', 'Aloo parathe', 'Dal bati churma'].map(n => [n, { leave: ['wheat'] }])];
+for (const [n, o] of FOUND) {
+  add('Found gaps (safety audit of b4633dd): a plate item with a "plain" tag', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
+  add('Found gaps (safety audit of b4633dd): a menu order with a "plain" tag', !(menuOffered(o, n, ['plain']).orders || []).length, `${JSON.stringify(o)}: menu order "${n}" tagged plain was offered`);
+  add('Found gaps (safety audit of b4633dd): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'menu', 'rescue', 'log']) {
