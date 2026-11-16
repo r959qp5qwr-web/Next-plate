@@ -307,7 +307,7 @@ const STATES = [
     await p.click('#preset-balanced'); await h.settle(250); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after a preset is chosen');
     for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } if (!(await p.$('#ratio-bound'))) throw new Error('no bound note after taps past the fats bound');
     await p.click('#make-ratio'); await h.settle(800); await p.click('#tab-build'); await h.settle(400); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after planning and coming back');
-    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the screens show the note where the tap was
+    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the state ends with the note shown; the screenshots are taken at fixed scroll stops, so a slice may show it under the sticky button
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
