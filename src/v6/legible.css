@@ -198,7 +198,9 @@
 /* Critic round 39, finding 1: the Sugar rise band "Moderate" (22 px, semi-bold) did not fit a third of the plate card below about 20 em
    (320, 360 and 390 px), so the plate figures take two columns there too, the same two-column look as with enlarged text */
 @container (max-width:20.2em){#app .rw:not(.ord) .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@container (max-width:18.9em){#app .rw.ord .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}#app .rw.ord .read4.six>:nth-child(3):last-child{grid-column:1/-1}}
+/* Critic round 39 follow-up: at 390 px a four-digit order ("\u2248 1150 kcal") ran 1 px past its cell and cut "kcal"; the new clip check
+   found it. The order card takes two columns below 20.5 em. */
+@container (max-width:20.5em){#app .rw.ord .read4.six{grid-template-columns:repeat(2,minmax(0,1fr))}#app .rw.ord .read4.six>:nth-child(3):last-child{grid-column:1/-1}}
 #app .cmp-row .val .fu{white-space:nowrap}
 /* Critic round 6: at enlarged text a button label or a link never breaks inside itself. Each sizes to its words; when two do not fit
    on one row, the second moves to the next row at full width. */
