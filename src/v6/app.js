@@ -568,7 +568,10 @@ function rebalance(r,key,d){
   return u;
 }
 var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
-function stepRatio(key,d){var u=rebalance(UI.ratio,key,d);if(!u){toast(RATIONAME[key]+(d>0?" can't go higher.":" can't go lower."),true);return;}UI.ratio=u;UI.preset="";render();}
+/* a step the bounds refuse is said under the steppers with its reason, not in a toast over the row just tapped (Critic round 38, finding 9) */
+function stepRatio(key,d){var u=rebalance(UI.ratio,key,d),b=RATIOB[key],nx=UI.ratio[key]+d;
+  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": each part of the plate stays between "+b[0]+"\u00A0% and "+b[1]+"\u00A0%.":": the other parts are at their limits.");render();$("said").textContent=UI.rbound;return;}
+  UI.rbound="";UI.ratio=u;UI.preset="";render();}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -596,6 +599,7 @@ function renderBuild(){
   add(c,rw,stp);v.appendChild(c);
   /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */
   var cur=C.ratio||MODEPLATE[C.mode];if(["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];})){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));v.appendChild(chg);}
+  if(UI.rbound){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));v.appendChild(rb);}
   if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   else{var nb=el("p","tip");nb.id="build-no-body";nb.appendChild(el("b",null,"No calorie or protein target yet. "));var ab=btn("linkbtn","Add your age, height and weight",null,"build-add-body");ab.addEventListener("click",function(){openSheet("food",bodyMissing().at);});nb.appendChild(ab);v.appendChild(nb);}
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");

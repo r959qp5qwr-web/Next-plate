@@ -279,7 +279,10 @@ const STATES = [
     const o0 = await out(); if (/45%/.test(o0)) throw new Error('a saved fats share of 45 % is still used (' + o0 + ')');
     for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(120); }
     const o1 = await out(), nums = o1.match(/\d+/g).map(Number); if (nums.some(v => v < 5) || nums[3] > 40 || nums.reduce((x, y) => x + y, 0) !== 100) throw new Error('the shares left their bounds (' + o1 + ')');
-    if (!/can't go higher/.test(await p.evaluate(() => document.getElementById('toast').textContent))) throw new Error('a tap past the fats bound was not refused with a note'); }],
+    // Critic round 38, finding 9: the refusal says the bound, under the steppers, and covers no row (it was a toast over the row just tapped)
+    const nb = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), t = document.getElementById('toast'), row = document.getElementById('st-fats-p').getBoundingClientRect();
+      const tr = t && !t.hidden ? t.getBoundingClientRect() : null; return { text: n ? n.textContent : '', below: n ? n.getBoundingClientRect().top >= row.bottom : false, covers: !!tr && tr.bottom > row.top && tr.top < row.bottom }; });
+    if (!/can't go higher/.test(nb.text) || !/40\u00A0%/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with its reason under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')'); }],
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
