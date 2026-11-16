@@ -1356,9 +1356,16 @@ function madeOf(s){var r=null;String(s).replace(MADE_RX,function(m0,o){var g=GMA
   if(g!==null)r=(r===false)?false:g;return m0;});return r;}   /* null: none, or not a material ("made with minimal oil"); false: a non-grain */
 function standIn(x){var mo=madeOf(x);return STAND.test(x)||mo===false||(mo!==true&&FLOUR_RX.test(x)&&!GMATW_RX.test(x));}   /* "chana flour and whole wheat" names a grain */
 /* Text intake (audit B6): NFKC (full-width letters become Latin), format characters out (zero-width space, joiners, word joiner, soft
-   hyphen, BOM), and combining marks on Latin letters out, so the text checked is the text shown. Devanagari and Tamil marks are kept. */
-function norm(t){t=String(t==null?"":t);try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
-  try{t=t.normalize("NFD").replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+/g,"").normalize("NFC");}catch(e){}return t;}   /* these mark blocks serve Latin; Devanagari and Tamil marks are in their own blocks */
+   hyphen, BOM), and combining marks on Latin letters out, so the text checked is the text shown. Devanagari and Tamil marks are kept.
+   Typographic apostrophes and dashes become the ASCII ones (safety audit of b4633dd, B1): a phone keyboard types U+2019 for an apostrophe,
+   pasted text carries typographic dashes, and NFKC folds neither. The referral and urgent patterns ("can't", "I'm", "mom-to-be",
+   "c-section") and the grain, count, negation and supplement patterns ("low-carb", "One-pot", "pre-workout") read the ASCII forms. Folded
+   before NFKC (U+00B4 would become a space and a combining mark) and after it (NFKC makes U+2014 from U+FE58). Unicode spaces become a
+   space through NFKC. */
+var APOSRX=/[\u2018\u2019\u201B\u02BC\u02B9\u0060\u00B4\u2032]/g,DASHRX=/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g;
+function foldPunct(t){return t.replace(APOSRX,"'").replace(DASHRX,"-");}
+function norm(t){t=foldPunct(String(t==null?"":t));try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
+  try{t=t.normalize("NFD").replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+/g,"").normalize("NFC");}catch(e){}return foldPunct(t);}   /* these mark blocks serve Latin; Devanagari and Tamil marks are in their own blocks */
 function words(s){return s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(Boolean);}
 /* Shapes: a wrap, toast, flatbread or crust can be made of anything, so it is a grain only when a grain is named with it ("whole wheat
    wrap", "oats porridge"), or, for the everyday wheat shapes (toast, bun, pizza, sandwich, bread, lasagne, gnocchi, porridge), when only
