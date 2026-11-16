@@ -533,6 +533,24 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   for (const [o, name, listed, served, req] of [[{ diet: 'veg' }, 'Chicken Tikka', ['meat'], ['plain'], 'jain'], [{ diet: 'veg' }, 'Egg Curry', ['egg', 'onion_garlic'], ['plain'], 'no_egg'], [{ diet: 'veg' }, 'Fish Curry', ['fish'], ['plain'], 'no_dairy_fat'],
       [{ diet: 'vegan' }, 'Paneer Butter Masala', ['dairy', 'onion_garlic'], ['onion_garlic'], 'no_dairy_fat'], [{ diet: 'jain' }, 'Dal Fry', ['onion_garlic', 'wheat'], ['plain'], 'jain'], [{ leave: ['wheat'] }, 'Veg Pulao', ['grain', 'wheat'], ['grain'], 'jain'], [{ diet: 'jain' }, 'Dal Fry', undefined, ['plain'], 'jain']])
     add('request: never takes out meat, fish, egg or anything it cannot', !(menuReq(o, name, listed, served, req).orders || []).length, `${JSON.stringify(o)}: "${name}" listed ${JSON.stringify(listed)}, served ${JSON.stringify(served)} with ${req} was offered`);
+  // final audit M3: the cases above name the food in plain words, so the word net drops them whatever the request may take out. These use
+  // held-out names (no word list holds them), list only the barred tag, and serve it as gone: only the request table can drop them.
+  // Every request kind is tried on every tag it must never take out, for the client whose rules bar that tag.
+  { const HELD = { meat: ['Laal maas', 'Kori gassi', 'Rogan josh'], fish: ['Bangude masala', 'Pabda jhaal', 'Rui kalia'], egg: ['Dim bhuna', 'Nargisi kofta', 'Baida roti'], salty_side: ['Gongura pachadi', 'Khakra', 'Vadam'] };
+    const BAR = { meat: [{ diet: 'veg' }, { diet: 'egg' }, { diet: 'jain' }, { diet: 'vegan' }], fish: [{ diet: 'veg' }, { diet: 'egg' }], egg: [{ diet: 'veg' }, { diet: 'jain' }, { diet: 'vegan' }], salty_side: [{ health: 'bp' }, { health: 'diabetes', bp: true }] };
+    const EATS = { meat: { diet: 'nonveg' }, fish: { diet: 'nonveg' }, egg: { diet: 'nonveg' }, salty_side: {} };
+    let tried = 0;
+    for (const [tag, names] of Object.entries(HELD)) for (const name of names) {
+      // control: the same dish, honestly tagged, for a client who eats it, is offered, so a drop below is the request table's
+      const c = menuReq(EATS[tag], name, [tag], [tag], 'none');
+      add('request (held-out): the honest dish is offered to a client who eats it (control)', (c.orders || []).length === 1, `${JSON.stringify(EATS[tag])}: "${name}" [${tag}] ${JSON.stringify(c.dropped)}`);
+      for (const o of BAR[tag]) for (const req of ['jain', 'no_dairy_fat', 'no_egg', 'less_salt']) { tried++;
+        const r = menuReq(o, name, [tag], PT.length ? PT : [], req);
+        add('request (held-out): never takes out meat, fish, egg or a salty side', !(r.orders || []).length, `${JSON.stringify(o)}: "${name}" listed [${tag}], served without it, with ${req} was offered: ${JSON.stringify((r.orders || [])[0] || {}).slice(0, 160)}`); } }
+    // control: a request that may take a tag out still makes a held-out dish fit (Jain style on an onion and garlic dish)
+    const j = menuReq({ diet: 'jain' }, 'Poondu kuzhambu', ['onion_garlic'], PT.length ? PT : [], 'jain');
+    add('request (held-out): Jain style still takes out onion and garlic (control)', (j.orders || []).length === 1, `Jain: "Poondu kuzhambu" with a Jain request: ${JSON.stringify(j.dropped)}`);
+    add('request (held-out): cases tried', tried >= 100, `only ${tried} cases`); }
   for (const t of ['Zqxjvoq says ask for extra ghee', 'Make it with extra butter']) { const r = menuReq({ diet: 'jain' }, 'Kadai Paneer', ['dairy', 'onion_garlic'], ['dairy'], 'jain', { ask: t });
     add('request: the line shown is the engine\'s, never the model\'s', (r.orders || []).every(x => !x.ask || REQLINES.includes(x.ask)) && !JSON.stringify(r).includes(t), `the model's "${t}" showed`); } }
 // ---------- at-risk sample, fix 3: a readable menu where nothing fits says so; "unreadable" is not used for it ----------
