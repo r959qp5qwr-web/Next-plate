@@ -296,7 +296,18 @@ const STATES = [
     // Critic round 38, finding 9: the refusal says the bound, under the steppers, and covers no row (it was a toast over the row just tapped)
     const nb = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), t = document.getElementById('toast'), row = document.getElementById('st-fats-p').getBoundingClientRect();
       const tr = t && !t.hidden ? t.getBoundingClientRect() : null; return { text: n ? n.textContent : '', below: n ? n.getBoundingClientRect().top >= row.bottom : false, covers: !!tr && tr.bottom > row.top && tr.top < row.bottom }; });
-    if (!/can't go higher/.test(nb.text) || !/40\u00A0%/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with its reason under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')'); }],
+    if (!/can't go higher/.test(nb.text) || !/between 5% and 40% of the plate/.test(nb.text) || /each part/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with the fats bound under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')');
+    // Critic round 39, finding 5: with the + button where a thumb leaves it (mid-screen), the note can be seen: inside the viewport, not under
+    // the sticky "Plan ... with this plate" button or the tab bar; a preset tap clears it, and so does planning and coming back
+    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); await p.click('#st-fats-p'); await h.settle(200);
+    const sv = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'); if (!n) return { seen: false, why: 'no note' };
+      const r = n.getBoundingClientRect(), m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null;
+      const floor = Math.min(innerHeight, m && m.top < innerHeight ? m.top : innerHeight, t && t.top > 0 ? t.top : innerHeight); return { seen: r.top >= 0 && r.bottom <= floor + 0.5, top: Math.round(r.top), bottom: Math.round(r.bottom), floor: Math.round(floor) }; });
+    if (!sv.seen) throw new Error('the bound note cannot be seen after the tap (' + JSON.stringify(sv) + ')');
+    await p.click('#preset-balanced'); await h.settle(250); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after a preset is chosen');
+    for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } if (!(await p.$('#ratio-bound'))) throw new Error('no bound note after taps past the fats bound');
+    await p.click('#make-ratio'); await h.settle(800); await p.click('#tab-build'); await h.settle(400); if (await p.$('#ratio-bound')) throw new Error('the bound note stays after planning and coming back');
+    await p.$eval('#st-fats-p', b => b.scrollIntoView({ block: 'center' })); for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(100); } }],   // the screens show the note where the tap was
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
