@@ -1772,7 +1772,7 @@ var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|
 var CNTAHEAD="(?=(?:"+CNTSKIP+"{1,2}[\\s-]+(?:ki|ka|ke|di|da|de))?"+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
 /* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
    a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
-var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
+var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r|minutes?|up)\\b)";   /* "Ten-minute poha", "Two-minute noodles", "Seven Up" (safety audit c2) */
 /* numbers above twelve (safety audit M2), by the same rule: a count when a word follows that is not a word of a dish's own name ("Fifteen
    almonds"); at the end of a name, or before a dish word, they stay ("Chicken sixty five"). "Sixty five" is one number: its "five" is not
    taken off alone (cntOff, below). */
@@ -1810,6 +1810,8 @@ var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?",
 var MENUKEEP=/\b(?:(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65|7[\s-]*up)\b/gi;
 var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katori\\w*|plates?|plts?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
 var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
+/* a count before a last word the name already holds goes with that word ("Chole Bhature 2 Bhature" shows "Chole Bhature"; "Paneer Butter
+   Masala with 2 Butter Naan" keeps its "Butter"; safety audit c2) */
 function menuCount(h){var keep=[],m;MENUKEEP.lastIndex=0;while((m=MENUKEEP.exec(h)))keep.push([m.index,m.index+m[0].length]);
   return h.replace(MENUCOUNT,function(x){var at=arguments[arguments.length-2];return keep.some(function(k){return at>=k[0]&&at<k[1];})?x:" ";});}
 /* a menu name's marked price, with its mark, at the end ("Chicken 65 - Rs 240", "Dal Tadka \u20B9200", "Thali 120/-") */
@@ -1821,9 +1823,9 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=menuPrice(h);
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ");h=(o.price?menuCount(h.replace(/\b([a-z]+)\b(.*?)\s+\d+\s+\1$/i,"$1$2")):h.replace(DIGALL," ")).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
-  h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
+  h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").trim().replace(/^(?:of|and|with|or|for)\s+|\s+(?:of|and|with|x|or|for)$/gi,"").trim();   /* no joining word is left alone at an end: "Combo for Two" shows "Combo", "Two or three rotis" "Rotis" (safety audit c2); "folded in" keeps its "in" */
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
      "Cup cake" and "Buddha bowl" keep their names (S8; Critic round 39, finding 4) */
   h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(MEASBARE,"").replace(/\s+/g," ").trim();

@@ -402,6 +402,8 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   // safety audit of ba4d8dc, M1; Critic round 40, findings 3 and 5: the count or measure goes, the food stays; honest names keep their words
   ['Do parathe', 'Parathe'], ['Do makki ki roti', 'Makki ki roti'], ['Teen litti', 'Litti'], ['Ek chammach ghee', 'Ghee'], ['Glass buttermilk', 'Buttermilk'], ['Bowl dal', 'Dal'], ['Hundred grams paneer', 'Paneer'], ['Idli (Do)', 'Idli'],
   ['Chicken Biryani Half Kg', 'Chicken Biryani'], ['Mutton Biryani (Half Kg)', 'Mutton Biryani'], ['Katoriyan dal', 'Dal'],
+  // safety audit of ba4d8dc, c2: no stub is left by a count word ("Or rotis", "Minute poha" before)
+  ['Two or three rotis', 'Rotis'], ['Ten-minute poha', 'Ten-minute poha'], ['Two-minute noodles', 'Two-minute noodles'], ['Seven Up', 'Seven Up'], ['Combo for Two', 'Combo'], ['Spinach folded in', 'Spinach folded in'],
   ['Mug cake', 'Mug cake'], ['Glass noodles', 'Glass noodles'], ['Moong (green gram)', 'Moong (green gram)'], ['Dal bati churma', 'Dal bati churma'], ['Litti chokha', 'Litti chokha'], ['Kadhi pakode', 'Kadhi pakode'], ['Teen dal tadka', 'Teen dal tadka']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
@@ -437,7 +439,7 @@ const KEPTNUM = /\b(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|bab
   // "Kothu", "Salna") must behave like the rest, so a rule that knows only listed words cannot pass.
   const M1 = [['Egg Curry 2 Eggs', 'Egg Curry Eggs'], ['Egg Bhurji 3 Eggs', 'Egg Bhurji Eggs'], ['Omelette 3 Egg', 'Omelette Egg'], ['Veg Thali 3 Roti Dal Rice', 'Veg Thali Roti Dal Rice'],
     ['Mini Meals 4 Roti Rice Dal', 'Mini Meals Roti Rice Dal'], ['North Indian Thali - 4 Roti, Dal, Rice', 'North Indian Thali Roti'], ['2 Idli 1 Vada', 'Idli Vada'], ['Idli 2 Vada 1 Combo', 'Idli Vada Combo'],
-    ['Breakfast Combo Idli 2 Vada 1 Coffee', 'Breakfast Combo Idli Vada Coffee'], ['Poori Sagu 3 Poori', 'Poori Sagu Poori'], ['Mutton Biryani 1 Kg', 'Mutton Biryani'], ['Buttermilk 1 Ltr', 'Buttermilk'],
+    ['Breakfast Combo Idli 2 Vada 1 Coffee', 'Breakfast Combo Idli Vada Coffee'], ['Poori Sagu 3 Poori', 'Poori Sagu'], ['Chole Bhature 2 Bhature', 'Chole Bhature'], ['Paneer Butter Masala with 2 Butter Naan', 'Paneer Butter Masala with Butter Naan'], ['Mutton Biryani 1 Kg', 'Mutton Biryani'], ['Buttermilk 1 Ltr', 'Buttermilk'],
     ['Biryani 1 Handi', 'Biryani'], ['Veg Thali 2 Person', 'Veg Thali'], ['Family Pack Biryani 4 Persons', 'Family Pack Biryani'], ['2 Chole Bhature', 'Chole Bhature'], ['Appam 2 Stew', 'Appam Stew'],
     ['Parotta 2 Salna', 'Parotta Salna'], ['Kothu 3 Blorp Fizzle', 'Kothu Blorp Fizzle'], ['Blorp 3 Fizzle', 'Blorp Fizzle'],
     // the owner's short keep-list (16 Nov): these expectations changed from "Chicken Dosa", "Gobi Kebab", "Tandoori Roti 2" and "Boiled Eggs 2"
