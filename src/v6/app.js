@@ -568,19 +568,27 @@ function rebalance(r,key,d){
   return u;
 }
 var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
-/* a step the bounds refuse is said under the row just tapped with its reason, not in a toast over it (Critic round 38, finding 9), and
-   brought into view above the held "Plan ... with this plate" button and the tab bar: at 320 px a note under the last row sat under the
-   button for most rows (Critic round 40, finding 2) */
+/* a step the bounds refuse says why, with the tapped part's own bound (Critic round 38, finding 9; round 39, finding 5), in the held
+   slot just above the "Plan ... with this plate" button (Critic round 41, finding 1). The slot is outside the steppers' flow: it sits under
+   them in the page and is held above the button and the tab bar while the share is being changed, and its height is kept for the longest
+   note, so no tap (the refused one, the one that clears the note) and no scroll moves a stepper from under the thumb, and the note is
+   always seen whole above the held button (Critic round 40, finding 2). */
+function boundText(key,d,out){var b=RATIOB[key];return RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(out?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");}
 function stepRatio(key,d){var u=rebalance(UI.ratio,key,d),b=RATIOB[key],nx=UI.ratio[key]+d;
-  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");UI.rkey=key;render();$("said").textContent=UI.rbound;showBound();return;}
-  UI.rbound="";UI.rkey="";UI.ratio=u;UI.preset="";render();}
-/* the least scroll that shows the whole note above the held button, the tab bar and the screen's bottom edge */
-function showBound(){var n=$("ratio-bound"),s=$("scroll");if(!n||!s)return;
-  for(var i=0;i<2;i++){var r=n.getBoundingClientRect(),floor=Math.min(innerHeight,s.getBoundingClientRect().bottom),mk=$("make-ratio"),tb=$("tabs");
-    if(mk&&getComputedStyle(mk).position==="sticky"){var m=mk.getBoundingClientRect();if(m.top>r.top&&m.top<floor)floor=m.top;}
-    if(tb){var t=tb.getBoundingClientRect();if(t.top>r.top&&t.top<floor)floor=t.top;}
-    if(r.bottom<=floor-6)return;s.scrollTop+=Math.ceil(r.bottom-floor+12);}}
+  if(!u){UI.rbound=boundText(key,d,nx>b[1]||nx<b[0]);render();$("said").textContent=UI.rbound;return;}
+  UI.rbound="";UI.ratio=u;UI.preset="";render();}
 function boundNote(){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));return rb;}
+function changedNote(){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));return chg;}
+/* the held slot keeps the height of the tallest thing it can say at this width and text size (every bound note and the "Changed." line),
+   measured in its own place with its own type, and only grows while the share is being changed; it sits right on the held button */
+function holdSlot(){var s=$("ratio-slot"),mk=$("make-ratio");if(!s||!mk)return;
+  var cur=s.firstChild,cs=cur?getComputedStyle(cur):null,fs=cs?cs.fontSize:"",lh=cs?cs.lineHeight:"",keep=[].slice.call(s.childNodes),texts=[];   /* read before the node is taken out */
+  RATIOK.forEach(function(k){[5,-5].forEach(function(d){texts.push(boundText(k,d,true),boundText(k,d,false));});});texts.push("Changed. Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it.");
+  s.style.minHeight="";var h=s.offsetHeight;keep.forEach(function(n){s.removeChild(n);});
+  texts.forEach(function(t){var q=el("p","tip"+(/^Changed/.test(t)?" chg":""),t);if(fs){q.style.fontSize=fs;if(lh&&lh!=="normal")q.style.lineHeight=lh;}s.appendChild(q);h=Math.max(h,s.offsetHeight);s.removeChild(q);});
+  keep.forEach(function(n){s.appendChild(n);});
+  UI.slotH=Math.max(UI.slotH||0,Math.ceil(h));s.style.minHeight=UI.slotH+"px";
+  UI.slotB=Math.round(mk.getBoundingClientRect().height)-16;s.style.bottom=UI.slotB+"px";}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -604,21 +612,22 @@ function renderBuild(){
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
     mn.addEventListener("click",function(){stepRatio(x[0],-5);});pl.addEventListener("click",function(){stepRatio(x[0],5);});
-    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);
-    /* a refused step says why directly under the row tapped (Critic round 39, finding 5; round 40, finding 2). The bound named is the
-       tapped part's own, from RATIOB. */
-    if(UI.rbound&&UI.rkey===x[0])stp.appendChild(boundNote());});
+    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
   add(c,rw,stp);
-  if(UI.rbound&&!UI.rkey)c.appendChild(boundNote());
   v.appendChild(c);
-  /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */
-  var cur=C.ratio||MODEPLATE[C.mode];if(["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];})){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));v.appendChild(chg);}
+  /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1); while the share is
+     being changed (or a step was refused) it and the bound note sit in the held slot above the button (Critic round 41, finding 1) */
+  var cur=C.ratio||MODEPLATE[C.mode],changed=["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];}),held=UI.preset===""||!!UI.rbound;
+  if(changed&&!held)v.appendChild(changedNote());
+  if(!held){UI.slotH=0;UI.slotB=null;}
   if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   else{var nb=el("p","tip");nb.id="build-no-body";nb.appendChild(el("b",null,"No calorie or protein target yet. "));var ab=btn("linkbtn","Add your age, height and weight",null,"build-add-body");ab.addEventListener("click",function(){openSheet("food",bodyMissing().at);});nb.appendChild(ab);v.appendChild(nb);}
+  if(held){var slot=el("div","held-note");slot.id="ratio-slot";if(UI.rbound)slot.appendChild(boundNote());else if(changed)slot.appendChild(changedNote());
+    if(UI.slotH)slot.style.minHeight=UI.slotH+"px";if(UI.slotB!=null)slot.style.bottom=UI.slotB+"px";v.appendChild(slot);}
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
-  if(UI.preset==="")mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
+  if(held)mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
   mk.addEventListener("click",function(){UI.rbound="";C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
-  v.appendChild(mk);
+  v.appendChild(mk);if(held){holdSlot();requestAnimationFrame(holdSlot);}
   if(C.ratio){v.appendChild(el("p","fine","Your plates use this share. Change it, or go back to the usual plate."));
     var cl=btn("linkbtn","Go back to the usual plate ("+lab("mode",C.mode)+")",null,"clear-ratio");cl.addEventListener("click",function(){C.ratio=null;UI.ratio=null;UI.preset="mode";UI.rbound="";STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}   /* plain words; the preset follows (R2-B5 076-1, 076-2) */
   var m=curMeal(),inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");hl.appendChild(el("p","cap","After-meal curve, your current plate"));

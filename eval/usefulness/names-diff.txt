@@ -1,4 +1,27 @@
-# names-diff: 3452 recorded model names (3218 plate path; 234 menu path, 104 with their typed menu) from 52 files under eval/; 0 change between ba4d8dc and this build.
+# names-diff: 3861 recorded model names (3627 plate path; 234 menu path, 104 with their typed menu) from 55 files under eval/; 24 change between b4633dd and this build.
 # Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).
 # kind | as recorded | old shown -> new shown ("" = not shown)
-
+plate | "0.5 teaspoon lemon juice squeezed over the dal" | "Teaspoon lemon juice squeezed over the dal" -> "Lemon juice squeezed over the dal"
+plate | "1 fistful cucumber and carrot salad" | "Fistful cucumber and carrot salad" -> "Cucumber and carrot salad"
+plate | "1 fistful raw cucumber slices" | "Fistful raw cucumber slices" -> "Raw cucumber slices"
+plate | "1 fistful roasted chana" | "Fistful roasted chana" -> "Roasted chana"
+plate | "1 fistful roasted peanuts" | "Fistful roasted peanuts" -> "Roasted peanuts"
+plate | "1 tablespoon lemon juice and green chutney" | "Tablespoon lemon juice and green chutney" -> "Lemon juice and green chutney"
+plate | "1 tablespoon mint chutney" | "Tablespoon mint chutney" -> "Mint chutney"
+plate | "1 tablespoon mint coriander chutney" | "Tablespoon mint coriander chutney" -> "Mint coriander chutney"
+plate | "1 tablespoon roasted peanuts" | "Tablespoon roasted peanuts" -> "Roasted peanuts"
+plate | "1 teaspoon ghee" | "Teaspoon ghee" -> "Ghee"
+plate | "1 teaspoon ghee added on top" | "Teaspoon ghee added on top" -> "Ghee added on top"
+plate | "1 teaspoon groundnut chutney" | "Teaspoon groundnut chutney" -> "Groundnut chutney"
+plate | "1 teaspoon lemon juice with chaat masala" | "Teaspoon lemon juice with chaat masala" -> "Lemon juice with chaat masala"
+plate | "1 teaspoon lemon juice with cumin powder" | "Teaspoon lemon juice with cumin powder" -> "Lemon juice with cumin powder"
+plate | "1 teaspoon mustard oil" | "Teaspoon mustard oil" -> "Mustard oil"
+plate | "1 teaspoon oil" | "Teaspoon oil" -> "Oil"
+plate | "1 teaspoon oil for tempering" | "Teaspoon oil for tempering" -> "Oil for tempering"
+plate | "1.5 fistful crumbled paneer cooked with onion and tomato" | "Fistful crumbled paneer cooked with onion and tomato" -> "Crumbled paneer cooked with onion and tomato"
+plate | "2 tablespoon crumbled paneer stuffing" | "Tablespoon crumbled paneer stuffing" -> "Crumbled paneer stuffing"
+plate | "2 tablespoon fresh chhena with cardamom powder" | "Tablespoon fresh chhena with cardamom powder" -> "Fresh chhena with cardamom powder"
+plate | "2 tablespoon fresh mint coriander chutney" | "Tablespoon fresh mint coriander chutney" -> "Fresh mint coriander chutney"
+plate | "2 tablespoon fresh unsweetened chhena with crushed cardamom" | "Tablespoon fresh unsweetened chhena with crushed cardamom" -> "Fresh unsweetened chhena with crushed cardamom"
+plate | "2 tablespoon mint coriander chutney" | "Tablespoon mint coriander chutney" -> "Mint coriander chutney"
+plate | "2 tablespoon mint green chutney" | "Tablespoon mint green chutney" -> "Mint green chutney"

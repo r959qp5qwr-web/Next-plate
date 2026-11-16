@@ -399,6 +399,64 @@
    "protein in my lunch",
    "feed the kids dinner"
   ],
+  "referPunct": [
+   "I'm 20 weeks",
+   "I'm 32 weeks, lunch ideas",
+   "I'm pg",
+   "I'm nursing",
+   "post-natal diet",
+   "ante-natal check up today, lunch?",
+   "breast-feeding, what should I eat",
+   "post-partum diet",
+   "post-delivery diet",
+   "mom-to-be lunch",
+   "mum-to-be, dinner please",
+   "mother-to-be thali",
+   "c-section last month",
+   "ob-gyn said eat more iron",
+   "low-potassium diet",
+   "BF-ing, lunch ideas",
+   "pumping breast-milk, need protein",
+   "brest-feeding mom",
+   "feeding my 3-month old, lunch?"
+  ],
+  "urgentPunct": [
+   "I can't breathe",
+   "can't breathe properly",
+   "can't breath after walking",
+   "I can't breathe, what should I eat for dinner?"
+  ],
+  "notReferPunct": [
+   "kidney-bean salad",
+   "red kidney-beans curry",
+   "Kidney-beans curry",
+   "Kydney-beans curry",
+   "tri-colour salad",
+   "third tri-colour salad",
+   "low sugar-free biscuits",
+   "they delivered a baby-corn pizza",
+   "Chef's special thali",
+   "Today's dal-chawal"
+  ],
+  "referFound": [
+   "pregancy diet please",
+   "I am in my pregancy, lunch?",
+   "my kednee is weak",
+   "kednee problem hai",
+   "on dialyses twice a week",
+   "dialyses patient, dinner?",
+   "morning sickness, what can I eat"
+  ],
+  "urgentFound": [
+   "chest pains after lunch",
+   "having chest pains since morning"
+  ],
+  "notReferFound": [
+   "Kednee beans curry",
+   "kednee bean salad",
+   "morning snack ideas",
+   "good morning, something light"
+  ],
   "addedFromReports": {
    "meat": [
     "machli",
@@ -453,7 +511,10 @@
     "lotus stem",
     "scallions",
     "mullangi",
-    "urulai"
+    "urulai",
+    "pyaza",
+    "lasooni",
+    "piyaji"
    ],
    "nut": [
     "badaam",
@@ -461,7 +522,9 @@
     "cashewnut",
     "kajoo",
     "singdana",
-    "palli"
+    "palli",
+    "chikki",
+    "kadalai mittai"
    ],
    "wheat": [
     "momos",
@@ -477,7 +540,19 @@
     "kulche",
     "phulke",
     "maggi",
-    "burger"
+    "burger",
+    "parathe",
+    "paranthe",
+    "rotiyaan",
+    "chapatiyan",
+    "puriyan",
+    "samose",
+    "theple",
+    "rotiyon",
+    "puriyon",
+    "bati",
+    "dal bati",
+    "luchchi"
    ],
    "soya": [
     "soyabean",
@@ -503,7 +578,10 @@
     "soan papdi",
     "balushahi",
     "pedha",
-    "pudding"
+    "pudding",
+    "sweet lassi",
+    "mango lassi",
+    "mango shake"
    ],
    "salty": [
     "pickled",

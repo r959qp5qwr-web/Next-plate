@@ -190,6 +190,17 @@ for (const meds of ['yes', 'unsure']) { const p = readProfile(Object.assign({}, 
     add('S6 prompt', /usual size of this meal/.test(plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }).prompt || ''), `${JSON.stringify(o)}: the plates prompt does not state the usual size`); }
   add('S6 no false hit', plateOffered({ health: 'diabetes', meds: 'no' }, platePlain()).ok, 'not on medicine: a 500 kcal lunch plate was dropped'); }
 
+// ---------- safety audit of b4633dd, backlog head ("Fix found, then watch", owner, 16 Nov, D1): the names it found pass with a "plain" tag,
+// so the word lists must hold them, as a plate item and as a menu order, under the profile that bars each ----------
+const FOUND = [
+  ...['Parathe', 'Paranthe', 'Rotiyaan', 'Chapatiyan', 'Puriyan', 'Samose', 'Theple', 'Rotiyon', 'Puriyon', 'Bati', 'Dal bati', 'Luchchis', 'Aloo parathe', 'Dal bati churma'].map(n => [n, { leave: ['wheat'] }]),
+  ...['Bhindi Do Pyaza', 'Paneer do pyaza', 'Lasooni palak', 'Lasooni dal tadka', 'Piyaji'].map(n => [n, { diet: 'jain' }]),
+  ...['Sweet lassi', 'Mango lassi', 'Mango shake'].map(n => [n, { health: 'diabetes' }]), ...['Chikki', 'Kadalai mittai'].map(n => [n, { leave: ['nut'] }])];
+for (const [n, o] of FOUND) {
+  add('Found gaps (safety audit of b4633dd): a plate item with a "plain" tag', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
+  add('Found gaps (safety audit of b4633dd): a menu order with a "plain" tag', !(menuOffered(o, n, ['plain']).orders || []).length, `${JSON.stringify(o)}: menu order "${n}" tagged plain was offered`);
+  add('Found gaps (safety audit of b4633dd): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'menu', 'rescue', 'log']) {
@@ -200,7 +211,12 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const t of L.referWindow) add('S7 typed (referral window, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
   // the same phrasings in their nearest spellings: each extension of the window's patterns has its own case (D4)
   for (const t of L.referWindowFamily) add('S7 typed (referral window spelling family, D4)', refers(kind, t), `${kind}: "${t}" went to the model`);
-  for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`); }
+  for (const t of L.notReferWindow) add('S7 no false hit (referral window controls, D4)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  // spellings the safety audit of b4633dd found ("pregancy", "kednee", "dialyses", "morning sickness"; owner, 16 Nov, D1), and their food-text controls
+  for (const t of L.referFound || []) add('S7 typed (found by the safety audit of b4633dd)', refers(kind, t) && refers(kind, t.split('').join('\u200B')), `${kind}: "${t}" went to the model`);
+  for (const t of L.notReferFound || []) add('S7 no false hit (controls for the found spellings)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  for (const t of L.urgentFound || []) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
+    add('B1 urgent text (found by the safety audit of b4633dd): referred with the line to get help now', !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent === URGENTLINE && !pl.prompt), `${kind}: "${t}" ${pl.reply ? JSON.stringify(pl.reply).slice(0, 80) : 'went to the model'}`); } }
 // the model's refer_reason: any value but "none" is a referral, on every reply that answers typed text; a missing one fails closed
 { const P0 = Object.assign({}, BASE, { diet: 'veg' });
   const replies = { meals: (rr) => Object.assign(mealsReply(platePlain()), rr), menu: (rr) => Object.assign(J(fxm.reply), rr), rescue: (rr) => Object.assign(J(fx.rescue), rr, { dish: Object.assign({}, fx.rescue.dish, { name: 'Veg thali', contains: ['grain'] }) }), log: (rr) => Object.assign(J(fx.log), rr) };
@@ -225,6 +241,11 @@ for (const kind of ['meals', 'menu', 'rescue', 'log']) {
   for (const [what, dishes, leave] of [['dish "Kydney fry"', [BC, ['Kydney fry', ['meat']]]], ['dish "Gurrda masala"', [BC, ['Gurrda masala', ['meat']]]], ['dish "Mutton kideney curry"', [BC, ['Mutton kideney curry', ['meat']]]],
       ['dish "Vrukka fry"', [BC, ['Vrukka fry', ['meat']]]], ['dish "Mutrapind curry"', [BC, ['Mutrapind curry', ['meat']]]], ['side "Kydney fry"', [['Butter Chicken', ['meat', 'dairy'], 'Kydney fry']]], ['leave entry "Gurrda masala"', [BC], ['Gurrda masala']]]) {
     const r = photo(dishes, leave); add('S7 photo menu: a referral-window kidney dish refers (D4)', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  // "kednee" (safety audit of b4633dd) on a dish name, a side and a leave entry; its bean neighbour is not referred
+  for (const [what, dishes, leave] of [['dish "Kednee fry"', [BC, ['Kednee fry', ['meat']]]], ['side "Kednee masala"', [['Butter Chicken', ['meat', 'dairy'], 'Kednee masala']]], ['leave entry "Mutton kednee curry"', [BC], ['Mutton kednee curry']]]) {
+    const r = photo(dishes, leave); add('S7 photo menu: a found kidney spelling refers (safety audit of b4633dd)', r.status === 'refer' && r.read === SAFETY && !(r.orders || []).length, `photo menu with ${what}: status ${r.status}, orders ${JSON.stringify((r.orders || []).map(o => o.name))}`); }
+  for (const n of ['Kednee Beans Curry', 'Kednee Bean Salad']) { const r = photo([BC, [n, ['plain']]]);
+    add('S7 photo menu: the found spelling\'s bean neighbour is not referred (control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); }
   for (const n of ['Kydney Beans Curry', 'Gurrdwara langar dal', 'Baby Corn Manchurian', 'Tricolour Pulao', 'Bun Maska']) { const r = photo([BC, [n, ['plain']]]);
     add('S7 photo menu: referral-window neighbours are not referred (D4 control)', r.status === 'ok' && (r.orders || []).length === 2, `photo menu with "${n}": ${r.status} ${JSON.stringify(r.dropped)}`); } }
 for (const conds of [['kidney'], ['preg'], ['diabetes', 'kidney'], ['diabetes', 'preg'], ['bp', 'kidney']]) {
@@ -371,12 +392,16 @@ const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji ma
   'Do parathe', 'Teen parathe', 'Do samose', 'Do pakode', 'Do bhature', 'Chole with do bhature', 'Do kulche', 'Do vade', 'Teen dose', 'Do idliyan', 'Do kachoriyan', 'Teen pakodi', 'Paanch golgappe', 'Do anday',
   'Do luchi', 'Char luchis', 'Teen litti', 'Do bati', 'Do baati', 'Ek chammach ghee', 'Do chammach ghee', 'Ek mutthi chana', 'Do karchhi dal', 'Ek vati varan', 'Ek kap chai', 'Do makki ki roti', 'Do bajre ki roti',
   'Dus roti', 'Gyarah idli', 'Barah puri', 'Idli (Do)', 'Katoriyan dal', 'Do katoriyan dal', 'Dal (do katoriyan)', 'Katoree dal', 'One kg biryani', 'Chicken Biryani Half Kg', 'Hyderabadi Biryani Quarter Kg',
-  'Sweet Lassi Half Litre', 'Chicken Biryani Ek Kilo', 'Mutton Biryani (Half Kg)', 'Glass buttermilk', 'Bowl dal', 'Hundred grams paneer'];
+  'Sweet Lassi Half Litre', 'Chicken Biryani Ek Kilo', 'Mutton Biryani (Half Kg)', 'Glass buttermilk', 'Bowl dal', 'Hundred grams paneer',
+  // safety audit of b4633dd, m1 (mutation D19): a katori with no number, an "of" or an opening place, which only the final katori guard holds
+  'Dal katori', 'Rice with katori dal', 'Dal served in katori', 'Curd katoriyan', 'Steel katori dal',
+  // safety audit of b4633dd, backlog head: measures in forms the lists lacked
+  'Ek katora dal', 'Do katore dal', 'Katora dal', 'Chammach ghee', 'Tsp ghee', 'Spoon ghee', 'Teaspoon ghee', 'Fistful of chana', 'Pinch salt', 'Pinch of salt'];
 // The test's own detector, beside COUNTWORDS (safety audit of ba4d8dc, M1: COUNTWORDS knew only the engine's own nouns, so it could not fail on a
 // word the engine does not list). Any Hindi number word before any word is a count, but for the honest names listed here; a Hindi measure
 // word or katori in any form, a weight word, or a measure word that opens a name is a household unit. Its lists are this test's, not the engine's.
 const HINDICOUNT = /\b(?:ek|do|teen|char|chaar|panch|paanch|chhe|saat|aath|nau|das|dus|gyarah|barah|aadha|adha|dedh|dhai)[\s-]+(?!(?:pyaza|phoron|siu|ka|ki|ke)\b)[a-z]+/i;
-const HINDIMEAS = /\b(?:katori\w*|katoree\w*|chammach\w*|chamach\w*|mutthi\w*|karchhi\w*|vati|kg|kgs|kilo|kilos|litre|liter|ltr|grams?)\b|^(?:glass|bowl|katori|plate|tumbler|cup|mug|handful)s?\s+(?!(?:cakes?|noodles)\b)[a-z]/i;
+const HINDIMEAS = /\b(?:katori\w*|katoree\w*|katora\w*|katore\w*|chammach\w*|chamach\w*|mutthi\w*|karchhi\w*|vati|kg|kgs|kilo|kilos|litre|liter|ltr|grams?|fistfuls?)\b|^(?:glass|bowl|katori|plate|tumbler|cup|mug|handful|tsp|tbsp|teaspoon|tablespoon|spoon|spoonful|pinch)(?:s|es)?\s+(?!(?:cakes?|noodles)\b)[a-z]/i;
 const countShown = (x) => COUNTWORDS.test(x) || HINDICOUNT.test(x) || HINDIMEAS.test(x);
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
@@ -413,6 +438,8 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   // safety audit of ba4d8dc, M1; Critic round 40, findings 3 and 5: the count or measure goes, the food stays; honest names keep their words
   ['Do parathe', 'Parathe'], ['Do makki ki roti', 'Makki ki roti'], ['Teen litti', 'Litti'], ['Ek chammach ghee', 'Ghee'], ['Glass buttermilk', 'Buttermilk'], ['Bowl dal', 'Dal'], ['Hundred grams paneer', 'Paneer'], ['Idli (Do)', 'Idli'],
   ['Chicken Biryani Half Kg', 'Chicken Biryani'], ['Mutton Biryani (Half Kg)', 'Mutton Biryani'], ['Katoriyan dal', 'Dal'],
+  // safety audit of b4633dd, backlog head: katora, chammach, tsp, spoon, fistful and pinch go, the food stays
+  ['Ek katora dal', 'Dal'], ['Do katore dal', 'Dal'], ['Katora dal', 'Dal'], ['Chammach ghee', 'Ghee'], ['Tsp ghee', 'Ghee'], ['Spoon ghee', 'Ghee'], ['Teaspoon ghee', 'Ghee'], ['Fistful of chana', 'Chana'], ['Pinch salt', 'Salt'], ['Pinch of salt', 'Salt'], ['1 fistful roasted chana', 'Roasted chana'], ['1 teaspoon ghee', 'Ghee'],
   // safety audit of ba4d8dc, c2: no stub is left by a count word ("Or rotis", "Minute poha" before)
   ['Two or three rotis', 'Rotis'], ['Ten-minute poha', 'Ten-minute poha'], ['Two-minute noodles', 'Two-minute noodles'], ['Seven Up', 'Seven Up'], ['Combo for Two', 'Combo'], ['Spinach folded in', 'Spinach folded in'],
   ['Mug cake', 'Mug cake'], ['Glass noodles', 'Glass noodles'], ['Moong (green gram)', 'Moong (green gram)'], ['Dal bati churma', 'Dal bati churma'], ['Litti chokha', 'Litti chokha'], ['Kadhi pakode', 'Kadhi pakode'], ['Teen dal tadka', 'Teen dal tadka']]) {
@@ -488,7 +515,9 @@ const KEPTNUM = /^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby
     ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Aloo Gobi 65', 'Aloo Gobi'], ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Palak Paneer 65', 'Palak Paneer'],
     ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Butter Chicken 65', 'Butter Chicken'], ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Chilli Mushroom 65', 'Chilli Mushroom'],
     ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Fried Fish 65', 'Fried Fish'], ['STARTERS\nAndhra Chicken 65 240\nDal Fry 200', 'Andhra Chicken 65 240', 'Andhra Chicken'],
-    ['STARTERS\nChicken 65 Biryani 320\nDal Fry 200', 'Chicken 65 Biryani 320', 'Chicken 65 Biryani'], ['MAINS\nChole Bhature 2 Bhature 120\nDal Fry 200', 'Chole Bhature 2 Bhature 120', 'Chole Bhature']];
+    ['STARTERS\nChicken 65 Biryani 320\nDal Fry 200', 'Chicken 65 Biryani 320', 'Chicken 65 Biryani'], ['MAINS\nChole Bhature 2 Bhature 120\nDal Fry 200', 'Chole Bhature 2 Bhature 120', 'Chole Bhature'],
+    // safety audit of b4633dd, m2 (mutation D10): "veg" and "egg" are not keep words, so "Veg 65" and "Egg 65" lose their number when they open the name too
+    ['MAINS\nVeg 65 120\nEgg 65 90', 'Veg 65 120', 'Veg'], ['MAINS\nVeg 65 120\nEgg 65 90', 'Egg 65 90', 'Egg'], ['MAINS\nVeg 65\nEgg 65', 'Egg 65', 'Egg'], ['MAINS\nVeg 65\nEgg 65', 'Veg 65', 'Veg']];
   for (const [typed, aw, want] of D3) { const r = menuName(NV, typed, [[aw, ['plain']]]), r2 = menuName(NV, typed + '\nDal Fry 200', [['Dal Fry', ['plain']]], [[aw, ['plain']]]);
     const r3 = safe(() => plan('menu', { profile: Object.assign({}, BASE, NV), ctx: { meal: 'lunch', text: '' }, image: 'AAAA' }).check({ status: 'ok', refer_reason: 'none', dishes: [{ as_written: aw, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['plain'], contains_listed: ['plain'], with_contains: ['plain'], planned_around: [] }], leave: [] }), {});
     const got = [(r.orders || [])[0], (r2.leave || [])[0], (r3.orders || [])[0]].map(x => x ? x.name : '(none)');
@@ -564,7 +593,23 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
   const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
   add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
   add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
-add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
+// safety audit of b4633dd, m3 (mutation D26): the medicines floor in the menu's own moves, in the engine, not only at the app's tap
+// (composedWhy). An order a little under twice the usual size, with a poor fit so the engine offers moves: "Eat about half" would fit the
+// target best but lands under the usual size, so on insulin, tablets or not sure it is not offered; off medicines it is (control).
+{ const menuMovesOut = (o, meal, k) => { const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal, text: 'MAINS\nVeg Thali 320\n' } });
+    return safe(() => pl.check({ status: 'ok', refer_reason: 'none', place: '', tip: '', leave: [], dishes: [{ as_written: 'Veg Thali', portion: 'about 450 g', kcal: k, protein: Math.round(k * 0.04 / 4), carbs: Math.round(k * 0.46 / 4), fats: Math.round(k * 0.5 / 9), fiber: 2,
+      grain_made_of: 'rice', grain_grams: 200, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['grain'], contains_listed: ['grain'], with_contains: ['plain'], planned_around: [] }] }), {}); };
+  for (const meal of ['breakfast', 'lunch', 'dinner']) for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'diabetes', meds: 'unsure', goal: 'hold' }]) {
+    const u = medsUsual(prof(o, meal), meal), k = Math.floor(u * 1.96 / 10) * 10, r = menuMovesOut(o, meal, k), mv = r.moves || [];
+    add('S6 engine: no menu portion move under the usual size (safety audit of b4633dd, m3)', mv.length > 0 && mv.every(x => x.kind !== 'portion' || k * x.scale >= u), `${JSON.stringify(o)} ${meal} usual ${u}: order ${k} kcal, moves ${JSON.stringify(mv.map(x => [x.title, x.scale]))}`);
+    add('S6 engine: a menu portion move at or above the usual size is offered (control)', mv.some(x => x.kind === 'portion'), `${JSON.stringify(o)} ${meal}: order ${k} kcal, moves ${JSON.stringify(mv.map(x => x.title))}`);
+    const r0 = menuMovesOut(Object.assign({}, o, { meds: 'no' }), meal, k);
+    add('S6 engine: off medicines the same order is offered a portion under that size (control)', (r0.moves || []).some(x => x.kind === 'portion' && k * x.scale < u), `${meal}: order ${k} kcal off medicines, moves ${JSON.stringify((r0.moves || []).map(x => [x.title, x.scale]))}`);
+    // menuMoves itself, with the day the engine plans
+    const pp = prof(o, meal), pl = safe(() => planDay(pp, readFile(undefined), meal, 5), null), n = { kcal: Math.round(u * 1.9 / 10) * 10 }; Object.assign(n, { protein: Math.round(n.kcal * 0.15 / 4), carbs: Math.round(n.kcal * 0.55 / 4), fats: Math.round(n.kcal * 0.3 / 9), fiber: 8 });
+    const dm = pl ? safe(() => menuMoves(n, pl, pp), []) : [];
+    add('S6 engine: menuMoves offers no portion under the usual size (safety audit of b4633dd, m3)', dm.some(x => x.kind === 'portion') && dm.every(x => x.kind !== 'portion' || n.kcal * x.scale >= u), `${JSON.stringify(o)} ${meal} usual ${u}: ${n.kcal} kcal, moves ${JSON.stringify(dm.map(x => [x.title, x.scale]))}`); } }
+add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
 { const retag = (x) => JSON.parse(JSON.stringify(x), (k, v) => Array.isArray(v) && v.length === 1 && v[0] === 'plain' ? PT : v);   // an older page has no "plain" tag
@@ -929,6 +974,25 @@ for (const [tag, name] of WALKNAMES) for (const x of tricked(name).filter((_, i)
 // typed referrals keep working after intake normalisation (Devanagari and Tamil marks are kept)
 for (const t of HO.referText.concat(L.referText)) add('B6 intake keeps S7', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
 for (const t of L.referWindow) add('B6 intake keeps S7 (referral window, D4)', refers('meals', t) && refers('meals', t.split('').join('​')), `"${t}" with zero-width spaces went to the model`);
+// safety audit of b4633dd, B1: a phone keyboard types a curly apostrophe (U+2019) and text pasted from a chat or a notes app carries typographic
+// dashes. Every S7 and urgent phrasing whose pattern spells an apostrophe or a hyphen refers on the four typed paths in each of these forms,
+// the urgent ones with the line to get help now; the food-text controls whose exclusion spells a hyphen stay unreferred in each form. The
+// forms are this test's own list, kept apart from the engine's fold.
+const APOS = ['‘', '’', '‛', 'ʼ', 'ʹ', '`', '´', '′', '＇'];
+const DASH = ['‐', '‑', '‒', '–', '—', '―', '−', '﹘', '﹣', '－'];
+const SPACES = [' ', ' ', ' ', ' ', ' ', ' ', '　'];
+const typo = (t) => { const v = []; if (t.includes("'")) for (const a of APOS) v.push(t.split("'").join(a)); if (t.includes('-')) for (const d of DASH) v.push(t.split('-').join(d));
+  if (t.includes("'") && t.includes('-')) v.push(t.split("'").join('’').split('-').join('‐')); return v; };
+const typoWrap = (t) => { const b = t.split("'").join('’').split('-').join('‑'); return SPACES.map(s => b.split(' ').join(s)).concat([b.split('').join('​'), ' ' + b + '⁠']); };
+const typoRoute = (kind, t) => { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {}); return pl && pl.reply && pl.reply.status === 'refer' ? (pl.reply.urgent === URGENTLINE ? 'U' : 'R') : 'M'; };
+const cpOf = (t) => [...t].filter(c => c.charCodeAt(0) > 126 || c === '\u0060').map(c => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')).filter((c, i, a) => a.indexOf(c) === i).join(' ');
+for (const kind of ['meals', 'menu', 'rescue', 'log']) {
+  for (const t of L.referPunct || []) for (const v of typo(t).concat(typoWrap(t))) add('S7 typed, typographic apostrophes, dashes and spaces (safety audit of b4633dd, B1)', typoRoute(kind, v) !== 'M', `${kind}: "${t}" with ${cpOf(v)} went to the model`);
+  for (const t of L.urgentPunct || []) for (const v of typo(t).concat(typoWrap(t))) add('B1 urgent text, typographic apostrophes (safety audit of b4633dd, B1): referred with the line to get help now', typoRoute(kind, v) === 'U', `${kind}: "${t}" with ${cpOf(v)} gave ${typoRoute(kind, v)}`);
+  for (const t of L.notReferPunct || []) for (const v of typo(t)) add('S7 no false hit, typographic apostrophes and dashes (safety audit of b4633dd, B1)', typoRoute(kind, v) === 'M', `${kind}: "${t}" with ${cpOf(v)} was referred`); }
+// the ASCII forms themselves: the cases above are only worth something if the straight forms refer, and the controls do not
+for (const t of (L.referPunct || []).concat(L.urgentPunct || [])) add('S7 typed, typographic cases (ASCII form)', ['meals', 'menu', 'rescue', 'log'].every(k => typoRoute(k, t) !== 'M'), `"${t}" went to the model`);
+for (const t of L.notReferPunct || []) add('S7 no false hit, typographic cases (ASCII form)', ['meals', 'menu', 'rescue', 'log'].every(k => typoRoute(k, t) === 'M'), `"${t}" was referred`);
 
 // ---------- B4, round 5: the literal empty-list rule. An empty or missing list drops any name, plain or not; "plain" is how a plain food declares ----------
 for (const n of ['Dal tadka', 'Sabudana', 'Sabudana khichdi', 'Rajma', 'Sprouted moong', 'Cucumber', 'Banana split', 'Lemon squash', 'Orange squash', 'Coconut slice', 'Baked beans'])

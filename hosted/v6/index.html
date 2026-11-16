@@ -1089,6 +1089,11 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app #scroll:has(#v-plate:not([hidden])){scroll-padding-top:64px}
 /* Builder (owner, 14 Nov, option survey): once a share is changed, "Plan <meal> with this plate" stays above the tab bar; at its own place in the page it settles there */
 #app #make-ratio.stick{position:sticky;bottom:-16px;z-index:6;box-shadow:0 -6px 16px -6px rgba(60,44,28,.35)}
+/* the held slot right on the held button (Critic round 41, finding 1): the bound note or the "Changed." line, on the page's own paper, so a
+   refused step is seen whole above the button and the tab bar and nothing in the page moves; the shadow marks the top of the held strip */
+#app #ratio-slot{position:sticky;bottom:40px;z-index:6;background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .38 0 0 0 0 .29 0 0 0 0 .2 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3Cg fill='%237a5c3e' fill-opacity='.35'%3E%3Ccircle cx='23' cy='41' r='.9'/%3E%3Ccircle cx='181' cy='17' r='.6'/%3E%3Ccircle cx='97' cy='133' r='1.1'/%3E%3Ccircle cx='211' cy='201' r='.7'/%3E%3Ccircle cx='51' cy='229' r='.8'/%3E%3Ccircle cx='147' cy='83' r='.5'/%3E%3Ccircle cx='239' cy='121' r='.9'/%3E%3C/g%3E%3C/svg%3E");padding:8px 0 8px;box-shadow:0 -6px 16px -6px rgba(60,44,28,.35)}
+#app #ratio-slot .tip{margin:0}
+#app #ratio-slot + #make-ratio.stick{box-shadow:none}
 /* error notes (owner, 14 Nov, option survey): a thin clay rule on the left edge; tips and info notes keep the tan paper alone */
 #app .note.err{box-shadow:inset 3px 0 0 var(--clay-t);padding-left:17px}
 #app .empty-card.err{border-left:3px solid var(--clay-t)}
@@ -1283,13 +1288,17 @@ var FISHW=["fish","prawn","prawns","shrimp","tuna","salmon","rawas","surmai","po
 var NONVEG=MEATW.concat(FISHW);   /* regional names (safety invariants S2, 15 Nov) */
 var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo","mutta","dimer","motte","guddu","omlet","anday"];
 var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam","makhani","dal makhani","rasgulla","gulab jamun","kalakand","ghi","panir","chhach","mishti doi","milkshake","custard","ras malai","rabdi","phirni","peda","sandesh"];
-var ONIONW=["onion","onions","garlic","shallot","leek","spring onion","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","ulli","scallion","scallions"];
+var ONIONW=["onion","onions","garlic","shallot","leek","spring onion","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","ulli","scallion","scallions",
+  "pyaza","lasooni","piyaji"];   /* onion forms of listed words (safety audit of b4633dd, backlog head): "Bhindi do pyaza", "Lasooni palak", "Piyaji" */
 var ROOTW=["potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","arbi","jimikand","adrak","batata","suran","shakarkandi","shakarkand","alu","inji","colocasia","turnip","turnips","kappa","shalgam","chukandar","taro","tapioca","cassava","lotus stem","kamal kakdi","mullangi","urulai"];
 var JAINW=ONIONW.concat(ROOTW);
-var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji","badaam","moongfali","cashewnut","cashewnuts","kajoo","singdana","palli"],
-  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","noodle","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger","gehun","gehu","gehoon"],
+var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji","badaam","moongfali","cashewnut","cashewnuts","kajoo","singdana","palli","chikki","kadalai mittai"],   /* chikki: peanut brittle by default (safety audit of b4633dd, backlog head) */
+  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","noodle","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger","gehun","gehu","gehoon",
+    /* Hindi plurals the S8 count list knows (safety audit of b4633dd, backlog head): "Do parathe", "Samose", "Dal bati" */
+    "parathe","paranthe","rotiyaan","chapatiyan","puriyan","samose","theple","rotiyon","puriyon","bati","luchchi"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
-var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi"];
+var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi",
+  "sweet lassi","mango lassi","mango shake"];   /* sweet drinks (safety audit of b4633dd, backlog head) */
 var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","chip","soy sauce","bhujia","farsan","pickled","avakaya","oorugai","thokku","sev","mixture","chakli","murukku","chivda","pappadam","pappad","papads","wafers","wafer","kurkure"];
 /* D2: no supplements, powders, tablets or doses (S9). Brands and forms that are only a supplement; "vitamin", "omega 3" and "drops" alone
    also name food ("lemon has vitamin C", "the starch drops"), so they count in a supplement phrase. The declared "supplement" tag is the main check. */
@@ -1356,9 +1365,16 @@ function madeOf(s){var r=null;String(s).replace(MADE_RX,function(m0,o){var g=GMA
   if(g!==null)r=(r===false)?false:g;return m0;});return r;}   /* null: none, or not a material ("made with minimal oil"); false: a non-grain */
 function standIn(x){var mo=madeOf(x);return STAND.test(x)||mo===false||(mo!==true&&FLOUR_RX.test(x)&&!GMATW_RX.test(x));}   /* "chana flour and whole wheat" names a grain */
 /* Text intake (audit B6): NFKC (full-width letters become Latin), format characters out (zero-width space, joiners, word joiner, soft
-   hyphen, BOM), and combining marks on Latin letters out, so the text checked is the text shown. Devanagari and Tamil marks are kept. */
-function norm(t){t=String(t==null?"":t);try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
-  try{t=t.normalize("NFD").replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+/g,"").normalize("NFC");}catch(e){}return t;}   /* these mark blocks serve Latin; Devanagari and Tamil marks are in their own blocks */
+   hyphen, BOM), and combining marks on Latin letters out, so the text checked is the text shown. Devanagari and Tamil marks are kept.
+   Typographic apostrophes and dashes become the ASCII ones (safety audit of b4633dd, B1): a phone keyboard types U+2019 for an apostrophe,
+   pasted text carries typographic dashes, and NFKC folds neither. The referral and urgent patterns ("can't", "I'm", "mom-to-be",
+   "c-section") and the grain, count, negation and supplement patterns ("low-carb", "One-pot", "pre-workout") read the ASCII forms. Folded
+   before NFKC (U+00B4 would become a space and a combining mark) and after it (NFKC makes U+2014 from U+FE58). Unicode spaces become a
+   space through NFKC. */
+var APOSRX=/[\u2018\u2019\u201B\u02BC\u02B9\u0060\u00B4\u2032]/g,DASHRX=/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g;
+function foldPunct(t){return t.replace(APOSRX,"'").replace(DASHRX,"-");}
+function norm(t){t=foldPunct(String(t==null?"":t));try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
+  try{t=t.normalize("NFD").replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+/g,"").normalize("NFC");}catch(e){}return foldPunct(t);}   /* these mark blocks serve Latin; Devanagari and Tamil marks are in their own blocks */
 function words(s){return s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(Boolean);}
 /* Shapes: a wrap, toast, flatbread or crust can be made of anything, so it is a grain only when a grain is named with it ("whole wheat
    wrap", "oats porridge"), or, for the everyday wheat shapes (toast, bun, pizza, sandwich, bread, lasagne, gnocchi, porridge), when only
@@ -1760,7 +1776,7 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    "double" counts only before a measure word. The article "a" is never taken off alone. */
 /* measure words, with the Hindi ones and katori in every form ("katoriyan", "katoree"), and weights and volumes ("Half Kg", "Ek Kilo",
    "Hundred grams"; safety audit of ba4d8dc, M1; Critic round 40, finding 5) */
-var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|kaps?|glass(?:es)?|katori\\w*|katoree\\w*|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?|chammach\\w*|chamach\\w*|chammuch|mutth?i\\w*|karc?hhi\\w*|karchi|vatis?|kgs?|kilos?|kilograms?|litres?|liters?|ltrs?|ml|g|gms?|grams?)";
+var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|kaps?|glass(?:es)?|katori\\w*|katoree\\w*|katora\\w*|katore\\w*|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|fistfuls?|mugs?|tumblers?|chammach\\w*|chamach\\w*|chammuch|mutth?i\\w*|karc?hhi\\w*|karchi|vatis?|kgs?|kilos?|kilograms?|litres?|liters?|ltrs?|ml|g|gms?|grams?)";
 var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|vade|wade|vadon|dose|doson|pakode|pakore|pakodon|pakodis?|pakodiy(?:an|aan|on)|idliy(?:an|aan|on)|kachoriy(?:an|aan|on)|tikkiy(?:an|aan)|golgappe|golgappas?|anday|andey|andon|luchis?|luchchis?|littis?|baatis?|batis?|theple|chille|cheele|dhokle|rotiyon|puriyon|chapatiyon|rotle|rotliy(?:an|aan)|bhakriy(?:an|aan))";
 /* (the last line: Hindi plurals in -e, -on and -iyan, and piece words the list lacked: luchi, litti, baati; safety audit of ba4d8dc, M1;
    Critic round 40, finding 3) */
@@ -1788,12 +1804,14 @@ var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair
 var CNTHINDI="ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|dus|gyarah|gyaarah|barah|baarah|aadha|adha|aadhi|adhi|dedh|dhai|dhaai";
 var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+of\\s+","gi");
-/* a measure word with no number that opens a name is a household measure too ("Glass buttermilk", "Bowl dal"; Critic round 40, finding 3);
+/* a measure word with no number that opens a name is a household measure too ("Glass buttermilk", "Bowl dal"; Critic round 40, finding 3;
+   "Katora dal", "Chammach ghee", "Tsp ghee", "Spoon ghee", "Pinch salt", "Pinch of salt": safety audit of b4633dd;
+   a pinch inside a name is left to the name rules);
    "Cup cake", "Mug cake" and "Glass noodles" keep their names */
-var MEASBARE=/^(?:an?\s+)?(?:(?:small|medium|large|big)\s+)?(?:glass(?:es)?|bowls?|katori\w*|katoree\w*|plates?|tumblers?|handfuls?|cups?|mugs?)\s+(?!(?:cakes?|noodles|vermicelli)\b)(?=[a-z])/i;
+var MEASBARE=/^(?:an?\s+)?(?:(?:small|medium|large|big)\s+)?(?:glass(?:es)?|bowls?|katori\w*|katoree\w*|katora\w*|katore\w*|plates?|tumblers?|handfuls?|fistfuls?|pinch(?:es)?(?:\s+of)?|cups?|mugs?|chammach\w*|chamach\w*|tsp|tbsp|teaspoons?|tablespoons?|spoons?|spoonfuls?)\s+(?!(?:cakes?|noodles|vermicelli)\b)(?=[a-z])/i;
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
-/* katori in every form ("katori", "katoris", "katoriyan", "katoree") is a household measure (S8) */
-var KATORI=/\b(?:katori|katoree)\w*/i;
+/* katori in every form ("katori", "katoris", "katoriyan", "katoree", and "katora", "katore": safety audit of b4633dd) is a household measure (S8) */
+var KATORI=/\b(?:katori|katoree|katora|katore)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
 var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
@@ -2969,7 +2987,7 @@ function banOut(t){t=norm(t);if(NONLATIN.test(t))return "";var q=t.replace(/[\r\
    "Gurudwara" or "Gurdeep". The one list both typed text and a menu's dish names are read with (safety audit B1, m1).
    The referral window's kidney words are added (owner, 16 Nov, D4; eval/referral/WINDOW.md): "kydney", "kideney", "gurrda", and the kidney
    word of other Indian languages in English letters ("mutrapind", "vrukka"), whose own scripts REFERNLKID already reads on dish names. */
-var REFERKIDW=/kidneys?(?![\s-]*beans?\b)|kidny|kideny|kidn(?!ap)(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kind(?:e|ne)y\w*|kiddne?y\w*|k[ei]da?ney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|k[id]ney(?![\s-]*beans?\b)|g(?:u{1,2}|oo)rdh?(?:a{1,2}|a{1,2}y|ae|ai|e|ey|ein|o|on|y)|kydney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kideney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|g(?:u{1,2}|oo)rrdh?(?:a{1,2}|a{1,2}y|ae|ai|e|ey|ein|o|on|y)|mutrapind\w*|vrukk\w*/;
+var REFERKIDW=/kidneys?(?![\s-]*beans?\b)|kidny|kideny|k[ie]dn(?!ap)(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kind(?:e|ne)y\w*|kiddne?y\w*|k[ei]da?ney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|k[id]ney(?![\s-]*beans?\b)|g(?:u{1,2}|oo)rdh?(?:a{1,2}|a{1,2}y|ae|ai|e|ey|ein|o|on|y)|kydney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|kideney(?!\w*beans?\b)\w*(?![\s-]*beans?\b)|g(?:u{1,2}|oo)rrdh?(?:a{1,2}|a{1,2}y|ae|ai|e|ey|ein|o|on|y)|mutrapind\w*|vrukk\w*/;
 var REFERKID=new RegExp("\\b(?:"+REFERKIDW.source+")\\b","i");
 /* the rest of S7 in typed text: kidney conditions, pregnancy, breastfeeding. "BF" counts only as breastfeeding ("BF mom", "BF-ing", "EBF"),
    never alone, where it is breakfast; "due" only before a month ("due in March", "due next month"), never "due in 20 minutes"; "prego" only
@@ -2980,7 +2998,10 @@ var REFERKID=new RegExp("\\b(?:"+REFERKIDW.source+")\\b","i");
    before "tri", never a tri-colour dish), "pumping milk", "lactacting", "pet mein baccha", "gravid", "expectant mother", "brestfeeding",
    "brest feed", "delivered a baby" (not before baby corn, baby potatoes and the like), "first baby coming", "2nd trimster", "junior arriving"
    (and "junior coming soon"), "bacche ko feed". Other postpartum words stay an open owner or clinician question. */
-var REFEROTHER=/pre?gn\w*|pragn\w*|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bac{1,2}h{1,2}(?:ch)?a\s+hone\s+wal\w*|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd\d*|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother|mommy|mummy|momma|mama)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft|creat|preggy|ttc|ebf|bf[\s-]?ing|bf\s+(?:mom|mum|mother|mama|baby|my\s+(?:baby|son|daughter|newborn|infant))|baby\s+bump|jac{1,2}h{1,2}(?:ch)?a|\d+(?:st|nd|rd|th)\s+month\s+(?:chal|of\s+(?:my\s+)?pregnancy)|due\s+(?:in\s+|on\s+|by\s+)?(?:next\s+month|this\s+month|(?:jan|feb|march|april|may|june|july|aug|sept?|oct|nov|dec)\w*)|navjaat\w*\s+(?:ko|ke)\s+d(?:oo|u)dh|renel|\w*d[iy]al[iy]s[iy]s|(?:haemo|hemo)dial\w*|creatinin|nefro\w*|urine\s+(?:mein|me|mai)\s+prot\w*|protien\s+in\s+(?:my\s+|the\s+)?urine|kd\s+(?:stage|patient)|\d+\s+mnths?\s+along|baby\s+on\s+the\s+way|bun\s+in\s+the\s+oven|(?:first|second|third|1st|2nd|3rd)\s+tri(?![\s-]*colou?r)|pumping\s+(?:breast[\s-]*)?milk|lactac\w*|pet\s+(?:mein|me|mai)\s+bac{1,2}h\w*|gravid\w*|expectant\s+(?:mother|mom|mum|mommy|mummy|mama)|brest[\s-]*feed\w*|delivered\s+(?:a|my)\s+baby(?![\s-]*(?:corn|potato\w*|spinach|carrots?|onions?|tomato\w*|brinjals?|eggplants?|food|marrows?|lettuce|greens|leaf|leaves))|(?:first|second|third|1st|2nd|3rd)\s+baby\s+coming|trimster\w*|junior\s+arriving|junior\s+coming\s+soon|bac{1,2}h{1,2}(?:ch)?e\s+ko\s+feed\w*/;
+/* Spellings the safety audit of b4633dd found (owner, 16 Nov, D1 "Fix found, then watch"): "pregancy", "kednee" (in REFERKIDW, so a
+   "Kednee fry" refers on a photo menu and "Kednee beans" does not), "dialyses", "morning sickness"; and the urgent plural "chest pains".
+   "AKI", "hamla", "ESRD" and a bare "32 weeks" stay on the watch list (tier 2): each risks a false hit. */
+var REFEROTHER=/pre?gn\w*|pragn\w*|pregan[cs]\w*|morning\s+sickness|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bac{1,2}h{1,2}(?:ch)?a\s+hone\s+wal\w*|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd\d*|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother|mommy|mummy|momma|mama)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft|creat|preggy|ttc|ebf|bf[\s-]?ing|bf\s+(?:mom|mum|mother|mama|baby|my\s+(?:baby|son|daughter|newborn|infant))|baby\s+bump|jac{1,2}h{1,2}(?:ch)?a|\d+(?:st|nd|rd|th)\s+month\s+(?:chal|of\s+(?:my\s+)?pregnancy)|due\s+(?:in\s+|on\s+|by\s+)?(?:next\s+month|this\s+month|(?:jan|feb|march|april|may|june|july|aug|sept?|oct|nov|dec)\w*)|navjaat\w*\s+(?:ko|ke)\s+d(?:oo|u)dh|renel|\w*d[iy]al[iy]s[eiy]s|(?:haemo|hemo)dial\w*|creatinin|nefro\w*|urine\s+(?:mein|me|mai)\s+prot\w*|protien\s+in\s+(?:my\s+|the\s+)?urine|kd\s+(?:stage|patient)|\d+\s+mnths?\s+along|baby\s+on\s+the\s+way|bun\s+in\s+the\s+oven|(?:first|second|third|1st|2nd|3rd)\s+tri(?![\s-]*colou?r)|pumping\s+(?:breast[\s-]*)?milk|lactac\w*|pet\s+(?:mein|me|mai)\s+bac{1,2}h\w*|gravid\w*|expectant\s+(?:mother|mom|mum|mommy|mummy|mama)|brest[\s-]*feed\w*|delivered\s+(?:a|my)\s+baby(?![\s-]*(?:corn|potato\w*|spinach|carrots?|onions?|tomato\w*|brinjals?|eggplants?|food|marrows?|lettuce|greens|leaf|leaves))|(?:first|second|third|1st|2nd|3rd)\s+baby\s+coming|trimster\w*|junior\s+arriving|junior\s+coming\s+soon|bac{1,2}h{1,2}(?:ch)?e\s+ko\s+feed\w*/;
 var REFERTXT=new RegExp("\\b(?:"+REFERKIDW.source+"|"+REFEROTHER.source+")\\b","i");
 var PREGO=/\bprego\b/i,PREGOFOOD=/\b(?:sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles)\b/i;
 /* the same in Devanagari and Tamil letters (JavaScript's \b does not work outside Latin letters, so these stand alone) */
@@ -2999,7 +3020,7 @@ var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diab
 var URGENTTXT=new RegExp("\\b(?:"+[
   "(?:blood\\s+)?sugar\\s+(?:level\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",
   "low\\s+(?:blood\\s+)?sugar(?!\\s*(?:-|free|dessert|sweet|biscuits?|cookies?|cake|chai|tea|coffee|version|recipe|snacks?|juice|drink))","hypo(?:glycaemi\\w*|glycemi\\w*|s)?",
-  "chest\\s+(?:pain|tight\\w*|pressure|heavi\\w*|discomfort)","pain\\s+in\\s+(?:my\\s+|the\\s+)?chest","(?:seen[ae]|chhati|chati|chest)\\s+(?:me|mein|mai)\\s+(?:dard|pain|jalan)","heart\\s+attack",
+  "chest\\s+(?:pains?|tight\\w*|pressure|heavi\\w*|discomfort)","pain\\s+in\\s+(?:my\\s+|the\\s+)?chest","(?:seen[ae]|chhati|chati|chest)\\s+(?:me|mein|mai)\\s+(?:dard|pain|jalan)","heart\\s+attack",
   "faint(?:ed|ing|ness)?","feel(?:ing)?\\s+faint","pass(?:ed|ing)\\s+out","black(?:ed|ing)\\s+out","behosh\\w*","collaps\\w*",
   "breathless\\w*","short(?:ness)?\\s+of\\s+breath","(?:can'?t|cannot|can\\s+not|unable\\s+to|difficult(?:y)?\\s+(?:to\\s+)?|trouble)\\s*breath\\w*","breathing\\s+(?:problem|difficult\\w*|trouble|issue)","saa?ns\\s+(?:nahi|phool\\w*|lene\\s+me\\w*|ki\\s+takleef)",
   "disoriented"].join("|")+")\\b","i");
@@ -3789,19 +3810,27 @@ function rebalance(r,key,d){
   return u;
 }
 var RATIONAME={protein:"Protein",greens:"Vegetables and greens",carbs:"Grains",fats:"Fats and seeds"};
-/* a step the bounds refuse is said under the row just tapped with its reason, not in a toast over it (Critic round 38, finding 9), and
-   brought into view above the held "Plan ... with this plate" button and the tab bar: at 320 px a note under the last row sat under the
-   button for most rows (Critic round 40, finding 2) */
+/* a step the bounds refuse says why, with the tapped part's own bound (Critic round 38, finding 9; round 39, finding 5), in the held
+   slot just above the "Plan ... with this plate" button (Critic round 41, finding 1). The slot is outside the steppers' flow: it sits under
+   them in the page and is held above the button and the tab bar while the share is being changed, and its height is kept for the longest
+   note, so no tap (the refused one, the one that clears the note) and no scroll moves a stepper from under the thumb, and the note is
+   always seen whole above the held button (Critic round 40, finding 2). */
+function boundText(key,d,out){var b=RATIOB[key];return RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(out?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");}
 function stepRatio(key,d){var u=rebalance(UI.ratio,key,d),b=RATIOB[key],nx=UI.ratio[key]+d;
-  if(!u){UI.rbound=RATIONAME[key]+(d>0?" can't go higher":" can't go lower")+(nx>b[1]||nx<b[0]?": this part stays between "+b[0]+"% and "+b[1]+"% of the plate.":": the other parts are at their limits.");UI.rkey=key;render();$("said").textContent=UI.rbound;showBound();return;}
-  UI.rbound="";UI.rkey="";UI.ratio=u;UI.preset="";render();}
-/* the least scroll that shows the whole note above the held button, the tab bar and the screen's bottom edge */
-function showBound(){var n=$("ratio-bound"),s=$("scroll");if(!n||!s)return;
-  for(var i=0;i<2;i++){var r=n.getBoundingClientRect(),floor=Math.min(innerHeight,s.getBoundingClientRect().bottom),mk=$("make-ratio"),tb=$("tabs");
-    if(mk&&getComputedStyle(mk).position==="sticky"){var m=mk.getBoundingClientRect();if(m.top>r.top&&m.top<floor)floor=m.top;}
-    if(tb){var t=tb.getBoundingClientRect();if(t.top>r.top&&t.top<floor)floor=t.top;}
-    if(r.bottom<=floor-6)return;s.scrollTop+=Math.ceil(r.bottom-floor+12);}}
+  if(!u){UI.rbound=boundText(key,d,nx>b[1]||nx<b[0]);render();$("said").textContent=UI.rbound;return;}
+  UI.rbound="";UI.ratio=u;UI.preset="";render();}
 function boundNote(){var rb=el("p","tip");rb.id="ratio-bound";rb.setAttribute("role","status");rb.appendChild(document.createTextNode(UI.rbound));return rb;}
+function changedNote(){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));return chg;}
+/* the held slot keeps the height of the tallest thing it can say at this width and text size (every bound note and the "Changed." line),
+   measured in its own place with its own type, and only grows while the share is being changed; it sits right on the held button */
+function holdSlot(){var s=$("ratio-slot"),mk=$("make-ratio");if(!s||!mk)return;
+  var cur=s.firstChild,cs=cur?getComputedStyle(cur):null,fs=cs?cs.fontSize:"",lh=cs?cs.lineHeight:"",keep=[].slice.call(s.childNodes),texts=[];   /* read before the node is taken out */
+  RATIOK.forEach(function(k){[5,-5].forEach(function(d){texts.push(boundText(k,d,true),boundText(k,d,false));});});texts.push("Changed. Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it.");
+  s.style.minHeight="";var h=s.offsetHeight;keep.forEach(function(n){s.removeChild(n);});
+  texts.forEach(function(t){var q=el("p","tip"+(/^Changed/.test(t)?" chg":""),t);if(fs){q.style.fontSize=fs;if(lh&&lh!=="normal")q.style.lineHeight=lh;}s.appendChild(q);h=Math.max(h,s.offsetHeight);s.removeChild(q);});
+  keep.forEach(function(n){s.appendChild(n);});
+  UI.slotH=Math.max(UI.slotH||0,Math.ceil(h));s.style.minHeight=UI.slotH+"px";
+  UI.slotB=Math.round(mk.getBoundingClientRect().height)-16;s.style.bottom=UI.slotB+"px";}
 function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
@@ -3825,21 +3854,22 @@ function renderBuild(){
     var ctr=el("div","ctr"),mn=btn(null,null,"minus","st-"+x[0]+"-m"),out=el("output",null,R[x[0]]+"%"),pl=btn(null,null,"plus","st-"+x[0]+"-p");
     mn.setAttribute("aria-label","Less "+x[1].toLowerCase());pl.setAttribute("aria-label","More "+x[1].toLowerCase());
     mn.addEventListener("click",function(){stepRatio(x[0],-5);});pl.addEventListener("click",function(){stepRatio(x[0],5);});
-    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);
-    /* a refused step says why directly under the row tapped (Critic round 39, finding 5; round 40, finding 2). The bound named is the
-       tapped part's own, from RATIOB. */
-    if(UI.rbound&&UI.rkey===x[0])stp.appendChild(boundNote());});
+    add(ctr,mn,out,pl);add(row,sw,tx,ctr);stp.appendChild(row);});
   add(c,rw,stp);
-  if(UI.rbound&&!UI.rkey)c.appendChild(boundNote());
   v.appendChild(c);
-  /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1) */
-  var cur=C.ratio||MODEPLATE[C.mode];if(["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];})){var chg=el("p","tip chg");chg.id="ratio-changed";chg.appendChild(el("b",null,"Changed. "));chg.appendChild(document.createTextNode("Tap \u201CPlan "+mealName(C.meal).toLowerCase()+" with this plate\u201D to use it."));v.appendChild(chg);}
+  /* the "Changed." line sits under the steppers, so a first tap does not move them from under the thumb (R2-B5 074-1); while the share is
+     being changed (or a step was refused) it and the bound note sit in the held slot above the button (Critic round 41, finding 1) */
+  var cur=C.ratio||MODEPLATE[C.mode],changed=["protein","greens","carbs","fats"].some(function(k){return UI.ratio[k]!==cur[k];}),held=UI.preset===""||!!UI.rbound;
+  if(changed&&!held)v.appendChild(changedNote());
+  if(!held){UI.slotH=0;UI.slotB=null;}
   if(t)v.appendChild(el("p","fine","Target for this "+mealName(C.meal).toLowerCase()+", after what you've eaten today: about "+t.kcal+"\u00A0kcal and "+t.protein+"\u00A0g protein. Gemini fills in the grams."));
   else{var nb=el("p","tip");nb.id="build-no-body";nb.appendChild(el("b",null,"No calorie or protein target yet. "));var ab=btn("linkbtn","Add your age, height and weight",null,"build-add-body");ab.addEventListener("click",function(){openSheet("food",bodyMissing().at);});nb.appendChild(ab);v.appendChild(nb);}
+  if(held){var slot=el("div","held-note");slot.id="ratio-slot";if(UI.rbound)slot.appendChild(boundNote());else if(changed)slot.appendChild(changedNote());
+    if(UI.slotH)slot.style.minHeight=UI.slotH+"px";if(UI.slotB!=null)slot.style.bottom=UI.slotB+"px";v.appendChild(slot);}
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
-  if(UI.preset==="")mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
+  if(held)mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
   mk.addEventListener("click",function(){UI.rbound="";C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
-  v.appendChild(mk);
+  v.appendChild(mk);if(held){holdSlot();requestAnimationFrame(holdSlot);}
   if(C.ratio){v.appendChild(el("p","fine","Your plates use this share. Change it, or go back to the usual plate."));
     var cl=btn("linkbtn","Go back to the usual plate ("+lab("mode",C.mode)+")",null,"clear-ratio");cl.addEventListener("click",function(){C.ratio=null;UI.ratio=null;UI.preset="mode";UI.rbound="";STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}   /* plain words; the preset follows (R2-B5 076-1, 076-2) */
   var m=curMeal(),inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");hl.appendChild(el("p","cap","After-meal curve, your current plate"));
