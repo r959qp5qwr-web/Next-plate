@@ -371,7 +371,9 @@ const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji ma
   'Do parathe', 'Teen parathe', 'Do samose', 'Do pakode', 'Do bhature', 'Chole with do bhature', 'Do kulche', 'Do vade', 'Teen dose', 'Do idliyan', 'Do kachoriyan', 'Teen pakodi', 'Paanch golgappe', 'Do anday',
   'Do luchi', 'Char luchis', 'Teen litti', 'Do bati', 'Do baati', 'Ek chammach ghee', 'Do chammach ghee', 'Ek mutthi chana', 'Do karchhi dal', 'Ek vati varan', 'Ek kap chai', 'Do makki ki roti', 'Do bajre ki roti',
   'Dus roti', 'Gyarah idli', 'Barah puri', 'Idli (Do)', 'Katoriyan dal', 'Do katoriyan dal', 'Dal (do katoriyan)', 'Katoree dal', 'One kg biryani', 'Chicken Biryani Half Kg', 'Hyderabadi Biryani Quarter Kg',
-  'Sweet Lassi Half Litre', 'Chicken Biryani Ek Kilo', 'Mutton Biryani (Half Kg)', 'Glass buttermilk', 'Bowl dal', 'Hundred grams paneer'];
+  'Sweet Lassi Half Litre', 'Chicken Biryani Ek Kilo', 'Mutton Biryani (Half Kg)', 'Glass buttermilk', 'Bowl dal', 'Hundred grams paneer',
+  // safety audit of b4633dd, m1 (mutation D19): a katori with no number, an "of" or an opening place, which only the final katori guard holds
+  'Dal katori', 'Rice with katori dal', 'Dal served in katori', 'Curd katoriyan', 'Steel katori dal'];
 // The test's own detector, beside COUNTWORDS (safety audit of ba4d8dc, M1: COUNTWORDS knew only the engine's own nouns, so it could not fail on a
 // word the engine does not list). Any Hindi number word before any word is a count, but for the honest names listed here; a Hindi measure
 // word or katori in any form, a weight word, or a measure word that opens a name is a household unit. Its lists are this test's, not the engine's.
@@ -488,7 +490,9 @@ const KEPTNUM = /^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby
     ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Aloo Gobi 65', 'Aloo Gobi'], ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Palak Paneer 65', 'Palak Paneer'],
     ['MAINS\nAloo Gobi 65\nPalak Paneer 65\nButter Chicken 65', 'Butter Chicken 65', 'Butter Chicken'], ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Chilli Mushroom 65', 'Chilli Mushroom'],
     ['STARTERS\nChilli Mushroom 65\nFried Fish 65', 'Fried Fish 65', 'Fried Fish'], ['STARTERS\nAndhra Chicken 65 240\nDal Fry 200', 'Andhra Chicken 65 240', 'Andhra Chicken'],
-    ['STARTERS\nChicken 65 Biryani 320\nDal Fry 200', 'Chicken 65 Biryani 320', 'Chicken 65 Biryani'], ['MAINS\nChole Bhature 2 Bhature 120\nDal Fry 200', 'Chole Bhature 2 Bhature 120', 'Chole Bhature']];
+    ['STARTERS\nChicken 65 Biryani 320\nDal Fry 200', 'Chicken 65 Biryani 320', 'Chicken 65 Biryani'], ['MAINS\nChole Bhature 2 Bhature 120\nDal Fry 200', 'Chole Bhature 2 Bhature 120', 'Chole Bhature'],
+    // safety audit of b4633dd, m2 (mutation D10): "veg" and "egg" are not keep words, so "Veg 65" and "Egg 65" lose their number when they open the name too
+    ['MAINS\nVeg 65 120\nEgg 65 90', 'Veg 65 120', 'Veg'], ['MAINS\nVeg 65 120\nEgg 65 90', 'Egg 65 90', 'Egg'], ['MAINS\nVeg 65\nEgg 65', 'Egg 65', 'Egg'], ['MAINS\nVeg 65\nEgg 65', 'Veg 65', 'Veg']];
   for (const [typed, aw, want] of D3) { const r = menuName(NV, typed, [[aw, ['plain']]]), r2 = menuName(NV, typed + '\nDal Fry 200', [['Dal Fry', ['plain']]], [[aw, ['plain']]]);
     const r3 = safe(() => plan('menu', { profile: Object.assign({}, BASE, NV), ctx: { meal: 'lunch', text: '' }, image: 'AAAA' }).check({ status: 'ok', refer_reason: 'none', dishes: [{ as_written: aw, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['plain'], contains_listed: ['plain'], with_contains: ['plain'], planned_around: [] }], leave: [] }), {});
     const got = [(r.orders || [])[0], (r2.leave || [])[0], (r3.orders || [])[0]].map(x => x ? x.name : '(none)');
@@ -564,7 +568,23 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
   const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
   add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
   add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
-add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
+// safety audit of b4633dd, m3 (mutation D26): the medicines floor in the menu's own moves, in the engine, not only at the app's tap
+// (composedWhy). An order a little under twice the usual size, with a poor fit so the engine offers moves: "Eat about half" would fit the
+// target best but lands under the usual size, so on insulin, tablets or not sure it is not offered; off medicines it is (control).
+{ const menuMovesOut = (o, meal, k) => { const pl = plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal, text: 'MAINS\nVeg Thali 320\n' } });
+    return safe(() => pl.check({ status: 'ok', refer_reason: 'none', place: '', tip: '', leave: [], dishes: [{ as_written: 'Veg Thali', portion: 'about 450 g', kcal: k, protein: Math.round(k * 0.04 / 4), carbs: Math.round(k * 0.46 / 4), fats: Math.round(k * 0.5 / 9), fiber: 2,
+      grain_made_of: 'rice', grain_grams: 200, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['grain'], contains_listed: ['grain'], with_contains: ['plain'], planned_around: [] }] }), {}); };
+  for (const meal of ['breakfast', 'lunch', 'dinner']) for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'diabetes', meds: 'unsure', goal: 'hold' }]) {
+    const u = medsUsual(prof(o, meal), meal), k = Math.floor(u * 1.96 / 10) * 10, r = menuMovesOut(o, meal, k), mv = r.moves || [];
+    add('S6 engine: no menu portion move under the usual size (safety audit of b4633dd, m3)', mv.length > 0 && mv.every(x => x.kind !== 'portion' || k * x.scale >= u), `${JSON.stringify(o)} ${meal} usual ${u}: order ${k} kcal, moves ${JSON.stringify(mv.map(x => [x.title, x.scale]))}`);
+    add('S6 engine: a menu portion move at or above the usual size is offered (control)', mv.some(x => x.kind === 'portion'), `${JSON.stringify(o)} ${meal}: order ${k} kcal, moves ${JSON.stringify(mv.map(x => x.title))}`);
+    const r0 = menuMovesOut(Object.assign({}, o, { meds: 'no' }), meal, k);
+    add('S6 engine: off medicines the same order is offered a portion under that size (control)', (r0.moves || []).some(x => x.kind === 'portion' && k * x.scale < u), `${meal}: order ${k} kcal off medicines, moves ${JSON.stringify((r0.moves || []).map(x => [x.title, x.scale]))}`);
+    // menuMoves itself, with the day the engine plans
+    const pp = prof(o, meal), pl = safe(() => planDay(pp, readFile(undefined), meal, 5), null), n = { kcal: Math.round(u * 1.9 / 10) * 10 }; Object.assign(n, { protein: Math.round(n.kcal * 0.15 / 4), carbs: Math.round(n.kcal * 0.55 / 4), fats: Math.round(n.kcal * 0.3 / 9), fiber: 8 });
+    const dm = pl ? safe(() => menuMoves(n, pl, pp), []) : [];
+    add('S6 engine: menuMoves offers no portion under the usual size (safety audit of b4633dd, m3)', dm.some(x => x.kind === 'portion') && dm.every(x => x.kind !== 'portion' || n.kcal * x.scale >= u), `${JSON.stringify(o)} ${meal} usual ${u}: ${n.kcal} kcal, moves ${JSON.stringify(dm.map(x => [x.title, x.scale]))}`); } }
+add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
 { const retag = (x) => JSON.parse(JSON.stringify(x), (k, v) => Array.isArray(v) && v.length === 1 && v[0] === 'plain' ? PT : v);   // an older page has no "plain" tag
