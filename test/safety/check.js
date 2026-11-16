@@ -8,6 +8,8 @@ const fs = require('fs'), path = require('path');
 const page = fs.readFileSync(process.argv[2] || 'hosted/v6/index.html', 'utf8');
 const open = '<script id="np-core">', a = page.indexOf(open) + open.length;
 (0, eval)(page.slice(a, page.indexOf('</script>', a)));
+// no regular expression in np-core looks behind: Safari before 16.4 (iOS 15 phones) rejects (?<! and (?<=, and the whole script would not run
+const LOOKBEHIND = /\(\?<[!=]/.test(page.slice(a, page.indexOf('</script>', a)));
 // helpers an older page lacks, so its guards report FAIL instead of throwing
 for (const [k, v] of [['norm', s => String(s == null ? '' : s)], ['PROSEW', /^$/], ['TAGTEXT', ''], ['containsText', () => ''], ['MEATW', []], ['FISHW', []], ['ONIONW', []], ['ROOTW', []]]) if (typeof globalThis[k] === 'undefined') { try { (0, eval)('var ' + k); } catch (e) {} globalThis[k] = v; }
 const LX = JSON.parse(fs.readFileSync(path.join(__dirname, 'lexicon.json'), 'utf8')), L = LX.known, HO = LX.heldout;
@@ -15,6 +17,7 @@ const fx = require('../v5/fixture.js'), fxm = require('../v6/fixture-menu.js');
 const BASE = { goal: 'lose', focus: 'none', diet: 'nonveg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
 const prof = (o, slot) => { const p = readProfile(Object.assign({}, BASE, o)); p.slot = slot || 'lunch'; return p; };
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
+add('np-core has no look-behind (older phone browsers reject it)', !LOOKBEHIND, 'np-core holds (?<! or (?<=');
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const plural = s => /[^aeiou]y$/.test(s) ? s.slice(0, -1) + 'ies' : /(s|sh|ch|x)$/.test(s) ? s + 's' : s + 's';
 const forms = t => [t, cap(t), plural(t), '2 ' + plural(t), cap(t) + ' curry', 'Dal with ' + plural(t) + ' and salad', 'Cooked with no oil and ' + t, 'Served with ' + t + ', no salt'];

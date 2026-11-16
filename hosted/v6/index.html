@@ -1767,11 +1767,15 @@ var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)
 var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
 /* numbers above twelve (safety audit M2), by the same rule: a count when a word follows that is not a word of a dish's own name ("Fifteen
    almonds"); at the end of a name, or before a dish word, they stay ("Chicken sixty five"). "Sixty five" is one number: its "five" is not
-   taken off alone. */
+   taken off alone (cntOff, below). */
 var CNTTENS="(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
 var CNTUNIT="(?:one|two|three|four|five|six|seven|eight|nine)";
-var CNTBIG=new RegExp("(?<!\\b"+CNTTENS+"[\\s-]+)\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNTUNIT+"\\b))|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\\b(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=[\\s-]+[a-z])(?![\\s-]+(?:"+CNTTENS+"|hundred)\\b)"+CNTNAMEW+")-?","gi");
-var CNTWORD=new RegExp("(?<!\\b"+CNTTENS+"[\\s-]+)\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
+var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNTUNIT+"\\b))|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\\b(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=[\\s-]+[a-z])(?![\\s-]+(?:"+CNTTENS+"|hundred)\\b)"+CNTNAMEW+")-?","gi");
+/* a number word right after a tens word is part of that number ("sixty five", "fifty fifty") and is not taken off alone. Read from the text
+   before the match, with no look-behind: older phone browsers (Safari before 16.4) reject it and would lose the whole script. */
+var CNTTENSBEFORE=new RegExp("\\b"+CNTTENS+"[\\s-]+$","i");
+function cntOff(h,rx){return h.replace(rx,function(m){var at=arguments[arguments.length-2],str=arguments[arguments.length-1];return CNTTENSBEFORE.test(str.slice(0,at))?m:" ";});}
+var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
 var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+of\\s+","gi");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
@@ -1812,7 +1816,7 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
   h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
-  h=h.replace(CNTBIG," ").replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
+  h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
      "Cup cake" and "Buddha bowl" keep their names (S8; Critic round 39, finding 4) */
   h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(/\s+/g," ").trim();
@@ -1823,7 +1827,7 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
 /* a bracket holds a count or a portion when the count rules would change it, or it names a measure, a katori or a size (S8; safety audit M2);
    "no" alone is not the measure "nos": "(no ghee)" says what the food is */
 function countIn(b){return new RegExp("\\b(?:katoris?|"+CNTMEAS.slice(3,-1).replace("nos?|","nos|")+")\\b","i").test(b)||/^(?:half|full|quarter|single|double)$/i.test(b)||
-  b.replace(CNTBIG," ").replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
+  cntOff(cntOff(b,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
 /* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
 var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
 function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
