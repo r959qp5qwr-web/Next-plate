@@ -329,6 +329,50 @@ const STATES = [
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
     if (Math.abs(y1 - y0) > 2) throw new Error('the first change moved the steppers by ' + Math.round(y1 - y0) + ' px'); await p.click('#st-greens-p'); await h.settle(); await h.next(p, { has: ['#ratio-changed'] }, 'Builder after a change not yet used'); await planBtn(p, true); }],
+  // Critic round 41, finding 1: no tap in the Builder moves a stepper in the viewport (the refused tap, the taps after it, the tap that clears the
+  // note), and three taps at one point land on the same button or on no control; the note is seen whole above the held button and the tab bar.
+  // Every row, both directions, at every width and at 130 % text (scaled before the taps and kept scaled across renders). Taps are made at a
+  // screen point, as a held thumb makes them, not by selector.
+  ['builder-still', seed(), async (p, h, run) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
+    if (run && run.big !== 1) { await p.evaluate(bigLive, run.big); p.__bigLive = true; await h.settle(200); }
+    const IDS = ['protein', 'greens', 'carbs', 'fats'].flatMap(k => ['m', 'p'].map(d => `st-${k}-${d}`)), NAME = { protein: 'Protein', greens: 'Vegetables and greens', carbs: 'Grains', fats: 'Fats and seeds' };
+    const rects = () => p.evaluate((ids) => ids.map(id => { const e = document.getElementById(id), r = e ? e.getBoundingClientRect() : { left: -1, top: -1 }; return [r.left, r.top]; }), IDS);
+    const moved = (a, b) => a.reduce((m, r, i) => Math.max(m, Math.abs(r[0] - b[i][0]), Math.abs(r[1] - b[i][1])), 0);
+    const centre = (id) => p.$eval('#' + id, e => { const r = e.getBoundingClientRect(); return [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)]; });
+    const hitAt = (x, y) => p.evaluate(([x, y]) => { const e = document.elementFromPoint(x, y), c = e && e.closest('button,a,input,select,textarea,[role=button],[role=radio]'); return c ? (c.id || c.textContent.trim().slice(0, 30)) : ''; }, [x, y]);
+    const note = () => p.evaluate(() => { const n = document.getElementById('ratio-bound'); return n ? n.textContent : ''; });
+    let taps = 0, movedN = 0, offN = 0, triples = 0, unseen = 0; const ex = [];
+    const tap = async ([x, y], what) => { const a = await rects(), hit = await hitAt(x, y); await p.mouse.click(x, y); await h.settle(110); taps++;
+      const m = moved(a, await rects()); if (m > 0.5) { movedN++; if (ex.length < 8) ex.push(`${what}: the steppers moved ${Math.round(m)} px`); } return hit; };
+    const seenWhole = () => p.evaluate(() => { const n = document.getElementById('ratio-bound'); if (!n) return null; const r = n.getBoundingClientRect(), mk = document.getElementById('make-ratio'), tb = document.getElementById('tabs'), sc = document.getElementById('scroll'), said = document.getElementById('said');
+      const m = mk && getComputedStyle(mk).position === 'sticky' ? mk.getBoundingClientRect() : null, t = tb ? tb.getBoundingClientRect() : null, head = sc ? sc.getBoundingClientRect().top : 0;
+      const floor = Math.min(innerHeight, m && m.top > r.top && m.top < innerHeight ? m.top : innerHeight, t && t.top > r.top ? t.top : innerHeight);
+      return { ok: r.top >= head - 0.5 && r.bottom <= floor + 0.5 && n.getAttribute('role') === 'status' && !!said && said.textContent === n.textContent, top: Math.round(r.top), bottom: Math.round(r.bottom), floor: Math.round(floor) }; });
+    // tap the button at its own point until it is refused (the thumb held still); false if it never is
+    // (a button the held strip now covers is a dead tap, allowed; the thumb then moves to it: a scroll, not a tap)
+    const refuse = async (k, d) => { for (let i = 0; i < 16; i++) { if ((await note()).indexOf(NAME[k]) === 0) return true; let pt = await centre(`st-${k}-${d}`);
+        if (await hitAt(pt[0], pt[1]) === '') { await p.evaluate((id) => { const s = document.getElementById('scroll'), b = document.getElementById(id).getBoundingClientRect(); s.scrollTop += b.top + b.height / 2 - innerHeight * 0.4; }, `st-${k}-${d}`); await h.settle(80); pt = await centre(`st-${k}-${d}`); }
+        const hit = await tap(pt, `${NAME[k]} ${d === 'p' ? '+' : '-'} (to its bound)`);
+        if (hit && hit !== `st-${k}-${d}`) { offN++; if (ex.length < 8) ex.push(`${NAME[k]} ${d === 'p' ? '+' : '-'}: the point tapped was on ${hit}`); } } return (await note()).indexOf(NAME[k]) === 0; };
+    const shots = process.env.NP_SHOTS, vw = p.viewportSize().width, dark = await p.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches);
+    for (const k of ['protein', 'greens', 'carbs', 'fats']) for (const d of ['p', 'm']) {
+      await p.click('#preset-balanced'); await h.settle(150);
+      await p.evaluate((id) => { const s = document.getElementById('scroll'), b = document.getElementById(id).getBoundingClientRect(); s.scrollTop += b.top + b.height / 2 - innerHeight * 0.6; }, `st-${k}-${d}`); await h.settle(80);
+      if (!(await refuse(k, d))) throw new Error(`no bound note for ${NAME[k]} ${d === 'p' ? '+' : '-'} after 16 taps`);
+      const sw = await seenWhole(); if (!sw || !sw.ok) { unseen++; if (ex.length < 8) ex.push(`${NAME[k]} ${d === 'p' ? '+' : '-'}: the note is not seen whole ${JSON.stringify(sw)}`); }
+      if (shots && k === 'protein' && d === 'p' && ((vw === 320 && !dark && run.big === 1) || (vw === 360 && run.big !== 1))) { fs.mkdirSync(shots, { recursive: true }); await p.screenshot({ path: path.join(shots, `builder-refused-${vw}-${run.big !== 1 ? 'text130' : dark ? 'dark' : 'light'}.png`) }); }
+      // after the refusal, three taps at one point on every other button: the same button each time, or no control; nothing moves
+      for (const t of IDS.filter(id => id !== `st-${k}-${d}`)) {
+        if (!(await refuse(k, d))) break;
+        let pt = await centre(t);   // the thumb goes to a button it can reach: one the held strip covers is first brought above it (a scroll, not a tap)
+        if (await hitAt(pt[0], pt[1]) !== t) { await p.evaluate((id) => { const s = document.getElementById('scroll'), b = document.getElementById(id).getBoundingClientRect(); s.scrollTop += b.top + b.height / 2 - innerHeight * 0.4; }, t); await h.settle(80); pt = await centre(t); }
+        if (await hitAt(pt[0], pt[1]) !== t) { offN++; if (ex.length < 8) ex.push(`${t} cannot be reached after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused`); continue; }
+        triples++; const hits = [];
+        for (let i = 0; i < 3; i++) hits.push(await tap(pt, `after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused, tap ${i + 1} at ${t}`));
+        if (hits.includes('make-ratio')) throw new Error(`a tap at ${t} after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused landed on "Plan ... with this plate"`);
+        if (hits.some(x => x && x !== t)) { offN++; if (ex.length < 8) ex.push(`after ${NAME[k]} ${d === 'p' ? '+' : '-'} was refused, three taps at ${t} landed on ${hits.map(x => x || '(no control)').join(', ')}`); } } }
+    if (process.env.NP_STILL_LOG) console.log(`builder-still @${vw}${dark ? ' dark' : ''}${run.big !== 1 ? ' 130 %' : ''}: ${taps} taps, ${triples} three-tap runs, ${movedN} moved, ${offN} off, ${unseen} unseen`);
+    if (movedN || offN || unseen) throw new Error(`Builder taps: ${movedN} of ${taps} taps moved a stepper, ${offN} tap sequences (of ${triples} three-tap runs and the taps to each bound) landed on another control, ${unseen} of 8 notes not seen whole; ${ex.join('; ')}`); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await h.inView(p, '#rescue-lede', 'what Rescue gives'); await h.next(p, { has: ['#dish-cap'] }, 'Rescue start');
     if ((await p.textContent('#v-rescue .panel-h h2')).trim() !== 'Eating out') throw new Error('the Rescue title is not "Eating out"'); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Hyderabadi veg biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); await h.next(p, { text: 'Moves you can make' }, 'Rescue answer'); await closeTo(p, ['#v-rescue .inst']); }],
@@ -827,6 +871,15 @@ function audit(T) {
   return out;
 }
 
+// simulated Android text scaling kept across renders (the Builder redraws on every tap): every element's font size and line height grow by
+// the factor once; an element that inherits from a grown parent takes the parent's own base, so it is not grown twice
+function bigLive(f) { const base = new WeakMap();
+  const one = (e) => { if (base.has(e)) return; const cs = getComputedStyle(e), pa = e.parentElement, pb = pa && base.get(pa), pcs = pa && getComputedStyle(pa);
+    let fs = parseFloat(cs.fontSize), lh = cs.lineHeight; if (pb && cs.fontSize === pcs.fontSize) fs = pb[0]; if (pb && lh === pcs.lineHeight) lh = pb[1];
+    base.set(e, [fs, lh]); e.style.fontSize = fs * f + 'px'; if (lh !== 'normal') e.style.lineHeight = parseFloat(lh) * f + 'px'; };
+  const all = [...document.querySelectorAll('body *')], b0 = all.map(e => { const cs = getComputedStyle(e); return [parseFloat(cs.fontSize), cs.lineHeight]; });
+  all.forEach((e, i) => { base.set(e, b0[i]); e.style.fontSize = b0[i][0] * f + 'px'; if (b0[i][1] !== 'normal') e.style.lineHeight = parseFloat(b0[i][1]) * f + 'px'; });
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => { if (n.nodeType === 1) { one(n); n.querySelectorAll('*').forEach(one); } }))).observe(document.body, { childList: true, subtree: true }); }
 // simulated Android text scaling: every font size grows by the factor, layout widths stay
 function bigText(f) { const els = [...document.querySelectorAll('body *')], sz = els.map(e => { const cs = getComputedStyle(e); return [parseFloat(cs.fontSize), cs.lineHeight]; }); els.forEach((e, i) => { e.style.fontSize = sz[i][0] * f + 'px'; if (sz[i][1] !== 'normal') e.style.lineHeight = parseFloat(sz[i][1]) * f + 'px'; }); }
 
@@ -921,8 +974,8 @@ async function drill(b, base) {
     try {
       if (pre) await pre(p, h);
       await p.goto(srv.base, { waitUntil: 'domcontentloaded' }); await p.evaluate(() => document.fonts.ready); await h.settle(400);
-      await go(p, h); if (ERRNOTE[name]) await errRule(p, name);
-      if (run.big !== 1) { await p.evaluate(bigText, run.big); await h.settle(300); }
+      await go(p, h, run); if (ERRNOTE[name]) await errRule(p, name);
+      if (run.big !== 1 && !p.__bigLive) { await p.evaluate(bigText, run.big); await h.settle(300); }   // a state that scaled the text itself (bigLive) is not scaled twice
       viol = await p.evaluate(audit, C.T); viol = viol.concat(p.__late || []);
       if (run.big !== 1) viol = viol.filter(v => C.BIGTEXT_RULES.includes(v.rule));            // at 130 % only layout breakage counts; sizes and contrast are judged at 100 %
       const dir = path.join(OUT, 'screens', `${run.w}-${run.scheme}${run.big !== 1 ? '-big' : ''}`); fs.mkdirSync(dir, { recursive: true });
@@ -933,7 +986,7 @@ async function drill(b, base) {
         const y0 = sel === '#sheet .sheet-card' && /^(body-age|health-kidney|health-preg)$/.test(fid || '') ? s.scrollTop : 0;
         const n = Math.min(14, Math.ceil((s.scrollHeight - y0) / (s.clientHeight * 0.9))); return [...Array(n).keys()].map(i => y0 + i * s.clientHeight * 0.9); }, scrollSel);
       for (let i = 0; i < stops.length; i++) { await p.evaluate(([sel, y]) => { const s = document.querySelector(sel); if (s) s.scrollTop = y; }, [scrollSel, stops[i]]); await h.settle(150); await p.screenshot({ path: path.join(dir, `${name}-${i + 1}.png`) }); }
-    } catch (e) { err = String(e.message || e).split('\n')[0]; }
+    } catch (e) { err = String(e.message || e).split('\n')[0]; if (process.env.NP_DEBUG) console.error(name, run.w, run.big, String(e.stack || e).slice(0, 3000)); }
     // allowed exceptions (each with its reason) in test/ux/allow.json
     viol = viol.filter(v => !C.ALLOW.some(a => a.rule === v.rule && (!a.state || a.state === name) && v.el.includes(a.el)));
     results.push({ state: name, w: run.w, scheme: run.scheme, big: run.big, label: run.label, viol, err });
