@@ -78,7 +78,7 @@ const errRule = async (p, name) => { const r = await p.evaluate((s) => { const e
   if (r.err !== want || r.rule !== want) throw new Error(want ? 'the error note has no clay rule (class err: ' + r.err + ', rule: ' + r.rule + ')' : 'an info note carries the error rule'); };
 // the closest order on a menu where nothing fits, as the engine returns it (checkMenu with menuNote and menuMoves)
 // mocked orders are written as the engine returns them: a grain side shows its count and its grams (second screen review, R2-B8 114-1)
-const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ name: 'Paneer Butter Masala', portion: '1 bowl, ≈ 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
+const MENUCLOSE = { status: 'ok', place: 'North Indian restaurant', orders: [{ name: 'Paneer Butter Masala', portion: '\u2248 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
 // second screen review, R2-B6 083, R2-B7 104 and 106: at a limit or without the link, Rescue's send controls and menu buttons are off
 const rescueOff = async (p) => { const r = await p.evaluate(() => { const q = (s) => document.querySelector(s), off = (s) => !q(s) || q(s).disabled;
   return { cam: off('#mcam'), type: !q('#mtext') ? off('#mtype') : true, send: off('#v-rescue .rin .send'), chips: [...document.querySelectorAll('#v-rescue .sit')].every(b => b.disabled), go: off('#mgo') && !(q('#mgo') && q('#mgo').classList.contains('primary')) }; });
@@ -110,7 +110,7 @@ const PLANHOOKS = { lighter_now: 'lighter after earlier meals', protein_gap: 'pr
 const PLANPLATE = Object.assign(JSON.parse(JSON.stringify(GRAINPLATE)), { hooks: PLANHOOKS }); PLANPLATE.meals[0].planned = ['lighter_now', 'protein_gap'];
 const PLANMENU = Object.assign(JSON.parse(JSON.stringify(MENUCLOSE)), { hooks: PLANHOOKS }); PLANMENU.orders[0].planned = ['lighter_now', 'protein_gap'];
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
-const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
+const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '\u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
     { title: 'Leave a third of the naan for later', kind: 'portion', contains: ['grain', 'wheat'], deltaKcal: -110, deltaProtein: -3, deltaCarbs: -35, deltaFats: -2, deltaFiber: -1 },
     { title: 'A brisk 15-minute walk after the meal', kind: 'move', contains: [], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 }] };
@@ -125,7 +125,7 @@ const RANDPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Rajma w
     glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber; less roti.', minutes: 25, contains: [], deltaKcal: -80, deltaProtein: 0, deltaCarbs: -20, deltaFats: 0, deltaFiber: 2 },
     express: { suffix: '(10 minutes)', note: 'Quick rajma from a pressure cooker.', minutes: 10, contains: [], deltaKcal: -60, deltaProtein: 0, deltaCarbs: -15, deltaFats: 0, deltaFiber: 0 },
     gut: { suffix: '(easy on the gut)', note: 'Less chilli.', minutes: 25, contains: [], deltaKcal: -40, deltaProtein: 0, deltaCarbs: -10, deltaFats: 0, deltaFiber: 0 } } }] };
-const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '1 plate, \u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
+const RANDRESCUE = { status: 'ok', dish: { name: 'Veg thali', portion: '\u2248 450 g', kcal: 700, protein: 22, carbs: 100, fats: 28, fiber: 8, warning: '', breakdown: '', contains: ['grain'] },
   hacks: [{ title: 'Add 150 g dal on the side', kind: 'sequence', contains: [], deltaKcal: 170, deltaProtein: 8, deltaCarbs: 30, deltaFats: 2, deltaFiber: 4 },
     { title: 'Eat about two thirds of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -256, deltaProtein: -6, deltaCarbs: -40, deltaFats: -8, deltaFiber: -2 },
     { title: 'Eat about three quarters of the thali', kind: 'portion', contains: ['grain'], deltaKcal: -170, deltaProtein: -4, deltaCarbs: -25, deltaFats: -6, deltaFiber: -2 },
@@ -360,8 +360,8 @@ const STATES = [
   // round 29: "No" moves to an order with another grain; reading the menu again after "No" does not bring the same grain back
   ['menu-grain-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
     await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await p.waitForSelector('#order-grain-said'); await h.settle(900); await h.inView(p, '#order-card', 'the next order');
     const top = await p.evaluate(() => { const r = document.getElementById('order-grain-said').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }); if (!top) throw new Error('after No, the "You said" line is not on screen');
@@ -378,8 +378,8 @@ const STATES = [
     await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 }); if (await p.$('#order-grain-said')) throw new Error('a No from another menu is still shown'); await h.settle(900); await h.inView(p, '#order-card', 'the order on the other menu'); }],
   ['menu-grain-two', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     const q1 = await p.textContent('#order-grain-q'); if (!/^Is steamed rice available now\?$/.test(q1)) throw new Error('first question: ' + q1);
     await p.click('#order-grain-yes'); await h.settle(300); const q2 = await p.textContent('#order-grain-q'); if (!/^Is roti available now\?$/.test(q2)) throw new Error('second question: ' + q2);
@@ -547,8 +547,8 @@ const STATES = [
   ['plate-loading-asks', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); if (!(await p.$eval('#askgo', b => b.disabled)) || !(await p.$('#ask-wait'))) throw new Error('asks look ready while the plate is being made'); }, (p, h) => h.slowApi(p, 60000)],
   ['menu-grain-yes-then-no', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '6 pieces, \u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
     // second screen review, R2-B8 115-1: with a Yes on record the step names the grain they confirmed
@@ -556,8 +556,8 @@ const STATES = [
   // owner, 14 Nov: Yes to rice, then No to roti on one order: the order is set aside, the next one offered, and the trace line says why
   ['menu-grain-yes-then-no-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
     await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: 'North Indian restaurant', orders: [
-      { name: 'Dal Tadka', portion: '1 bowl, \u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Rajma', portion: '1 bowl, \u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
+      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
+      { name: 'Rajma', portion: '\u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
     await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
     await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
     const r = await p.evaluate(() => ({ said: (document.getElementById('order-grain-said') || {}).textContent || '', dish: (document.querySelector('#order-card .dish') || {}).textContent || '' }));
@@ -821,6 +821,8 @@ function coverage() {
   const markup = fs.readFileSync(path.join(ROOT, 'src/v5/markup.html'), 'utf8'), VIEW = { setup: 'setup-1-goal-food', plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' };
   for (const v of new Set([...markup.matchAll(/id="v-([a-z]+)"/g)].map(m => m[1]))) if (!VIEW[v] || (!ONLY.length && !names.has(VIEW[v]))) miss.push('view "v-' + v + '" has no review state');
   for (const t of Object.keys(COVER.tab)) if (!ONLY.length && !names.has(COVER.tab[t])) miss.push('tab "' + t + '" has no review state');
+  // a scripted reply shows only what the engine can write: a menu or Rescue portion is grams only, "\u2248 300 g" (Critic round 39, finding 10)
+  for (const m of fs.readFileSync(__filename, 'utf8').matchAll(/portion: '([^'(]*)'/g)) if (!/^(?:\\u2248|\u2248) \d+ g$/.test(m[1])) miss.push('a scripted portion the engine cannot write: "' + m[1] + '"');
   const steps = (app.match(/UI\.step<2/g) || []).length ? 3 : 0; if (!ONLY.length && steps && !['setup-1-goal-food', 'setup-2-health', 'setup-3-body'].every(n => names.has(n))) miss.push('a setup step has no review state');
   return miss;
 }
