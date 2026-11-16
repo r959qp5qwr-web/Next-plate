@@ -622,9 +622,9 @@ function checkMenu(r,p,c,pl,hooks){
     if(!d||typeof d!=="object")return drop("shape");
     /* safety round 5: the dish and side are names (name shape, tags, word lists); the portion is written by the engine from its grams;
        the model's ask, tip and place are not shown. The model's raw words are still read for the food and grain rules. */
-    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
+    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:c.text||1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
     if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
-    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
+    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:c.text||1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
     if(typed&&!onMenu(rawN,typed)&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     var cb=contentsBad(d.contains,name,p)||requestBad(d);if(cb)return drop(cb);   /* the tags as served, and a request only where it can take a tag out */                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
@@ -656,7 +656,7 @@ function checkMenu(r,p,c,pl,hooks){
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl,p);}   /* rule 7 */
   var kept={},otags=[],onames=[];out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;otags=otags.concat(o.tags);onames.push(o.name,o["with"]);delete o.i;delete o.ch;delete o.tags;return o;});
   out.tip="Eat the vegetables and protein first, and the grain last.";   /* app-static, the same for every menu (safety round 5) */
-  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
+  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:c.text||1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
     .filter(function(l,i){return !!l.name&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.raw,typed)||onMenu(l.name,typed))&&!leaveBad(l.raw)&&!onlyInBarred(l.raw,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3).map(function(l){return {name:l.name,why:l.why};});
   return out;
 }

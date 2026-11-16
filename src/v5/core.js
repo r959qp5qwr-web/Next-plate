@@ -552,27 +552,58 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    comma tail (a list "a, b and c" keeps its commas), counts with their measure word, and on a menu a trailing price taken off. Every food, supplement and unit check reads the
    raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
-/* counts written as words (S8; final audit M2). An English number, "a dozen", "a couple of" or "a pair of" is a count wherever it stands, and
-   goes with the measure word after it. "Half", "single", "quarter" and the Hindi numbers are a count only before a measure or piece word, and
-   "double" only before a measure word, so "Paneer do pyaza", "Panch phoron dal", "Egg half fry" and "Double roti" (bread) keep their names. */
+/* counts written as words (S8; final audit M2; Critic round 38, finding 1). A number word is a count only by what follows it:
+   - a measure word ("One bowl dal", "Half plate rice", "Buttermilk one glass"): the number and the measure word go;
+   - a piece word or a plural noun within the next three words, not across a joining word ("Two phulka", "with two whole eggs", "Three
+     appams with stew", "Do roti", "Teen phulka", "Do aloo paratha"): the number goes, the food stays.
+   So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
+   "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
+   "double" counts only before a measure word. The article "a" is never taken off alone. */
 var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
-var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?)";
-var CNTWORD=new RegExp("\\b(?:half\\s+an?\\s+dozen|an?\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\\s+and\\s+an?\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?)?(?:-|\\b)","gi");
-var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=\\s+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b))","gi");
+var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?)";
+/* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
+var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
+/* a piece word within two words; for English numbers and menu digits, a piece word or a plural noun within three */
+var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
+var CNTAHEADP="(?="+CNTSKIP+"{0,3}?[\\s-]+(?:"+CNTPIECE+"|[a-z]*[^su\\W\\d]s)\\b)";
+var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEADP+")-?","gi");
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
+/* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
+var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
+var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
+/* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Remove counts, keep names (Recommended)"; "7 Cup Barfi" losing
+   "7 Cup" is the accepted cost).
+   On a menu a number can be part of the dish's name ("Chicken 65", "Gobi 65", "Chicken 65 Biryani"), which the client reads to the waiter
+   (Critic round 38, finding 2). There a number goes only when it is a count: a measure word follows it ("Paneer Tikka 6 pcs"; "7 Cup Barfi"
+   shows "Barfi"), or it opens the name or follows "with", "and" or a comma and a piece word or plural noun follows ("2 Roti", "Dal with 2
+   phulkas"), or it is "x2" or "2x". */
+var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"(?:\\s+of\\b)?|(^|\\b(?:with|and|plus)\\s+|,\\s*)\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s+x)?"+CNTAHEADP+"|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
+/* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
+   "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
+   after another number it is the price ("Chicken 65 240"). */
+function menuPrice(h,typed){h=h.replace(/\s*(?:-|:|@|rs\.?|inr|\u20B9)\s*\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
+  var m=/^(.*[A-Za-z].*?)((?:\s+\d+(?:\.\d+)?)+)$/.exec(h);if(!m)return h;var base=m[1],nums=m[2].trim().split(/\s+/);
+  if(typed&&typeof menuNorm==="function"){var T=menuNorm(typed),lines=String(typed).split(/\n/).filter(function(l){return /[a-z]/i.test(l);}),priced=lines.filter(function(l){return /\d\s*(?:\/-)?\s*$/.test(l);}).length*2>=lines.length;
+    for(var k=nums.length;k>0;k--){var cand=base+" "+nums.slice(0,k).join(" "),cn=menuNorm(cand);if(T.indexOf(cn)>=0&&(!priced||new RegExp(cn.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\d").test(T)))return cand;}
+    return base;}
+  return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
   /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
   var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
-  if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
+  if(o.price)h=menuPrice(h,typeof o.price==="string"?o.price:"");
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:[.\/\u2044]\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
   /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
   h=h.replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
-  var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
-  h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
-  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
+  var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
+  h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
+  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
+  return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
+/* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
+var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
+function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */

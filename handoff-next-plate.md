@@ -124,6 +124,7 @@ You are continuing work from a previous chat. That chat is gone; this file is th
 | The food pill is today's region: "My home food" (default, follows the region in My food), "North Indian", "South Indian", "West: Gujarati / Maharashtrian", "East: Bengali / Odia"; Mediterranean and High-protein express dropped; the panel asks "What food today?" | owner, 14 Nov, option survey: Today's region (Recommended), after the owner asked for a relook for mostly Indian clients |
 | Rescue at the daily limit: no extra line; the current note stays | owner, 14 Nov, option survey: Rescue at the limit |
 | A meal's protein stays within 35 % of its energy (mealProteinEnergyMax 0.35) | owner, 14 Nov, option survey: protein cap kept |
+| Menu names: a number is removed only when a count, measure or food word follows it. "Two Tandoori Roti" shows "Tandoori Roti"; "Chicken 65" and "Gobi 65" stay as printed; "7 Cup Barfi" loses "7 Cup", the accepted cost (one rule, `MENUCOUNT` in src/v5/core.js; tested in test/safety/check.js) | owner, 16 Nov, option survey: "Remove counts, keep names (Recommended)" |
 | After the look is revised, re-make the same 30 s film with the revised look; same structure, script, voice, music | owner: "the video will have to be the exact same video... freshly made with the look of the app revised" |
 
 Claude's working defaults, not yet confirmed: the five target choices in `docs/RESEARCH-parameters.md` (1200 kcal floor for women, obesity line 27.5 vs 25, activity factor 1.3 for sitting, protein counted on the weight at BMI 25, bedtime 11:30 pm).

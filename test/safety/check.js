@@ -328,10 +328,12 @@ for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 
     add('S8 no household count in a shown name', !bad.length, `${kind}: "${v}" in ${pth} showed ${JSON.stringify(bad.slice(0, 2))}`); } }
 // counts written as words (final audit M2). The words and the nouns after them are this test's own, kept apart from the engine's lists:
 // count nouns the engine does not list ("kozhukattais", "pathiris") must go too, so a rule that knows only listed piece words cannot pass.
-const COUNTWORDS = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|aadha)\s+(?:plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
+const COUNTWORDS = /\b(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|dozen|couple\s+of|pair\s+of)\b|\b(?:half|single|quarter|double|ek|do|teen|char|aadha)\s+(?:(?!with\b|and\b)[a-z]+\s+)?(?:samosas?|plates?|bowls?|cups?|glass(?:es)?|katoris?|pieces?|slices?|servings?|portions?|spoons?|ladles?|rotis?|phulkas?|chapatis?|idlis?|dosas?|eggs?|parathas?|puris?|naans?)\b/i;
 const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji made with three whole eggs and onions', 'Two phulkas', 'One bowl dal', 'Half plate rice', 'Two Tandoori Roti', 'Moong dal with two phulkas',
   'Three kozhukattais', 'Four pathiris with stew', 'Buttermilk one glass', 'Single phulka', 'Pair of idlis', 'A couple of chapatis', 'Half a dozen momos', 'Quarter plate biryani', 'Ek katori dal', 'Do roti with sabzi',
-  'Rajma chawal, half plate', 'Eleven pani puri', 'Seven-cup burfi'];
+  'Rajma chawal, half plate', 'Eleven pani puri', 'Seven-cup burfi',
+  // Critic round 38, finding 1: a count word before a food or measure word, Hindi included
+  'Two phulka', 'Teen phulka', 'Do roti', 'Two rotis with dal', 'Half plate biryani', 'Do aloo paratha', 'Char samosa', 'Aadha plate chawal', 'Charred paneer tikka with two phulka'];
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -351,12 +353,39 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   // word counts go and the food stays (final audit M2); honest names with a number-like word keep it: a dish, a spice mix, a cooking style
   ['South Indian egg podimas with two whole eggs', 'South Indian egg podimas with whole eggs'], ['Two phulkas', 'Phulkas'], ['One bowl dal', 'Dal'], ['Half plate rice', 'Rice'], ['Three kozhukattais', 'Kozhukattais'],
   ['Paneer do pyaza', 'Paneer do pyaza'], ['Panch phoron dal', 'Panch phoron dal'], ['Paneer tikka', 'Paneer tikka'], ['Egg half fry', 'Egg half fry'], ['Double ka meetha', 'Double ka meetha'], ['Teen dal tadka', 'Teen dal tadka'],
-  ['Navratan korma', 'Navratan korma'], ['Half boiled egg', 'Half boiled egg'], ['Single origin coffee', 'Single origin coffee']]) {
+  ['Navratan korma', 'Navratan korma'], ['Half boiled egg', 'Half boiled egg'], ['Single origin coffee', 'Single origin coffee'],
+  // the coordinator's controls (16 Nov): dish names with number-like words stay as written
+  ['Half-fry egg', 'Half-fry egg'], ['Three bean salad', 'Three bean salad'], ['Five spice tofu', 'Five spice tofu'], ['Panchmel dal', 'Panchmel dal'], ['Do pyaza', 'Do pyaza'], ['Panch phoron', 'Panch phoron'], ['One-pot khichdi', 'One-pot khichdi'],
+  // Critic round 38: what follows the number word decides. A count before a food or measure word goes; a dish name stays
+  ['Two phulka', 'Phulka'], ['Teen phulka', 'Phulka'], ['Do roti', 'Roti'], ['Do aloo paratha', 'Aloo paratha'], ['Half plate biryani', 'Biryani'],
+  ['Paneer do pyaza with roti', 'Paneer do pyaza with roti'], ['Char siu tofu', 'Char siu tofu'], ['Teen phoron sabzi', 'Teen phoron sabzi']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
   add('S8 names are cleaned, not dropped', it.includes(shown), `"${raw}" showed ${JSON.stringify(it)}, not "${shown}"`); }
 { const mo = menuOffered({}, 'Two Tandoori Roti', ['wheat', 'grain']);
   add('S8 names are cleaned, not dropped', (mo.orders || []).some(o => o.name === 'Tandoori Roti'), `menu dish "Two Tandoori Roti" showed ${JSON.stringify((mo.orders || []).map(o => o.name))} (${JSON.stringify(mo.dropped)})`); }
+// Critic round 38, finding 2: on a menu a number that is part of the dish's name stays (the client reads it to the waiter); a count or a price goes.
+// The owner's rule (16 Nov, option survey: "Remove counts, keep names (Recommended)"): a number goes only when a count, measure or food word
+// follows it. "Two Tandoori Roti" shows "Tandoori Roti"; "Chicken 65" and "Gobi 65" stay as printed; "7 Cup Barfi" loses "7 Cup" (the accepted cost).
+{ const menuName = (o, typed, dishes, leave) => safe(() => plan('menu', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', text: typed } }).check({ status: 'ok', refer_reason: 'none',
+    dishes: dishes.map(([n, t]) => ({ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: t, contains_listed: t, with_contains: ['plain'], planned_around: [] })),
+    leave: (leave || []).map(([n, t]) => ({ as_written: n, reason: 'fried', contains: t })) }), {});
+  const NV = { diet: 'nonveg' }, typed = 'STARTERS\nChicken 65 240\nGobi 65 180\nChicken 65 Biryani 320\n7 Cup Barfi 90\nDal Makhani 280\nPaneer Tikka - 6 pcs 260\nTwo Tandoori Roti 60\n';
+  for (const [aw, tags, want, why] of [['Chicken 65', ['meat'], 'Chicken 65', 'part of the name'], ['Gobi 65', ['onion_garlic'], 'Gobi 65', 'part of the name'], ['Chicken 65 Biryani', ['meat', 'grain'], 'Chicken 65 Biryani', 'part of the name'],
+      ['Chicken 65 240', ['meat'], 'Chicken 65', 'the price after a name number'], ['7 Cup Barfi', ['sweet', 'dairy'], 'Barfi', 'a number before a measure word: "7 Cup" goes, the accepted cost (owner, 16 Nov)'], ['Dal Makhani 280', ['dairy'], 'Dal Makhani', 'a price'],
+      ['Paneer Tikka 6 pcs', ['dairy'], 'Paneer Tikka', 'a count'], ['Two Tandoori Roti', ['wheat', 'grain'], 'Tandoori Roti', 'a count in words']]) {
+    const r = menuName(NV, typed, [[aw, tags]]);
+    add('S8 menu names: a number in the name stays, a count or price goes', (r.orders || []).length === 1 && r.orders[0].name === want, `"${aw}" (${why}) showed ${JSON.stringify((r.orders || []).map(o => o.name))}, not "${want}" (${JSON.stringify(r.dropped)})`); }
+  const r = menuName(NV, typed, [['Gobi 65', ['onion_garlic']]], [['Chicken 65', ['meat']]]);
+  add('S8 menu names: a number in the name stays in a leave entry', (r.leave || []).some(l => l.name === 'Chicken 65'), `leave: ${JSON.stringify(r.leave)}`);
+  // a typed menu with no prices: a number at the end is the name's; with no typed menu (a photo), a short number stays and a price goes
+  const r4 = menuName(NV, 'Chicken 65\nGobi 65\nDal Fry', [['Chicken 65', ['meat']]]);
+  add('S8 menu names: no prices on the menu, the number stays', (r4.orders || []).some(o => o.name === 'Chicken 65'), JSON.stringify(r4.orders || r4.dropped));
+  // with no typed menu (a photo) a lone number at the end cannot be told from a price and goes; after another number it is the price
+  add('S8 menu names, photo: a price goes, a name number before it stays', showName('Plain Dosa 70', { price: 1 }) === 'Plain Dosa' && showName('Dal Makhani 280', { price: 1 }) === 'Dal Makhani' && showName('Chicken 65 240', { price: 1 }) === 'Chicken 65', JSON.stringify([showName('Plain Dosa 70', { price: 1 }), showName('Dal Makhani 280', { price: 1 }), showName('Chicken 65 240', { price: 1 })]));
+  // a plate name still shows no number at all (the prompt asks for none)
+  const pr = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(withItem('Chicken 65', ['meat']))), {});
+  add('S8 plate names show no number', !allStr(pr.meals || []).some(x => /\d/.test(x) && /chicken/i.test(x)), 'a plate item showed a number: ' + JSON.stringify(allStr(pr.meals || []).filter(x => /chicken/i.test(x)))); }
 // every check still reads the raw name, brackets included: the canteen thali with papad and pickle is dropped for high blood pressure
 for (const o of [{ health: 'bp' }, { health: 'diabetes', bp: true }]) {
   add('S3 brackets are read', !plateOffered(o, withItem('Veg thali (dal, sabzi, papad, pickle)', ['grain'])).ok, `${JSON.stringify(o)}: plate "Veg thali (dal, sabzi, papad, pickle)" was offered`);
@@ -484,6 +513,38 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
       // the title names only what is on the plate
       for (const x of (v.suffix || '').replace(/^with /, '').split(', ').filter(x => / in place of /.test(x))) add('S10 the title names only what is on the plate', v.items.some(i => i.food.toLowerCase() === x.split(' in place of ')[0]), `${st}: title "${v.title}"`); } }
   add('S10 app states checked', states >= 8, `only ${states} app states were checked`);
+  // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
+  // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures
+  // shown (which "I'll have this" logs) are the base plate plus what is on it.
+  { const evalDir = path.join(__dirname, '../../eval'), plates = [];
+    const take = (o) => { if (Array.isArray(o)) o.forEach(take); else if (o && typeof o === 'object') { if (Array.isArray(o.items) && o.items.length >= 2 && o.items.every(i => i && typeof i.food === 'string' && i.group) && typeof o.kcal === 'number') plates.push(o); else Object.values(o).forEach(take); }
+      else if (typeof o === 'string' && /^\s*\{/.test(o) && o.length < 200000) { try { take(JSON.parse(o)); } catch (e) {} } };
+    const jsons = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? jsons(path.join(d, e.name)) : /\.json$/.test(e.name) ? [path.join(d, e.name)] : []);
+    if (fs.existsSync(evalDir)) for (const f of jsons(evalDir).sort()) { try { take(JSON.parse(fs.readFileSync(f, 'utf8'))); } catch (e) {} }
+    const seen = new Set(); let shownN = 0, statesN = 0, collide = 0; const NV = Object.assign({}, BASE, { diet: 'nonveg', goal: 'hold' });
+    const P0 = Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, NV), C0 = { meal: 'lunch' };
+    for (const raw of plates) { const key = JSON.stringify([raw.items.map(i => i.food), raw.kcal]); if (seen.has(key)) continue; seen.add(key);
+      const r0 = J(raw); r0.items.forEach(i => { if (!Array.isArray(i.contains) || !i.contains.length) i.contains = PT.length ? PT : ['grain']; }); if (!Array.isArray(r0.contains)) r0.contains = PT;
+      const sh = shownPlate(NV, 'lunch', Object.assign({}, r0, { swaps: undefined, alchemy: undefined })); if (!sh) continue; shownN++;
+      const fp = sh.items.find(i => i.group === 'protein'), gr = sh.grain && sh.grain.food;
+      const put = { protein: fp ? [{ food: fp.food, grams: fp.grams, contains: PT, ...z }, { food: 'Sprouted moong chilla', grams: 150, contains: PT, deltaKcal: -30, deltaProtein: 4, deltaCarbs: -10, deltaFats: 0, deltaFiber: -1 }] : [],
+        base: gr ? [{ food: gr, grams: sh.grain.grams, made_of: sh.grain.made_of, contains: ['grain'], ...z }, { food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: 20, deltaProtein: 1, deltaCarbs: 4, deltaFats: 0, deltaFiber: 2 }] : [] };
+      const alch = gr ? { glucose: { titleSuffix: '+ salad', note: 'More salad.', add_item: 'Cucumber salad', add_grams: 80, minutes: 20, grain_grams_after: Math.max(30, Math.round(sh.grain.grams * 0.7)), contains: PT, deltaKcal: -20, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } } : {};
+      const variants = [tuned(NV, 'lunch', sh, put, alch)]; if (raw.swaps || raw.alchemy) variants.push(tuned(NV, 'lunch', sh, raw.swaps || { protein: [], base: [] }, raw.alchemy || {}));
+      for (const t of variants) { if (!t || t.status !== 'ok') continue; const m = Object.assign(J(sh), { swaps: t.swaps, alchemy: t.alchemy, planned: [] }), keys = Object.keys(m.alchemy || {});
+        for (let swp = 0; swp < Math.max(1, m.swaps.protein.length); swp++) for (let swb = 0; swb < Math.max(1, m.swaps.base.length); swb++) for (let mask = 0; mask < (1 << keys.length); mask++) {
+          const UI = { swp, swb, alc: {} }; keys.forEach((k, b) => { if (mask & (1 << b)) UI.alc[k] = true; });
+          const f = A(P0, C0, UI); if (safe(() => f.plateWhy(m), 'threw')) continue; statesN++; const v = f.viewOf(m), onPlate = (food) => v.items.some(i => i.food === food), st = `"${sh.title}" swp ${swp} swb ${swb} ${keys.filter(k => UI.alc[k]).join('+')}`;
+          const ok1 = v.swapped.every(x => onPlate(x.to)) && new Set(v.swapped.map(x => x.from)).size === v.swapped.length;
+          if (!ok1) collide++;
+          add('S10 recorded plates: no two slots on one item', ok1, `${st}: swapped ${JSON.stringify(v.swapped)}, plate ${v.items.map(i => i.food).join(', ')}`);
+          const ds = []; if (swp) { const s = m.swaps.protein[swp]; if (onPlate(s.food)) ds.push(s); } if (swb) { const s = m.swaps.base[swb]; if (onPlate(s.food)) ds.push(s); } keys.forEach(k => { if (UI.alc[k]) ds.push(m.alchemy[k]); });
+          const want = sum(m, ds);
+          add('S10 recorded plates: shown figures are the plate on screen', ['kcal', 'protein', 'carbs', 'fats'].every(k => Math.max(0, Math.round(want[k])) === v.n[k]), `${st}: shown ${JSON.stringify(v.n)}, recomputed ${JSON.stringify(want)}`); } } }
+    add('S10 recorded plates read', shownN >= 300 && statesN >= 1000, `only ${shownN} recorded plates shown, ${statesN} states`);
+    console.log(`S10 recorded plates: ${plates.length} recorded, ${seen.size} distinct, ${shownN} shown and tuned, ${statesN} tap states checked`);
+    // what "I'll have this" logs is the plate on screen: the handler logs the title and figures of the same viewOf the card was drawn from
+    add('S10 the meal logged is the plate shown', /function heroCard\(m,v,r\)\{[\s\S]*?var n=v\.n[\s\S]*?logEv\("had",\{title:v\.title,kcal:n\.kcal,protein:n\.protein,carbs:n\.carbs,fats:n\.fats,fiber:n\.fiber/.test(app), 'the "had" handler does not log the shown title and figures'); }
   console.log(`S10 grain-protein plate: ${states} app tap states checked`); }
 
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------
@@ -541,13 +602,15 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({}, 'Protein shake with
   // held-out names (no word list holds them), list only the barred tag, and serve it as gone: only the request table can drop them.
   // Every request kind is tried on every tag it must never take out, for the client whose rules bar that tag.
   { const HELD = { meat: ['Laal maas', 'Kori gassi', 'Rogan josh'], fish: ['Bangude masala', 'Pabda jhaal', 'Rui kalia'], egg: ['Dim bhuna', 'Nargisi kofta', 'Baida roti'], salty_side: ['Gongura pachadi', 'Khakra', 'Vadam'] };
-    const BAR = { meat: [{ diet: 'veg' }, { diet: 'egg' }, { diet: 'jain' }, { diet: 'vegan' }], fish: [{ diet: 'veg' }, { diet: 'egg' }], egg: [{ diet: 'veg' }, { diet: 'jain' }, { diet: 'vegan' }], salty_side: [{ health: 'bp' }, { health: 'diabetes', bp: true }] };
+    const BAR = { meat: [{ diet: 'veg' }, { diet: 'egg' }, { diet: 'jain' }, { diet: 'vegan' }], fish: [{ diet: 'veg' }, { diet: 'egg' }], egg: [{ diet: 'veg' }, { diet: 'jain' }, { diet: 'vegan' }], salty_side: [{ health: 'bp' }] };   // not diabetes with BP: a dish with no grain is dropped by rule 3 there, so the case could not fail
     const EATS = { meat: { diet: 'nonveg' }, fish: { diet: 'nonveg' }, egg: { diet: 'nonveg' }, salty_side: {} };
     let tried = 0;
     for (const [tag, names] of Object.entries(HELD)) for (const name of names) {
       // control: the same dish, honestly tagged, for a client who eats it, is offered, so a drop below is the request table's
       const c = menuReq(EATS[tag], name, [tag], [tag], 'none');
       add('request (held-out): the honest dish is offered to a client who eats it (control)', (c.orders || []).length === 1, `${JSON.stringify(EATS[tag])}: "${name}" [${tag}] ${JSON.stringify(c.dropped)}`);
+      for (const o of BAR[tag]) { const pc = menuReq(o, name, PT.length ? PT : [], PT.length ? PT : [], 'none');   // control: for this client the same dish, declared plain, is offered, so only the request table can drop it below
+        add('request (held-out): the dish declared plain is offered to this client (control)', (pc.orders || []).length === 1, `${JSON.stringify(o)}: "${name}" declared plain: ${JSON.stringify(pc.dropped)}`); }
       for (const o of BAR[tag]) for (const req of ['jain', 'no_dairy_fat', 'no_egg', 'less_salt']) { tried++;
         const r = menuReq(o, name, [tag], PT.length ? PT : [], req);
         add('request (held-out): never takes out meat, fish, egg or a salty side', !(r.orders || []).length, `${JSON.stringify(o)}: "${name}" listed [${tag}], served without it, with ${req} was offered: ${JSON.stringify((r.orders || [])[0] || {}).slice(0, 160)}`); } }
