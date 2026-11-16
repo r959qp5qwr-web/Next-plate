@@ -745,7 +745,10 @@ var KATORI=/\bkatoris?\b/i;
 /* the plate title and subtitle the engine writes from the checked items (names only) */
 function engineTitle(items){var pr=items.filter(function(i){return i.group==="protein";})[0]||items[0],gr=items.filter(function(i){return i!==pr&&(i.group==="carbs"||i.group==="other");})[0]||items.filter(function(i){return i!==pr;})[0];
   var t=pr.food+(gr?" with "+gr.food.toLowerCase():"");return t.length>70?pr.food.slice(0,70):t;}
-function engineSub(items){var f=items.map(function(i){return i.food.toLowerCase();});f[0]=items[0].food;return f.length>1?f.slice(0,-1).join(", ")+" and "+f[f.length-1]:f[0];}
+/* the items joined as a list: "a, b and c"; when the last item has its own "and" ("bok choy and edamame") a comma goes before it, so no
+   "and ... and" (Critic round 38, finding 7) */
+function engineSub(items){var f=items.map(function(i){return i.food.toLowerCase();});f[0]=items[0].food;if(f.length<2)return f[0];
+  return f.slice(0,-1).join(", ")+(/\band\b/.test(f[f.length-1])?", ":" and ")+f[f.length-1];}
 /* a one-tap change's note, from its structure: grams and kcal only */
 function changeNote(k,x,dg){var out=[];
   if(x.item)out.push("Add "+x.itemGrams+" g "+x.item.toLowerCase());

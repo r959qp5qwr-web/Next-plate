@@ -418,6 +418,9 @@ add('S9 brackets are read', !plateOffered({}, withItem('Oats porridge (with prot
   for (const o of [{ health: 'diabetes', meds: 'no' }, { health: 'diabetes', meds: 'yes' }, { health: 'none' }]) { const pp = prof(o); pp.medsUsual = medsUsual(pp, 'lunch'); const pl = planDay(pp, readFile({}), 'lunch', 5);
     for (const h of HK) { if (/^(diabetes_grain|steady_carbs)$/.test(h.id)) continue; const said = hs && hookSaid(h.id, pp), inLine = reasonLine(platePlain(), [h], pl, pp, 'lunch').includes(h.tag);
       add('c1 Planned around says what the reason line says', hs && said === inLine && (o.health === 'none' || !said || !/lighter|skip|late|less/.test(h.tag)), `${JSON.stringify(o)} ${h.id}: hookSaid ${said}, in the reason line ${inLine}`); } }
+  // Critic round 38, finding 7: the subtitle joins its items with one "and" ("..., buckwheat soba, bok choy and edamame")
+  { const sub = safe(() => engineSub([{ food: 'Miso glazed tofu' }, { food: 'Buckwheat soba' }, { food: 'Bok choy and edamame' }]), '');
+    add('subtitle: no "and ... and"', sub === 'Miso glazed tofu, buckwheat soba, bok choy and edamame' && engineSub([{ food: 'Dal' }, { food: 'Rice' }, { food: 'Salad' }]) === 'Dal, rice and salad', sub); }
   // on a whole reply: every shown plate has a line, and it is the engine's, never the model's for_you
   const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(Object.assign(platePlain(), { for_you: 'Zqxjvoq says eat less rice.' }))), {});
   add('reason line on every shown plate', (r.meals || []).length > 0 && (r.meals || []).every(x => x.forYou && !/zqxjvoq|less rice/i.test(x.forYou)), `reason lines: ${JSON.stringify((r.meals || []).map(x => x.forYou))}`); }
