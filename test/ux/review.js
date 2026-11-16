@@ -671,7 +671,9 @@ const STATES = [
   ['plate-random-combos-3', seed(), randomCombos(2), randomRoutes],   // "not sure", with body figures
 
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
-    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
+    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral');
+    // Critic round 38, finding 11: on a referral "Count it" (it only sends the words again) is not the main button, and "It is counted" is not said
+    if (await p.evaluate(() => { const g = document.getElementById('log-go'); return !!g && g.classList.contains('primary') || /It is counted, not judged/.test(document.getElementById('sheet').textContent); })) throw new Error('the log referral keeps Count it as the main button, or says it is counted'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

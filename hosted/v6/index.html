@@ -4015,8 +4015,8 @@ function renderSheet(){
     if(!UI.lres){
       var f=el("form","rin login");f.autocomplete="off";var i=el("textarea");i.id="login";i.rows=2;i.maxLength=200;i.placeholder="What you ate, and how much";i.value=UI.ltext||"";i.setAttribute("aria-label","What you ate");
       i.addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();f.requestSubmit?f.requestSubmit():f.dispatchEvent(new Event("submit",{cancelable:true}));}});
-      var lref=UI.lerr.indexOf(SAFETY)>=0;   /* referred: the note reads as a referral, with the line to get help now first */
-      var go=btn(UI.lerr&&UI.lretry||UI.lock?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy||!!UI.lock;   /* a worded button; the box shows the whole meal (screen review B3) */
+      var lref=UI.lerr.indexOf(SAFETY)>=0;   /* referred: the note reads as a referral, and "Count it" (which only sends the words again) is not the main button */
+      var go=btn(UI.lerr&&UI.lretry||UI.lock||lref?"btn":"btn primary","Count it","check","log-go");go.type="submit";go.disabled=!!UI.lbusy||!!UI.lock;   /* a worded button; the box shows the whole meal (screen review B3) */
       f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();UI.ltext=i.value;if(t&&!UI.lock)logOther(t,null);});
       i.addEventListener("input",function(){UI.ltext=i.value;});   /* the words stay when the sheet is closed and opened again */add(f,i,go);c.appendChild(f);
       if(UI.lbusy){c.appendChild(waitLine("Working out what that adds up to"));c.appendChild(el("p","tsub","It can take a minute or so."));}   /* R2-B4 055-1, 055-3 */
@@ -4024,7 +4024,7 @@ function renderSheet(){
         var ul0=lref&&UI.lerr.indexOf(URGENTLINE)===0;if(ul0){nt.appendChild(el("p",null,""));nt.lastChild.appendChild(el("b",null,URGENTLINE));}nt.appendChild(el("p",null,ul0?UI.lerr.slice(URGENTLINE.length+1):UI.lerr));
         if(UI.ltext&&UI.lretry){var lb=btn("btn primary","Try again","refresh","log-retry");lb.addEventListener("click",function(){UI.lerr="";logOther(UI.ltext,null);});nt.appendChild(lb);}
         n.appendChild(nt);c.appendChild(n);}
-      c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
+      if(!lref)c.appendChild(el("p","fine","Say it the way you'd tell a friend. It is counted, not judged, and the rest of your day adjusts. What you type goes to Google Gemini."));
       sh.appendChild(c);setTimeout(function(){var nn=$("log-note");if(nn){nn.focus();return;}var x=$("login");if(x&&!UI.lbusy)x.focus();},60);return;}   /* after an error the note has focus, so no keyboard covers it */
     var r=UI.lres;c.appendChild(el("h3","dish",r.title));
     var ul2=el("ul","measures");r.items.forEach(function(it){var li=el("li"),qy=el("span","qty g");qy.appendChild(document.createTextNode(String(it.grams)));qy.appendChild(el("small",null,"g"));var fd=el("span","food");fd.appendChild(el("b",null,it.food));add(li,qy,fd);ul2.appendChild(li);});c.appendChild(ul2);
