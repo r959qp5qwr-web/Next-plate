@@ -552,13 +552,23 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    comma tail (a list "a, b and c" keeps its commas), counts with their measure word, and on a menu a trailing price taken off. Every food, supplement and unit check reads the
    raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
+/* counts written as words (S8; final audit M2). An English number, "a dozen", "a couple of" or "a pair of" is a count wherever it stands, and
+   goes with the measure word after it. "Half", "single", "quarter" and the Hindi numbers are a count only before a measure or piece word, and
+   "double" only before a measure word, so "Paneer do pyaza", "Panch phoron dal", "Egg half fry" and "Double roti" (bread) keep their names. */
+var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
+var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?)";
+var CNTWORD=new RegExp("\\b(?:half\\s+an?\\s+dozen|an?\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?:\\s+and\\s+an?\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?)?(?:-|\\b)","gi");
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=\\s+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b))","gi");
+var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
   /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
   var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
   if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:[.\/\u2044]\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
+  /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
+  h=h.replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
   var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
   if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
