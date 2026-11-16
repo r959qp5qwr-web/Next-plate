@@ -503,7 +503,7 @@ function renderBuild(){
 }
 
 /* ---------- 03 Rescue: [S] menu deconstructor ---------- */
-var DISHES=["Andhra mutton biryani","Pahadi mutton rara with 2 butter rotis","Peri-peri half chicken with spicy rice","Paneer butter masala with 2 butter naan","Chole bhature","Veg biryani with raita","Masala dosa with chutney","A slice of tiramisu after dinner"];
+var DISHES=["Andhra mutton biryani","Pahadi mutton rara with butter rotis","Peri-peri half chicken with spicy rice","Paneer butter masala with butter naan","Chole bhature","Veg biryani with raita","Masala dosa with chutney","A slice of tiramisu after dinner"];
 function shrink(file,cb){
   var img=new Image(),url=URL.createObjectURL(file);img.onload=function(){var s=Math.min(1,1024/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
     c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);cb(c.toDataURL("image/jpeg",.82).split(",")[1]);};img.onerror=function(){cb(null);};img.src=url;

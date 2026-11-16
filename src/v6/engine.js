@@ -669,8 +669,8 @@ function checkMenu(r,p,c,pl,hooks){
 /* ---------- food the app writes itself (audit B5): each example ask and Rescue dish tap carries its declared contents, hand-tagged here,
    and is shown only when neither its tags nor the word lists cross the person's rules ---------- */
 var APPASKS=[["Only dal, rice and curd at home",["grain","dairy"]],["A light dinner after a heavy lunch",[]],["Guests at home tonight",[]],["Tired, something quick",[]]];
-var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]],["Pahadi mutton rara with 2 butter rotis",["meat","dairy","wheat","grain","onion_garlic","root_veg"]],
-  ["Peri-peri half chicken with spicy rice",["meat","grain","onion_garlic"]],["Paneer butter masala with 2 butter naan",["dairy","wheat","grain","onion_garlic","nuts","root_veg"]],
+var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]],["Pahadi mutton rara with butter rotis",["meat","dairy","wheat","grain","onion_garlic","root_veg"]],
+  ["Peri-peri half chicken with spicy rice",["meat","grain","onion_garlic"]],["Paneer butter masala with butter naan",["dairy","wheat","grain","onion_garlic","nuts","root_veg"]],
   ["Chole bhature",["wheat","grain","onion_garlic","root_veg","dairy"]],["Veg biryani with raita",["grain","dairy","onion_garlic","root_veg","nuts"]],["Masala dosa with chutney",["grain","root_veg","onion_garlic"]],
   ["A slice of tiramisu after dinner",["dairy","egg","wheat","sweet"]]];
 function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(function(t){return b.indexOf(t)>=0;});}

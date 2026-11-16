@@ -833,11 +833,13 @@ add('B4 plain tag', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', 'wheat'
 add('B4 plain tag in the schema', !!safe(() => JSON.stringify(plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).schema).includes('"plain"'), false), 'the schema does not offer the "plain" tag');
 
 // ---------- B5: food the app writes, every entry against every profile (tags here are written apart from the engine's) ----------
-{ const T = { 'Only dal, rice and curd at home': ['dairy'], 'Andhra mutton biryani': ['meat', 'dairy', 'onion_garlic'], 'Pahadi mutton rara with 2 butter rotis': ['meat', 'dairy', 'wheat', 'onion_garlic'], 'Peri-peri half chicken with spicy rice': ['meat', 'onion_garlic'],
-    'Paneer butter masala with 2 butter naan': ['dairy', 'wheat', 'onion_garlic'], 'Chole bhature': ['wheat', 'onion_garlic'], 'Veg biryani with raita': ['dairy', 'onion_garlic'], 'Masala dosa with chutney': ['root_veg', 'onion_garlic'], 'A slice of tiramisu after dinner': ['dairy', 'egg', 'wheat', 'sweet'] };
+{ const T = { 'Only dal, rice and curd at home': ['dairy'], 'Andhra mutton biryani': ['meat', 'dairy', 'onion_garlic'], 'Pahadi mutton rara with butter rotis': ['meat', 'dairy', 'wheat', 'onion_garlic'], 'Peri-peri half chicken with spicy rice': ['meat', 'onion_garlic'],
+    'Paneer butter masala with butter naan': ['dairy', 'wheat', 'onion_garlic'], 'Chole bhature': ['wheat', 'onion_garlic'], 'Veg biryani with raita': ['dairy', 'onion_garlic'], 'Masala dosa with chutney': ['root_veg', 'onion_garlic'], 'A slice of tiramisu after dinner': ['dairy', 'egg', 'wheat', 'sweet'] };
   const PROFS = []; for (const diet of ['veg', 'egg', 'nonveg', 'jain', 'vegan']) for (const leave of [[], ['dairy'], ['nut'], ['wheat'], ['soya']]) for (const h of [{ health: 'none' }, { health: 'diabetes' }, { health: 'bp' }]) PROFS.push(Object.assign({ diet, leave }, h));
   const all = (typeof APPDISHES !== 'undefined' ? APPDISHES.concat(APPASKS) : []);
   add('B5 app food is tagged', all.length === 12, 'the app’s dishes and asks are not in np-core with their tags');
+  // the app's own dishes carry no household count (S8; Critic round 39, finding 9: "with 2 butter naan")
+  add('S8 app dishes carry no count', all.length > 0 && all.every(e => !/\d/.test(e[0]) && !COUNTWORDS.test(e[0])), JSON.stringify(all.map(e => e[0]).filter(t => /\d/.test(t) || COUNTWORDS.test(t))));
   add('S8 the prompt asks for no counts or measures in words', typeof nameText === 'function' && /no counts or measures in words/.test(nameText()), 'nameText() does not ask for it');
   for (const o of PROFS) { const p = prof(o), bar = barredTags(p); for (const e of all) if (safe(() => appFoodOK(e, p), true)) add('B5 app food against every profile', !(T[e[0]] || []).some(t => bar.includes(t)), `${JSON.stringify(o)}: "${e[0]}" is shown`); } }
 
