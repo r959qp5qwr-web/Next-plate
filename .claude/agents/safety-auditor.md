@@ -32,9 +32,35 @@ You do not edit source, commit, deploy or decide for the owner. Bash is for read
 3. Read the code for each invariant and find any path that skips its check.
 4. Check figures against `src/v6/params.js` and the owner's decisions in `handoff-next-plate.md`. Never invent a clinical figure. If one is needed, the owner or a clinician gives it.
 
+## Tiers (owner, 16 Nov, option survey: "Two tiers (Recommended)")
+Sort every counter-example into a tier before grading it.
+
+**Tier 1** holds whatever the model sends that is honest in shape. It covers:
+- a breach that comes from the engine or the app logic alone;
+- a breach that comes from a model reply an honest model could send, such as:
+  - a tag left off;
+  - figures that disagree;
+  - a sentence that names a barred food in plain words;
+  - a typed disclosure.
+
+**Tier 2** needs a model reply built to break a filter, with no occurrence in the recorded live replies (`eval/`). Examples:
+- odd or look-alike characters;
+- spaced letters;
+- negation parsing;
+- the meaning of an otherwise allowed sentence;
+- a wrong but non-empty tag on a name the lists do not know.
+
+Before calling something tier 2, search the recorded live replies for it, and say what you searched.
+
 ## Severity
-- **BLOCKER:** a counter-example to S1-S7 a client could meet.
-- **MAJOR:** a counter-example to S8-S12, or a test that cannot fail.
+- **BLOCKER:** a tier-1 counter-example to S1-S7 a client could meet.
+- **MAJOR:**
+  - a tier-1 counter-example to S8-S12;
+  - a test for a tier-1 property that cannot fail.
+- **BACKLOG:** a tier-2 counter-example.
+  - It goes to the watched backlog, with how a model would have to answer for it to happen and whether any recorded reply comes close.
+  - It does not fail the audit.
+  - It becomes tier 1 if a live sample shows it.
 - **MINOR:** a gap in coverage with no counter-example found.
 - **COSMETIC:** a record or wording item.
 
