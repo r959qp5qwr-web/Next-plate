@@ -305,7 +305,11 @@ const STATES = [
     await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
     const t = await p.textContent('#order-card .oask'); if (!/Ask the waiter: Make it Jain style, with no onion, garlic or root vegetables\./.test(t)) throw new Error('the request line is not the engine\'s (' + t + ')');
     // owner, 16 Nov: the order fits only because of the request, so it is marked conditional
-    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')'); },
+    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')');
+    // Critic round 38, finding 3: the alternatives carry the same condition, and the rules chips on a conditional order carry no tick
+    const r = await p.evaluate(() => ({ alts: [...document.querySelectorAll('#v-rescue .alts .alt')].map(b => b.textContent), ticked: [...document.querySelectorAll('#order-card .hero-top .hchip')].filter(c => /Jain|^No /.test(c.textContent) && (c.classList.contains('fit') || c.querySelector('svg'))).map(c => c.textContent) }));
+    if (r.ticked.length) throw new Error('a conditional order ticks the rules as met (' + r.ticked.join(', ') + ')');
+    if (!r.alts.length || r.alts.some(a => !a.includes('Only if they can make it this way.'))) throw new Error('an alternative that fits only on request is not marked (' + r.alts.join(' | ') + ')'); },
     (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],   // the fixture plates do not matter here: the plate answer is kept still
   // owner, 16 Nov: a less-salt request takes out nothing the client's rules bar, so no condition line shows
   ['rescue-menu-less-salt', seed({ p: Object.assign({}, P, { health: 'bp', conds: ['bp'] }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);

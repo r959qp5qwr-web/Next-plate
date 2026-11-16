@@ -50,7 +50,7 @@ How S1-S4 and S9 are held (owner, 15 Nov, option survey: "Declared contents (Rec
 | Menu dish, side, leave entry | 2 (matched to a menu line, raw or cleaned) | tags, word lists (raw), shape | the order, side or entry is dropped |
 | Menu portion | 1 (grams from the reply) | grams only | no portion line |
 | Menu preparation request ("Ask the waiter: ...") | 1 (a fixed line per kind from a closed list: none, jain, no_dairy_fat, no_egg, less_salt) | the order's tags as served decide; a kind may take out only the tags it can (jain: onion_garlic, root_veg; no_dairy_fat: dairy, with the word net still dropping paneer, curd or cream); nothing takes out meat, fish or egg | the order is dropped |
-| Menu condition line | 1 ("Only if they can make it this way.", owner, 16 Nov, option survey: "Show, marked conditional (Recommended)") | shown only when the request takes out a tag the client's rules bar; not for less_salt or a request that takes out nothing barred | — |
+| Menu condition line | 1 ("Only if they can make it this way.", on the order card and on its row under "Also on this menu"; the rules chips of a conditional order carry no tick (Critic round 38, finding 3); owner, 16 Nov, option survey: "Show, marked conditional (Recommended)") | shown only when the request takes out a tag the client's rules bar; not for less_salt or a request that takes out nothing barred | — |
 | Menu when nothing fits | 1 ("Nothing on this menu fits your food rules (no ...). Ask what they can make for you, or name the dish you want.") | a readable menu with no fitting dish is never called unreadable | — |
 | Menu place | not shown | — | — |
 | Menu tip | 4 (one fixed line) | — | — |
