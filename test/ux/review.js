@@ -14,6 +14,9 @@ const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ?
 const QUICK = process.argv.includes('--quick'), PAGE = arg('page', 'hosted/v6/index.html'), OUT = path.resolve(ROOT, arg('out', 'test/ux/out')), ONLY = (arg('only', '') || '').split(',').filter(Boolean);
 const C = require('./criteria.js');                                                     // thresholds, each with its source (docs/ux/UX-CRITERIA.md)
 const fx = require('../v6/fixture-menu.js');
+// the engine of the page under review, for states that need its own reply to a scripted model answer (no live model)
+let CORE = null; const engineCheck = (kind, body, reply) => { if (!CORE) { const vm = require('vm'), pg = fs.readFileSync(path.resolve(ROOT, PAGE), 'utf8'), o = '<script id="np-core">', a = pg.indexOf(o) + o.length;
+  CORE = vm.createContext({ console }); vm.runInContext(pg.slice(a, pg.indexOf('</script>', a)), CORE); } const pl = CORE.plan(kind, body); return pl.check ? pl.check(reply) : pl.reply || {}; };
 
 // ---------- viewports: the phones Next Plate's clients hold ----------
 const VIEWPORTS = QUICK
@@ -88,6 +91,24 @@ const GRAINPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Sweet 
   swaps: { protein: [], base: [{ food: 'Jowar roti', made_of: 'jowar', grams: 90, contains: ['grain'], ...GZ }, { food: 'Ragi roti', made_of: 'ragi', grams: 90, contains: ['grain'], ...GZ, deltaFiber: 1 }] },
   alchemy: { glucose: { suffix: '+ more salad', note: 'Add 100 g cucumber salad; jowar roti down to 60 g.', minutes: 20, contains: ['grain'], grainAfter: 60, deltaKcal: -60, deltaProtein: -1, deltaCarbs: -14, deltaFats: 0, deltaFiber: 2 },
     gut: { suffix: '(easy on the gut)', note: 'Less chilli; jowar roti down to 55 g.', minutes: 20, contains: ['grain'], grainAfter: 55, deltaKcal: -40, deltaProtein: 1, deltaCarbs: -16, deltaFats: 0, deltaFiber: -1 } } }] };
+// plate-grain-protein-*: the declared grain item is also the main protein (final audit M1). The swaps are the colliding ones an older build
+// kept on the phone: a protein swap and a grain swap that both take the place of the khichdi (engine output shape)
+const KHPLATE = { status: 'ok', read: '', hooks: {}, meals: [{ title: 'Moong dal khichdi with cucumber salad', subtitle: 'Moong dal khichdi, cucumber salad and tomato slices', cuisine: '', minutes: 25, tuned: true,
+  items: [{ food: 'Moong dal khichdi', grams: 300, group: 'protein', contains: ['grain'] }, { food: 'Cucumber salad', grams: 120, group: 'greens', contains: ['plain'] }, { food: 'Tomato slices', grams: 60, group: 'greens', contains: ['plain'] }],
+  kcal: 480, protein: 18, carbs: 78, fats: 10, fiber: 9, why: [], taste: [], planned: [], forYou: '', contains: ['grain'], grain: { food: 'Moong dal khichdi', made_of: 'rice and moong dal', grams: 300 },
+  swaps: { protein: [{ food: 'Moong dal khichdi', grams: 300, contains: ['grain'], ...GZ }, { food: 'Sprouted moong chilla', grams: 150, contains: ['plain'], deltaKcal: -40, deltaProtein: 6, deltaCarbs: -30, deltaFats: 9, deltaFiber: -4 }],
+    base: [{ food: 'Moong dal khichdi', made_of: 'rice and moong dal', grams: 300, contains: ['grain'], ...GZ }, { food: 'Bajra khichdi', made_of: 'bajra and moong dal', grams: 300, contains: ['grain'], deltaKcal: 20, deltaProtein: 2, deltaCarbs: 2, deltaFats: 1, deltaFiber: 4 }] },
+  alchemy: { glucose: { suffix: 'gentler on sugar', note: 'Add 80\u00A0g sauteed beans. Moong dal khichdi goes to 200\u00A0g. About 60\u00A0kcal less.', minutes: 25, contains: ['plain'], grainAfter: 200, item: 'Sauteed beans', itemGrams: 80,
+    deltaKcal: -60, deltaProtein: 0, deltaCarbs: -22, deltaFats: 2, deltaFiber: 3 } } }] };
+// what the screen shows: the title, the figures and the serving list
+const plateOnScreen = (p) => p.evaluate(() => { const t = document.querySelector('#plate-card h2').textContent, sx = document.querySelector('#plate-card .suffix');
+  return { title: t + (sx ? ', ' + sx.textContent : ''), kcal: +document.getElementById('h-k').textContent, protein: +document.getElementById('h-p').textContent, carbs: +document.getElementById('h-c').textContent, fats: +document.getElementById('h-f').textContent,
+    items: [...document.querySelectorAll('.measures li')].map(l => l.querySelector('.food b').textContent), list: [...document.querySelectorAll('.measures li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()),
+    notes: [...document.querySelectorAll('.modlog li')].map(l => l.textContent) }; });
+// *-planned-diabetes (final audit c1): a plate and an order that cite a "lighter" hook and a protein hook, for a client with diabetes
+const PLANHOOKS = { lighter_now: 'lighter after earlier meals', protein_gap: 'protein to catch up' };
+const PLANPLATE = Object.assign(JSON.parse(JSON.stringify(GRAINPLATE)), { hooks: PLANHOOKS }); PLANPLATE.meals[0].planned = ['lighter_now', 'protein_gap'];
+const PLANMENU = Object.assign(JSON.parse(JSON.stringify(MENUCLOSE)), { hooks: PLANHOOKS }); PLANMENU.orders[0].planned = ['lighter_now', 'protein_gap'];
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
 const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '1 plate, \u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
@@ -198,10 +219,12 @@ const STATES = [
     if (!r.leave.includes('dairy')) throw new Error('the changed food rule was not kept over the reload');
     if (r.stamps.some(t => !t || !t.includes('dairy'))) throw new Error('a plate made under the old rules is still kept: ' + JSON.stringify(r.stamps));
     if (/Plate made under other rules/.test(r.text)) throw new Error('a kept plate stamped with other rules is shown');
-    if (/\b(paneer|curd|ghee|raita|dahi|butter)\b/i.test(r.text)) throw new Error('a dairy food shows after dairy was left out'); }],
+    if (/\b(paneer|curd|ghee|raita|dahi|butter)\b/i.test(r.text)) throw new Error('a dairy food shows after dairy was left out');
+    // Critic round 38, finding 6: the note names the cause the client can see, their own changed answers, not an app change
+    if (/after an app change/.test(r.text)) throw new Error('the note blames an app change for the client\'s own change'); }],
   ['plate-old-saved', seed({ store: { day: 20261112, shown: { breakfast: 'old', lunch: 'old', dinner: 'old', snack: 'old' }, res: { old: { meal: 'lunch', status: 'ok', read: '', hooks: {}, ask: '', at: NOW - H,
     meals: [{ title: 'Plate saved before the update', subtitle: '', items: [{ food: 'Paneer tikka', grams: 120, group: 'protein' }, { food: 'Palak', grams: 150, group: 'veg' }], kcal: 330, protein: 22, carbs: 10, fats: 22, fiber: 5, why: [], swaps: { protein: [], base: [] }, alchemy: {} }] } } } }),
-    async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
+    async (p, h) => { await h.plate(p); if (await p.evaluate(() => document.body.innerText.includes('Plate saved before the update'))) throw new Error('a plate saved before the grain field is still shown'); if (!/after an app change/.test(await p.textContent('#remade'))) throw new Error('a plate kept from an older build is not said to be made again after an app change'); await h.next(p, { has: ['#remade'] }, 'A kept plate made again after an app change'); }],
   ['plate-leave-two', seed({ p: Object.assign({}, P, { leave: ['dairy', 'nut'] }) }), async (p, h) => { await h.plate(p); await asks(p, ASKS.slice(1)); }],
   ['plate-dial-open', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-appetite'); await h.settle(); if (await p.$eval('#dial-appetite', b => b.getBoundingClientRect().right > innerWidth)) throw new Error('the appetite pill that closes the panel is off the screen'); }],
   ['plate-swap-open', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await h.next(p, { text: '(on\u00A0your\u00A0plate)' }, 'Swap: the option on the plate'); }],
@@ -259,7 +282,10 @@ const STATES = [
     const o0 = await out(); if (/45%/.test(o0)) throw new Error('a saved fats share of 45 % is still used (' + o0 + ')');
     for (let i = 0; i < 8; i++) { await p.click('#st-fats-p'); await h.settle(120); }
     const o1 = await out(), nums = o1.match(/\d+/g).map(Number); if (nums.some(v => v < 5) || nums[3] > 40 || nums.reduce((x, y) => x + y, 0) !== 100) throw new Error('the shares left their bounds (' + o1 + ')');
-    if (!/can't go higher/.test(await p.evaluate(() => document.getElementById('toast').textContent))) throw new Error('a tap past the fats bound was not refused with a note'); }],
+    // Critic round 38, finding 9: the refusal says the bound, under the steppers, and covers no row (it was a toast over the row just tapped)
+    const nb = await p.evaluate(() => { const n = document.getElementById('ratio-bound'), t = document.getElementById('toast'), row = document.getElementById('st-fats-p').getBoundingClientRect();
+      const tr = t && !t.hidden ? t.getBoundingClientRect() : null; return { text: n ? n.textContent : '', below: n ? n.getBoundingClientRect().top >= row.bottom : false, covers: !!tr && tr.bottom > row.top && tr.top < row.bottom }; });
+    if (!/can't go higher/.test(nb.text) || !/40\u00A0%/.test(nb.text) || !nb.below || nb.covers) throw new Error('a tap past the fats bound was not refused with its reason under the steppers, or a note covers the row (' + JSON.stringify(nb) + ')'); }],
   ['builder-adjusted', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-build'); await h.settle();
     // second screen review, R2-B5 074-1: the first tap does not move the steppers from under the thumb
     await p.$eval('#st-greens-p', b => b.scrollIntoView({ block: 'center' })); await h.settle(150); const y0 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top); await p.click('#st-greens-p'); await h.settle(200); const y1 = await p.$eval('#st-greens-p', b => b.getBoundingClientRect().top);
@@ -276,7 +302,11 @@ const STATES = [
   ['menu-unparsed', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"unparsed"}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { has: ['#menu-retry'], value: [['#mtext', fx.typed]], text: 'came back incomplete' }, 'Menu read when the reply came back broken'); await h.next(p, { has: ['#menu-retry.primary'], hasNot: ['#mgo.primary'] }, 'Menu: one main button'); }, () => {}],
   ['sheet-log-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.next(p, { has: ['#log-retry'], value: [['#login', '2 aloo paratha with curd']] }, 'Log when the engine is busy'); const fa = await p.evaluate(() => document.activeElement && document.activeElement.id); if (fa !== 'log-note') throw new Error('after an error the box, not the note, has focus (' + fa + ')'); }, () => {}],
   ['plate-limit', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], text: "today's new plates" }, 'Plate at the daily limit'); }, (p, h) => p.route('**/api/meals', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' }))],
-  ['menu-nothing-fits', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: '{"status":"ok","orders":[]}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#v-rescue .note', 'the nothing-fits note'); }],
+  // Critic round 38, finding 5: the engine's own nothing-fits reply for this client (np-core of the page under review), not a mocked fallback
+  ['menu-nothing-fits', seed(), async (p, h) => { await h.plate(p); let want = '';
+    await p.route('**/api/menu', r => { const out = engineCheck('menu', JSON.parse(r.request().postData() || '{}'), { status: 'nothing_fits', refer_reason: 'none', dishes: [], leave: [] }); want = out.read || ''; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(out) }); });
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#v-rescue .note', 'the nothing-fits note');
+    const t = await p.textContent('#v-rescue .note'); if (!/^Nothing on this menu fits your food rules/.test(want) || !t.includes(want)) throw new Error('the note is not the engine\'s nothing-fits line (' + t + ' / ' + want + ')'); }],
   ['sheet-log-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.inView(p, '#log-retry', 'Try again after a failed log'); }, () => {}],
   ['menu-unreadable', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'eval/v6/menu-blurred.jpg')); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the unreadable-menu note'); await h.next(p, { has: ['#menu-photo-again', '#menu-type-instead'] }, 'Menu photo not read'); }],
   ['rescue-menu-typed', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await h.settle(300); await p.fill('#mtext', fx.typed); await h.settle(200); }],
@@ -287,7 +317,11 @@ const STATES = [
     await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
     const t = await p.textContent('#order-card .oask'); if (!/Ask the waiter: Make it Jain style, with no onion, garlic or root vegetables\./.test(t)) throw new Error('the request line is not the engine\'s (' + t + ')');
     // owner, 16 Nov: the order fits only because of the request, so it is marked conditional
-    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')'); },
+    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')');
+    // Critic round 38, finding 3: the alternatives carry the same condition, and the rules chips on a conditional order carry no tick
+    const r = await p.evaluate(() => ({ alts: [...document.querySelectorAll('#v-rescue .alts .alt')].map(b => b.textContent), ticked: [...document.querySelectorAll('#order-card .hero-top .hchip')].filter(c => /Jain|^No /.test(c.textContent) && (c.classList.contains('fit') || c.querySelector('svg'))).map(c => c.textContent) }));
+    if (r.ticked.length) throw new Error('a conditional order ticks the rules as met (' + r.ticked.join(', ') + ')');
+    if (!r.alts.length || r.alts.some(a => !a.includes('Only if they can make it this way.'))) throw new Error('an alternative that fits only on request is not marked (' + r.alts.join(' | ') + ')'); },
     (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],   // the fixture plates do not matter here: the plate answer is kept still
   // owner, 16 Nov: a less-salt request takes out nothing the client's rules bar, so no condition line shows
   ['rescue-menu-less-salt', seed({ p: Object.assign({}, P, { health: 'bp', conds: ['bp'] }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);
@@ -373,7 +407,24 @@ const STATES = [
   ['plate-refer', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(200, { status: 'refer', read: 'Your coach and doctor should plan this with you.', meals: [] })); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await p.waitForSelector('.empty-card #back', { timeout: 20000 }); await h.settle(); await h.next(p, { text: '\u201CSomething light with paneer\u201D' }, 'The referral quotes the ask (R2-B5 072-1)'); }],
   // B1 (Codex re-audit): an urgent symptom typed in the ask is referred before the model, with the line to get help now
   ['plate-ask-urgent', seed(), async (p, h) => { await h.plate(p); await p.fill('#askin', 'chest pain after lunch'); await p.press('#askin', 'Enter'); await p.waitForSelector('.empty-card #back', { timeout: 20000 }); await h.settle();
-    await h.next(p, { text: 'If you feel unwell now, contact your doctor or emergency care.' }, 'An urgent symptom adds the line to get help now (B1)'); }],
+    await h.next(p, { text: 'If you feel unwell now, contact your doctor or emergency care.' }, 'An urgent symptom adds the line to get help now (B1)');
+    const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-plate .empty-card');
+    if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
+  // m2 (final audit): the line to get help now on the Rescue, menu and log referral cards, which the app draws itself
+  ['rescue-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'chest pain after lunch'); await p.press('#rin', 'Enter');
+    await p.waitForSelector('#v-rescue .empty-card', { timeout: 20000 }); await h.settle(); await h.inView(p, '#v-rescue .empty-card', 'the referral');
+    const t = await p.textContent('#v-rescue .empty-card'); if (!t.includes('If you feel unwell now, contact your doctor or emergency care.')) throw new Error('the Rescue referral has no line to get help now (' + t.trim().slice(0, 160) + ')');
+    const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-rescue .empty-card');
+    if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
+  ['menu-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', 'chest pain after lunch\nDal Fry 240\nJeera Rice 180'); await p.click('#mgo');
+    await p.waitForSelector('#v-rescue .empty-card', { timeout: 20000 }); await h.settle(); await h.inView(p, '#v-rescue .empty-card', 'the menu referral');
+    const t = await p.textContent('#v-rescue .empty-card'); if (!t.includes('If you feel unwell now, contact your doctor or emergency care.')) throw new Error('the menu referral has no line to get help now (' + t.trim().slice(0, 160) + ')');
+    const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-rescue .empty-card');
+    if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
+  ['sheet-log-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'chest pain after lunch, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
+    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || !t.includes('If you feel unwell now, contact your doctor or emergency care.')) throw new Error('the log referral has no line to get help now (' + t.trim().slice(0, 200) + ')');
+    const l = await p.evaluate(() => { const n = document.getElementById('log-note'), g = document.getElementById('log-go'); return { cls: n ? n.className : '', b: n && n.querySelector('b') ? n.querySelector('b').textContent : '', t: n ? n.textContent : '', primary: !!g && g.classList.contains('primary'), hint: /It is counted, not judged/.test(document.getElementById('sheet').textContent) }; });
+    if (/\berr\b/.test(l.cls) || l.b !== 'If you feel unwell now, contact your doctor or emergency care.' || l.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > l.t.indexOf('coach and doctor')) throw new Error('the log referral reads as an error, or the line to get help now is not first (' + JSON.stringify(l) + ')'); }],
   ['plate-empty', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); await h.next(p, { has: ['#remake'], text: 'fit your food rules' }, 'Plate when nothing fit'); }, (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],
   ['plate-error-last', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-mood'); await p.click('#mood-quick'); await h.settle(); await h.failApi(p); await p.click('#remake'); await h.settle(900); await h.next(p, { has: ['#remake', '#lastplates'], text: 'Your plates from before are kept.' }, 'Plate error with last plates'); }, () => {}],
   ['plate-offline', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await h.settle(); await h.next(p, { has: ['#remake'], text: 'Check your signal' }, 'Plate offline'); }, (p) => p.route('**/api/meals', OFF)],
@@ -570,6 +621,29 @@ const STATES = [
   ['plate-two-grain-changes', seed(), async (p, h) => { await h.plate(p); await p.click('#alc-glucose'); await h.settle(); await p.click('#alc-gut'); await h.settle(600);
     const on = await p.evaluate(() => ['glucose', 'gut'].filter(k => document.getElementById('alc-' + k).getAttribute('aria-pressed') === 'true'));
     if (on.join() !== 'gut') throw new Error('two changes to the grain are on together (' + on.join(', ') + ')'); }, (p) => p.route('**/api/meals', J(200, GRAINPLATE))],
+  // S10 (final audit M1): on a plate whose grain item is also its protein, a protein swap is not offered; a grain swap then logs the plate shown
+  ['plate-grain-protein-swap', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#adjust'); await h.settle();
+    const prot = !!(await p.$('#swp-1')); if (prot) { await p.click('#swp-1'); await h.settle(); }   // an older build offered it
+    await p.click('#swb-1'); await h.settle(600); const scr = await plateOnScreen(p), K = KHPLATE.meals[0], ds = [];
+    if (scr.items.includes('Sprouted moong chilla')) ds.push(K.swaps.protein[1]); if (scr.items.includes('Bajra khichdi')) ds.push(K.swaps.base[1]);
+    const want = ds.reduce((a, d) => ({ kcal: a.kcal + d.deltaKcal, protein: a.protein + d.deltaProtein, carbs: a.carbs + d.deltaCarbs, fats: a.fats + d.deltaFats }), { kcal: K.kcal, protein: K.protein, carbs: K.carbs, fats: K.fats });
+    if (['kcal', 'protein', 'carbs', 'fats'].some(k => scr[k] !== want[k])) throw new Error('the figures shown are not the plate on screen (' + JSON.stringify(scr) + ', the plate is ' + JSON.stringify(want) + ')');
+    if (prot) throw new Error('a protein swap is offered on the declared grain item (' + scr.list.join(' | ') + ')');
+    await p.click('#have'); await h.settle(600); const e = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').ev || []).filter(x => x.type === 'had').pop());
+    if (!e || e.title !== scr.title || ['kcal', 'protein', 'carbs', 'fats'].some(k => e[k] !== scr[k])) throw new Error('the meal logged is not the plate on screen (' + JSON.stringify(scr) + ' vs ' + JSON.stringify(e) + ')'); }, (p) => p.route('**/api/meals', J(200, KHPLATE))],
+  // S10 (final audit M1): the grain change's note names the grain only while it is on the plate, at the grams it says
+  ['plate-grain-protein-change', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#adjust'); await h.settle();
+    const prot = !!(await p.$('#swp-1')); if (prot) { await p.click('#swp-1'); await h.settle(); }   // an older build offered it
+    await p.click('#alc-glucose'); await h.settle(600); const scr = await plateOnScreen(p);
+    const bad = scr.notes.flatMap(n => [...n.matchAll(/([A-Z][A-Za-z ]+?) goes to (\d+)[\s\u00A0]g/g)]).filter(g => !scr.list.some(l => l.includes(g[1]) && new RegExp('^' + g[2] + '\\s*g').test(l)));
+    if (prot || bad.length || !scr.notes.length) throw new Error('the change note names what is not on the plate (' + scr.notes.join(' ') + ' / ' + scr.list.join(' | ') + (prot ? '; a protein swap is offered on the grain item' : '') + ')'); }, (p) => p.route('**/api/meals', J(200, KHPLATE))],
+  // c1 (final audit): with diabetes the "Planned around" line leaves out the hooks the reason line leaves out ("lighter", "skip", "late")
+  ['plate-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#planned', { timeout: 20000 });
+    const t = await p.textContent('#planned'), w = await p.textContent('#why-line').catch(() => '');
+    if (/lighter/i.test(t) || !/protein to catch up/.test(t) || /lighter/i.test(w)) throw new Error('with diabetes the plate is planned around "lighter" (' + t + ' / ' + w + ')'); }, (p) => p.route('**/api/meals', J(200, PLANPLATE))],
+  ['menu-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, PLANMENU));
+    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-planned', { timeout: 20000 }); await h.settle();
+    const t = await p.textContent('#order-planned'); if (/lighter/i.test(t) || !/protein to catch up/.test(t)) throw new Error('with diabetes the order is planned around "lighter" (' + t + ')'); }],
   // S11: swaps and changes made for answers changed during the wait are not shown
   ['plate-tune-stale', seed(), async (p, h) => { await h.plate(p);
     const k0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').store || {}).shown.lunch);
@@ -609,7 +683,9 @@ const STATES = [
   ['plate-random-combos-3', seed(), randomCombos(2), randomRoutes],   // "not sure", with body figures
 
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
-    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral'); }],
+    const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral');
+    // Critic round 38, finding 11: on a referral "Count it" (it only sends the words again) is not the main button, and "It is counted" is not said
+    if (await p.evaluate(() => { const g = document.getElementById('log-go'); return !!g && g.classList.contains('primary') || /It is counted, not judged/.test(document.getElementById('sheet').textContent); })) throw new Error('the log referral keeps Count it as the main button, or says it is counted'); }],
 ].filter(s => !ONLY.length || ONLY.includes(s[0]));
 
 // ---------- servers ----------

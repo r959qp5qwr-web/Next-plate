@@ -91,10 +91,10 @@ var ONIONW=["onion","onions","garlic","shallot","leek","spring onion","kanda","p
 var ROOTW=["potato","potatoes","aloo","carrot","carrots","gajar","radish","mooli","beetroot","beet","ginger","yam","sweet potato","arbi","jimikand","adrak","batata","suran","shakarkandi","shakarkand","alu","inji","colocasia","turnip","turnips","kappa","shalgam","chukandar","taro","tapioca","cassava","lotus stem","kamal kakdi","mullangi","urulai"];
 var JAINW=ONIONW.concat(ROOTW);
 var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji","badaam","moongfali","cashewnut","cashewnuts","kajoo","singdana","palli"],
-  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger","gehun","gehu","gehoon"],
+  wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","noodle","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger","gehun","gehu","gehoon"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
 var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi"];
-var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","soy sauce","bhujia","farsan","pickled","avakaya","oorugai","thokku","sev","mixture","chakli","murukku","chivda","pappadam","pappad","papads","wafers","kurkure"];
+var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","chip","soy sauce","bhujia","farsan","pickled","avakaya","oorugai","thokku","sev","mixture","chakli","murukku","chivda","pappadam","pappad","papads","wafers","wafer","kurkure"];
 /* D2: no supplements, powders, tablets or doses (S9). Brands and forms that are only a supplement; "vitamin", "omega 3" and "drops" alone
    also name food ("lemon has vitamin C", "the starch drops"), so they count in a supplement phrase. The declared "supplement" tag is the main check. */
 var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey","protinex","ensure plus","ensure powder","ensure shake","glass of ensure","glucerna","horlicks","bournvita","herbalife","spirulina","moringa powder","ashwagandha","omega 3 capsule","omega 3 capsules","omega-3 capsules","omega 3 supplement","vitamin pill","vitamin pills","vitamin tablet","vitamin drops","vitamin gummies","vitamin d drops","vitamin c tablet","vitamin supplement","pill","pills","iron drops","oral drops","metamucil","softgel","softgels","sachet"];
@@ -552,17 +552,62 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    comma tail (a list "a, b and c" keeps its commas), counts with their measure word, and on a menu a trailing price taken off. Every food, supplement and unit check reads the
    raw name, brackets included, so "Veg thali (papad, pickle)" is still dropped for high blood pressure. What is left must have the name shape
    (no digits, no other script, no look-alike letters) and no household measure (S8), or nothing is shown. */
+/* counts written as words (S8; final audit M2; Critic round 38, finding 1). A number word is a count only by what follows it:
+   - a measure word ("One bowl dal", "Half plate rice", "Buttermilk one glass"): the number and the measure word go;
+   - for an English number, any food word but a word of a dish's own name (below): the number goes, the food stays;
+   - for "half", "single", "quarter" and the Hindi numbers, a piece word within the next two words, not across a joining word ("Do roti",
+     "Teen phulka", "Do aloo paratha").
+   So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
+   "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
+   "double" counts only before a measure word. The article "a" is never taken off alone. */
+var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|glass(?:es)?|katoris?|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|mugs?|tumblers?)";
+var CNTPIECE="(?:rotis?|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?)";
+/* a word between the number and the food, not a joining word ("Paneer do pyaza with roti" keeps its "do") */
+var CNTSKIP="(?:[\\s-]+(?!(?:with|and|or|in|on|of|plus|served|over|for|to|ka|ki|ke)\\b)[a-z][a-z-]*)";
+/* a piece word within two words; for English numbers and menu digits, a piece word or a plural noun within three */
+var CNTAHEAD="(?="+CNTSKIP+"{0,2}?[\\s-]+(?:whole\\s+|full\\s+)?"+CNTPIECE+"\\b)";
+var CNTAHEADP="(?="+CNTSKIP+"{0,3}?[\\s-]+(?:"+CNTPIECE+"|[a-z]*[^su\\W\\d]s)\\b)";
+/* an English number is a count wherever it stands, before a singular noun too ("One apple", "Two parotta", "Curd with one banana"), unless
+   a word of a dish's own name follows it ("Three bean salad", "Five spice tofu", "One-pot khichdi", "Four cheese pizza") */
+var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons|grain|flavou?r)\\b)";
+var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|ek|do|teen|char|chaar|panch|paanch|aadha|adha|aadhi|adhi|dedh|dhai|dhaai)(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
+var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
+/* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
+var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
+var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
+/* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Remove counts, keep names (Recommended)"; "7 Cup Barfi" losing
+   "7 Cup" is the accepted cost).
+   On a menu a number can be part of the dish's name ("Chicken 65", "Gobi 65", "Chicken 65 Biryani"), which the client reads to the waiter
+   (Critic round 38, finding 2). There a number goes only when it is a count: a measure word follows it ("Paneer Tikka 6 pcs"; "7 Cup Barfi"
+   shows "Barfi"), or it opens the name or follows "with", "and" or a comma and a piece word or plural noun follows ("2 Roti", "Dal with 2
+   phulkas"), or it is "x2" or "2x". */
+var MENUCOUNT=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"(?:\\s+of\\b)?|(^|\\b(?:with|and|plus)\\s+|,\\s*)\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s+x)?"+CNTAHEADP+"|\\b\\d+\\s*x\\b|\\bx\\s*\\d+\\b","gi");
+/* a menu name's price: a marked price goes; a plain number at the end is the price when the typed menu shows it after the name (the menu line
+   "Chicken 65 240" is the dish "Chicken 65" at 240). With no typed menu (a photo) a lone number at the end cannot be told from a price and goes;
+   after another number it is the price ("Chicken 65 240"). */
+function menuPrice(h,typed){h=h.replace(/\s*(?:-|:|@|rs\.?|inr|\u20B9)\s*\d+(?:\.\d+)?\s*(?:\/-)?$/i,"").replace(/\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)$/i,"").trim();
+  var m=/^(.*[A-Za-z].*?)((?:\s+\d+(?:\.\d+)?)+)$/.exec(h);if(!m)return h;var base=m[1],nums=m[2].trim().split(/\s+/);
+  if(typed&&typeof menuNorm==="function"){var T=menuNorm(typed),lines=String(typed).split(/\n/).filter(function(l){return /[a-z]/i.test(l);}),priced=lines.filter(function(l){return /\d\s*(?:\/-)?\s*$/.test(l);}).length*2>=lines.length;
+    for(var k=nums.length;k>0;k--){var cand=base+" "+nums.slice(0,k).join(" "),cn=menuNorm(cand);if(T.indexOf(cn)>=0&&(!priced||new RegExp(cn.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\d").test(T)))return cand;}
+    return base;}
+  return nums.length>1?base+" "+nums.slice(0,-1).join(" "):base;}
 function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();if(!t||NONLATIN.test(t))return "";
   /* a short bracket of words says what the food is ("Fried Rice (Veg)", "Biryani (cauliflower rice)") and is kept; any other is taken off */
   var keep="",kb=/\(([A-Za-z]{2,}(?: [A-Za-z]{2,}){0,2})\)/.exec(t);if(kb&&!/\bkatoris?\b/i.test(kb[1]))keep=" ("+kb[1]+")";
   var h=t.replace(/\s*(?:\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\})/g,"").trim();if(/[()\[\]{}]/.test(h))return "";
-  if(o.price)h=h.replace(/(?:\s*(?:-|:|@|rs\.?|inr|\u20B9)?\s*\d+(?:\.\d+)?\s*(?:\/-|rs\.?)?)+$/i,"").trim();
+  if(o.price)h=menuPrice(h,typeof o.price==="string"?o.price:"");
   /* a count, and the measure or piece word after it, is never shown (S8): the item carries its grams ("2 plain dosas" shows "Plain dosas") */
-  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(/\b\d+(?:\.\d+)?\s*(?:x\s+)?(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml)\b\.?)?/gi," ").replace(/\s+/g," ").trim();
-  var parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
-  h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(nameOK)?parts.join(", "):parts[0];
-  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a count is digits (no name shape); a katori is a household measure (S8) */
-  return h.split(", ").every(nameOK)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
+  h=h.replace(/\s+[-\u2013\u2014]\s+/g," ").replace(o.price?MENUCOUNT:DIGALL,function(m,pre){return (typeof pre==="string"?pre:"")+" ";}).replace(/\s+/g," ").trim();
+  /* a count written as a word goes the same way (S8; final audit M2): "with two whole eggs", "One bowl dal", "Half plate rice" */
+  h=h.replace(CNTWORD," ").replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").replace(/^(?:of|and|with)\s+|\s+(?:of|and|with|x)$/gi,"").trim();
+  var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
+  h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
+  if(/\bkatoris?\b/i.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
+  return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
+/* a menu name may keep a number that is part of it ("Chicken 65"), never one that opens it */
+var MENUSHAPE=/^[A-Za-z]{2,}(?:[ -](?:[A-Za-z]{2,}|\d{1,3}))*$/;
+function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t);}
 function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
@@ -670,8 +715,10 @@ function checkMeal(m,p){
     .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.rawFood)&&s.grams>=30))&&
-      /* round 13: a protein swap takes the place of the first protein item; with diabetes it may not take the place of the grain item */
-      !(kind==="protein"&&p.health==="diabetes"&&p.slot!=="snack"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
+      /* round 13: a protein swap takes the place of the first protein item. It may not take the place of the declared grain item, for any
+         client at any meal: a protein swap and a grain swap would both land on that one item, and the plate logged would not be the plate
+         shown (S10; final audit M1) */
+      !(kind==="protein"&&dg&&firstProt&&sameFood(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   /* one-tap changes: the engine writes the label and the note from the change's structure (the food it adds, by name, with its grams; the
@@ -698,7 +745,10 @@ var KATORI=/\bkatoris?\b/i;
 /* the plate title and subtitle the engine writes from the checked items (names only) */
 function engineTitle(items){var pr=items.filter(function(i){return i.group==="protein";})[0]||items[0],gr=items.filter(function(i){return i!==pr&&(i.group==="carbs"||i.group==="other");})[0]||items.filter(function(i){return i!==pr;})[0];
   var t=pr.food+(gr?" with "+gr.food.toLowerCase():"");return t.length>70?pr.food.slice(0,70):t;}
-function engineSub(items){var f=items.map(function(i){return i.food.toLowerCase();});f[0]=items[0].food;return f.length>1?f.slice(0,-1).join(", ")+" and "+f[f.length-1]:f[0];}
+/* the items joined as a list: "a, b and c"; when the last item has its own "and" ("bok choy and edamame") a comma goes before it, so no
+   "and ... and" (Critic round 38, finding 7) */
+function engineSub(items){var f=items.map(function(i){return i.food.toLowerCase();});f[0]=items[0].food;if(f.length<2)return f[0];
+  return f.slice(0,-1).join(", ")+(/\band\b/.test(f[f.length-1])?", ":" and ")+f[f.length-1];}
 /* a one-tap change's note, from its structure: grams and kcal only */
 function changeNote(k,x,dg){var out=[];
   if(x.item)out.push("Add "+x.itemGrams+" g "+x.item.toLowerCase());

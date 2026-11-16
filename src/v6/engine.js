@@ -287,13 +287,18 @@ SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},re
    keeps with diabetes, and protein caught up only when the figures show it. Nothing in it is a claim the figures do not carry. With diabetes
    or on medicines it never says lighter, less or skip: those hooks are not named in the line. */
 var REASONOFF=/^(?:lighter_now|skipped_|repeat_|late_now|late_dinner|easy_)/;
+/* whether a hook may be named to this client: with diabetes or on medicines, not one that says lighter, less, late or skip. The reason line
+   and the app's "Planned around" lines both use this one rule (final audit c1) */
+function hookSaid(id,p){return !((p.health==="diabetes"||p.medsUsual)&&REASONOFF.test(id));}
 function reasonLine(m,cited,pl,p,mn){
-  var med=p.health==="diabetes"||p.medsUsual,tg=cited.filter(function(h){return !(med&&REASONOFF.test(h.id))&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs";}).map(function(h){return h.tag;}),s=[];
+  var T=pl&&pl.target,caught=cited.some(function(h){return h.id==="protein_gap";})&&T&&m.protein>=T.protein*0.9;
+  /* the grain hooks: the line says the grain in a sentence of its own; protein to catch up is said once, by the sentence when the figures
+     show it caught up, else as a hook (Critic round 38, finding 8) */
+  var tg=cited.filter(function(h){return hookSaid(h.id,p)&&h.id!=="diabetes_grain"&&h.id!=="steady_carbs"&&!(caught&&h.id==="protein_gap");}).map(function(h){return h.tag;}),s=[];
   if(tg.length)s.push("Planned around "+(tg.length>1?tg.slice(0,-1).join(", ")+" and "+tg[tg.length-1]:tg[0])+".");
-  var T=pl&&pl.target;
   if(T&&T.kcal)s.push("Your "+mn+" should carry about "+T.kcal+"\u00A0kcal and "+T.protein+"\u00A0g protein; this plate gives about "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g.");
   else s.push("About "+m.kcal+"\u00A0kcal and "+m.protein+"\u00A0g protein.");
-  if(cited.some(function(h){return h.id==="protein_gap";})&&T&&m.protein>=T.protein*0.9)s.push("It helps you catch up on protein today.");
+  if(caught)s.push("It helps you catch up on protein today.");
   if(p.health==="diabetes"&&m.grain&&m.grain.grams)s.push("The grain stays: about "+m.grain.grams+"\u00A0g of "+m.grain.food.toLowerCase()+".");
   return s.join(" ");}
 function checkReply6(r,p,hooks,pl,meal){
@@ -598,7 +603,7 @@ function requestBad(d){var k=REQKINDS.indexOf(d&&d.request)>=0?d.request:"none",
   if(!listed)return k==="none"?"":"request-unlisted";   /* a request with no listed tags cannot be checked */
   for(var i=0;i<listed.length;i++)if(served.indexOf(listed[i])<0&&REQREMOVE[k].indexOf(listed[i])<0)return "request";
   return "";}
-var NOFITNAME={meat:"meat",fish:"fish",egg:"egg",dairy:"dairy",wheat:"wheat",nuts:"nuts",soya:"soya",onion_garlic:"onion or garlic",root_veg:"root vegetables",sweet:"sweets",salty_side:"pickle or papad"};
+var NOFITNAME={meat:"meat",fish:"fish",egg:"egg",dairy:"dairy",wheat:"wheat",nuts:"nuts",soya:"soya",onion_garlic:"onion, garlic",root_veg:"root vegetables",sweet:"sweets",salty_side:"pickle, papad"};   /* one "or", before the last (Critic round 38, finding 5) */
 function noFitLine(p){var b=barredTags(p).map(function(t){return NOFITNAME[t];}).filter(Boolean);
   return "Nothing on this menu fits your food rules"+(b.length?" (no "+(b.length>1?b.slice(0,-1).join(", ")+" or "+b[b.length-1]:b[0])+")":"")+". Ask what they can make for you, or name the dish you want.";}
 var LEAVEWHY=["fried","sweet","rich","refined"],LEAVETEXT={fried:"Deep-fried, so heavy for this meal.",sweet:"A sweet, better kept for another day.",rich:"Rich and oily, a lot for this meal.",refined:"Mostly refined starch, low in fibre."};
@@ -622,9 +627,9 @@ function checkMenu(r,p,c,pl,hooks){
     if(!d||typeof d!=="object")return drop("shape");
     /* safety round 5: the dish and side are names (name shape, tags, word lists); the portion is written by the engine from its grams;
        the model's ask, tip and place are not shown. The model's raw words are still read for the food and grain rules. */
-    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
+    var rawN=rawName(d.as_written),name=BANRX.test(rawN)?"":showName(rawN,{price:c.text||1}),rawPor=clean(d.portion,60),rawAsk=clean(d.ask,80),rawSide=quoted(d["with"],120),all=rawN+" "+rawPor+" "+rawAsk+" "+rawSide+" "+clean(d.grain_made_of,40),key=menuNorm(name);   /* the side as written and what the grain is made of count (S1) */
     if(!name)return drop(typeof d.as_written==="string"&&NONLATIN.test(d.as_written)?"script":"shape");if(seen[key])return drop("shape");seen[key]=1;
-    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
+    var sm=/^(\d{1,2})\s+(\S.*)$/.exec(rawSide||""),side=sm&&+sm[1]>0&&!BANRX.test(sm[2])?showName(sm[2],{price:c.text||1}):"",sideRaw=side?sm[2]:"",sideCount=side?+sm[1]:0;
     if(typed&&!onMenu(rawN,typed)&&!onMenu(name,typed))return drop("off-menu");                                 /* rule 1: only dishes from the menu */
     var cb=contentsBad(d.contains,name,p)||requestBad(d);if(cb)return drop(cb);   /* the tags as served, and a request only where it can take a tag out */                             /* declared contents first (D1) */
     if(crosses(all,p)||onlyInBarred(name,items,p))return drop("diet");                   /* rule 2: food pattern and leave-outs, anywhere in the order */
@@ -656,7 +661,7 @@ function checkMenu(r,p,c,pl,hooks){
   if(list[0].fit!=null&&list[0].fit<40){list=[list[0]];out.note=menuNote(list[0].n,t,lab("meal",c.meal).toLowerCase());out.moves=menuMoves(list[0].n,pl,p);}   /* rule 7 */
   var kept={},otags=[],onames=[];out.orders=list.slice(0,3).map(function(o){kept[menuNorm(o.name)]=1;otags=otags.concat(o.tags);onames.push(o.name,o["with"]);delete o.i;delete o.ch;delete o.tags;return o;});
   out.tip="Eat the vegetables and protein first, and the grain last.";   /* app-static, the same for every menu (safety round 5) */
-  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
+  out.leave=(Array.isArray(r.leave)?r.leave:[]).slice(0,6).map(function(l){var rn=rawName(l&&l.as_written);return {name:BANRX.test(rn)?"":showName(rn,{price:c.text||1}),raw:rn,why:LEAVETEXT[l&&l.reason]||""};})
     .filter(function(l,i){return !!l.name&&!contentsBad((r.leave[i]||{}).contains,l.name,p,{sweetOK:true})&&(!typed||onMenu(l.raw,typed)||onMenu(l.name,typed))&&!leaveBad(l.raw)&&!onlyInBarred(l.raw,items,pNoSweet)&&!kept[menuNorm(l.name)];}).slice(0,3).map(function(l){return {name:l.name,why:l.why};});
   return out;
 }
@@ -675,11 +680,15 @@ function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(
 KINDS=["meals","rescue","log","tune","menu"];
 /* a logged item keeps its name when a banned word is in it (a brand, say): the word goes, the food stays (review, 15 Nov) */
 function banOut(t){t=norm(t);if(NONLATIN.test(t))return "";var q=t.replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
-/* safety invariant S7: typed disclosures of pregnancy, breastfeeding or a kidney condition ("kidney beans" is food) */
-var REFERTXT=/\b(?:pre?gn\w*|pragn\w*|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bach(?:ch)?a\s+hone\s+wala|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gurd[aeo]\s+(?:ki|ka|ke|kharab|kamzor|problem|bimari|fail\w*|me|mein|mai|damage\w*|weak|not)|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidny|kideny|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft)\b/i;
+/* safety invariant S7: typed disclosures of pregnancy, breastfeeding or a kidney condition ("kidney beans" is food). Any kidney word that is not
+   "kidney bean(s)" is referred, wherever it stands ("low salt for kidney"): the owner's rule is that a typed kidney mention is referred, and a
+   list of the words that may follow it missed the ones it did not hold (final audit, 16 Nov) */
+var REFERTXT=/\b(?:kidneys?(?![\s-]*beans?\b)|pre?gn\w*|pragn\w*|pregant\w*|per?g\w{0,2}nant|preg\w{0,2}nant|preggo|preggers|\d+\s+months?\s+along|having\s+a\s+baby|(?:just\s+)?gave\s+birth|(?:i|we)\s+nurse\b|post[\s-]*natal|ante[\s-]*natal|bach(?:ch)?a\s+hone\s+wala|stan\s*pan\w*|protein\s+in\s+(?:my\s+|the\s+)?urine|creat\w*nine|kidney\s+(?:mein|me|mai)\s+\w+|expecting(?!\s+(?:guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery|an?\s+(?!baby\b|child\b)))|trimester\w*|breast[\s-]*fe\w*|nursing\s+(?:mother|mom|mum|my|a\s+baby|the\s+baby|baby)|lactat\w*|post[\s-]*partum|post[\s-]*(?:delivery|pregnancy)|after\s+(?:my\s+|the\s+)?delivery|garbh\w*|d(?:oo|u)dh\s+pila\w*|pet\s+se\s+(?:hoon|hu|hun|hai|hain)|\w*dialysis|(?:haemo|hemo)|ckd|creatinine|e?gfr|urea|nephr\w*|renal|kidney\s+(?:disease|problem|problems|failure|condition|issue|issues|stone|stones|transplant|damage|patient|function|ki|ka|ke|not|failing|weak|removed|disorder)|kidneys?\s+(?:are|is)\s+(?:weak|bad|failing|damaged|not)|(?:weak|bad|failing|damaged|one|single)\s+kidneys?|gurd[aeo]\s+(?:ki|ka|ke|kharab|kamzor|problem|bimari|fail\w*|me|mein|mai|damage\w*|weak|not)|gestation\w*|gdm|preg|(?:i\s*(?:am|'m)|im)\s+(?:pg|\d+\s+weeks?)|\d+\s+weeks?\s+(?:pregnant|along|gone)|expecting\s+(?:our|my|a|the)\s+(?:(?:first|second|third|next|1st|2nd|3rd)\s+)?(?:baby|child|kid)|carrying\s+(?:twins|triplets|(?:a|my|our|the)\s+baby)|(?:mom|mum|mother)[\s-]+to[\s-]+be|baby\s+(?:is\s+)?due|due\s+date|conceiv\w*|ivf|maa\s+ban\w*|umm?ee?d\s+se|feed(?:ing)?\s+(?:my|our|the)\s+(?:baby|newborn|infant|\d+[\s-]*(?:month|week)s?)|new\s+(?:mom|mum|mother)|c[\s-]*section|c[ae]?esarean|delivery\s+ke\s+baad|(?:i\s*(?:am|'m)|still)\s+nursing|ob[\s/-]?gyn\w*|gyn(?:a|ae)?ecolog\w*|kidny|kideny|kidneys?\s+(?:kharab|kamzor|care|diet|cysts?)|ek\s+hi\s+kidney|chronic\s+kidney|polycystic\s+kidneys?|pkd|stage\s*[1-5]\s+(?:kidney|ckd)|protect\s+(?:my|the|your)\s+kidneys?|low[\s-]*potassium|protein\s+leak\w*|proteinuria|\w*albuminuria|albumin\s+in\s+(?:my\s+|the\s+)?urine|kft|rft)\b/i;
 /* the same in Devanagari and Tamil letters (JavaScript's \b does not work outside Latin letters, so these stand alone) */
 var REFERNL=/গর্ভ|কিডনি|স্তন্যপান|ডায়ালাইসিস|गर्भ|प्रेग्न|प्रेगन|स्तनपान|दूध\s*पिला|किडनी|गुर्द|डायलिसिस|கர்ப்ப|தாய்ப்பால்|சிறுநீரக|கிட்னி|டயாலிசிஸ்|గర్భ|కిడ్నీ|మూత్రపిండ|డయాలసిస్|ಗರ್ಭ|ಕಿಡ್ನಿ|ಮೂತ್ರಪಿಂಡ|ഗർഭ|ഗര്ഭ|കിഡ്നി|വൃക്ക|ગર્ભ|કિડની|ਗਰਭ|ਕਿਡਨੀ|ਗੁਰਦ|حاملہ|حمل|گردے|گردہ|کڈنی|ڈائلیسس|गरोदर|मूत्रपिंड/;
-function referTyped(t){return REFERTXT.test(t)||REFERNL.test(t)||urgentTyped(t);}
+/* kidney as a dish (mutton kidney, kidney fry, kidney masala) is food on a menu or in a log, not a disclosure, as "kidney beans" is */
+var KIDNEYDISH=/\b(?:(?:mutton|goat|lamb|chicken|bakra|beef|pork|meat)[\s-]+kidneys?|kidneys?(?=[\s-]+(?:fry|fried|masala|curry|roast|chops?|kebabs?|kababs?|sukka|sukha|tikka|gravy|bhuna|pepper\s+fry)\b))\b/gi;
+function referTyped(t){var k=String(t||"").replace(KIDNEYDISH,"meat");return REFERTXT.test(k)||REFERNL.test(k)||urgentTyped(t);}
 /* B1 (Codex re-audit, 15 Nov): urgent symptoms typed in any box are referred before the model, with a line to get help now. A first net,
    not a complete list, and not clinically reviewed: low-sugar signs (shaky, sweating, dizzy or confused with insulin, tablets or sugar; sugar
    low or dropping; hypo), chest pain, fainting, breathlessness, and confusion with insulin, tablets or sugar, in English, Hinglish and common misspellings. No sugar
