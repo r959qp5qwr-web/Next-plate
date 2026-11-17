@@ -336,6 +336,21 @@ for (const [n, o] of FOUND) {
   const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), dish = (k) => ({ status: 'ok', refer_reason: 'none', dish: { name: 'Veg thali', portion: 'about 450 g', kcal: k, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] } });
   add('S13 Rescue drops a dish whose figures disagree', rp.check(dish(1100)).status !== 'ok' && rp.check(dish(580)).status === 'ok', 'Rescue helped a dish at 1100 kcal with macros worth about 580, or refused the control'); }
 
+// ---------- the caps on their own (fix-r14; drop over the cap): honest elements, nothing barred, so only the cap can drop them ----------
+{ const P = prof({}), pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } });
+  const withItems = (n) => { const m = platePlain(); while (m.items.length < n) m.items.push({ food: 'Cucumber slices', grams: 20, group: 'greens', contains: ['plain'] }); return m; };
+  add('S10 cap: a plate with eight honest items is dropped, never cut to seven', !checkMeal(withItems(8), P).meal && (pl.check(mealsReply(withItems(8))).meals || []).length === 0, 'an eight-item plate was offered');
+  add('S10 cap control: a plate with seven items is offered', !!checkMeal(withItems(7), P).meal, 'a seven-item plate was dropped');
+  const lp = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } }), logR = (n) => ({ status: 'ok', refer_reason: 'none', items: Array.from({ length: n }, () => ({ food: 'dal', grams: 50, group: 'protein' })), kcal: 400, protein: 20, carbs: 50, fats: 12, fiber: 8 });
+  add('log cap: nine items drop the reply, eight are read', lp.check(logR(9)).status !== 'ok' && lp.check(logR(8)).status === 'ok', 'a log reply with nine items was read, or one with eight was not');
+  const many = (n) => Object.assign(platePlain(), { swaps: { protein: Array.from({ length: n }, (_, i) => ({ food: i ? 'Moong dal' : 'Sprouted moong', grams: 200, contains: ['plain'], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 })), base: [] } });
+  add('swap cap: four in a list drop the list, three are offered', checkMeal(many(4), P).meal.swaps.protein.length === 0 && checkMeal(many(3), P).meal.swaps.protein.length === 3, 'a list of four swaps was cut, or three were not offered');
+  const tw = (a) => (pl.check(mealsReply(Object.assign(platePlain(), { taste: a }))).meals || [{}])[0].taste;
+  add('taste cap: four taste words give none, three are shown', JSON.stringify(tw(['tangy', 'smoky', 'spicy', 'mild'])) === '[]' && tw(['tangy', 'smoky', 'spicy']).length === 3, 'four taste words were cut to three, or three were not shown');
+  const r5 = (n) => ({ status: 'ok', refer_reason: 'none', meals: Array.from({ length: n }, () => platePlain()) });
+  add('plates cap: a reply with five plates is not read, four are', (pl.check(r5(5)).meals || []).length === 0 && (pl.check(r5(4)).meals || []).length === 4, 'a reply with five plates was read');
+  add('a plate that is not an object is dropped, with no error', safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [null, 'Dal', 7, platePlain()] }).meals || []).length, -1) === 1 && safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [[], platePlain()] }).meals || []).length, -1) === 1, 'a null, text, number or list plate threw or was offered'); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'rescue', 'log']) {
