@@ -920,7 +920,7 @@ function buildRescuePrompt(p,c){
 profileText(p,null),
 "",
 "THE DISH",
-"- \""+c.text+"\""+(c.photo?" (a photo of the menu or plate is attached: use only dishes you can read or see)":""),
+"- \""+c.text+"\"",
 c.target?"- Their target for this meal: about "+c.target.kcal+" kcal and at least "+c.target.protein+" g protein.":null,
 "",
 rulesText(p),
@@ -966,7 +966,7 @@ function readProfile(x){
 function readCtx(x,kind){
   if(!x||typeof x!=="object")return null;
   var c={meal:okOpt("meal",x.meal)?x.meal:"lunch",time:/^\d{1,2}:\d{2} (am|pm)$/.test(x.time)?x.time:"unknown",text:plainText(x.text,240),photo:false};
-  if(kind==="rescue"){if(!c.text&&!x.photo)return null;return c;}
+  if(kind==="rescue"){if(!c.text)return null;return c;}   /* no photo is read (owner, 17 Nov): the dish is named in words */
   var md=optNow("mode",x.mode);c.mode=okOpt("mode",md)?md:"desk";   /* older values are read as today's options (owner, 14 Nov) */
   c.mood=okOpt("mood",x.mood)?x.mood:"best";var cu=optNow("cuisine",x.cuisine);c.cuisine=okOpt("cuisine",cu)?cu:"home";
   c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
@@ -977,6 +977,7 @@ function readCtx(x,kind){
 }
 
 /* ---------- one entry point for the server: the server holds the key and the limits, the core holds the thinking ----------
+   (superseded: src/v6/engine.js replaces plan() and KINDS; there no kind takes a photo, owner 17 Nov)
    plan(kind, body) -> {error} | {reply} (answered without the model) | {prompt, schema, image, check(data)} */
 var KINDS=["meals","rescue"];
 function plan(kind,body){
@@ -986,6 +987,6 @@ function plan(kind,body){
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
   c.target=mealTargets(dayTargets(p),c.meal,c.appetite||5);
   if(kind==="meals")return {prompt:buildMealPrompt(p,c),schema:SCH.meals,image:false,check:function(d){return checkReply(d,p);}};
-  if(kind==="rescue"){c.photo=!!(body&&body.image);return {prompt:buildRescuePrompt(p,c),schema:SCH.rescue,image:true,check:function(d){return checkRescue(d,p,c);}};}
+  if(kind==="rescue"){return {prompt:buildRescuePrompt(p,c),schema:SCH.rescue,image:false,check:function(d){return checkRescue(d,p,c);}};}
   return {error:"bad_request"};
 }

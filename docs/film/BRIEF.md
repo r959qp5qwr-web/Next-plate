@@ -1,3 +1,5 @@
+**Status: held (17 Nov).** This film shows menu reading (23-28 s, "Eating out? Show it the menu."), which the app no longer has: the owner removed it on 17 Nov (option survey, "Remove menu reading (Recommended)"). Not to be shared until it is re-cut around "Name the dish". The video files are unchanged; the owner may decide on a re-cut.
+
 # Next Plate film: brief and concepts (method: .claude/skills/promo-film)
 
 ## Gate 1. Brief

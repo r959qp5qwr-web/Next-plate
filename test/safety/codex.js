@@ -33,7 +33,7 @@ for (const [name, diet] of [['Kori rotti', 'veg'], ['Payesh', 'vegan'], ['Poondu
   track(name + ' with a wrong but non-empty tag, on a plate', () => route(p).check(reply(m)).meals.length ? 'offered' : 'dropped');
   for (const tags of [undefined, [], [diet === 'veg' ? 'meat' : diet === 'vegan' ? 'dairy' : 'onion_garlic']]) { const c = clone(m); c.items[0].contains = tags;
     test(name + ' with ' + JSON.stringify(tags) + ' tags is dropped', () => route(p).check(reply(c)).status === 'empty'); } }
-for (const kind of ['meals', 'menu', 'rescue', 'log']) {
+for (const kind of ['meals', 'rescue', 'log']) {
   for (const text of ['I am pregnant', 'I have kidney disease']) test(kind + ' refers "' + text + '"', () => { const r = route(base, text, kind); return !!r.reply && r.reply.status === 'refer'; });
   for (const text of ['I took insulin and feel shaky', 'my sugar dropped to 50 and I feel dizzy', 'chest pain after lunch'])
     test(kind + ' refers urgent "' + text + '" before the model', () => { const r = route(base, text, kind); return !!r.reply && r.reply.status === 'refer' && !r.check; }); }
@@ -63,9 +63,10 @@ test('1000 / 280 on medicines: no combination disagrees, and composedWhy refuses
 test('Rescue dish with inconsistent energy (1000 / 80) is not accepted', () => route(base, 'Rice', 'rescue').check({ status: 'ok', refer_reason: 'none', dish: { name: 'Rice', contains: ['grain'], portion: '200 g', kcal: 1000, protein: 10, carbs: 10, fats: 0, fiber: 1 }, hacks: [{ title: 'A 15-minute walk after the meal', kind: 'move', contains: [], ...z }] }).status !== 'ok');
 test('a brand food is logged, in the client\'s own words', () => { const r = route(base, '1 glass Tropicana juice', 'log').check({ status: 'ok', refer_reason: 'none', title: 'Tropicana mixed fruit juice', items: [{ food: 'Tropicana mixed fruit juice', grams: 200, group: 'other' }], kcal: 100, protein: 0, carbs: 25, fats: 0, fiber: 0 });
   return r.status === 'ok' && /tropicana juice/i.test(r.title); });
-for (const sex of ['f', 'm', '']) test('no portion move without body figures (' + (sex || 'unset') + ')', () => { const p = { diet: 'veg', health: 'diabetes', meds: 'yes', region: 'n', sex };
-  const dish = { as_written: 'Rice', portion: '600 g', contains: ['grain'], with_contains: [], with: '', kcal: 1800, protein: 60, carbs: 300, fats: 40, fiber: 10, grain_made_of: 'rice', grain_grams: 600 };
-  return !(route(p, 'MAINS\nRice 200', 'menu').check({ status: 'ok', refer_reason: 'none', dishes: [dish], leave: [] }).moves || []).length; });
+// menu reading removed (owner, 17 Nov): the menu probes (referral and urgent text on the menu kind, no menu portion move without body
+// figures) are replaced by this one; the menu path is unreachable, so the engine must refuse the kind before it reads anything
+test('menu is refused before anything is read (owner, 17 Nov)', () => ['I am pregnant', 'chest pain after lunch', 'MAINS\nRice 200'].every(t => { const r = route(base, t, 'menu'); return r.error === 'bad_request' && Object.keys(r).length === 1; }));
+test('a photo is refused on rescue and log before anything is read (owner, 17 Nov)', () => ['rescue', 'log'].every(k => { const r = route(base, 'Veg thali', k, { image: 'AAAA' }); return r.error === 'bad_request' && Object.keys(r).length === 1; }) && ['rescue', 'log'].every(k => typeof route(base, 'Veg thali', k).prompt === 'string'));
 test('the nut key is "nut", not "nuts"', () => a.readProfile({ ...base, leave: ['nuts'] }).leave.length === 0 && a.readProfile({ ...base, leave: ['nut'] }).leave[0] === 'nut');
 console.log(bad ? `${bad} of ${n} Codex probe(s) fail: a defect is back` : `all ${n} Codex probes hold`);
 process.exit(bad ? 1 : 0);

@@ -1,6 +1,8 @@
 // Generated grids: the OLD build (ba4d8dc, or OLDREF) against this one, on inputs made by a grid rather than recorded names. Each line is one
 // cell: what the old build showed -> what this build shows, marked "changed" or "same". Every changed line is read by hand before a merge.
-//   node eval/usefulness/grid.js menus|grain|referral     (writes eval/usefulness/grid-<name>.txt)
+//   node eval/usefulness/grid.js grain|referral     (writes eval/usefulness/grid-<name>.txt)
+// The menus grid is dormant: menu reading was removed (owner, 17 Nov, option survey, "Remove menu reading (Recommended)") and the engine
+// refuses the kind. Its code stays below for the record; `grid.js menus` prints a note and writes nothing. grid-menus.txt is the last run.
 const fs = require('fs'), path = require('path'), vm = require('vm'), { execSync } = require('child_process');
 const ROOT = path.join(__dirname, '..', '..'), OLDREF = process.env.OLDREF || 'ba4d8dc', KIND = process.argv[2];
 const core = (page) => { const o = '<script id="np-core">', a = page.indexOf(o) + o.length, ctx = vm.createContext({ console }); vm.runInContext(page.slice(a, page.indexOf('</script>', a)), ctx); return ctx; };
@@ -10,7 +12,8 @@ const BASE = { goal: 'hold', focus: 'none', diet: 'nonveg', health: 'none', meds
 const J = (x) => JSON.stringify(x), out = [];
 let changed = 0; const cell = (key, a, b) => { const c = a !== b; if (c) changed++; out.push(`${c ? 'changed' : 'same   '} | ${key} | ${a}${c ? ' -> ' + b : ''}`); };
 
-if (KIND === 'menus') {
+if (KIND === 'menus') { console.log('grid-menus: dormant (menu reading removed, owner 17 Nov; the engine refuses the kind). Nothing written; grid-menus.txt is the last run.'); process.exit(0); }
+if (KIND === 'menus-dormant') {
   // heading x price format x same or varied prices x a number in the name; each dish copied whole, price and all, as the model does.
   // "same" prices are all 65, so a price that equals a name number is in every same-price menu.
   const HEAD = [['none', ''], ['CAPS', 'STARTERS'], ['colon', 'Starters:']];
@@ -62,18 +65,16 @@ if (KIND === 'grain') {
 
 if (KIND === 'referral') {
   // meat word x kidney or gurda spelling x dish word, kidney or gurda spelling x condition word, and pregnancy spellings x food contexts:
-  // where each typed text goes on the four text paths (R = referred before the model, U = urgent, M = sent to the model), and, for the
-  // dish names, a photo menu that lists the dish (refer, or the dish offered)
-  const route = (E, t) => ['meals', 'rescue', 'menu', 'log'].map(k => { const pl = E.plan(k, { profile: BASE, ctx: { meal: 'lunch', text: t } }); return pl.reply ? (pl.reply.urgent ? 'U' : 'R') : 'M'; }).join('');
-  const photo = (E, n) => { const r = E.plan('menu', { profile: BASE, ctx: { meal: 'lunch', text: '' }, image: 'AAAA' }).check({ status: 'ok', refer_reason: 'none', leave: [],
-    dishes: [{ as_written: n, portion: 'about 300 g', kcal: 520, protein: 24, carbs: 40, fats: 30, fiber: 6, grain_made_of: '', grain_grams: 0, with: '', with_kcal: 0, with_protein: 0, with_carbs: 0, with_fats: 0, with_fiber: 0, request: 'none', contains: ['meat'], contains_listed: ['meat'], with_contains: ['plain'], planned_around: [] }] });
-    return r.status === 'refer' ? 'photo menu refers' : (r.orders || []).length ? 'photo menu offers ' + J(r.orders[0].name) : 'photo menu: ' + r.status + ' ' + J(r.dropped); };
+  // where each typed text goes on the three text paths, meals, rescue and log (R = referred before the model, U = urgent, M = sent to the
+  // model). The menu path and the photo-menu dish column are gone with menu reading (owner, 17 Nov): the engine refuses the kind, so both
+  // builds are read on the same three paths.
+  const route = (E, t) => ['meals', 'rescue', 'log'].map(k => { const pl = E.plan(k, { profile: BASE, ctx: { meal: 'lunch', text: t } }); return pl.reply ? (pl.reply.urgent ? 'U' : 'R') : 'M'; }).join('');
   const KID = ['kidney', 'kidneys', 'kidni', 'kindey', 'kedney', 'kidaney', 'kiney', 'kdney', 'gurda', 'gurde', 'gurdey', 'gurdo', 'gurdon', 'gurday', 'gurdae', 'gurdai', 'goorda', 'guurda', 'gurdha', 'gurdein', 'gurdy',
     'kidney beans', 'kidney bean', 'rajma', 'Gurdwara', 'Gurudwara', 'Gurdeep', 'kidnap',
     'kydney', 'kideney', 'gurrda', 'gurrde', 'mutrapind', 'vrukka', 'kydney beans', 'kideney beans', 'Gurrdwara'];   // the referral window's kidney words (D4), with their neighbours
   for (const meat of ['Mutton', 'Chicken', 'Goat', '']) for (const k of KID) for (const dish of ['fry', 'masala', 'curry', '']) {
     const t = [meat, k, dish].filter(Boolean).join(' '); if (!t.trim()) continue; const n = t.charAt(0).toUpperCase() + t.slice(1);
-    cell(`dish | ${J(n)}`, route(OLD, n) + ' / ' + photo(OLD, n), route(NEW, n) + ' / ' + photo(NEW, n)); }
+    cell(`dish | ${J(n)}`, route(OLD, n), route(NEW, n)); }
   for (const k of KID) for (const cond of ['problem', 'kharab hai', 'stone', 'weak hain', 'ki bimari']) { const t = 'Mere ' + k + ' ' + cond; cell(`condition | ${J(t)}`, route(OLD, t), route(NEW, t)); }
   for (const t of ['CKD3', 'ckd-3', 'stage 3 CKD', 'creat 2.1', 'creatinine 2.1', 'creative salad', 'transplant patient']) cell(`condition | ${J(t)}`, route(OLD, t), route(NEW, t));
   const PREG = ['pregnant', 'pregnent', 'prego', 'preggy', 'preggo', 'TTC', 'BF mom', 'BF-ing', 'EBF', 'BF', 'mommy to be', 'mom-to-be', 'jachcha', 'jaccha', 'baby bump', 'due in March', 'due next month', '7th month chal raha hai',
@@ -91,9 +92,9 @@ if (KIND === 'referral') {
       cell(`${g} | ${J(t)}`, route(OLD, t), route(NEW, t));
   // spellings the safety audit of b4633dd found, with their food-text controls, and a kidney dish named with one on a photo menu
   for (const [g, list] of [['found refer', LXK.referFound || []], ['found urgent', LXK.urgentFound || []], ['found control', LXK.notReferFound || []]]) for (const t of list) cell(`${g} | ${J(t)}`, route(OLD, t), route(NEW, t));
-  for (const n of ['Kednee fry', 'Mutton kednee curry', 'Kednee beans curry']) cell(`found dish | ${J(n)}`, route(OLD, n) + ' / ' + photo(OLD, n), route(NEW, n) + ' / ' + photo(NEW, n)); }
+  for (const n of ['Kednee fry', 'Mutton kednee curry', 'Kednee beans curry']) cell(`found dish | ${J(n)}`, route(OLD, n), route(NEW, n)); }
 
-if (!out.length) { console.error('usage: node eval/usefulness/grid.js menus|grain|referral'); process.exit(2); }
+if (!out.length) { console.error('usage: node eval/usefulness/grid.js grain|referral'); process.exit(2); }
 const head = `# grid-${KIND}: ${out.length} cells, ${changed} changed between ${OLDREF} and this build (generated by eval/usefulness/grid.js ${KIND}).\n# changed | cell | old shown -> new shown\n`;
 fs.writeFileSync(path.join(__dirname, `grid-${KIND}.txt`), head + out.join('\n') + '\n');
 console.log(head.trim());

@@ -13,7 +13,6 @@ const ROOT = path.join(__dirname, '..', '..');
 const arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
 const QUICK = process.argv.includes('--quick'), PAGE = arg('page', 'hosted/v6/index.html'), OUT = path.resolve(ROOT, arg('out', 'test/ux/out')), ONLY = (arg('only', '') || '').split(',').filter(Boolean);
 const C = require('./criteria.js');                                                     // thresholds, each with its source (docs/ux/UX-CRITERIA.md)
-const fx = require('../v6/fixture-menu.js');
 // the engine of the page under review, for states that need its own reply to a scripted model answer (no live model)
 let CORE = null; const engineCheck = (kind, body, reply) => { if (!CORE) { const vm = require('vm'), pg = fs.readFileSync(path.resolve(ROOT, PAGE), 'utf8'), o = '<script id="np-core">', a = pg.indexOf(o) + o.length;
   CORE = vm.createContext({ console }); vm.runInContext(pg.slice(a, pg.indexOf('</script>', a)), CORE); } const pl = CORE.plan(kind, body); return pl.check ? pl.check(reply) : pl.reply || {}; };
@@ -41,7 +40,7 @@ const CODE = 'REVIEWCODE', NEW = { p: {}, k: CODE };
 const NS = "Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so.";
 const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]), k: CODE }, o || {});
 
-// owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate, menu order, the other orders, Rescue)
+// owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate and Rescue)
 const closeTo = async (p, sels) => { const r = await p.evaluate((sels) => ({ fit: /\bFit\s*\d/.test(document.body.innerText), miss: sels.filter(s => !/Close to your target:\s\d+\s\/\s100/.test((document.querySelector(s) || {}).innerText || '')) }), sels);
   if (r.fit || r.miss.length) throw new Error('the score is not worded "Close to your target" (' + (r.fit ? '"Fit" shown; ' : '') + r.miss.join(', ') + ')'); };
 // owner, 14 Nov: the example asks are these four; a diet or a food left out still removes one that crosses it
@@ -70,18 +69,17 @@ const planBtn = async (p, stuck) => { const r = await p.evaluate(() => { const s
   if (stuck && (r.pos !== 'sticky' || r.bottom > r.tabs + 1 || r.bottom < r.tabs - 48)) throw new Error('after a change the plan button is not held above the tab bar (' + r.pos + ', ' + Math.round(r.bottom) + ' vs ' + Math.round(r.tabs) + ')');
   if (r.under.length) throw new Error('at the end of the page the plan button covers: ' + r.under.join(' | ')); };
 // owner, 14 Nov: an error note carries a thin clay rule on its left edge; a tip or info note does not
-const ERRNOTE = { 'plate-error': '#v-plate .empty-card', 'plate-ask-busy': '#v-plate .note', 'sheet-log-busy': '#log-note', 'rescue-error': '#v-rescue .note', 'menu-error': '#v-rescue .note', 'menu-nothing-fits': '#v-rescue .note', 'plate-hero': '#v-plate > .note' };
+const ERRNOTE = { 'plate-error': '#v-plate .empty-card', 'plate-ask-busy': '#v-plate .note', 'sheet-log-busy': '#log-note', 'rescue-error': '#v-rescue .note', 'plate-hero': '#v-plate > .note' };
 const errRule = async (p, name) => { const r = await p.evaluate((s) => { const e = document.querySelector(s); if (!e) return null; const cs = getComputedStyle(e);
   return { err: e.classList.contains('err'), rule: /inset/.test(cs.boxShadow) && /3px 0px 0px/.test(cs.boxShadow) || parseFloat(cs.borderLeftWidth) === 3 && cs.borderLeftStyle === 'solid' }; }, ERRNOTE[name]);
   const want = name !== 'plate-hero';
   if (!r) throw new Error('no note at ' + ERRNOTE[name]);
   if (r.err !== want || r.rule !== want) throw new Error(want ? 'the error note has no clay rule (class err: ' + r.err + ', rule: ' + r.rule + ')' : 'an info note carries the error rule'); };
-// the closest order on a menu where nothing fits, as the engine returns it (checkMenu with menuNote and menuMoves)
-// mocked orders are written as the engine returns them: a grain side shows its count and its grams (second screen review, R2-B8 114-1)
-const MENUCLOSE = { status: 'ok', place: '', orders: [{ name: 'Paneer Butter Masala', portion: '\u2248 300 g', ask: '', with: '2 Butter Naan, \u2248\u00A0180\u00A0g', n: { kcal: 1150, protein: 30, carbs: 110, fats: 62, fiber: 6 }, fit: 22, rise: 'Sharp', grain: '', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {}, note: 'Nothing on this menu fits your lunch well. This is the closest. As served it runs ≈ 500 kcal more than this lunch should have.', moves: [{ kind: 'portion', title: 'Eat about half and pack the rest', scale: 0.5 }, { kind: 'move', title: 'A 15-minute walk after the meal' }] };
-// second screen review, R2-B6 083, R2-B7 104 and 106: at a limit or without the link, Rescue's send controls and menu buttons are off
+// second screen review, R2-B6 083, R2-B7 104 and 106: at a limit or without the link, Rescue's send controls are off. Each control must be
+// there and off: a missing control does not pass (menu reading removed, owner 17 Nov: the menu buttons are gone, and must stay gone)
 const rescueOff = async (p) => { const r = await p.evaluate(() => { const q = (s) => document.querySelector(s), off = (s) => !q(s) || q(s).disabled;
-  return { cam: off('#mcam'), type: !q('#mtext') ? off('#mtype') : true, send: off('#v-rescue .rin .send'), chips: [...document.querySelectorAll('#v-rescue .sit')].every(b => b.disabled), go: off('#mgo') && !(q('#mgo') && q('#mgo').classList.contains('primary')) }; });
+  const chips = [...document.querySelectorAll('#v-rescue .sit')];
+  return { send: !!q('#v-rescue .rin .send') && q('#v-rescue .rin .send').disabled, chips: chips.length > 0 && chips.every(b => b.disabled), 'no menu entry': !q('#mcam,#mfile,#mtype,#mtext,#mgo') }; });
   const on = Object.keys(r).filter(k => !r[k]); if (on.length) throw new Error('controls that cannot work stay on: ' + on.join(', ')); };
 // S10 states: a plate whose first carbohydrate item is not its grain, with two changes that each change the grain (engine output shape)
 const GZ = { deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 };
@@ -105,10 +103,9 @@ const plateOnScreen = (p) => p.evaluate(() => { const t = document.querySelector
   return { title: t + (sx ? ', ' + sx.textContent : ''), kcal: +document.getElementById('h-k').textContent, protein: +document.getElementById('h-p').textContent, carbs: +document.getElementById('h-c').textContent, fats: +document.getElementById('h-f').textContent,
     items: [...document.querySelectorAll('.measures li')].map(l => l.querySelector('.food b').textContent), list: [...document.querySelectorAll('.measures li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()),
     notes: [...document.querySelectorAll('.modlog li')].map(l => l.textContent) }; });
-// *-planned-diabetes (final audit c1): a plate and an order that cite a "lighter" hook and a protein hook, for a client with diabetes
+// plate-planned-diabetes (final audit c1): a plate that cites a "lighter" hook and a protein hook, for a client with diabetes
 const PLANHOOKS = { lighter_now: 'lighter after earlier meals', protein_gap: 'protein to catch up' };
 const PLANPLATE = Object.assign(JSON.parse(JSON.stringify(GRAINPLATE)), { hooks: PLANHOOKS }); PLANPLATE.meals[0].planned = ['lighter_now', 'protein_gap'];
-const PLANMENU = Object.assign(JSON.parse(JSON.stringify(MENUCLOSE)), { hooks: PLANHOOKS }); PLANMENU.orders[0].planned = ['lighter_now', 'protein_gap'];
 // rescue-two-moves-grain: two portion moves that each keep the grain, but not together (engine output shape)
 const TWOMOVES = { status: 'ok', dish: { name: 'Paneer butter masala with rice and naan', portion: '\u2248 450 g', kcal: 900, protein: 28, carbs: 120, fats: 44, fiber: 6, warning: '', breakdown: '', contains: ['dairy', 'grain', 'wheat'] },
   hacks: [{ title: 'Set aside a third of the rice', kind: 'portion', contains: ['grain'], deltaKcal: -120, deltaProtein: -2, deltaCarbs: -40, deltaFats: 0, deltaFiber: 0 },
@@ -379,77 +376,19 @@ const STATES = [
     if (process.env.NP_STILL_LOG) console.log(`builder-still @${vw}${dark ? ' dark' : ''}${run.big !== 1 ? ' 130 %' : ''}: ${taps} taps, ${triples} three-tap runs, ${movedN} moved, ${offN} off, ${unseen} unseen, ${slotN} slot changes, slot ${JSON.stringify(await slot())}`);
     if (movedN || offN || unseen || slotN) throw new Error(`Builder taps: ${movedN} of ${taps} taps moved a stepper, ${slotN} taps changed the held slot, ${offN} tap sequences (of ${triples} three-tap runs and the taps to each bound) landed on another control, ${unseen} of 8 notes not seen whole; ${ex.join('; ')}`); }],
   ['rescue-entry', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await h.inView(p, '#rescue-lede', 'what Rescue gives'); await h.next(p, { has: ['#dish-cap'] }, 'Rescue start');
-    if ((await p.textContent('#v-rescue .panel-h h2')).trim() !== 'Eating out') throw new Error('the Rescue title is not "Eating out"'); }],
+    if ((await p.textContent('#v-rescue .panel-h h2')).trim() !== 'Eating out') throw new Error('the Rescue title is not "Eating out"');
+    // menu reading was removed (owner, 17 Nov): Rescue offers one entry, Name the dish, and its common dishes (the audit's menu-entry rule fails any state that offers a menu)
+    const e = await p.evaluate(() => ({ label: ((document.querySelector('label[for="rin"]') || {}).textContent || '').trim(), lede: ((document.getElementById('rescue-lede') || {}).textContent || '').trim(), box: !!document.getElementById('rin'), chips: document.querySelectorAll('#v-rescue .sit').length }));
+    if (e.label !== 'Name the dish you chose' || !e.box || !e.chips || /menu|photo/i.test(e.lede)) throw new Error('Rescue does not offer Name the dish alone (' + JSON.stringify(e) + ')'); }],
   ['rescue-result', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Hyderabadi veg biryani, full handi'); await p.press('#rin', 'Enter'); await h.settle(300); await h.inView(p, '#v-rescue .wait, #v-rescue .ans-read, #v-rescue .cmp', 'the Rescue wait line or answer'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(900); await h.inView(p, '.cmp', 'the Rescue answer'); await h.next(p, { text: 'Moves you can make' }, 'Rescue answer'); await closeTo(p, ['#v-rescue .inst']); }],
-  ['rescue-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(600); await h.inView(p, '#v-rescue .ans-read', 'the Rescue wait line'); if (!(await p.$eval('#mcam', b => b.disabled))) throw new Error('Read the menu looks ready during a wait'); }],
+  ['rescue-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(600); await h.inView(p, '#v-rescue .ans-read', 'the Rescue wait line'); if (!(await p.$eval('#v-rescue .rin .send', b => b.disabled)) || (await p.$$eval('#v-rescue .sit', bs => bs.some(b => !b.disabled)))) throw new Error('a Rescue control looks ready during a wait'); }],
   ['rescue-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.inView(p, '#rescue-retry', 'Try again after a failed Rescue'); await h.next(p, { has: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']] }, 'Rescue after an upstream error'); }, () => {}],
-  ['menu-wait', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', async r => { await new Promise(x => setTimeout(x, 60000)); try { await r.continue(); } catch (e) {} }); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(700); await h.inView(p, '#v-rescue .plate.wait', 'the menu wait card'); if (!(await p.$eval('#mcam', b => b.disabled))) throw new Error('Read the menu looks ready while the menu is read'); }],
-  ['menu-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#menu-retry', 'Try again after a failed menu read'); }, () => {}],
   ['rescue-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { has: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']], text: 'busy just now' }, 'Rescue when the engine is busy'); }, () => {}],
   ['rescue-limit', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' })); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { hasNot: ['#rescue-retry'], value: [['#rin', 'Masala dosa with chutney']] }, 'Rescue at the daily limit'); await rescueOff(p); }, () => {}],
-  ['menu-unparsed', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"unparsed"}' })); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { has: ['#menu-retry'], value: [['#mtext', fx.typed]], text: 'came back incomplete' }, 'Menu read when the reply came back broken'); await h.next(p, { has: ['#menu-retry.primary'], hasNot: ['#mgo.primary'] }, 'Menu: one main button'); }, () => {}],
   ['sheet-log-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 503, contentType: 'application/json', body: '{"code":"busy"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.next(p, { has: ['#log-retry'], value: [['#login', '2 aloo paratha with curd']] }, 'Log when the engine is busy'); const fa = await p.evaluate(() => document.activeElement && document.activeElement.id); if (fa !== 'log-note') throw new Error('after an error the box, not the note, has focus (' + fa + ')'); }, () => {}],
   ['plate-limit', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], text: "today's new plates" }, 'Plate at the daily limit'); }, (p, h) => p.route('**/api/meals', r => r.fulfill({ status: 429, contentType: 'application/json', body: '{"code":"limit_day"}' }))],
   // Critic round 38, finding 5: the engine's own nothing-fits reply for this client (np-core of the page under review), not a mocked fallback
-  ['menu-nothing-fits', seed(), async (p, h) => { await h.plate(p); let want = '';
-    await p.route('**/api/menu', r => { const out = engineCheck('menu', JSON.parse(r.request().postData() || '{}'), { status: 'nothing_fits', refer_reason: 'none', dishes: [], leave: [] }); want = out.read || ''; r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(out) }); });
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#v-rescue .note', 'the nothing-fits note');
-    const t = await p.textContent('#v-rescue .note'); if (!/^Nothing on this menu fits your food rules/.test(want) || !t.includes(want)) throw new Error('the note is not the engine\'s nothing-fits line (' + t + ' / ' + want + ')'); }],
   ['sheet-log-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/log', r => r.fulfill({ status: 502, contentType: 'application/json', body: '{"code":"upstream_error"}' })); await p.click('#log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await h.settle(800); await h.inView(p, '#log-retry', 'Try again after a failed log'); }, () => {}],
-  ['menu-unreadable', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'eval/v6/menu-blurred.jpg')); await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the unreadable-menu note'); await h.next(p, { has: ['#menu-photo-again', '#menu-type-instead'] }, 'Menu photo not read'); }],
-  ['rescue-menu-typed', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await h.settle(300); await p.fill('#mtext', fx.typed); await h.settle(200); }],
-  // at-risk sample fix 2: a Jain client's order carries the engine's request line after Ask the waiter
-  ['rescue-menu-request', seed({ p: Object.assign({}, P, { diet: 'jain', health: 'none' }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.waitForSelector('#mtext', { timeout: 5000 }); await p.fill('#mtext', fx.typed); await p.click('#mgo');
-    try { await p.waitForSelector('#order-card', { timeout: 20000 }); } catch (e) { throw new Error('no order card: ' + (await p.evaluate(() => (document.getElementById('said') || {}).textContent))); }
-    await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
-    const t = await p.textContent('#order-card .oask'); if (!/Ask the waiter: Make it Jain style, with no onion, garlic or root vegetables\./.test(t)) throw new Error('the request line is not the engine\'s (' + t + ')');
-    // owner, 16 Nov: the order fits only because of the request, so it is marked conditional
-    const c = await p.evaluate(() => (document.getElementById('order-cond') || {}).textContent || ''); if (c !== 'Only if they can make it this way.') throw new Error('the conditional line is missing (' + c + ')');
-    // Critic round 38, finding 3: the alternatives carry the same condition, and the rules chips on a conditional order carry no tick
-    const r = await p.evaluate(() => ({ alts: [...document.querySelectorAll('#v-rescue .alts .alt')].map(b => b.textContent), ticked: [...document.querySelectorAll('#order-card .hero-top .hchip')].filter(c => /Jain|^No /.test(c.textContent) && (c.classList.contains('fit') || c.querySelector('svg'))).map(c => c.textContent) }));
-    if (r.ticked.length) throw new Error('a conditional order ticks the rules as met (' + r.ticked.join(', ') + ')');
-    // Critic round 39, finding 6: on a row no request line comes first, so the condition names the request
-    if (!r.alts.length || r.alts.some(a => !a.includes('Only if they make it Jain style.') || a.includes('this way'))) throw new Error('an alternative that fits only on request is not marked with its request (' + r.alts.join(' | ') + ')'); },
-    (p) => p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}'))],   // the fixture plates do not matter here: the plate answer is kept still
-  // owner, 16 Nov: a less-salt request takes out nothing the client's rules bar, so no condition line shows
-  ['rescue-menu-less-salt', seed({ p: Object.assign({}, P, { health: 'bp', conds: ['bp'] }) }), async (p, h) => { await p.waitForSelector('#plate-card:not(.wait), #v-plate .empty-card', { timeout: 20000 }); await h.settle(600);
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.waitForSelector('#mtext', { timeout: 5000 }); await p.fill('#mtext', fx.typed + '\nLess salt on request'); await p.click('#mgo');
-    await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card .oask', 'the request line');
-    const r = await p.evaluate(() => ({ t: (document.querySelector('#order-card .oask') || {}).textContent || '', c: !!document.getElementById('order-cond') }));
-    if (!/Ask the waiter: Go easy on the salt\./.test(r.t)) throw new Error('the less-salt request line is missing (' + r.t + ')'); if (r.c) throw new Error('a less-salt request is marked conditional'); }],
-  ['rescue-menu-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the menu order'); await closeTo(p, ['#order-card .hero-top', '#v-rescue .alts']); }],
-  // round 28 (owner decision): the grain question on a menu order with diabetes, after "Yes" and after "No"
-  ['menu-grain-yes', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.waitForSelector('#order-go'); await h.settle(600); await h.inView(p, '#order-card', 'the confirmed order'); }],
-  ['menu-grain-no', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 }); await p.click('#order-grain-no'); await h.settle(900);
-    const f = await p.evaluate(() => { const a = document.activeElement; return !!a && !!a.closest && !!a.closest('#v-rescue .note'); }); if (!f) throw new Error('after the last No, focus is not on the note'); await h.next(p, { has: ['#menu-name-dish'], text: 'every order Next Plate picked from this menu' }, 'No grain left'); }],
-  // round 29: "No" moves to an order with another grain; reading the menu again after "No" does not bring the same grain back
-  ['menu-grain-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
-      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Tandoori Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 92, rise: 'Gentle', grain: 'tandoori roti', planned: [] },
-      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: '1 Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 23), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
-    await p.click('#order-grain-no'); await p.waitForSelector('#order-grain-q'); await p.waitForSelector('#order-grain-said'); await h.settle(900); await h.inView(p, '#order-card', 'the next order');
-    const top = await p.evaluate(() => { const r = document.getElementById('order-grain-said').getBoundingClientRect(); return r.top >= 0 && r.bottom <= innerHeight; }); if (!top) throw new Error('after No, the "You said" line is not on screen');
-    const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'order-grain-q') throw new Error('after No, focus is on ' + f + ', not the next question'); }],
-  ['menu-grain-again', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
-    await p.click('#order-grain-no'); await h.settle(400); if (!(await p.$('#mtext'))) await p.click('#mtype'); await h.settle(200); await p.fill('#mtext', fx.typed);
-    await p.click('#mgo'); await p.waitForSelector('#menu-grain-undo', { timeout: 20000 }); await h.settle(900); await h.next(p, { text: 'Earlier you said tandoori roti is not available' }, 'Same menu after a No'); }],
-  // round 30: "Change answer" after a No brings the orders back with the question
-  ['menu-grain-undo', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
-    await p.click('#order-grain-no'); await p.waitForSelector('#menu-grain-undo'); await p.click('#menu-grain-undo'); await p.waitForSelector('#order-grain-q'); await h.settle(900); await h.inView(p, '#order-card', 'the order after Change answer'); }],
-  // round 31: after a No, another menu asks again; a two-grain order asks one grain at a time
-  ['menu-grain-other', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-no', { timeout: 20000 });
-    await p.click('#order-grain-no'); await p.waitForSelector('#menu-grain-undo'); if (!(await p.$('#mtext'))) await p.click('#mtype'); await h.settle(200); await p.fill('#mtext', fx.typed + '\nLassi 80');
-    await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 }); if (await p.$('#order-grain-said')) throw new Error('a No from another menu is still shown'); await h.settle(900); await h.inView(p, '#order-card', 'the order on the other menu'); }],
-  ['menu-grain-two', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
-      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
-    const q1 = await p.textContent('#order-grain-q'); if (!/^Is steamed rice available now\?$/.test(q1)) throw new Error('first question: ' + q1);
-    await p.click('#order-grain-yes'); await h.settle(300); const q2 = await p.textContent('#order-grain-q'); if (!/^Is roti available now\?$/.test(q2)) throw new Error('second question: ' + q2);
-    await h.settle(600); await h.inView(p, '#order-card', 'the second grain question'); await h.next(p, { has: ['#order-grain-ok'] }, 'Second grain question'); }],
   // ---- every other screen a client can reach (screen inventory, 14 Nov) ----
   ['setup-2-none', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await h.settle(); }],
   ['plate-dial-goal', seed(), async (p, h) => { await h.plate(p); await p.click('#dial-goal'); await h.settle(); }],
@@ -499,15 +438,10 @@ const STATES = [
     await h.next(p, { text: 'If you feel unwell now, contact your doctor or emergency care.' }, 'An urgent symptom adds the line to get help now (B1)');
     const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-plate .empty-card');
     if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
-  // m2 (final audit): the line to get help now on the Rescue, menu and log referral cards, which the app draws itself
+  // m2 (final audit): the line to get help now on the Rescue and log referral cards, which the app draws itself
   ['rescue-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'chest pain after lunch'); await p.press('#rin', 'Enter');
     await p.waitForSelector('#v-rescue .empty-card', { timeout: 20000 }); await h.settle(); await h.inView(p, '#v-rescue .empty-card', 'the referral');
     const t = await p.textContent('#v-rescue .empty-card'); if (!t.includes('If you feel unwell now, contact your doctor or emergency care.')) throw new Error('the Rescue referral has no line to get help now (' + t.trim().slice(0, 160) + ')');
-    const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-rescue .empty-card');
-    if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
-  ['menu-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', 'chest pain after lunch\nDal Fry 240\nJeera Rice 180'); await p.click('#mgo');
-    await p.waitForSelector('#v-rescue .empty-card', { timeout: 20000 }); await h.settle(); await h.inView(p, '#v-rescue .empty-card', 'the menu referral');
-    const t = await p.textContent('#v-rescue .empty-card'); if (!t.includes('If you feel unwell now, contact your doctor or emergency care.')) throw new Error('the menu referral has no line to get help now (' + t.trim().slice(0, 160) + ')');
     const o = await p.evaluate((s) => { const e = document.querySelector(s); const h = e && e.querySelector('h2'); return { h: h ? h.textContent : '', t: e ? e.textContent : '' }; }, '#v-rescue .empty-card');
     if (o.h !== 'If you feel unwell now, contact your doctor or emergency care.' || o.t.indexOf('If you feel unwell now, contact your doctor or emergency care.') > o.t.indexOf('coach and doctor')) throw new Error('the line to get help now is not first, at the heading (' + o.t.trim().slice(0, 200) + ')'); }],
   ['sheet-log-urgent', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'chest pain after lunch, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
@@ -521,9 +455,9 @@ const STATES = [
     if (/on this phone/.test(await p.textContent('#v-plate'))) throw new Error('the network limit is called the phone\'s (R2-B5 067)'); }, (p) => p.route('**/api/meals', J(429, '{"code":"limit_ip"}'))],
   ['plate-not-set-up', seed(), async (p, h) => { await p.waitForSelector('.empty-card h2', { timeout: 20000 }); await h.settle(); await h.next(p, { hasNot: ['#remake'], has: ['#ask-lock'], text: NS }, 'Plate not set up');
     if (/switched on yet/.test(await p.textContent('#v-plate'))) throw new Error('the card still says "yet" (R2-B5 068)');
-    // owner, 14 Nov, option survey (R2-B5 068): the same words wherever not_set_up shows: the plate, an ask, Rescue, the menu and the log
-    await p.click('#tab-rescue'); await h.settle(300); const w = (await p.innerText('#rescue-lock')).trim(); await p.click('#tab-plate'); await h.settle(300);   // Rescue and the menu share this note
-    if (w !== NS) throw new Error('Rescue and the menu do not word not_set_up the owner\'s way (' + w + ')'); }, (p) => p.route('**/api/meals', J(503, '{"code":"not_set_up"}'))],
+    // owner, 14 Nov, option survey (R2-B5 068): the same words wherever not_set_up shows: the plate, an ask, Rescue and the log
+    await p.click('#tab-rescue'); await h.settle(300); const w = (await p.innerText('#rescue-lock')).trim(); await p.click('#tab-plate'); await h.settle(300);
+    if (w !== NS) throw new Error('Rescue does not word not_set_up the owner\'s way (' + w + ')'); }, (p) => p.route('**/api/meals', J(503, '{"code":"not_set_up"}'))],
   ['plate-ask-empty', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', J(200, '{"status":"empty","meals":[]}')); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { has: ['#ask-retry'], value: [['#askin', 'Something light with paneer']], text: 'Showing the plates from before' }, 'Ask with nothing that fit'); }],
   ['plate-ask-offline', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/meals', OFF); await p.fill('#askin', 'Something light with paneer'); await p.press('#askin', 'Enter'); await h.settle(900); await h.next(p, { has: ['#ask-retry'], text: 'Check your signal' }, 'Ask offline'); }, () => {}],
   // owner, 14 Nov, option survey (R2-B5 068): an ask and the meal log word not_set_up the same way as the Plate card
@@ -559,28 +493,9 @@ const STATES = [
   ['rescue-offline', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', OFF); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { has: ['#rescue-retry'], text: 'Check your signal' }, 'Rescue offline'); }, () => {}],
   ['rescue-no-code', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/rescue', J(401, '{"code":"bad_key"}')); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Masala dosa with chutney'); await p.press('#rin', 'Enter'); await h.settle(800); await h.next(p, { hasNot: ['#rescue-retry'], text: "This link's code was not accepted" }, 'Rescue with a refused code'); await rescueOff(p); }, () => {}],
   ['plate-rescued', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Hyderabadi veg biryani, full handi'); await p.press('#rin', 'Enter'); await p.waitForSelector('#rescue-had', { timeout: 20000 }); await p.click('#rescue-had'); await h.settle(250); }],
-  ['menu-no-grain', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-go', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the order'); }],
-  ['menu-other-order', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-alt-1', { timeout: 20000 }); await p.click('#order-alt-1'); await h.settle(900); await h.inView(p, '#order-card', 'the order picked'); }],
-  ['menu-closest', NOGRAIN, async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, MENUCLOSE));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-move-0', { timeout: 20000 }); await p.click('#order-move-0'); await h.settle(900); await h.inView(p, '#v-rescue .note', 'the closest-order note');
-    // second screen review, R2-B7 098: with "Eat about half" ticked each figure shows as served, then after the move, and the portion says half
-    const c = await p.evaluate(() => ({ t: document.getElementById('order-card').innerText.replace(/\s+/g, ' '), por: ((document.querySelector('#order-card .por') || {}).textContent || '') }));
-    if (!/1150\s*kcal\s*\u2192\s*\u2248\s*575/.test(c.t) || !/30\s*g\s*\u2192\s*\u2248\s*15/.test(c.t) || !/Sharp\s*\u2192\s*(Moderate|Gentle)/.test(c.t) || !/\(eating half\)/.test(c.por)) throw new Error('with a half portion ticked the card does not show the change (' + c.t.slice(0, 160) + ')'); }],
-  // R2-B7 098: the order logged after "Eat about half" says half
-  ['menu-closest-ordered', NOGRAIN, async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, MENUCLOSE));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-move-0', { timeout: 20000 }); await p.click('#order-move-0'); await h.settle(300); await p.click('#order-go'); await h.settle(900);
-    const t = await p.evaluate(() => (document.querySelector('#v-plate .logged .dish') || {}).textContent || '');
-    if (!/\(eating half\)/.test(t)) throw new Error('the order logged after a half portion does not say half (' + t + ')'); }],
-  ['menu-refer', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, '{"status":"refer","read":"Your coach and doctor should plan this with you."}')); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.inView(p, '#v-rescue .empty-card', 'the menu referral'); }],
-  ['menu-photo-order', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'demo/reel/film5/assets/menu-photo.jpg')); await p.waitForSelector('#order-card', { timeout: 20000 }); await h.settle(900); await h.inView(p, '#order-card', 'the order from a photo'); }],
-  ['menu-photo-error', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(502, '{"code":"upstream_error"}')); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'demo/reel/film5/assets/menu-photo.jpg')); await p.waitForSelector('#menu-retry', { timeout: 10000 }).catch(() => {}); await h.settle(300); await h.next(p, { has: ['#menu-retry'], hasNot: ['#mtext'] }, 'Photo menu after an upstream error'); }, () => {}],   // the photo is shrunk before it is sent, which can take over a second under load: wait for the answer, then check
-  ['menu-photos-off', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(400, '{"code":"photos_off"}')); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', path.join(ROOT, 'demo/reel/film5/assets/menu-photo.jpg')); await h.settle(1200); await h.next(p, { hasNot: ['#menu-retry'] }, 'Photos off'); }, () => {}],
-  ['menu-bad-image', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.setInputFiles('#mfile', { name: 'menu.jpg', mimeType: 'image/jpeg', buffer: Buffer.from('not an image') }); await h.settle(800); await h.next(p, { hasNot: ['#menu-retry'] }, 'A file that is not a photo'); }],
-  ['menu-busy', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(503, '{"code":"busy"}')); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { has: ['#menu-retry'], value: [['#mtext', fx.typed]] }, 'Menu busy'); }, () => {}],
-  ['menu-limit', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(429, '{"code":"limit_day"}')); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { hasNot: ['#menu-retry'], value: [['#mtext', fx.typed]] }, 'Menu at the limit'); await rescueOff(p); }, () => {}],
-  ['menu-offline', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', OFF); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { has: ['#menu-retry'], value: [['#mtext', fx.typed]], text: 'Check your signal' }, 'Menu offline'); }, () => {}],
-  ['menu-no-code', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(401, '{"code":"bad_key"}')); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(800); await h.next(p, { hasNot: ['#menu-retry'], text: "This link's code was not accepted" }, 'Menu with a refused code'); await rescueOff(p); }, () => {}],
-  ['plate-ordered', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-yes', { timeout: 20000 }); await p.click('#order-grain-yes'); await p.click('#order-go'); await h.settle(250); }],
+  // an order logged before menu reading was removed (owner, 17 Nov) is still in a phone's record: the plate shows it as ordered
+  ['plate-ordered', seed({ ev: week.concat([bf, { t: NOW - 0.5 * H, type: 'ordered', meal: 'lunch', title: 'Dal Tadka with 2 Tandoori Roti', kcal: 560, protein: 22, carbs: 70, fats: 18, fiber: 8, planned: [] }]) }), async (p, h) => { await p.waitForSelector('#meal-lunch', { timeout: 20000 }); await p.click('#meal-lunch'); await p.waitForSelector('#v-plate .card.logged', { timeout: 20000 }); await h.settle(400);
+    const t = await p.textContent('#v-plate .card.logged'); if (!/ordered from the menu/.test(t) || !/Dal Tadka with 2 Tandoori Roti/.test(t)) throw new Error('a logged order does not show as ordered (' + t.trim().slice(0, 120) + ')'); }],
   // ---- fixes from the screen-by-screen review (14 Nov) ----
   ['setup-2-two-conditions', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-diabetes'); await p.click('#meds-yes'); await p.click('#health-kidney'); await h.settle();
     const on = await p.evaluate(() => ['diabetes', 'kidney'].every(k => document.querySelector('#health-' + k).getAttribute('aria-checked') === 'true')); if (!on) throw new Error('two health answers cannot both be ticked');
@@ -611,24 +526,6 @@ const STATES = [
   ['plate-asked-logged', seed(), async (p, h) => { await h.plate(p); await p.fill('#askin', 'Only eggs, spinach and bread at home'); await p.press('#askin', 'Enter'); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(600); await p.click('#have'); await h.settle(900);
     if (!(await p.$('#slot-change')) || await p.$('#have')) throw new Error('an asked plate, once eaten, does not show as eaten'); }],
   ['plate-loading-asks', seed(), async (p, h) => { await p.waitForSelector('.plate.wait', { timeout: 20000 }); await h.settle(300); if (!(await p.$eval('#askgo', b => b.disabled)) || !(await p.$('#ask-wait'))) throw new Error('asks look ready while the plate is being made'); }, (p, h) => h.slowApi(p, 60000)],
-  ['menu-grain-yes-then-no', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
-      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Paneer Tikka', portion: '\u2248 180 g', ask: '', with: '1 Roti, \u2248\u00A040\u00A0g', n: N(500, 28), fit: 80, rise: 'Gentle', grain: 'roti', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
-    await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
-    // second screen review, R2-B8 115-1: with a Yes on record the step names the grain they confirmed
-    if (!/You said roti is not available\. .*You said steamed rice is available: name your dish with it instead\./.test(await p.textContent('#v-rescue'))) throw new Error('after Yes then No the note forgets the Yes, or tells them to ask about it'); }],
-  // owner, 14 Nov: Yes to rice, then No to roti on one order: the order is set aside, the next one offered, and the trace line says why
-  ['menu-grain-yes-then-no-next', seed(), async (p, h) => { await h.plate(p); const N = (k, pr) => ({ kcal: k, protein: pr, carbs: 40, fats: 16, fiber: 6 });
-    await p.route('**/api/menu', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok', place: '', orders: [
-      { name: 'Dal Tadka', portion: '\u2248 300 g', ask: '', with: 'Steamed Rice and 1 Roti, \u2248\u00A0190\u00A0g', n: N(560, 24), fit: 84, rise: 'Gentle', grain: 'steamed rice and roti', planned: [] },
-      { name: 'Rajma', portion: '\u2248 250 g', ask: '', with: 'Steamed Rice, \u2248\u00A0150\u00A0g', n: N(520, 20), fit: 80, rise: 'Gentle', grain: 'steamed rice', planned: [] }], leave: [], tip: '', dropped: {}, hooks: {} }) }));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-grain-q', { timeout: 20000 });
-    await p.click('#order-grain-yes'); await h.settle(300); await p.click('#order-grain-no'); await h.settle(600);
-    const r = await p.evaluate(() => ({ said: (document.getElementById('order-grain-said') || {}).textContent || '', dish: (document.querySelector('#order-card .dish') || {}).textContent || '' }));
-    if (r.dish !== 'Rajma') throw new Error('after Yes then No the next order is not offered (' + r.dish + ')');
-    if (!/Dal Tadka needs roti too, so it is set aside\./.test(r.said)) throw new Error('the trace line does not say why the order was set aside (' + r.said + ')'); }],
   ['plate-blocked-change', seed({ p: Object.assign({}, P, { health: 'kidney' }) }), async (p, h) => { await h.settle(800); await p.click('#v-plate .empty-card .btn'); await h.settle(600);
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'health-kidney') throw new Error('Change my answers does not open at the health question (' + f + ')');
     // second screen review, R2-B8 122-1: the question the sheet opens on is not under its sticky header
@@ -637,13 +534,6 @@ const STATES = [
   ['plate-no-body-add', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await p.click('#add-body-top'); await h.settle(600);
     const f = await p.evaluate(() => document.activeElement && document.activeElement.id); if (f !== 'body-age') throw new Error('Add your age, height and weight does not open at the age box (' + f + ')'); }],
   // ---- Critic round 36: replies made for answers changed during the wait are asked for again; the Builder preset after a reload ----
-  ['menu-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/menu')) sent.push(JSON.parse(r.postData() || '{}')); });
-    let release; const held = new Promise(x => { release = x; }); let n = 0;   // the first answer waits until the tick is done (no fixed delay)
-    await p.route('**/api/menu', async r => { if (n++ === 0) await held; try { await r.continue(); } catch (e) {} });
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await h.settle(300);
-    await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await p.click('#meds-no'); await p.keyboard.press('Escape'); await h.settle(300); release();
-    await p.waitForFunction(() => !document.querySelector('#v-rescue .wait'), null, { timeout: 30000 }); await h.settle(900);
-    if (sent.length < 2 || !sent[sent.length - 1].profile || !/diabetes/.test(JSON.stringify(sent[sent.length - 1].profile))) throw new Error('a menu read for the old answers was shown after Diabetes was ticked (' + sent.length + ' requests)'); }],
   ['rescue-health-changed', NOGRAIN, async (p, h) => { await h.plate(p); const sent = []; p.on('request', r => { if (r.url().includes('/api/rescue')) sent.push(JSON.parse(r.postData() || '{}')); });
     let release; const held = new Promise(x => { release = x; }); let n = 0;   // the first answer waits until the tick is done (no fixed delay)
     await p.route('**/api/rescue', async r => { if (n++ === 0) await held; try { await r.continue(); } catch (e) {} });
@@ -679,13 +569,10 @@ const STATES = [
     if (r.meal !== 'meal-breakfast') throw new Error('after the night the meal on screen is ' + r.meal + ', not breakfast');
     if (r.app !== '{}' || r.appDay !== 20261113) throw new Error('yesterday\u2019s appetite is still set (' + r.app + ', ' + r.appDay + ')');
     if (r.storeDay !== 20261113 || r.store.some(at => at < t1)) throw new Error('yesterday\u2019s plates are still kept for today'); }],
-  // S12: the Rescue answer and the menu read made yesterday are gone the next day
+  // S12: the Rescue answer made yesterday is gone the next day
   ['rescue-after-midnight', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Hyderabadi veg biryani, full handi'); await p.press('#rin', 'Enter');
     await p.waitForSelector('#rescue-had', { timeout: 20000 }); await p.clock.fastForward('24:00:00'); await p.click('#tab-plate'); await h.settle(300); await p.click('#tab-rescue'); await h.settle(400);
     if (await p.$('#rescue-had')) throw new Error('yesterday’s Rescue answer still shows the next day'); }],
-  ['menu-after-midnight', NOGRAIN, async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo');
-    await p.waitForSelector('#order-card', { timeout: 20000 }); await p.clock.fastForward('24:00:00'); await p.click('#tab-plate'); await h.settle(300); await p.click('#tab-rescue'); await h.settle(400);
-    if (await p.$('#order-card')) throw new Error('yesterday’s menu orders still show the next day'); }],
   // M8: a dinner logged at 00:30 counts toward the evening it belongs to; the day starts at 4 am
   ['plate-dinner-after-midnight', seed(), async (p, h) => { await h.plate(p); await p.clock.fastForward('11:20:00'); await p.click('#meal-dinner'); await h.plate(p); await p.click('#have'); await h.settle(600);
     const r = await p.evaluate(() => { const x = JSON.parse(localStorage.getItem('np6') || '{}'), ev = x.ev || [], d = ev.filter(e => e.type === 'had' && e.meal === 'dinner').pop();
@@ -730,9 +617,6 @@ const STATES = [
   ['plate-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.waitForSelector('#planned', { timeout: 20000 });
     const t = await p.textContent('#planned'), w = await p.textContent('#why-line').catch(() => '');
     if (/lighter/i.test(t) || !/protein to catch up/.test(t) || /lighter/i.test(w)) throw new Error('with diabetes the plate is planned around "lighter" (' + t + ' / ' + w + ')'); }, (p) => p.route('**/api/meals', J(200, PLANPLATE))],
-  ['menu-planned-diabetes', seed(), async (p, h) => { await h.plate(p); await p.route('**/api/menu', J(200, PLANMENU));
-    await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', fx.typed); await p.click('#mgo'); await p.waitForSelector('#order-planned', { timeout: 20000 }); await h.settle();
-    const t = await p.textContent('#order-planned'); if (/lighter/i.test(t) || !/protein to catch up/.test(t)) throw new Error('with diabetes the order is planned around "lighter" (' + t + ')'); }],
   // S11: swaps and changes made for answers changed during the wait are not shown
   ['plate-tune-stale', seed(), async (p, h) => { await h.plate(p);
     const k0 = await p.evaluate(() => (JSON.parse(localStorage.getItem('np6') || '{}').store || {}).shown.lunch);
@@ -741,10 +625,6 @@ const STATES = [
     const stale = await p.evaluate((k) => { const r = ((JSON.parse(localStorage.getItem('np6') || '{}').store || {}).res || {})[k]; return !!(r && r.meals.some(m => m.tuned)); }, k0);
     if (stale) throw new Error('swaps made for the old answers were kept (' + p.__tunes + ' tune requests)'); },
     (p) => { const held = new Promise(x => { p.__release = x; }); p.__tunes = 0; return p.route('**/api/tune', async r => { if (p.__tunes++ === 0) await held; try { await r.continue(); } catch (e) {} }); }],
-  // D1: a menu typed in a script the checks cannot read ends with the note to type it in English letters
-  ['menu-script-note', seed(), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.click('#mtype'); await p.fill('#mtext', '\u092a\u0928\u0940\u0930 \u091f\u093f\u0915\u094d\u0915\u093e 320\n\u0926\u093e\u0932 \u0924\u0921\u093c\u0915\u093e 240'); await p.click('#mgo');
-    await p.waitForSelector('#v-rescue .note', { timeout: 20000 }); await h.settle(600); await h.inView(p, '#v-rescue .note', 'the note');
-    const t = await p.textContent('#v-rescue .note'); if (!/Next Plate can read menus in English letters for now\. Type the dishes in English letters\./.test(t) || !(await p.$('#menu-type-instead'))) throw new Error('a menu in another script does not end with the note (' + t + ')'); }],
   // a swap made on one meal's plate does not carry over to the next meal's plate ("Plan next")
   ['plate-plan-next-fresh', seed(), async (p, h) => { await h.plate(p); for (const m of ['snack', 'dinner', 'lunch']) { await p.click('#meal-' + m); await h.plate(p); }   // the later meals' plates are already kept
     await p.waitForSelector('#adjust', { timeout: 20000 }); await p.click('#adjust'); await h.settle(); await p.click('#swp-1'); await h.settle(); await p.click('#have'); await h.settle(900);
@@ -807,6 +687,11 @@ function audit(T) {
   const sheetUp = !!document.querySelector('#sheet:not([hidden])');
   const texty = all.filter(e => !decorative(e) && (!sheetUp || e.closest('#sheet') || e.closest('#toast')) && [...e.childNodes].some(n => n.nodeType === 3 && n.nodeValue.trim().length > 0));
   const controls = all.filter(e => e.matches('button,a[href],input:not([type=hidden]),select,textarea,[role=button],[role=radio],[role=checkbox],[role=tab]') && !e.closest('[aria-hidden="true"]') && (!sheetUp || e.closest('#sheet')));
+  // 0 menu reading was removed (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; docs/ux/UX-CRITERIA.md D9): no state
+  // offers a menu entry again, by its element ids or its words
+  { const me = document.querySelector('#mcam,#mfile,#mtype,#mtext,#mgo,.menu-in,.menu-box'), mt = /read (?:this |the )?menu|type the menu|photograph (?:the |another page of the )?menu|menu photo|photo of the menu/i.exec(document.body.innerText || '');
+    if (me) add('menu-entry', me, 'a menu entry is on the page; menu reading was removed (owner, 17 Nov)');
+    else if (mt) add('menu-entry', document.body, '"' + mt[0] + '" is on the page; menu reading was removed (owner, 17 Nov)'); }
   // 1 nothing wider than the phone
   const sc = document.getElementById('scroll'); if (sc && sc.scrollWidth > sc.clientWidth + 1) add('overflow-x', sc, `content ${sc.scrollWidth}px in ${sc.clientWidth}px`);
   if (document.documentElement.scrollWidth > W + 1) add('overflow-x', document.documentElement, `page ${document.documentElement.scrollWidth}px in ${W}px`);
@@ -896,7 +781,7 @@ function coverage() {
   const markup = fs.readFileSync(path.join(ROOT, 'src/v5/markup.html'), 'utf8'), VIEW = { setup: 'setup-1-goal-food', plate: 'plate-hero', build: 'builder', rescue: 'rescue-entry' };
   for (const v of new Set([...markup.matchAll(/id="v-([a-z]+)"/g)].map(m => m[1]))) if (!VIEW[v] || (!ONLY.length && !names.has(VIEW[v]))) miss.push('view "v-' + v + '" has no review state');
   for (const t of Object.keys(COVER.tab)) if (!ONLY.length && !names.has(COVER.tab[t])) miss.push('tab "' + t + '" has no review state');
-  // a scripted reply shows only what the engine can write: a menu or Rescue portion is grams only, "\u2248 300 g" (Critic round 39, finding 10)
+  // a scripted reply shows only what the engine can write: a Rescue portion is grams only, "\u2248 300 g" (Critic round 39, finding 10)
   for (const m of fs.readFileSync(__filename, 'utf8').matchAll(/portion: '([^'(]*)'/g)) if (!/^(?:\\u2248|\u2248) \d+ g$/.test(m[1])) miss.push('a scripted portion the engine cannot write: "' + m[1] + '"');
   // and a menu place is never shown: the engine sets it to "" (safety round 5), so a scripted reply carries place '' (Critic round 40, finding 6)
   for (const m of fs.readFileSync(__filename, 'utf8').matchAll(new RegExp('\\bplace' + ": '([^']*)'", 'g'))) if (m[1] !== '') miss.push('a scripted menu place the engine cannot write: "' + m[1] + '"');
@@ -932,6 +817,7 @@ async function drill(b, base) {
     mk('<input style="width:200px;font-size:14px" aria-label="planted small input">');
     mk('<div style="width:60px;font-size:16px;white-space:nowrap">planted run-on figure 1200 kcal</div>');
     mk('<div style="overflow:hidden;width:180px"><div style="display:grid;grid-template-columns:60px 60px 60px"><div><span style="display:flex;white-space:nowrap;font-size:22px"><span style="display:block">planted nested band</span></span></div><div>a</div><div>b</div></div></div>');
+    mk('<button id="mcam" style="min-width:160px;min-height:48px;font-size:16px">Read the menu</button>');   // menu reading was removed (owner, 17 Nov)
     mk('<svg viewBox="0 0 320 40" style="width:160px" role="img" aria-label="planted chart"><text x="4" y="20" style="font-size:12px">planted tiny chart label</text></svg>');
     const last = document.createElement('p'); last.style.cssText = 'font-size:16px;margin-bottom:-600px'; last.textContent = 'planted last line'; v.appendChild(last);
     const ans = document.createElement('p'); ans.id = 'planted-answer'; ans.style.cssText = 'font-size:16px;margin-top:2400px'; ans.textContent = 'planted answer'; v.insertBefore(ans, last);
@@ -944,7 +830,7 @@ async function drill(b, base) {
   const want = [['text-too-small', 'planted small text'], ['off-screen', 'planted wide box'], ['overflow-x', 'content'], ['contrast', 'planted faint text'], ['target-small', '"x"'],
     ['no-name', 'planted-noname'], ['text-clipped', 'planted clipped text'], ['overlap', 'planted over'], ['handwriting-figures', 'planted 450 kcal'], ['handwriting-too-small', 'planted pencil note'],
     ['placeholder-clipped', 'planted hint far'], ['input-zoom', 'planted small input'], ['text-overflow', 'planted run-on figure'], ['text-clipped', 'planted nested band'], ['text-too-small', 'chart text'],
-    ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable']];
+    ['covered-at-end', 'planted last line'], ['palette', 'body'], ['zoom-blocked', 'user-scalable'], ['menu-entry', 'mcam']];
   const missed = want.filter(([r, t]) => !has(r, t)).map(([r, t]) => r + ' (' + t + ')');
   if (!hidden) missed.push('feedback-hidden (planted answer)');
   if (step.length !== 4) missed.push('next-step (planted missing retry, offered retry, lost text, wrong message: ' + step.length + ' of 4 caught)');
