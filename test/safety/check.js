@@ -18,6 +18,14 @@ const BASE = { goal: 'lose', focus: 'none', diet: 'nonveg', health: 'none', meds
 const prof = (o, slot) => { const p = readProfile(Object.assign({}, BASE, o)); p.slot = slot || 'lunch'; return p; };
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
 add('np-core has no look-behind (older phone browsers reject it)', !LOOKBEHIND, 'np-core holds (?<! or (?<=');
+// fix-r12: every script on the page and every source file, and every regular expression np-core builds at load (a look-behind spelled
+// across a string join would not show in the text)
+{ const LB = /\(\?<[!=]/, scripts = [...page.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+  add('no look-behind anywhere on the page (older phone browsers reject it)', scripts.length >= 2 && !scripts.some(x => LB.test(x)), 'a script on the page holds (?<! or (?<=');
+  const srcs = ['src/v5/core.js', 'src/v5/app.js', 'src/v6/params.js', 'src/v6/engine.js', 'src/v6/plate.js', 'src/v6/app.js'].filter(f => fs.existsSync(path.join(__dirname, '../..', f)));
+  for (const f of srcs) add('no look-behind in the sources', !LB.test(fs.readFileSync(path.join(__dirname, '../..', f), 'utf8')), f + ' holds (?<! or (?<=');
+  const built = Object.getOwnPropertyNames(globalThis).filter(k => { try { return globalThis[k] instanceof RegExp; } catch (e) { return false; } });
+  add('no look-behind in a regular expression np-core builds', built.length > 50 && !built.some(k => LB.test(globalThis[k].source)), `${built.length} expressions read: ` + built.filter(k => LB.test(globalThis[k].source)).join(', ')); }
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const plural = s => /[^aeiou]y$/.test(s) ? s.slice(0, -1) + 'ies' : /(s|sh|ch|x)$/.test(s) ? s + 's' : s + 's';
 const forms = t => [t, cap(t), plural(t), '2 ' + plural(t), cap(t) + ' curry', 'Dal with ' + plural(t) + ' and salad', 'Cooked with no oil and ' + t, 'Served with ' + t + ', no salt'];
@@ -339,13 +347,26 @@ const COUNTEDW = ['South Indian egg podimas with two whole eggs', 'Egg bhurji ma
   // safety audit of b4633dd, m1 (mutation D19): a katori with no number, an "of" or an opening place, which only the final katori guard holds
   'Dal katori', 'Rice with katori dal', 'Dal served in katori', 'Curd katoriyan', 'Steel katori dal',
   // safety audit of b4633dd, backlog head: measures in forms the lists lacked
-  'Ek katora dal', 'Do katore dal', 'Katora dal', 'Chammach ghee', 'Tsp ghee', 'Spoon ghee', 'Teaspoon ghee', 'Fistful of chana', 'Pinch salt', 'Pinch of salt'];
+  'Ek katora dal', 'Do katore dal', 'Katora dal', 'Chammach ghee', 'Tsp ghee', 'Spoon ghee', 'Teaspoon ghee', 'Fistful of chana', 'Pinch salt', 'Pinch of salt',
+  // safety audit of 530a503, M1 and c1: a digit count before a measure inside a name, an "of" after it, ranges, a measure at the end
+  'Pav toasted with 1 teaspoon butter', '2 piece pav lightly toasted with 1 teaspoon butter', 'Paneer veg biryani cooked in 1 teaspoon oil', 'Dal with 1 chammach ghee', 'Poha with 2 tablespoons peanuts',
+  'Khichdi with 1 tsp of ghee', 'Dal with 2 cups of rice', '2 to 3 idlis', '2-3 idlis', '2 or 3 idlis', 'Three to four idlis', 'Rice with three to four idlis', 'Ghee 1 teaspoon', 'Peanuts 1 handful', 'Paneer portion',
+  'Bajra roti with 2 muthi peanuts', 'Dal with 1 small ladle ghee', 'Upma with 2 heaped tbsp of peanuts'];
 // The test's own detector, beside COUNTWORDS (safety audit of ba4d8dc, M1: COUNTWORDS knew only the engine's own nouns, so it could not fail on a
 // word the engine does not list). Any Hindi number word before any word is a count, but for the honest names listed here; a Hindi measure
 // word or katori in any form, a weight word, or a measure word that opens a name is a household unit. Its lists are this test's, not the engine's.
 const HINDICOUNT = /\b(?:ek|do|teen|char|chaar|panch|paanch|chhe|saat|aath|nau|das|dus|gyarah|barah|aadha|adha|dedh|dhai)[\s-]+(?!(?:pyaza|phoron|siu|ka|ki|ke)\b)[a-z]+/i;
-const HINDIMEAS = /\b(?:katori\w*|katoree\w*|katora\w*|katore\w*|chammach\w*|chamach\w*|mutthi\w*|karchhi\w*|vati|kg|kgs|kilo|kilos|litre|liter|ltr|grams?|fistfuls?)\b|^(?:glass|bowl|katori|plate|tumbler|cup|mug|handful|tsp|tbsp|teaspoon|tablespoon|spoon|spoonful|pinch)(?:s|es)?\s+(?!(?:cakes?|noodles)\b)[a-z]/i;
+// the household measures come from the one measure list the engine builds every count rule from (MEASW), with the lexicon's floor, read
+// by the detector shared with test/safety/recorded.js (fix-r12; safety audit of 530a503, M1: this detector had a list of its own, which
+// read teaspoon, handful or pinch only when they opened a name)
+const S8BAD = require('./measure.js')(typeof MEASW === 'undefined' ? null : MEASW, L.measure);
+// (digits are COUNTW's and the plate checks' own; here the engine's own figures, grams, kcal and minutes, are read past)
+const HINDIMEAS = { test: (x) => !!S8BAD(String(x).replace(/\b\d+(?:\.\d+)?[\s\u00A0]*(?:g|kcal|minutes?)\b/g, ' ').replace(/\d/g, ' ')) };
 const countShown = (x) => COUNTWORDS.test(x) || HINDICOUNT.test(x) || HINDIMEAS.test(x);
+// every measure word of the lexicon's floor after a digit, inside a name, at its end, before "of" and in a range (safety audit of 530a503,
+// M1: 36 of these showed their measure word); the shown name must hold no count, no measure and no stub (test/safety/measure.js)
+for (const w of L.measure) for (const f of [`Dal with 2 ${w} ghee`, `Pav toasted with 1 ${w} butter`, `Ghee 1 ${w}`, `Rice with 2 ${w} of dal`, `Poha with 2 to 3 ${w} peanuts`]) {
+  const shown = safe(() => showName(f), ''); add('S8 a digit count takes its measure from the one list', !S8BAD(shown), `"${f}" showed "${shown}" (${S8BAD(shown)})`); }
 for (const [kind, mk, base] of WALKS) { if (kind === 'log') continue; const pl0 = mk({}); if (!pl0.check) continue;
   for (const pth of strPaths(pl0.schema).filter(x => NAMEF.test(x) && !/\.with$/.test(x))) for (const v of COUNTEDW) {
     const r = base(); setAt(r, pth, v); const pl = mk({ diet: 'nonveg' }, v.replace(/\s*\(.*\)/, '')); const out = safe(() => pl.check(r), {});
@@ -382,6 +403,10 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   ['Ek katora dal', 'Dal'], ['Do katore dal', 'Dal'], ['Katora dal', 'Dal'], ['Chammach ghee', 'Ghee'], ['Tsp ghee', 'Ghee'], ['Spoon ghee', 'Ghee'], ['Teaspoon ghee', 'Ghee'], ['Fistful of chana', 'Chana'], ['Pinch salt', 'Salt'], ['Pinch of salt', 'Salt'], ['1 fistful roasted chana', 'Roasted chana'], ['1 teaspoon ghee', 'Ghee'],
   // safety audit of ba4d8dc, c2: no stub is left by a count word ("Or rotis", "Minute poha" before)
   ['Two or three rotis', 'Rotis'], ['Ten-minute poha', 'Ten-minute poha'], ['Two-minute noodles', 'Two-minute noodles'], ['Seven Up', 'Seven Up'], ['Combo for Two', 'Combo'], ['Spinach folded in', 'Spinach folded in'],
+  // safety audit of 530a503, M1 and c1: the count and its measure go, with the "of" after it, and the food stays; "muthia" is a dish
+  ['2 piece pav lightly toasted with 1 teaspoon butter', 'Pav lightly toasted with butter'], ['Paneer veg biryani cooked in 1 teaspoon oil', 'Paneer veg biryani cooked in oil'], ['Khichdi with 1 tsp of ghee', 'Khichdi with ghee'],
+  ['Dal with 2 cups of rice', 'Dal with rice'], ['Three to four idlis', 'Idlis'], ['2 to 3 idlis', 'Idlis'], ['2-3 idlis', 'Idlis'], ['Rice with three to four idlis', 'Rice with idlis'], ['Paneer portion', 'Paneer'],
+  ['Steamed methi muthiya', 'Steamed methi muthiya'], ['Gram flour chilla', 'Gram flour chilla'], ['Cucumber slices', 'Cucumber slices'], ['Kala chana chaat bowl', 'Kala chana chaat bowl'],
   ['Mug cake', 'Mug cake'], ['Glass noodles', 'Glass noodles'], ['Moong (green gram)', 'Moong (green gram)'], ['Dal bati churma', 'Dal bati churma'], ['Litti chokha', 'Litti chokha'], ['Kadhi pakode', 'Kadhi pakode'], ['Teen dal tadka', 'Teen dal tadka']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);

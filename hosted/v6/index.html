@@ -1734,9 +1734,20 @@ function nameOK(t){return typeof t==="string"&&NAMESHAPE.test(t);}
    So "Three bean salad", "Five spice tofu", "One-pot khichdi", "Paneer do pyaza", "Panch phoron dal", "Egg half fry", "Half-fry egg" and
    "Double roti" (bread) keep their names. "Half", "single", "quarter" and the Hindi numbers look for piece words only (not any plural), and
    "double" counts only before a measure word. The article "a" is never taken off alone. */
-/* measure words, with the Hindi ones and katori in every form ("katoriyan", "katoree"), and weights and volumes ("Half Kg", "Ek Kilo",
-   "Hundred grams"; safety audit of ba4d8dc, M1; Critic round 40, finding 5) */
-var CNTMEAS="(?:pcs?|pieces?|nos?|bowls?|bowlfuls?|cups?|kaps?|glass(?:es)?|katori\\w*|katoree\\w*|katora\\w*|katore\\w*|plates?|platefuls?|tbsp|tsp|tablespoons?|teaspoons?|spoons?|spoonfuls?|ladles?|slices?|servings?|portions?|helpings?|scoops?|handfuls?|fistfuls?|mugs?|tumblers?|chammach\\w*|chamach\\w*|chammuch|mutth?i\\w*|karc?hhi\\w*|karchi|vatis?|kgs?|kilos?|kilograms?|litres?|liters?|ltrs?|ml|g|gms?|grams?)";
+/* THE measure list (S8; safety audit of 530a503, M1). Every count rule is built from it: a count in digits (DIGMEAS), a number word, a
+   Hindi number or "half" before a measure (CNTMEAS in CNTBIG, CNTWORD, CNTQTY, CNTDBL), a measure before "of" (MEASOF), a measure that opens
+   a name (MEASBARE), one that ends it (MEASEND) and a bracket that holds one (countIn); test/safety/measure.js reads it too. Before, the digit
+   count had a shorter list of its own, so "with 1 teaspoon butter" showed "with teaspoon butter". The measure words, with the Hindi ones and
+   katori in every form ("katoriyan", "katoree"), and weights and volumes ("Half Kg", "Ek Kilo", "Hundred grams"; safety audit of ba4d8dc,
+   M1; Critic round 40, finding 5); "pinch" joins the list from MEASBARE, and "muthi" (not "muthia", a dish) the Hindi ones. Each entry
+   is one word form, as a regular expression. */
+var MEASW=["pcs?","pieces?","nos?","bowls?","bowlfuls?","cups?","cupfuls?","kaps?","glass(?:es)?","glassfuls?","katori\\w*","katoree\\w*","katora\\w*","katore\\w*",
+  "plates?","platefuls?","tbsps?","tsps?","tablespoons?","tablespoonfuls?","teaspoons?","teaspoonfuls?","spoons?","spoonfuls?","ladles?","ladlefuls?","slices?","servings?",
+  "portions?","helpings?","scoops?","handfuls?","fistfuls?","pinch(?:es)?","mugs?","mugfuls?","tumblers?","tumblerfuls?","chammach\\w*","chamach\\w*","chammuch",
+  "mutth?i\\w*","muthi","karc?hhi\\w*","karchi","vatis?","kgs?","kilos?","kilograms?","litres?","liters?","ltrs?","ml","g","gms?","grams?"];
+var CNTMEAS="(?:"+MEASW.join("|")+")";
+/* the size words a measure can carry ("2 large bowls", "a small cup of") */
+var MEASSIZE="(?:small|medium|large|big|full|heaped|level)";
 var CNTPIECE="(?:rotis?|rotiy(?:a|an|aan)|chapatiy(?:a|an|aan)|puriy(?:a|an|aan)|rotlis?|rotlas?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|bhakris?|idlis?|idlies|dosas?|uttapams?|appams?|vadas?|wadas?|eggs?|whites?|yolks?|anda|ande|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|pakoras?|momos?|cutlets?|kebabs?|tikkis?|chillas?|cheelas?|ladoos?|laddoos?|laddus?|parottas?|porottas?|rottis?|dhoklas?|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|khakhras?|apples?|bananas?|oranges?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|vade|wade|vadon|dose|doson|pakode|pakore|pakodon|pakodis?|pakodiy(?:an|aan|on)|idliy(?:an|aan|on)|kachoriy(?:an|aan|on)|tikkiy(?:an|aan)|golgappe|golgappas?|anday|andey|andon|luchis?|luchchis?|littis?|baatis?|batis?|theple|chille|cheele|dhokle|rotiyon|puriyon|chapatiyon|rotle|rotliy(?:an|aan)|bhakriy(?:an|aan))";
 /* (the last line: Hindi plurals in -e, -on and -iyan, and piece words the list lacked: luchi, litti, baati; safety audit of ba4d8dc, M1;
    Critic round 40, finding 3) */
@@ -1759,7 +1770,9 @@ var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNT
    before the match, with no look-behind: older phone browsers (Safari before 16.4) reject it and would lose the whole script. */
 var CNTTENSBEFORE=new RegExp("\\b"+CNTTENS+"[\\s-]+$","i");
 function cntOff(h,rx){return h.replace(rx,function(m){var at=arguments[arguments.length-2],str=arguments[arguments.length-1];return CNTTENSBEFORE.test(str.slice(0,at))?m:" ";});}
-var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
+/* a range of number words is one count ("Three to four idlis", "two or three rotis"; safety audit of 530a503, c1: "To idlis" before) */
+var CNTNUMW="(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)";
+var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|"+CNTNUMW+"(?:[\\s-]+(?:to|or)[\\s-]+"+CNTNUMW+"\\b|-"+CNTNUMW+"\\b)?)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
 /* the Hindi numbers, with the spellings "dus", "gyarah" and "barah" (safety audit of ba4d8dc, M1) */
 var CNTHINDI="ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|dus|gyarah|gyaarah|barah|baarah|aadha|adha|aadhi|adhi|dedh|dhai|dhaai";
 var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
@@ -1768,13 +1781,24 @@ var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small
    "Katora dal", "Chammach ghee", "Tsp ghee", "Spoon ghee", "Pinch salt", "Pinch of salt": safety audit of b4633dd;
    a pinch inside a name is left to the name rules);
    "Cup cake", "Mug cake" and "Glass noodles" keep their names */
-var MEASBARE=/^(?:an?\s+)?(?:(?:small|medium|large|big)\s+)?(?:glass(?:es)?|bowls?|katori\w*|katoree\w*|katora\w*|katore\w*|plates?|tumblers?|handfuls?|fistfuls?|pinch(?:es)?(?:\s+of)?|cups?|mugs?|chammach\w*|chamach\w*|tsp|tbsp|teaspoons?|tablespoons?|spoons?|spoonfuls?)\s+(?!(?:cakes?|noodles|vermicelli)\b)(?=[a-z])/i;
+/* every word of the one list but those that also open a food's own name: a piece, a slice, gram ("Gram flour chilla") and "no" ("No onion
+   dal") (fix-r12; "Kg rice", "Gm dal", "Ladle sambar", "Serving dal" lose the unit word too) */
+var MEASNOTOPEN=["pieces?","nos?","slices?","g","grams?"];
+var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASNOTOPEN.indexOf(w)<0;}).join("|")+")(?:\\s+of)?\\s+(?!(?:cakes?|noodles|vermicelli)\\b)(?=[a-z])","i");
+/* a measure word that ends a name, with no number before it, goes the same way ("Paneer portion" shows "Paneer", "Ghee teaspoon" "Ghee";
+   fix-r12). A word that also names a food's form or the dish it is served in stays ("Cucumber slices", "Chicken breast pieces", "Kala chana
+   chaat bowl", "Curd cup", "Green gram"), and so does katori, whose own guard below drops the name. */
+var MEASFORM=["pcs?","pieces?","nos?","bowls?","cups?","glass(?:es)?","plates?","slices?","mugs?","g","gms?","grams?","katori\\w*","katoree\\w*","katora\\w*","katore\\w*"];
+var MEASEND=new RegExp("(\\b[a-z]+)\\s+(?:"+MEASW.filter(function(w){return MEASFORM.indexOf(w)<0;}).join("|")+")$","i");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 /* katori in every form ("katori", "katoris", "katoriyan", "katoree", and "katora", "katore": safety audit of b4633dd) is a household measure (S8) */
 var KATORI=/\b(?:katori|katoree|katora|katore)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
-var DIGMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katoris?|plates?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?)\\b\\.?)";
-var DIGALL=new RegExp("\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
+/* the digit count takes the measure after it from the one list, with a size before it and an "of" after it ("1 tsp of ghee" goes whole, so
+   no "with of" is left), and a range ("2 to 3", "2-3", "2 or 3"; fix-r12) */
+var DIGMEAS="(?:(?:"+MEASSIZE+"\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+MEASSIZE+"\\b)";
+var DIGNUM="\\d+(?:[.\\/\\u2044]\\d+)?";
+var DIGALL=new RegExp("\\b"+DIGNUM+"(?:\\s*(?:-|to|or)\\s*"+DIGNUM+")?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
 /* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Short keep-list (Recommended)"): "Keep a number only if it is
    a known name number ("65", "7 Up", and the few others in recorded menus); remove every other number. A miss costs a dish its number, never
    shows a price. "Tandoori Roti 2" becomes "Tandoori Roti"." It replaces the rule by position and the price guessing from the typed menu.
@@ -1807,14 +1831,15 @@ function showName(t,o){o=o||{};if(typeof t!=="string")return "";t=norm(t).replac
   h=cntOff(cntOff(h,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ").replace(/\s+/g," ").replace(/\s+,/g,",").trim().replace(/^(?:of|and|with|or|for)\s+|\s+(?:of|and|with|x|or|for)$/gi,"").trim();   /* no joining word is left alone at an end: "Combo for Two" shows "Combo", "Two or three rotis" "Rotis" (safety audit c2); "folded in" keeps its "in" */
   /* a measure with no number before "of" is a household measure too: "Glass of buttermilk", "A bowl of dal", "with a cup of curd" lose it;
      "Cup cake" and "Buddha bowl" keep their names (S8; Critic round 39, finding 4) */
-  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(MEASBARE,"").replace(/\s+/g," ").trim();
+  h=h.replace(MEASOF,function(m,pre){return pre||"";}).replace(MEASBARE,"").replace(/\s+/g," ").trim().replace(MEASEND,"$1");
   var ok=o.price?menuNameOK:nameOK,parts=h.split(/\s*,\s*/).filter(Boolean);if(!parts.length)return "";
   h=parts.length>1&&/\band\b/.test(parts[parts.length-1])&&parts.every(ok)?parts.join(", "):parts[0];
   if(KATORI.test(h)||(h+keep).length>(o.max||60))return "";   /* a katori is a household measure (S8) */
   return h.split(", ").every(ok)?h.charAt(0).toUpperCase()+h.slice(1)+keep:"";}
 /* a bracket holds a count or a portion when the count rules would change it, or it names a measure, a katori or a size (S8; safety audit M2);
    "no" alone is not the measure "nos": "(no ghee)" says what the food is, and "gram" alone is a pulse: "(gram flour)", "(Bengal gram)" */
-function countIn(b){return new RegExp("\\b(?:"+CNTMEAS.slice(3,-1).replace("nos?|","nos|").replace("|g|gms?|grams?","")+")\\b","i").test(b)||new RegExp("^(?:half|full|quarter|single|double|"+CNTHINDI+")$","i").test(b)||
+var MEASBRACKET=new RegExp("\\b(?:"+MEASW.map(function(w){return w==="nos?"?"nos":w;}).filter(function(w){return ["g","gms?","grams?"].indexOf(w)<0;}).join("|")+")\\b","i");
+function countIn(b){return MEASBRACKET.test(b)||new RegExp("^(?:half|full|quarter|single|double|"+CNTHINDI+")$","i").test(b)||
   cntOff(cntOff(b,CNTBIG),CNTWORD).replace(CNTQTY," ").replace(CNTDBL," ")!==b;}
 /* a menu name has the name shape once its keep-list numbers are read as words: every digit shown sits inside a keep-list name ("Chicken 65",
    "7 Up"); a name that is only a number is not shown */
