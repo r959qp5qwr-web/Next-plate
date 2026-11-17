@@ -78,12 +78,14 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   const NUTS = ['almond', 'cashew', 'peanut'], SOYW = ['soy', 'soya'];
   let shownV = 0;
   for (const f of FRAMES) for (const x of LEFT) for (const y of RIGHT) { const name = cap(f.replace('X', x).replace('Y', y)), prod = PLANTOK.includes(x + ' ' + y);
-    // a plant cream or nut butter before a dish word reads as dairy (coordinator's default, fix-r12): "Cashew cream masala", "Peanut butter curry"
-    const plantOK = prod && !(x === 'rice' && TAIL.test(f)) && !(/^(?:cream|butter)$/.test(y) && /^X Y (?:rice|masala|curry)$|^brown X Y rice$/.test(f));
+    // a plant cream or nut butter before a dish word reads as dairy (coordinator's default, fix-r12): "Cashew cream masala", "Peanut butter curry";
+    // fail closed (fix-r13): a word before the product that is not in its set ("dal", "jeera", "fried", "brown") keeps the dairy word, for
+    // every product, as "rice" ending a rice dish did before; test/safety/carve.js reads every neighbour
+    const plantOK = prod && !TAIL.test(f) && !(/^(?:cream|butter)$/.test(y) && /^X Y (?:rice|masala|curry)$/.test(f));
     for (const [o, want] of [[{ diet: 'vegan' }, plantOK], [{ leave: ['dairy'] }, plantOK], [{ leave: ['nut'] }, !NUTS.includes(x)], [{ leave: ['soya'] }, !SOYW.includes(x)]]) {
       const r = plateOffered(o, withItem(name, ['plain'], ['plain'])); if (o.diet === 'vegan' && r.ok) shownV++;
       add('S1-S2 plant products: named one by one (grid, tags stripped)', r.ok === want, `${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'} (${r.why || ''}), expected ${want ? 'shown' : 'dropped'}`); } }
-  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 120, `only ${shownV} plant-product cells shown to a vegan client`);
+  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 70, `only ${shownV} plant-product cells shown to a vegan client`);
   // the audit's names, and the products that still pass
   for (const [name, o, want] of [['Brown rice curd rice', { diet: 'vegan' }, false], ['Brown rice curd rice', { leave: ['dairy'] }, false], ['Red rice curd rice', { diet: 'vegan' }, false], ['Rice curd', { leave: ['dairy'] }, false],
     ['Rice curd and pickle', { diet: 'vegan' }, false], ['Leftover rice curd mix', { leave: ['dairy'] }, false], ['Rice yogurt bowl', { diet: 'vegan' }, false], ['Curd rice', { diet: 'vegan' }, false], ['Peanut curd rice', { diet: 'vegan' }, false],
@@ -99,34 +101,13 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   // a name is read apart from the next: a rice milk after another item is still a product
   { const m = platePlain(); m.items[2] = { food: 'Rice milk', grams: 100, group: 'other', contains: ['plain'] }; add('S1-S2 names are read apart', plateOffered({ diet: 'vegan' }, m).ok, 'vegan: "Jowar roti" then "Rice milk" was read as "roti rice milk"'); } }
 
-// ---------- every other carve-out read before the word lists, in frames, tags stripped (fix-r12) ----------
-// Each rule that blanks or exempts text before a word list, with frames that open the name, follow a joining word, or put a word before it
-// that ends another dish ("Dal chawal roti", "Jeera rice noodles", "Garlic butter beans", "Chana keema"). Each cell is shown or dropped as
-// written here; the cells left open are TRACKED (tier 2, watched), not asserted.
-{ const TAIL = /^(?:dal|jeera|curd|lemon|fried|brown|rajma) /, OPEN = ['X Y', 'X Y with dal', 'X Y curry', 'with X Y', 'X ki Y'], TAILS = ['dal X Y', 'jeera X Y', 'curd X Y', 'lemon X Y', 'fried X Y', 'brown X Y', 'rajma X Y'];
-  const WHEATW = /^(?:rotis?|chapati|paratha|puri|noodles|vermicelli|pasta|sevai|bread|toast)$/;
-  const cells = [];
-  const grid = (id, L, R, frames, o, want) => { for (const f of frames) for (const x of L) for (const y of R) { if (f === 'X ki Y' && !/^(?:rotis?|bhakri|chapati|paratha|puri)$/.test(y)) continue; cells.push([id, cap(f.replace('X', x).replace('Y', y)), o, want(x, y, f)]); } };
-  grid('millet or rice flatbread', ['bajra', 'jowar', 'makki', 'ragi', 'nachni', 'rajgira', 'kuttu', 'singhara', 'rice', 'chawal', 'akki'], ['roti', 'rotis', 'bhakri', 'chapati', 'paratha', 'puri', 'thalipeeth'], OPEN.concat(TAILS), { leave: ['wheat'] },
-    (x, y, f) => !(TAIL.test(f) && /^(?:rice|chawal)$/.test(x) && WHEATW.test(y)));
-  grid('rice and millet noodles', ['rice', 'ragi', 'millet', 'glass', 'jowar', 'konjac', 'shirataki'], ['noodles', 'vermicelli', 'pasta', 'sevai'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
-  grid('millet and rice bread', ['jowar', 'bajra', 'ragi', 'millet', 'rice', 'gluten-free'], ['bread', 'toast'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
-  grid('plant keema', ['soya', 'soy', 'mushroom', 'kathal', 'jackfruit', 'veg', 'vegetable', 'paneer', 'tofu', 'chana', 'rajma', 'nutrela'], ['keema', 'kheema'], ['X Y', 'X Y matar', 'X Y with roti', 'dal X Y', 'lauki X Y'], { diet: 'veg' }, (x) => !/^(?:chana|rajma)$/.test(x));
-  grid('butter beans', ['butter'], ['beans', 'bean'], ['X Y', 'X Y curry', 'with X Y', 'salad with X Y', 'garlic X Y', 'lemon X Y', 'herb X Y', 'brown X Y', 'spiced X Y'], { diet: 'vegan' }, (x, y, f) => /^(?:X|with|salad with) /.test(f));
-  grid('sol kadhi', ['sol'], ['kadhi'], ['X Y', 'X Y with rice', 'rice with X Y'], { diet: 'vegan' }, () => true);
-  grid('rice cakes', ['rice'], ['cakes', 'cake'], ['X Y', 'idli X Y', 'steamed X Y', 'brown X Y', 'sweet X Y', 'jaggery X Y'], { health: 'diabetes' }, (x, y, f) => !/^(?:sweet|jaggery) /.test(f));
-  grid('sugar snap', ['sugar'], ['snap peas'], ['X Y', 'stir fried X Y', 'X Y salad'], { health: 'diabetes' }, () => true);
-  grid('lemon or amla juice', ['lemon', 'lime', 'nimbu', 'amla'], ['juice'], ['X Y', 'fresh X Y', 'salad with X Y', 'cucumber and X Y', 'sweet X Y'], { health: 'diabetes' }, (x, y, f) => !/^sweet /.test(f));
-  grid('negation, one word', ['no', 'without', 'skip', 'skip the', 'hold the', 'minus', 'instead of', 'swap out', 'leave out'], ['ghee', 'curd', 'paneer'], ['Dal X Y', 'Dal, X Y', 'Dal X Y or butter', 'Dal X oil and Y', 'Dal X Y and butter'], { leave: ['dairy'] }, (x, y, f) => !/ and /.test(f));
-  grid('-free and -less', ['egg-free', 'eggless', 'sugar-free', 'dairy-free', 'ghee-free'], ['cake', 'halwa', 'kheer', 'mayo', 'omelette'], ['X Y'], { diet: 'veg', health: 'diabetes' }, () => false);
-  for (const [id, name, o, want] of cells) { const r = plateOffered(o, withItem(name, ['plain'], ['plain']));
-    add('S1-S4 carve-outs: each reads only its own food (frame grid, tags stripped)', r.ok === want, `${id}, ${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'}, expected ${want ? 'shown' : 'dropped'}`); }
-  add('S1-S4 carve-outs: the grid read its cells', cells.length > 1500, `only ${cells.length} cells`);
-  // the open cells: a rice cake with coconut, and a juice of several, may be a sweet or a juice, or a savoury cake and a dressing
-  // ("grated carrots and lemon juice" is a dressing 11 times in the recorded replies): the sweet tag holds them; watched (tier 2)
-  const open = ['Coconut rice cakes', 'Orange and lemon juice', 'Carrot and amla juice'].map(n => n + ': ' + (plateOffered({ health: 'diabetes' }, withItem(n, ['plain'], ['plain'])).ok ? 'shown' : 'dropped'));
-  console.log('TRACKED (tier 2) carve-out cells left open, diabetes, tags stripped: ' + open.join('; '));
-  // the referral exclusions: a kidney or pregnancy word beside the bean, corn or colour word still refers; the food text alone does not
+// ---------- every other carve-out read before the word lists (fix-r12; fail closed since fix-r13) ----------
+// The hand-picked frames of fix-r12 (rice and millet flatbreads, noodles and bread, plant keema, butter beans, sol kadhi, rice cakes, sugar
+// snap, lemon or amla juice, negation, -free) are replaced by test/safety/carve.js, which generates its cells from the lexicon's lists and
+// the recorded names (safety audit of 9dd1b13, B1: the frames missed a fruit before lemon or lime juice). Each exemption takes its listed
+// word off only when the word next to it is in its own allowed set; the TRACKED cells of fix-r12 ("Coconut rice cakes", "Orange and lemon
+// juice", "Carrot and amla juice") are now dropped and asserted there.
+{   // the referral exclusions: a kidney or pregnancy word beside the bean, corn or colour word still refers; the food text alone does not
   const refersT = (t) => { const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: t } }); return !!(pl.reply && pl.reply.status === 'refer'); };
   for (const [t, want] of [['kidney beans curry', false], ['Kidney bean salad for lunch', false], ['weak kidney beans ok?', true], ['kidney, beans ok for dinner?', true], ['kidney beans for my kidney', true],
     ['I have kidney stones, kidney beans ok', true], ['kidney beans with CKD', true], ['baby corn manchurian', false], ['delivered a baby corn soup', false], ['delivered a baby, corn soup ok?', true],
@@ -164,7 +145,7 @@ add('D1 plain food kept', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', '
 // held-out names that must not be hidden: honest tags with nothing the profile bars
 const NH = { meat: { diet: 'veg' }, dairy: { leave: ['dairy'] }, wheat: { leave: ['wheat'] }, soya: { leave: ['soya'] }, onion_garlic: { diet: 'jain' }, root_veg: { diet: 'jain' }, salty_side: { health: 'bp' }, sweet: { health: 'diabetes' }, nuts: { leave: ['nut'] } };
 const NHTAGS = { 'Sol kadhi with coconut milk': ['onion_garlic'], 'Coconut milk curry': ['onion_garlic'], 'Peanut chutney': ['nuts'], 'Coconut chutney': [], 'Hing tadka dal': [], 'Lauki sabzi': [], 'Cucumber raita': ['dairy'], 'Sprouts salad': [], 'Roasted chana': [], 'Sugar snap peas': [], 'Soya keema': ['soya', 'onion_garlic'], 'Mushroom keema': ['onion_garlic'], 'Kathal keema': ['onion_garlic'], 'Jackfruit biryani': ['grain', 'onion_garlic'], 'Veg seekh kebab': ['onion_garlic'], 'Rice noodles': ['grain'],
-  'Kuttu puri': ['grain'], 'Singhara puri': [], 'Jowar bread': ['grain'], 'Ragi dosa': ['grain'], 'Bajra roti': ['grain'], 'Makki di roti': ['grain'], 'Idli rice cakes': ['grain'], 'Sweet corn soup': ['grain'], 'Rajma curry': ['onion_garlic'], 'Chana masala': ['onion_garlic'] };
+  'Kuttu puri': ['grain'], 'Singhara puri': [], 'Jowar bread': ['grain'], 'Ragi dosa': ['grain'], 'Bajra roti': ['grain'], 'Makki di roti': ['grain'], 'Puffed rice cakes': ['grain'], 'Sweet corn soup': ['grain'], 'Rajma curry': ['onion_garlic'], 'Chana masala': ['onion_garlic'] };
 for (const [tag, names] of Object.entries(HO.notHidden)) for (const name of names) { const o = NH[tag]; const tags = NHTAGS[name] || [];
   // round 5: a dish with none of the tags declares "plain" (an empty list is dropped, the literal rule)
   const r = plateOffered(o, withItem(name, tags.length ? tags : ['plain']));
