@@ -260,6 +260,11 @@ for (const kind of ['meals', 'rescue', 'log']) {
   // spellings the safety audit of b4633dd found ("pregancy", "kednee", "dialyses", "morning sickness"; owner, 16 Nov, D1), and their food-text controls
   for (const t of L.referFound || []) add('S7 typed (found by the safety audit of b4633dd)', refers(kind, t) && refers(kind, t.split('').join('\u200B')), `${kind}: "${t}" went to the model`);
   for (const t of L.notReferFound || []) add('S7 no false hit (controls for the found spellings)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  // the spellings the safety audit of 530a503 found (backlog; owner, 16 Nov, D1 "Fix found, then watch"), and their food-text controls
+  for (const t of L.referFound12 || []) add('S7 typed (found by the safety audit of 530a503)', refers(kind, t) && refers(kind, t.split('').join('\u200B')), `${kind}: "${t}" went to the model`);
+  for (const t of L.notReferFound12 || []) add('S7 no false hit (controls for the 530a503 spellings)', !refers(kind, t), `${kind}: "${t}" was referred`);
+  for (const t of L.urgentFound12 || []) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
+    add('B1 urgent text (found by the safety audit of 530a503): referred with the line to get help now', !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent === URGENTLINE && !pl.prompt), `${kind}: "${t}" ${pl.reply ? JSON.stringify(pl.reply).slice(0, 80) : 'went to the model'}`); }
   for (const t of L.urgentFound || []) { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }), {});
     add('B1 urgent text (found by the safety audit of b4633dd): referred with the line to get help now', !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent === URGENTLINE && !pl.prompt), `${kind}: "${t}" ${pl.reply ? JSON.stringify(pl.reply).slice(0, 80) : 'went to the model'}`); } }
 // the model's refer_reason: any value but "none" is a referral, on every reply that answers typed text; a missing one fails closed

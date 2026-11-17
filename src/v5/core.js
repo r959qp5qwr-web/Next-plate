@@ -172,7 +172,8 @@ function standIn(x){var mo=madeOf(x);return STAND.test(x)||mo===false||(mo!==tru
    space through NFKC. */
 var APOSRX=/[\u2018\u2019\u201B\u02BC\u02B9\u0060\u00B4\u2032]/g,DASHRX=/[\u2010-\u2015\u2212\uFE58\uFE63\uFF0D]/g;
 function foldPunct(t){return t.replace(APOSRX,"'").replace(DASHRX,"-");}
-function norm(t){t=foldPunct(String(t==null?"":t));try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
+/* the dotless i (U+0131) is read as i: "kıdney" is "kidney" (safety audit of 530a503, backlog; NFKC keeps it) */
+function norm(t){t=foldPunct(String(t==null?"":t)).replace(/\u0131/g,"i");try{t=t.normalize("NFKC");}catch(e){}t=t.replace(/[\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180B-\u180F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFE00-\uFE0F\uFEFF]/g,"");
   try{t=t.normalize("NFD").replace(/[\u0300-\u036F\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+/g,"").normalize("NFC");}catch(e){}return foldPunct(t);}   /* these mark blocks serve Latin; Devanagari and Tamil marks are in their own blocks */
 function words(s){return s.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(" ").filter(Boolean);}
 /* Shapes: a wrap, toast, flatbread or crust can be made of anything, so it is a grain only when a grain is named with it ("whole wheat
