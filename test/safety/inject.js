@@ -210,6 +210,18 @@ for (const kind of Object.keys(KIND)) for (const [pname, po, words, tags] of PRO
         if (isWord && kind === 'meals' && rule.el === 'plate' && vn !== 'past the cap' && vn !== 'beside a banned word') { const why = Object.keys(out.dropped || {});
           if (!why.some(k => /^(diet|supplement)$/.test(k))) return `dropped, but for ${why.join(',')} (not the word check)`; }
         return true; }); }
+    // the cap on its own: honest content with no barred word past the leaf's cap (and past a name's display cap), text in a script the
+    // checks cannot read, and a field that is not text. The element drops (a word leaf), or the content is shown nowhere (a hidden leaf);
+    // nothing is cut to fit (fix-r14: the cells above carry a barred word, which the raw read catches by itself)
+    { const MK = 'Marker', fill = (n) => { let x = MK; while (x.length <= n) x += ' ' + MK.toLowerCase(); return x; };
+      const DISP = /^(?:meals\[\]\.)?(?:items\[\]\.food|swaps\.(?:protein|base)\[\]\.food)$/.test(kk) ? 60 : /add_item$/.test(kk) ? 40 : 0;
+      const plainWant = (out) => isWord ? dropped(out) : (!offered(kind, rule.el, out) || count(out, MK) === 0 ? true : `"${MK}" is shown`);
+      const odd = [['text in a script the checks cannot read', '\u0926\u093E\u0932 \u091A\u093E\u0935\u0932'], ['a field that is not text', 42]];
+      if (rule.cap) odd.unshift(['honest text past the cap of ' + rule.cap, fill(rule.cap)]);
+      if (DISP) odd.unshift(['honest text past the display cap of ' + DISP, fill(DISP)]);
+      for (const [vn, v] of odd) cell(vn, r => { if (/add_item$/.test(kk)) setAt(r, l.path.slice(0, -1).concat('add_grams'), 60); return setAt(r, l.path, v); },
+        out => { if (typeof v !== 'string') return isWord ? dropped(out) : true;
+          if (/[^\x00-\x7f]/.test(v)) return isWord ? dropped(out) : !texts(out).some(t => t.includes(v.slice(0, 3))) ? true : 'the text is shown'; return plainWant(out); }); }
     // control: a plain food in the same leaf keeps the element (so the cells above test the word, not the leaf)
     if (isWord) { const ctl = /made_of/.test(kk) ? 'jowar' : /grain\.food$/.test(kk) ? null : /swaps\.base/.test(kk) ? 'Ragi roti' : 'Cucumber';
       if (ctl) { const r = J(base); setAt(r, l.path, ctl); if (/add_item$/.test(kk)) setAt(r, l.path.slice(0, -1).concat('add_grams'), 60);
