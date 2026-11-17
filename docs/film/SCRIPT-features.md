@@ -1,3 +1,5 @@
+**Status: held (17 Nov).** This film shows menu reading (6.0-12.4 s, "Take a photo of the menu."), which the app no longer has: the owner removed it on 17 Nov (option survey, "Remove menu reading (Recommended)"). Not to be shared until it is re-cut around "Name the dish". The video files are unchanged; the owner may decide on a re-cut.
+
 # Next Plate features film (60 s): script and storyboard, gate 3
 
 Script approved by the owner (2026-11-12: "No all good."). Gate 4 waits on Gemini credits.

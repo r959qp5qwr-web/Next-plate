@@ -1,3 +1,5 @@
+**Removed from the app (owner, 17 Nov); code dormant.** Option survey, "Remove menu reading (Recommended)": "Take "Read the menu" and "type the menu" off Rescue and refuse menu requests in the engine. Rescue keeps "Name the dish". The menu code stays dormant in the repository. The menu-orders bar is dropped, and both gates run again on the smaller build." The engine refuses the menu kind and the page offers no menu entry; the code described below (`checkMenu`, `buildMenuPrompt` and their helpers in `src/v6/engine.js`) stays in the repository, unreachable. See docs/SAFETY-INVARIANTS.md, "Menu reading removed".
+
 # Read the menu: what should I order?
 
 Status: design fixed 2026-11-12 (owner's request). Build order: before the v6 Phase 1 screens go live.

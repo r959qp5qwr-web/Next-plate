@@ -681,3 +681,11 @@ on a meal's protein energy (rules: protein cap).
   note in the held strip above the button, as in the two screenshots. No row moves under a held thumb, and tests check this on every row at
   every width." That the strip covers the lower rows at large text is accepted; no stepper may move under a held thumb (review.js
   builder-still).
+- D9 Menu reading removed (owner, 17 Nov, option survey: "Remove menu reading (Recommended)"). Option text: "Take "Read the menu" and "type the menu" off Rescue and refuse menu requests in the engine. Rescue keeps "Name the dish". The menu code stays dormant in the repository. The menu-orders bar is dropped, and both gates run again on the smaller build." The owner's
+  reason: "Just a picture scan, should not become the source of so much hassle for the app. We do not need a cumbersome feature." Rescue shows one entry: the lede ("<kcal> and <protein> are left today. Name the dish you will have for <meal> to
+  see how to fit it in."), the box labelled "Name the dish you chose" and the common dishes; the look is unchanged (Raw Linen v6 tokens,
+  type and colours). The menu entry, the typed-menu box, the order card, the grain questions and every menu note and error are gone, with
+  their review states (fix-r11 lists them). No state may offer a menu entry again: the review's "menu-entry" rule fails any state with
+  the ids mcam, mfile, mtype, mtext or mgo, or the words "Read the menu", "type the menu", "photograph the menu", "menu photo" or "photo of
+  the menu", and the A12 drill plants one. An order logged before the removal still shows on the plate as "ordered from the menu"
+  (review state plate-ordered).
