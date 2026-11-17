@@ -324,6 +324,18 @@ for (const [n, o] of FOUND) {
       ['Multigrain bhakri', { leave: ['wheat'] }], ['Wholemeal toast', { leave: ['wheat'] }], ['Kachoriyan', { leave: ['wheat'] }], ['Golgappe', { leave: ['wheat'] }], ['Two yolks', { diet: 'veg' }]])
       add('Found words (safety audit of 7eaadcf): the audit\'s names are read (S1, S2)', crosses(n, prof(o)), `${JSON.stringify(o)}: "${n}" was not read`); } }
 
+// ---------- S13: the engine's own drop of a plate or dish whose figures disagree (safety audit of 7eaadcf, m4; fix-r14) ----------
+// The tests ran combinations on plates whose base agrees, so the drop could go with no test failing. A plate at 900 kcal with macros worth
+// about 500 is dropped by the engine itself, on the plate path, the tune path's kept plate and Rescue; one that agrees is offered.
+{ const bad = () => Object.assign(platePlain(), { kcal: 900, protein: 22, carbs: 70, fats: 14 }), good = () => platePlain();
+  const P = prof({}); add('S13 the engine drops a plate whose figures disagree', JSON.stringify(checkMeal(bad(), P)) === '{"drop":"energy"}', JSON.stringify(checkMeal(bad(), P)).slice(0, 120));
+  add('S13 control: a plate whose figures agree is offered', !!checkMeal(good(), P).meal, JSON.stringify(checkMeal(good(), P)).slice(0, 120));
+  const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }); add('S13 the plate path drops it', (pl.check(mealsReply(bad())).meals || []).length === 0 && (pl.check(mealsReply(good())).meals || []).length === 1, 'the disagreeing plate was offered, or the control was not');
+  const shown = (pl.check(mealsReply(good())).meals || [])[0], kept = Object.assign(J(shown), { kcal: 900 });
+  add('S13 the tune path refuses a kept plate whose figures disagree', !!plan('tune', { profile: BASE, slot: 'lunch', meal: shown }).check && !!plan('tune', { profile: BASE, slot: 'lunch', meal: kept }).error, 'the tune path took a kept plate at 900 kcal with macros worth about 500');
+  const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), dish = (k) => ({ status: 'ok', refer_reason: 'none', dish: { name: 'Veg thali', portion: 'about 450 g', kcal: k, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] } });
+  add('S13 Rescue drops a dish whose figures disagree', rp.check(dish(1100)).status !== 'ok' && rp.check(dish(580)).status === 'ok', 'Rescue helped a dish at 1100 kcal with macros worth about 580, or refused the control'); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'rescue', 'log']) {
@@ -457,7 +469,11 @@ console.log(`round 5 schema walk: ${walked} string fields`);
   for (const m of app.matchAll(/addEventListener\("([a-z]+)",/g)) { let h = argAt(app, m.index + m[0].length).trim(); let body = h;
     if (/^[A-Za-z_$][\w$]*$/.test(h)) { const d = new RegExp('function ' + h + '\\(').exec(app); if (d) { const o = app.indexOf('{', d.index); body = app.slice(o, o + 1) + argAt(app, o + 1) + '}'; } }
     if (!WRITES.test(body)) continue; n++; if (/^act\(/.test(h)) wrapped++;
-    add('round 5 handler wrapper', /^act\(/.test(h), `a ${m[1]} handler that writes the log or composes is not wrapped in act(): ${h.slice(0, 120)}`); }
+    add('round 5 handler wrapper', /^act\(/.test(h), `a ${m[1]} handler that writes the log or composes is not wrapped in act(): ${h.slice(0, 120)}`);
+    // the two "I'll have this" buttons log a composed plate or dish: their act() guard runs the composed state's own check first, plateWhy for
+    // a plate and rescueWhy for a Rescue dish (safety audit of 7eaadcf, m1: either could go with no test failing; fix-r14)
+    if (/^act\(/.test(h) && /logEv\("(?:had|rescued)"/.test(body)) { const g = argAt(h, 4).trim(), want = /logEv\("had"/.test(body) ? 'plateWhy(' : 'rescueWhy(';
+      add('the log-time guard of each "I\'ll have this" runs the composed check (S5, S6, S13)', g !== 'null' && g.includes(want), `a handler that logs ${/logEv\("had"/.test(body) ? 'a plate' : 'a Rescue dish'} is guarded by ${g.slice(0, 80)}, not ${want}`); } }
   add('round 5 handler wrapper found handlers', n >= 10, `only ${n} handlers that write the log or compose were found; the guard is not reading the page`);
   console.log(`round 5 handlers that write the log or compose: ${n}, wrapped in act(): ${wrapped}`); }
 
