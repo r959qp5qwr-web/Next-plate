@@ -268,6 +268,12 @@ for (const [n, o] of FOUND) {
   // S9: the supplements shown with a "plain" tag; brand names that are English words count only as a whole name or before a drink word
   for (const n of ['Multivitamins', 'Complan', 'Whey', 'Whey shake', 'Protein bar', 'Electral', 'ORS', 'Becosules', 'Shelcal', 'Zincovit', 'Biotin', 'Folic acid', 'Pediasure', 'Boost drink', 'Boost', 'Ensure', 'Ensure milk', 'Soy protein isolate', 'Tang'])
     add('Found words (safety audit of 9dd1b13): a supplement with a "plain" tag is dropped (S9)', !plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was offered`);
+  // the same names as a swap and as the item a one-tap change adds, tags "plain" (the item is read apart from the change's own words)
+  for (const n of ['Ensure', 'Boost', 'Tang', 'Complan', 'Multivitamins', 'Protein bar', 'Whey']) {
+    const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('A drink with the meal.', ['plain']), { add_item: n, add_grams: 200 }) }, { protein: [{ food: n, grams: 150, contains: ['plain'], ...z }], base: [] });
+    add('Found words (safety audit of 9dd1b13): a supplement is not offered as a swap or a one-tap add (S9)', !Object.keys(t.alchemy || {}).length && !((t.swaps || {}).protein || []).length, `tune offered "${n}": ${JSON.stringify(Object.keys(t.alchemy || {}))} ${JSON.stringify(((t.swaps || {}).protein || []).map(x => x.food))}`); }
+  { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('A side to boost the protein.', ['plain']), { add_item: 'Boiled chana', add_grams: 80 }) });
+    add('Found words (safety audit of 9dd1b13): a one-tap add whose note says "boost" is offered (control)', Object.keys(t.alchemy || {}).length === 1, 'the change "Add boiled chana" with the note "A side to boost the protein." was dropped'); }
   for (const t of ['Ensure thorough boiling of chickpeas.', 'Add 70 grams of fresh paneer to boost the protein.', 'Acidity enhances the tang of the chutney.', 'Sattu shake'])
     add('Found words (safety audit of 9dd1b13): no false hit (S9)', !supp(t), `"${t}" was read as a supplement`);
   // S8: measures that open a name, and the stubs

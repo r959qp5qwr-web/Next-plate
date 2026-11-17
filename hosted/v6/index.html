@@ -1703,16 +1703,22 @@ function badWords(p){
    to it through). A rule below that takes a listed word off, or reads it as another food, does so only when the word next to its phrase,
    before and after, is in that rule's own allowed set, a short list written out. The neighbour is read in the same text: the nearest run of
    characters with no space in it. Only the start or end of the text, or a comma, semicolon, colon, full stop, question or exclamation mark
-   or bracket, counts as nothing; any other mark (a hyphen, slash, "&", "+", a digit, the "~" a negated word leaves) is a neighbour, and no
-   set holds one. */
+   or bracket, counts as nothing; any other mark (a hyphen, slash, "&", "+", the "~" a negated word leaves) is a neighbour, and no set holds
+   one. Each set has two kinds of word: a joining word, which ends the reading ("with" in "Cucumber with lemon juice"), and a word that
+   describes the phrase ("fresh", "plain", "warm", a count), after which the next word out is read the same way, so "Watermelon fresh lime
+   juice", "Mango brown rice cakes" and "Multigrain small bajra roti" keep their listed word (fix-r13; the advisor's review). */
 var NBSTOP=/[,;:.?!()\[\]]/;
-function nbPre(s,i){var h=s.slice(0,i).replace(/\s+$/,"");if(!h)return "";var m=/\S+$/.exec(h)[0];return NBSTOP.test(m.charAt(m.length-1))?"":m.replace(/^[,;:.?!()\[\]]+/,"");}
-function nbPost(s,j){var h=s.slice(j).replace(/^\s+/,"");if(!h)return "";var m=/^\S+/.exec(h)[0];return NBSTOP.test(m.charAt(0))?"":m.replace(/[,;:.?!()\[\]]+$/,"");}
-function nbSet(w){return new RegExp("^(?:"+w+")$");}
-function nbFits(s,i,j,pre,post){var b=nbPre(s,i),a=nbPost(s,j);return (!b||pre.test(b))&&(!a||post.test(a));}
+/* the token next to position i, before it (back) or after it: its text, where the reading goes on from, and whether a stop mark closes it */
+function nbTok(s,i,back){var r,t;if(back){var h=s.slice(0,i).replace(/\s+$/,"");if(!h)return null;var m=/\S+$/.exec(h);r=m[0];if(NBSTOP.test(r.charAt(r.length-1)))return null;
+    t=r.replace(/^[,;:.?!()\[\]]+/,"");return {t:t,at:m.index,edge:t.length<r.length};}
+  var k=s.slice(i),g=k.replace(/^\s+/,"");if(!g)return null;r=/^\S+/.exec(g)[0];if(NBSTOP.test(r.charAt(0)))return null;t=r.replace(/[,;:.?!()\[\]]+$/,"");
+  return {t:t,at:i+(k.length-g.length)+r.length,edge:t.length<r.length};}
+function nbSet(join,mod){return {join:new RegExp("^(?:"+join+")$"),mod:mod?new RegExp("^(?:"+mod+")$"):null};}
+function nbWalk(s,i,set,back){for(var n=0;n<8;n++){var r=nbTok(s,i,back);if(!r||set.join.test(r.t))return true;if(!set.mod||!set.mod.test(r.t))return false;if(r.edge)return true;i=r.at;}return false;}
+function nbFits(s,i,j,pre,post){return nbWalk(s,i,pre,true)&&nbWalk(s,j,post,false);}
 /* a rice cake is the savoury round only with nothing, "plain", "puffed" or "brown" before it, and nothing, "and" or "with" after it:
    "Mango rice cakes", "Coconut rice cakes" and "Steamed rice cakes" keep their "cake" (fix-r13; safety audit of 9dd1b13, B1) */
-var RCAKEPRE=nbSet("plain|puffed|brown"),RCAKEPOST=nbSet("and|with");
+var RCAKEPRE=nbSet("","plain|puffed|brown|\\d+|a|one|two"),RCAKEPOST=nbSet("and|with");
 /* plant milks, creams, curds and nut butters: each a named product, never a plant word before any dairy word (safety audit of 530a503,
    B1: the old rule read any of eight plant words before any of six dairy words as a plant food, so "Brown rice curd rice" lost its "curd"
    for a vegan client). A product found is read as "<its first word> plant", so its own word still counts ("Almond milk" for a client who
@@ -1732,7 +1738,7 @@ var PLANT=new RegExp("\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b","g");
    after a milk, curd or yogurt only nothing, "with", "and", "plain", "strained" or a dish it is cooked into (curry, rice, korma, gravy, masala,
    porridge, stew); after a cream or nut butter only nothing, "with", "and" or "toast" ("Peanut butter curry", "Cashew cream masala" read as
    dairy, the coordinator's default of fix-r12) */
-var PLANTPRE=nbSet("with|in|of|on|plus|or|using|a|an|the|plain|light|thin|fresh|unsweetened"),PLANTPOSTM=nbSet("with|and|plain|strained|curry|rice|korma|gravy|masala|porridge|stew"),PLANTPOSTB=nbSet("with|and|toast");
+var PLANTPRE=nbSet("with|in|of|on|plus|or|using","a|an|the|plain|light|thin|fresh|unsweetened"),PLANTPOSTM=nbSet("with|and|plain|strained|curry|rice|korma|gravy|masala|porridge|stew"),PLANTPOSTB=nbSet("with|and|toast");
 function plantOut(t){return t.replace(PLANT,function(m,prod,i,s){var w=prod.split(/\s+/);
   return nbFits(s,i,i+m.length,PLANTPRE,/^(?:cream|butter)$/.test(w[1])?PLANTPOSTB:PLANTPOSTM)?w[0]+" plant":m;});}
 /* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
@@ -1743,8 +1749,8 @@ var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]
    rice one only nothing, a joining word, an article or a count, as "rice" also ends a rice dish ("Dal chawal roti", "Jeera rice paratha",
    "Brown rice roti" read as wheat). After either, nothing, "and", "with", "without", "alongside", "cracker", "to" or "weight" (the notes).
    "Multigrain bajra roti", "Dal and jowar roti" and "Methi-bajra roti" keep their wheat word. */
-var FLATPRE=nbSet("with|on|alongside|a|an|the|one|two|\\d+|millet|warm|hot|small|soft|crisp|toasted|roasted|fresh|rustic|plain|cooked|ready|handmade|hand-patted|thin|downsize|reduce"),
-  FLATPRER=nbSet("with|on|alongside|a|an|the|one|two|\\d+"),FLATPOST=nbSet("and|with|without|alongside|crackers?|to|weight");
+var FLATPRE=nbSet("with|on|alongside","a|an|the|one|two|\\d+|millet|finger|pearl|warm|hot|small|soft|crisp|toasted|roasted|fresh|rustic|plain|cooked|ready|handmade|hand-patted|thin|downsize|reduce"),
+  FLATPRER=nbSet("with|on|alongside","a|an|the|one|two|\\d+"),FLATPOST=nbSet("and|with|without|alongside|crackers?|to|weight");
 var MILLETBREAD=/\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)((?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*)\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
 function milletOut(t){return t.replace(MILLETBREAD,function(m,w,x,y,i,s){return nbFits(s,i,i+m.length,/^(?:rice|chawal|akki)$/.test(w)?FLATPRER:FLATPRE,FLATPOST)?w+" flatbread":m;});}
 /* good food a listed word sits inside: soya or mushroom keema, sol kadhi, butter beans, rice noodles, jowar bread, idli rice cakes, sugar snap
@@ -1755,8 +1761,8 @@ function milletOut(t){return t.replace(MILLETBREAD,function(m,w,x,y,i,s){return 
 /* fail closed (fix-r13): each reading holds only with an allowed word next to its phrase, before and after; any other word keeps the listed
    word ("Dal soya keema", "Lauki mushroom keema", "Dal ragi noodles", "Multigrain jowar bread", "Glazed sugar snap peas" keep theirs) */
 var KEEMAPRE=nbSet("with"),KEEMAPOST=nbSet("matar|mutter|peas|masala|curry|with|and"),SOLPRE=nbSet("with"),SOLPOST=nbSet("with|and|rice"),
-  BBPRE=nbSet("with|in|a|the"),BBPOST=nbSet("with|and|curry|salad|sabzi|masala"),NOODPRE=nbSet("with|in|plain|thin|flat"),NOODPOST=nbSet("with|and|salad|soup|bowl|stir"),
-  LOAFPRE=nbSet("with|plain|soft"),LOAFPOST=nbSet("with|and"),SNAPPRE=nbSet("with|fresh|steamed|sauteed|blanched|fried|stir"),SNAPPOST=nbSet("peas?");
+  BBPRE=nbSet("with|in","a|the"),BBPOST=nbSet("with|and|curry|salad|sabzi|masala"),NOODPRE=nbSet("with|in","plain|thin|flat"),NOODPOST=nbSet("with|and|salad|soup|bowl|stir"),
+  LOAFPRE=nbSet("with","plain|soft"),LOAFPOST=nbSet("with|and"),SNAPPRE=nbSet("with","fresh|steamed|sauteed|blanched|fried|stir"),SNAPPOST=nbSet("peas?");
 function nbRead(rx,pre,post,to){return function(t){return t.replace(rx,function(m){var i=arguments[arguments.length-2],s=arguments[arguments.length-1];return nbFits(s,i,i+m.length,pre,post)?to(m):m;});};}
 var NOTFOOD=[nbRead(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(?:keema|kheema)\b/g,KEEMAPRE,KEEMAPOST,function(m){return m.split(/\s+/)[0]+" mince";}),
   nbRead(/\bsol\s+kadhi\b/g,SOLPRE,SOLPOST,function(){return "sol curry";}),
@@ -1770,7 +1776,7 @@ function notFood(t){return NOTFOOD.reduce(function(x,f){return f(x);},t);}
    nothing, "and", "with", "squeeze", "squeezed" or "dressing" after it: "Watermelon lime juice", "Orange and lemon juice", "Sweet-lime juice"
    and "No sugar lime juice" keep their "juice" (fix-r13; safety audit of 9dd1b13, B1). A glass, cup or mug of it is a drink, so those
    measures are not in the set. A negated word leaves a mark ("~") in its place, so the word next to the juice is never read as nothing. */
-var JUICEPRE=nbSet("fresh|tangy|with|tsps?|tbsps?|teaspoons?|tablespoons?|spoons?|spoonfuls?"),JUICEPOST=nbSet("and|with|squeeze|squeezed|dressing");
+var JUICEPRE=nbSet("with","fresh|tangy|tsps?|tbsps?|teaspoons?|tablespoons?|spoons?|spoonfuls?|\\d+(?:\\.\\d+)?|a|one|half"),JUICEPOST=nbSet("and|with|squeeze|squeezed|dressing");
 /* a word negated alone ("Phulka without ghee", "no sugar") is left out (S1) only with an allowed word next to the negation (fix-r13, fail
    closed): before it, nothing, a joining word, a way it is made or served, or one of the dish words the recorded replies put there (roti,
    phulka, chapati, paratha, curry, dal, sabzi, chutney, salad, raita, greens, ghugni, bhaja, paste, chana, milk, tea, coffee, dish, dry);
@@ -1778,7 +1784,7 @@ var JUICEPRE=nbSet("fresh|tangy|with|tsps?|tbsps?|teaspoons?|tablespoons?|spoons
    "can't do without ghee") is in no set, so the listed word stands; so does one after it ("no ghee rice"). After "X-free" the word is the
    food it describes, from a short list (cake, biscuit, cookie, bread, mayo, mayonnaise, omelette, chutney, "version"): "Egg-free cake" is
    left free of egg, "Egg-free paneer" and "Sugar-free shake" keep their listed word. */
-var NEGNBPRE=nbSet("with|and|but|served|cooked|made|prepared|plain|warm|small|rotis?|phulkas?|chapatis?|parathas?|flatbread|curry|dal|sabzi|chutney|salad|raita|greens|ghugni|bhaja|paste|chana|milk|tea|coffee|dish|dry"),NEGNBPOST=nbSet("and|with|but"),FREENBPOST=nbSet("and|with|but|cakes?|biscuits?|cookies?|bread|mayo|mayonnaise|omelettes?|chutney|version");
+var NEGNBPRE=nbSet("with|and|but|rotis?|phulkas?|chapatis?|parathas?|flatbread|curry|dal|sabzi|chutney|salad|raita|greens|ghugni|bhaja|paste|chana|milk|tea|coffee|dish|dry","served|cooked|made|prepared|plain|warm|small"),NEGNBPOST=nbSet("and|with|but"),FREENBPOST=nbSet("and|with|but|cakes?|biscuits?|cookies?|bread|mayo|mayonnaise|omelettes?|chutney|version");
 function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(plantOut(milletOut(notFood(norm(text).toLowerCase())).replace(NEG,function(m){var i=arguments[arguments.length-2],s=arguments[arguments.length-1];return nbFits(s,i,i+m.length,NEGNBPRE,/-free$/.test(m)?FREENBPOST:NEGNBPOST)?" ~ ":m;})).replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,function(m,w,i,s){return nbFits(s,i,i+m.length,JUICEPRE,JUICEPOST)?w:m;}));}
 function supp(text){var t=norm(text).toLowerCase();return wordRx(SUPPW).test(t)||t.split(/\s*[;,()]\s*/).some(function(x){return SUPPNAME.test(x.replace(/[.!?]+$/,"").trim());});}
 
@@ -2064,7 +2070,7 @@ function checkMeal(m,p){
     var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
     var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=a.add_item==null||a.add_item===""?"":rawName(a.add_item),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
     if((rawItem&&!item)||(item&&!ig))return;
-    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" ; "+rawItem,p)||supp(raw+" "+rawItem))return;
+    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" ; "+rawItem,p)||supp(raw+" ; "+rawItem))return;
     if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
     x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(raw,n.carbs,x.deltaCarbs);CUR_SLOT="";
@@ -3112,14 +3118,14 @@ var REFERNL=new RegExp(REFERNLKID.source+"|"+/গর্ভ|স্তন্যপ
    sprouted, canned); after, nothing, a dish they are in (curry, salad, masala, fry, rice, chawal, soup, sabzi, chaat, sundal), "and", "with",
    "for", "in", "ok", "today" or "tonight". Any other word keeps the kidney word, and the text refers ("stage 3 kidney beans", "ckd-kidney
    beans", "weak kidney beans ok?"). A kidney bean that stands as food is left as it was, and REFERKIDW's own exclusion reads it. */
-var KBEANPRE=nbSet("red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned"),
+var KBEANPRE=nbSet("with|of|in|had|have|eat|ate|rajma","red|white|a|the|some|cooked|boiled|soaked|sprouted|canned"),
   KBEANPOST=nbSet("curry|salad|masala|fry|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight"),KBEAN=/\b([a-z]+?)[\s-]*(beans?)\b/gi;
-function kidneyBeans(t){var l=t.toLowerCase();return t.replace(KBEAN,function(m,w,b,i){return REFERKID.test(w)&&!nbFits(l,i,i+m.length,KBEANPRE,KBEANPOST)?w+" ~ "+b:m;});}
+function kidneyBeans(t){return t.toLowerCase().replace(KBEAN,function(m,w,b,i,l){return REFERKID.test(w)&&!nbFits(l,i,i+m.length,KBEANPRE,KBEANPOST)?w+" ~ "+b:m;});}   /* read and replaced on one lower-case string, so no offset moves */
 /* the same for the sauce: "prego" beside a sauce or pasta word is the sauce only with nothing, a joining word, an article, "some", "use",
-   "using", "buy", "bought" or "add" before that phrase and nothing, a joining word, a sauce or pasta word or one of its kinds (tomato,
+   "using", "buy", "bought", "add" or a sauce or pasta word before that phrase and nothing, a joining word, a sauce or pasta word or one of its kinds (tomato,
    basil and the rest), "for", "ok", "today" or "tonight" after it ("me prego pasta tonight?" refers; fix-r13, fail closed) */
-var PREGOPRE=nbSet("with|in|of|and|or|a|the|some|use|using|buy|bought|add"),PREGOPOST=nbSet("with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|"+PREGOFOODW);
-function pregoOut(t){var l=t.toLowerCase();return t.replace(PREGOFOOD,function(m){var i=arguments[arguments.length-2];return nbFits(l,i,i+m.length,PREGOPRE,PREGOPOST)?" ":m;});}
+var PREGOPRE=nbSet("with|in|of|and|or|use|using|buy|bought|add|"+PREGOFOODW,"a|the|some"),PREGOPOST=nbSet("with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|"+PREGOFOODW);
+function pregoOut(t){return t.toLowerCase().replace(PREGOFOOD,function(m){var i=arguments[arguments.length-2],l=arguments[arguments.length-1];return nbFits(l,i,i+m.length,PREGOPRE,PREGOPOST)?" ":m;});}
 function referTyped(t){return REFERTXT.test(kidneyBeans(t))||PREGO.test(pregoOut(t))||REFERNL.test(t)||urgentTyped(t);}
 /* a menu's dish names are read with the kidney words alone: a kidney or gurda dish refers the client (below, checkMenu) */
 function referDish(t){t=norm(String(t||""));return REFERKID.test(t)||REFERNLKID.test(t);}

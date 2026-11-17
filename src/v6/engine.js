@@ -734,14 +734,14 @@ var REFERNL=new RegExp(REFERNLKID.source+"|"+/গর্ভ|স্তন্যপ
    sprouted, canned); after, nothing, a dish they are in (curry, salad, masala, fry, rice, chawal, soup, sabzi, chaat, sundal), "and", "with",
    "for", "in", "ok", "today" or "tonight". Any other word keeps the kidney word, and the text refers ("stage 3 kidney beans", "ckd-kidney
    beans", "weak kidney beans ok?"). A kidney bean that stands as food is left as it was, and REFERKIDW's own exclusion reads it. */
-var KBEANPRE=nbSet("red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned"),
+var KBEANPRE=nbSet("with|of|in|had|have|eat|ate|rajma","red|white|a|the|some|cooked|boiled|soaked|sprouted|canned"),
   KBEANPOST=nbSet("curry|salad|masala|fry|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight"),KBEAN=/\b([a-z]+?)[\s-]*(beans?)\b/gi;
-function kidneyBeans(t){var l=t.toLowerCase();return t.replace(KBEAN,function(m,w,b,i){return REFERKID.test(w)&&!nbFits(l,i,i+m.length,KBEANPRE,KBEANPOST)?w+" ~ "+b:m;});}
+function kidneyBeans(t){return t.toLowerCase().replace(KBEAN,function(m,w,b,i,l){return REFERKID.test(w)&&!nbFits(l,i,i+m.length,KBEANPRE,KBEANPOST)?w+" ~ "+b:m;});}   /* read and replaced on one lower-case string, so no offset moves */
 /* the same for the sauce: "prego" beside a sauce or pasta word is the sauce only with nothing, a joining word, an article, "some", "use",
-   "using", "buy", "bought" or "add" before that phrase and nothing, a joining word, a sauce or pasta word or one of its kinds (tomato,
+   "using", "buy", "bought", "add" or a sauce or pasta word before that phrase and nothing, a joining word, a sauce or pasta word or one of its kinds (tomato,
    basil and the rest), "for", "ok", "today" or "tonight" after it ("me prego pasta tonight?" refers; fix-r13, fail closed) */
-var PREGOPRE=nbSet("with|in|of|and|or|a|the|some|use|using|buy|bought|add"),PREGOPOST=nbSet("with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|"+PREGOFOODW);
-function pregoOut(t){var l=t.toLowerCase();return t.replace(PREGOFOOD,function(m){var i=arguments[arguments.length-2];return nbFits(l,i,i+m.length,PREGOPRE,PREGOPOST)?" ":m;});}
+var PREGOPRE=nbSet("with|in|of|and|or|use|using|buy|bought|add|"+PREGOFOODW,"a|the|some"),PREGOPOST=nbSet("with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|"+PREGOFOODW);
+function pregoOut(t){return t.toLowerCase().replace(PREGOFOOD,function(m){var i=arguments[arguments.length-2],l=arguments[arguments.length-1];return nbFits(l,i,i+m.length,PREGOPRE,PREGOPOST)?" ":m;});}
 function referTyped(t){return REFERTXT.test(kidneyBeans(t))||PREGO.test(pregoOut(t))||REFERNL.test(t)||urgentTyped(t);}
 /* a menu's dish names are read with the kidney words alone: a kidney or gurda dish refers the client (below, checkMenu) */
 function referDish(t){t=norm(String(t||""));return REFERKID.test(t)||REFERNLKID.test(t);}

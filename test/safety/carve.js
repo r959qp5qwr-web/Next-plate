@@ -20,7 +20,7 @@ const LX = JSON.parse(fs.readFileSync(path.join(__dirname, 'lexicon.json'), 'utf
 const J = x => JSON.parse(JSON.stringify(x)), cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------- the exemptions and their allowed sets: this test's own copy, in test/safety/exempt.js ----------
-const { FOOD, TYPED, NEXT, D, DV, VEGAN, NODAIRY, NOWHEAT, VEG } = require('./exempt.js');
+const { FOOD, TYPED, NEXT, D, DV, VEGAN, NODAIRY, NOWHEAT, VEG, allowed: allowedBy } = require('./exempt.js');
 
 // ---------- the neighbours ----------
 const words = s => String(s).toLowerCase().split(/[^a-z'-]+/).filter(w => /^[a-z][a-z'-]*[a-z]$/.test(w) || /^[a-z]$/.test(w));
@@ -67,21 +67,28 @@ const refers = (t) => { const k = 'refer|' + t; if (memo.has(k)) return memo.get
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
 let cells = 0, shownN = 0; const tuneCells = [];
 // every cell of one phrase: the token next to it, the cell text and the same text with the phrase as a plain food
-function* cellsOf(phrase, tail, plain) {
+function* cellsOf(phrase, tail, plain, pre) {
   for (const [side, nbs] of [['before', VOCAB], ['after', VOCAB]]) for (const [jn, js, tok] of JOIN) for (const w of (jn ? SAMPLE : nbs)) {
     const token = tok === null ? w : tok;
     if (side === 'before') yield { side, token, text: w + js + phrase + (tail || ''), plainText: w + js + plain };
-    else yield { side, token, text: phrase + js + w, plainText: plain + js + w }; } }
-for (const e of FOOD) for (const o of e.profiles) for (const ph of e.phrases) for (const c of cellsOf(ph, e.tail, 'cucumber')) {
+    else yield { side, token, text: phrase + js + w, plainText: plain + js + w }; }
+  // two deep: a neighbour before one of the set's describing words ("Watermelon fresh lime juice"); the reading goes on to the neighbour
+  const mods = pre && pre.mod ? MODW.filter(m => pre.mod.test(m)) : [];
+  for (let k = 0; k < mods.length; k++) for (const w of (k === 0 ? VOCAB : SAMPLE)) yield { side: 'before', token: w, deep: mods[k], text: w + ' ' + mods[k] + ' ' + phrase + (tail || ''), plainText: w + ' ' + mods[k] + ' ' + plain }; }
+// the describing words of the sets, written out for the two-deep cells
+const MODW = ['fresh', 'tangy', 'teaspoon', 'tablespoon', 'tsp', 'spoonful', '2', 'a', 'one', 'half', 'plain', 'puffed', 'brown', 'two', 'steamed', 'sauteed', 'blanched', 'fried', 'stir', 'an', 'the', 'light', 'thin',
+  'unsweetened', 'millet', 'finger', 'pearl', 'warm', 'hot', 'small', 'soft', 'crisp', 'toasted', 'roasted', 'rustic', 'cooked', 'ready', 'handmade', 'hand-patted', 'downsize', 'reduce', 'flat', 'served', 'made', 'prepared',
+  'red', 'white', 'some', 'boiled', 'soaked', 'sprouted', 'canned'];
+for (const e of FOOD) for (const o of e.profiles) for (const ph of e.phrases) for (const c of cellsOf(ph, e.tail, 'cucumber', e.pre)) {
   cells++; const name = cap(c.text), s = shownPlate(o, name);
-  const allowed = c.token === '' || (c.side === 'before' ? e.pre : e.post).test(c.token);
+  const allowed = c.token === '' || allowedBy(c.side === 'before' ? e.pre : e.post, c.token);
   if (s === true) shownN++;
   add(e.id + ': a cell is shown only when the token next to the phrase is in its allowed set', !(s === true && !allowed), `${JSON.stringify(o)}: "${name}" shown, token "${c.token}" ${c.side} the phrase is not in the set`);
   if (allowed && s !== true) { const ps = shownPlate(o, cap(c.plainText));
     add(e.id + ': control, an allowed cell is shown when its neighbour is not barred on its own', ps !== true, `${JSON.stringify(o)}: "${name}" dropped, though "${c.token}" is allowed and "${cap(c.plainText)}" is shown`); }
   if (s === true || (!allowed && cells % 97 === 0)) if (tuneCells.length < 400 && cells % 7 === 0) tuneCells.push([e.id, o, name, s === true]); }
-for (const e of TYPED) for (const ph of e.phrases) for (const c of cellsOf(ph, '', e.plain)) {
-  cells++; const r = refers(c.text); const allowed = c.token === '' || (c.side === 'before' ? e.pre : e.post).test(c.token);
+for (const e of TYPED) for (const ph of e.phrases) for (const c of cellsOf(ph, '', e.plain, e.pre)) {
+  cells++; const r = refers(c.text); const allowed = c.token === '' || allowedBy(c.side === 'before' ? e.pre : e.post, c.token);
   add(e.id + ': typed text is kept from a referral only when the token next to the phrase is in its allowed set', !(r === false && !allowed), `"${c.text}" was not referred, token "${c.token}" ${c.side} the phrase is not in the set`);
   if (allowed && r !== false) add(e.id + ': control, allowed typed text is not referred when its neighbour does not refer on its own', refers(c.plainText) !== false, `"${c.text}" was referred, though "${c.token}" is allowed and "${c.plainText}" is not`); }
 for (const e of NEXT) for (const [jn, js] of [['', ' '], ['-', '-'], ['and', ' and '], [',', ', '], ['/', '/']]) for (const w of VOCAB) {
@@ -89,7 +96,7 @@ for (const e of NEXT) for (const [jn, js] of [['', ' '], ['-', '-'], ['and', ' a
   add(e.id + ': kept from a referral only when the next word is in its list', !(r === false && !exempt), `"${t}" was not referred`);
   if (exempt && r !== false) add(e.id + ': control, a listed next word keeps it from a referral', refers(e.plain + js + w) !== false, `"${t}" was referred`); }
 // the swap and one-tap path, on a sample of the plate cells and the audit's names
-const AUDIT = [['Watermelon lime juice', D], ['Orange and lemon juice', DV], ['Carrot and amla juice', DV], ['Mango and lime juice', DV], ['Pineapple lemon juice', D], ['Mint lime juice', D], ['Ginger lemon juice', D],
+const AUDIT = [['Watermelon fresh lime juice', D], ['Pineapple tangy lemon juice', D], ['Caramel puffed rice cakes', D], ['Mango brown rice cakes', D], ['Watermelon lime juice', D], ['Orange and lemon juice', DV], ['Carrot and amla juice', DV], ['Mango and lime juice', DV], ['Pineapple lemon juice', D], ['Mint lime juice', D], ['Ginger lemon juice', D],
   ['Coconut rice cakes', DV], ['Mango rice cakes', DV], ['Banana rice cake', D], ['Date rice cakes', D], ['Caramel rice cakes', D]];
 for (const [n, o] of AUDIT) { const s = shownPlate(o, n), t = tuneShown(o, n);
   add('the audit\'s names (B1) are dropped on the plate, the swap and the one-tap add', s !== true && !t.swap && !t.add, `${JSON.stringify(o)}: "${n}" plate ${s}, swap ${t.swap}, add ${t.add}`); }
@@ -97,7 +104,7 @@ for (const [id, o, name, s] of tuneCells) { const t = tuneShown(o, name);
   add('the swap and the one-tap add read a cell as the plate does (sample)', t.swap === s && t.add === s, `${id}, ${JSON.stringify(o)}: "${name}" plate ${s}, swap ${t.swap}, add ${t.add}`); }
 // the controls the recorded data needs: the dressings, the products and the millet rotis the live model wrote
 for (const [n, o] of [['Lemon juice', D], ['Fresh lime juice', D], ['Cucumber with lemon juice', D], ['Amla juice', D], ['Lemon juice and chaat masala', D], ['1 teaspoon lemon juice with chaat masala', D],
-  ['Rice cakes', D], ['Puffed rice cakes', D], ['Thin coconut milk', NODAIRY], ['Plain soy yogurt', VEGAN], ['Warm jowar roti', NOWHEAT], ['Bajra roti', NOWHEAT], ['Phulka without ghee', NODAIRY], ['Egg-free cake', VEG]])
+  ['Rice cakes', D], ['Puffed rice cakes', D], ['Finger millet ragi roti', NOWHEAT], ['Dal with one small jowar roti', NOWHEAT], ['Stir fried sugar snap peas', D], ['Small phulka without ghee', NODAIRY], ['Thin coconut milk', NODAIRY], ['Plain soy yogurt', VEGAN], ['Warm jowar roti', NOWHEAT], ['Bajra roti', NOWHEAT], ['Phulka without ghee', NODAIRY], ['Egg-free cake', VEG]])
   add('controls from the recorded names are shown', shownPlate(o, n) === true, `${JSON.stringify(o)}: "${n}" was dropped`);
 
 let fail = 0;
