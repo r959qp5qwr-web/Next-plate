@@ -24,7 +24,8 @@ for (const [k, list] of [['plate item', C.items], ['plate item (titles)', C.titl
   add(k, (r.meals || []).some(x => (x.items || []).some(i => low(i.food) === low(name))), name); }
 for (const name of C.swaps) { const m = plate(); m.swaps.protein = [{ food: 'Sprouted moong', grams: 200, contains: PT, ...z }, { food: name, grams: 180, contains: ['grain'], ...z }]; const r = meals(m);
   add('protein swap', (r.meals || []).some(x => ((x.swaps || {}).protein || []).some(i => low(i.food) === low(name))), name); }
-for (const { dish, side } of C.menus) {
+if (typeof KINDS !== 'undefined' && !KINDS.includes('menu')) console.log('menu dish, menu side: not run (menu reading removed, owner 17 Nov; the menu path is unreachable)');
+else for (const { dish, side } of C.menus) {
   const sideName = side.replace(/^\d+\s+/, '');
   const text = 'MAINS\n' + dish + ' 240\n' + (side ? sideName + ' 40\n' : '');
   const d = { as_written: dish, portion: 'about 350 g', kcal: 620, protein: 26, carbs: 70, fats: 24, fiber: 6, ask: '', grain_made_of: 'rice', grain_grams: 120, with: side, with_kcal: side ? 120 : 0, with_protein: side ? 3 : 0, with_carbs: side ? 22 : 0, with_fats: side ? 2 : 0, with_fiber: side ? 2 : 0, contains: ['grain'], with_contains: side ? ['grain'] : [], planned_around: [] };

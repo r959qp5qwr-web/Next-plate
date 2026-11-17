@@ -1,8 +1,10 @@
 // Every model name recorded under eval/, cleaned by the OLD showName (ba4d8dc, the build the safety audit and Critic round 40 judged; OLDREF
 // sets another, e.g. OLDREF=6b5e18d for the build the final audit and Critic round 38 judged) and by
-// the NEW one (hosted/v6/index.html), on the path the name takes: plate items, swaps and one-tap items on the plate path; menu dishes,
-// sides and leave entries on the menu path (no typed menu, as for a photo). Every name that changes is written to names-diff.txt as
-// old -> new, for reading by hand: a change may only take off a count or a portion.
+// the NEW one (hosted/v6/index.html), on the path the name takes: plate items, swaps and one-tap items on the plate path; the Rescue dish
+// name for every recorded Rescue case (the person's typed text, through plan('rescue').check on the recorded reply). Every name that
+// changes is written to names-diff.txt as old -> new, for reading by hand: a change may only take off a count or a portion.
+// The menu path is not compared: menu reading was removed (owner, 17 Nov, option survey, "Remove menu reading (Recommended)") and the
+// engine refuses the kind; the menu names are counted and reported as dormant.
 //   node eval/usefulness/names-diff.js            (writes eval/usefulness/names-diff.txt; exit 0)
 const fs = require('fs'), path = require('path'), vm = require('vm'), { execSync } = require('child_process');
 const ROOT = path.join(__dirname, '..', '..'), OLDREF = process.env.OLDREF || 'ba4d8dc';
@@ -24,10 +26,17 @@ const walk = (o, k, inMenu, typed) => {
     for (const [kk, v] of Object.entries(o)) walk(v, kk, inMenu || kk === 'dishes' || kk === 'orders' || kk === 'leave', t); }
 };
 for (const f of files) { try { walk(JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8'))); } catch (e) {} }
-const out = [], total = names.plate.size + names.menu.size;
+const out = [];
 for (const t of [...names.plate].sort()) { const a = OLD.showName(OLD.rawName(t), {}), b = NEW.showName(NEW.rawName(t), {}); if (a !== b) out.push(`plate | ${JSON.stringify(t)} | ${JSON.stringify(a)} -> ${JSON.stringify(b)}`); }
-let typedN = 0; for (const [t, typed] of [...names.menu.values()].sort()) { if (typed) typedN++;   // the new engine reads the typed menu for prices; the old one did not
-  const a = OLD.showName(OLD.rawName(t), { price: 1 }), b = NEW.showName(NEW.rawName(t), { price: typed || 1 }); if (a !== b) out.push(`menu${typed ? ' (typed)' : ''} | ${JSON.stringify(t)} | ${JSON.stringify(a)} -> ${JSON.stringify(b)}`); }
-const head = `# names-diff: ${total} recorded model names (${names.plate.size} plate path; ${names.menu.size} menu path, ${typedN} with their typed menu) from ${files.length} files under eval/; ${out.length} change between ${OLDREF} and this build.\n# Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).\n# kind | as recorded | old shown -> new shown ("" = not shown)\n`;
+// the Rescue path: every recorded Rescue case (scenario text, recorded reply), shown name or status, old and new
+const BASEP = { goal: 'hold', focus: 'none', diet: 'nonveg', health: 'none', meds: 'no', region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true };
+const scen = {}; for (const f of ['eval/v5/scenarios.json', 'eval/v6/scenarios.json']) { try { JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8')).forEach(x => { if (x && x.kind === 'rescue') scen[x.id] = x; }); } catch (e) {} }
+const rescues = []; const walkR = (o) => { if (Array.isArray(o)) return o.forEach(walkR); if (o && typeof o === 'object') { if (scen[o.id] && o.reply && (o.reply.raw || o.reply.dish)) rescues.push([scen[o.id], o.reply.raw || o.reply]); Object.values(o).forEach(walkR); } };
+for (const f of files) { try { walkR(JSON.parse(fs.readFileSync(path.join(ROOT, f), 'utf8'))); } catch (e) {} }
+const rescueShown = (E, sc, raw) => { try { const pl = E.plan('rescue', { profile: Object.assign({}, BASEP, sc.p), ctx: sc.c, file: sc.file || {} }); if (pl.reply) return 'referred: ' + pl.reply.status;
+  const r = pl.check(Object.assign({ refer_reason: 'none' }, JSON.parse(JSON.stringify(raw)))); return r.status === 'ok' ? 'dish ' + JSON.stringify(r.dish.name) + ' ' + JSON.stringify(r.dish.portion) : 'status ' + r.status; } catch (e) { return 'threw ' + String(e).slice(0, 60); } };
+let rescueN = 0; for (const [sc, raw] of rescues) { rescueN++; const a = rescueShown(OLD, sc, raw), b = rescueShown(NEW, sc, raw); if (a !== b) out.push(`rescue | ${JSON.stringify(sc.c.text)} | ${a} -> ${b}`); }
+let typedN = 0; for (const [, typed] of names.menu.values()) if (typed) typedN++;
+const head = `# names-diff: ${names.plate.size} recorded plate-path names and ${rescueN} recorded Rescue cases from ${files.length} files under eval/; ${out.length} change between ${OLDREF} and this build.\n# The ${names.menu.size} menu-path names (${typedN} with their typed menu) are not compared: menu reading was removed (owner, 17 Nov) and the menu code is dormant.\n# Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).\n# kind | as recorded | old shown -> new shown ("" = not shown)\n`;
 fs.writeFileSync(path.join(__dirname, 'names-diff.txt'), head + out.join('\n') + '\n');
 console.log(head.trim());

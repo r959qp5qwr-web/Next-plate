@@ -11,7 +11,12 @@ const tagsOf = t => { t = String(t || '').toLowerCase(); const o = a.foodRx ? Ob
   if (GR.test(t) && !o.includes('grain')) o.push('grain'); if (WH.test(t) && !o.includes('wheat')) o.push('wheat'); if (!o.length) o.push('plain'); return o; };
 const res = JSON.parse(fs.readFileSync(path.join(__dirname, 'results-live-6febc1a.json'), 'utf8'));
 const by = {}, add = (o, k, n = 1) => o[k] = (o[k] || 0) + n, T = { live: 0, now: 0, liveEmpty: 0, nowEmpty: 0, reasons: {}, reason: 0 };
+// menu scenarios are left out (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"): the engine refuses the kind, so a menu
+// reply has nothing to be checked against; the rest is replayed as before
+const MENUX = res.filter(x => x.kind === 'menu');
+console.log('menu scenarios excluded: ' + MENUX.length + ' recorded calls (' + [...new Set(MENUX.map(x => x.id))].join(', ') + '); menu reading removed, owner 17 Nov');
 for (const x of res) {
+  if (x.kind === 'menu') continue;
   if (x.got !== 'ok' || !x.reply.raw) continue;
   const raw = JSON.parse(JSON.stringify(x.reply.raw)); if (!raw.refer_reason) raw.refer_reason = 'none';
   if (x.kind === 'meals') (raw.meals || []).forEach(m => { (m.items || []).forEach(i => { if (!i.contains) i.contains = tagsOf(i.food); });
