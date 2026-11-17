@@ -1,3 +1,5 @@
+**Status: held (17 Nov).** This post goes with the 30-second film, which shows menu reading (23-28 s), which the app no longer has: the owner removed it on 17 Nov (option survey, "Remove menu reading (Recommended)"). Not to be shared until the film is re-cut around "Name the dish". The owner may decide on a re-cut.
+
 # WhatsApp post to go with the film
 
 Next Plate is a meal planner I built for my clients.

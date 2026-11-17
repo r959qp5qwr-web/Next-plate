@@ -1,3 +1,5 @@
+**Status: held (17 Nov).** This brief plans menu reading into the features film (shot at 6.0-12.4 s, "Take a photo of the menu."), which the app no longer has: the owner removed it on 17 Nov (option survey, "Remove menu reading (Recommended)"). Not to be shared until the film is re-cut around "Name the dish". The video files are unchanged; the owner may decide on a re-cut.
+
 # Next Plate features film (60 s): brief, gate 1
 
 Owner's survey (2026-11-12): one 60 s film; all four feature groups; for clients who saw the 30 s film; same voice and look as the 30 s film.

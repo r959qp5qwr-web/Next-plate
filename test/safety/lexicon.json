@@ -457,6 +457,13 @@
    "morning snack ideas",
    "good morning, something light"
   ],
+  "referFound12": ["I'm 28 wks, lunch ideas", "I am 28 wks", "28 wks along, dinner?", "bf'ing mom, snacks please", "momtobe here, what should I eat", "mumtobe breakfast", "kıdney problem hai", "my kıdney is weak"],
+  "urgentFound12": ["sugar bahut low hai", "meri sugar bohot low hai, kya khaun"],
+  "notReferFound12": ["28 wks meal plan", "bf ideas", "breakfast ideas", "mom to bed early, light dinner", "kidney beans curry", "low sugar biscuits"],
+  "measure": ["pc", "pcs", "piece", "pieces", "nos", "bowl", "bowls", "bowlful", "cup", "cups", "kap", "glass", "glasses", "katori", "katoris", "katoriyan", "katoree", "katora", "katore",
+   "plate", "plates", "plateful", "tbsp", "tsp", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "spoon", "spoons", "spoonful", "ladle", "ladles", "slice", "slices", "serving", "servings",
+   "portion", "portions", "helping", "scoop", "scoops", "handful", "handfuls", "fistful", "pinch", "mug", "mugs", "tumbler", "tumblers", "chammach", "chamach", "mutthi", "muthi", "karchhi", "karchi",
+   "vati", "vatis", "kg", "kilo", "kilos", "kilogram", "litre", "liter", "ltr", "ml", "g", "gm", "gms", "gram", "grams"],
   "addedFromReports": {
    "meat": [
     "machli",

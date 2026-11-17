@@ -12,8 +12,8 @@ the app from WhatsApp. Where a source offers a range, the stricter end is used f
 Viewports: 320×568, 360×740, 390×844, 412×915 in the gate set; 375×667, 393×851 and 430×932 added in the full set. Light and dark scheme.
 360 px with text at 130 % (Android text scaling). 45 states: setup steps 1-3; plate loading, ready, dial open, swap open, one-tap on, logged,
 skipped (on tablets), error, blocked (kidney), no body data; sheets: my food, how the numbers work, log a meal (ask and estimate);
-plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder blocked; Rescue entry, wait, result, error, blocked; menu typed, wait, unreadable, error, nothing fits, order; log error; pregnancy referral; removal confirmation;
-errors by kind (after Critic round 6): Rescue busy, Rescue at the daily limit, menu reply broken, log busy, plate at the daily limit;
+plate asked; toast; Builder, Builder adjusted, Builder with no plate, Builder blocked; Rescue entry, wait, result, error, blocked; menu typed, wait, unreadable, error, nothing fits, order (removed with menu reading, owner, 17 Nov; see D9); log error; pregnancy referral; removal confirmation;
+errors by kind (after Critic round 6): Rescue busy, Rescue at the daily limit, menu reply broken (removed with menu reading, owner, 17 Nov), log busy, plate at the daily limit;
 a plate with two foods left out (after Critic round 7: longer chips); an ask at the daily limit and an ask that fails while plates are on screen (round 8, 9).
 
 | ID | Criterion | Threshold | Sources |
@@ -30,7 +30,7 @@ a plate with two foods left out (after Critic round 7: longer chips); an ask at 
 | A10 | Every state renders; no page errors | each state reached; console clean | BD-45, BD-90, BD-92, AU-34 |
 | A11 | Coverage comes from the code | every tab, sheet and view in src/v6/app.js has at least one state in the review | BD-93 |
 | A12 | Each check catches a planted fault | `node test/ux/review.js --drill` plants one fault per rule and expects each to be caught | BD-91 |
-| A13 | After an error the next step fits the error: Try again where trying again can help (connection, busy, a broken reply), none where it cannot (a daily limit, the link, set-up, photos off, a photo that did not come through); what the person typed stays in its box | rule next-step on the five error-by-kind states and the upstream-error states | BD-46, BD-48, IX-36, IX-40, AU-19 |
+| A13 | After an error the next step fits the error: Try again where trying again can help (connection, busy, a broken reply), none where it cannot (a daily limit, the link, set-up, photos off, a photo that did not come through; the photo errors no client sees since photos were refused, owner, 17 Nov; see D9); what the person typed stays in its box | rule next-step on the five error-by-kind states and the upstream-error states | BD-46, BD-48, IX-36, IX-40, AU-19 |
 | A14 | The safety rules hold in the code every page and the server run: with diabetes every plate, every base swap and every menu order keeps a whole grain or millet, and a grain-free stand-in named like a grain does not count, nor any dish built on one (cauliflower rice pulao, sabudana khichdi, konjac noodles, chickpea pasta, almond-flour roti, keto bread): a grain named as left out ("no naan", "instead of rice") or as a coating ("rava-crusted") does not count; where a stand-in or a left-out grain is named, only a plain grain standing as its own part counts ("quinoa and cauliflower rice", "tapioca with rice"); on a menu the grain is in the dish or its side, and neither the portion nor the ask leaves it out; no one-tap change removes the grain, names a stand-in or takes more than half the carbs; kidney condition and pregnancy are referred, never planned | `node test/rules/check.js <page>` on all three built pages, judged against a fixed list of stand-ins and of true grains (not the page's own word list) | owner rule 3, BD-56 |
 | A15 | The owner's banned words appear in no note, no app text and no code comment of the current app, checks, gate and films, except the listed exceptions, each with its reason | `node test/words/check.js` (exceptions in test/words/allow.json) | owner rule 4 |
 | A17 | Text the model writes in its own voice (read lines, why this plate, pairing reasons, one-tap notes, swaps, Rescue warnings and moves, menu portions, asks, tips and reasons to leave a dish, the log's assumption line) never shows a banned word: such a field is dropped, the safe default; every prompt asks for none. Dish names copied letter for letter from a menu keep their words (checked against the typed menu); a name the model writes for what the person typed (the Rescue dish, the log's title and foods) keeps a word only when the person typed it; the place a menu is read as is the model's own words and is screened | `node test/rules/check.js` plants the words in every field of plates, swaps, Rescue, menu and log replies | owner rule 4, BD-59 |
@@ -689,3 +689,11 @@ on a meal's protein energy (rules: protein cap).
   the ids mcam, mfile, mtype, mtext or mgo, or the words "Read the menu", "type the menu", "photograph the menu", "menu photo" or "photo of
   the menu", and the A12 drill plants one. An order logged before the removal still shows on the plate as "ordered from the menu"
   (review state plate-ordered).
+
+## Watch list after Critic round 42 (on 530a503, PASS)
+Watched, not changed (coordinator, fix-r12), each cosmetic:
+- Builder held strip, finish only: the strip keeps the height of the longest note, so a one-line note leaves empty paper under it; "it."
+  stands alone on a line at 412; at 390 a 2-3 px sliver of the row behind shows between the slip and the button. D8 accepts the strip.
+- Rescue typing at 130 % text: a long dish name scrolls inside the one-line box, so its start leaves view while typing.
+Fixed in fix-r12: a common-dish chip that wraps at 130 % text kept its first letters on the pill's curve (now a 22 px radius; 4.5 px
+clear at 320 and 360, nothing moved).
