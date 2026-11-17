@@ -731,11 +731,11 @@ var REFERNLKID=/কিডনি|डायलिसिस|किडनी|गु�
 var REFERNL=new RegExp(REFERNLKID.source+"|"+/গর্ভ|স্তন্যপান|ডায়ালাইসিস|गर्भ|प्रेग्न|प्रेगन|स्तनपान|दूध\s*पिला|கர்ப்ப|தாய்ப்பால்|டயாலிசிஸ்|గర్భ|డయాలసిస్|ಗರ್ಭ|ഗർഭ|ഗര്ഭ|ગર્ભ|ਗਰਭ|حاملہ|حمل|ڈائلیسس|गरोदर/.source);
 /* kidney beans are food, and not a kidney word, only with an allowed word next to them (fix-r13, fail closed): before, nothing, "red",
    "white", "rajma", a joining word, an article, "some", "had", "have", "eat", "ate" or a way they are cooked (cooked, boiled, soaked,
-   sprouted, canned); after, nothing, a dish they are in (curry, salad, masala, rice, chawal, soup, sabzi, chaat, sundal), "and", "with",
+   sprouted, canned); after, nothing, a dish they are in (curry, salad, masala, fry, rice, chawal, soup, sabzi, chaat, sundal), "and", "with",
    "for", "in", "ok", "today" or "tonight". Any other word keeps the kidney word, and the text refers ("stage 3 kidney beans", "ckd-kidney
    beans", "weak kidney beans ok?"). A kidney bean that stands as food is left as it was, and REFERKIDW's own exclusion reads it. */
 var KBEANPRE=nbSet("red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned"),
-  KBEANPOST=nbSet("curry|salad|masala|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight"),KBEAN=/\b([a-z]+?)[\s-]*(beans?)\b/gi;
+  KBEANPOST=nbSet("curry|salad|masala|fry|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight"),KBEAN=/\b([a-z]+?)[\s-]*(beans?)\b/gi;
 function kidneyBeans(t){var l=t.toLowerCase();return t.replace(KBEAN,function(m,w,b,i){return REFERKID.test(w)&&!nbFits(l,i,i+m.length,KBEANPRE,KBEANPOST)?w+" ~ "+b:m;});}
 /* the same for the sauce: "prego" beside a sauce or pasta word is the sauce only with nothing, a joining word, an article, "some", "use",
    "using", "buy", "bought" or "add" before that phrase and nothing, a joining word, a sauce or pasta word or one of its kinds (tomato,

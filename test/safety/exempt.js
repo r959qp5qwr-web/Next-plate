@@ -38,7 +38,7 @@ const FOOD = [
 // S7: an exemption that keeps typed text from being referred. "shown" = not referred.
 const TYPED = [
   { id: 'kidney beans (S7)', phrases: ['kidney beans', 'kidney bean', 'kidney-beans', 'kidneybeans', 'kydney beans', 'kednee beans'], plain: 'rajma',
-    pre: set('red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned'), post: set('curry|salad|masala|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight') },
+    pre: set('red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned'), post: set('curry|salad|masala|fry|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight') },
   { id: 'prego the sauce (S7)', phrases: ['prego sauce', 'prego pasta', 'prego tomato sauce'], plain: 'tomato sauce',
     // a sauce or pasta word right before "prego" makes it the sauce too ("Pasta with Prego sauce", "Penne prego")
     pre: set('with|in|of|and|or|a|the|some|use|using|buy|bought|add|sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles'), post: set('with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles') }];
