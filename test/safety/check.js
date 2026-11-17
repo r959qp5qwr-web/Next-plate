@@ -364,6 +364,15 @@ for (const [n, o] of FOUND) {
     add('S5 the declared grain is the item it names, not the first grain on the plate', !!c.meal && c.meal.grain.food === 'Jowar roti' && c.meal.grain.grams === 90, JSON.stringify(c.meal ? c.meal.grain : c)); }
   for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
     add('a reply that is not an object gives an error, with no throw', [null, 'ok', 7].every(r => { const o = safe(() => k.check(r), { threw: 1 }); return !o.threw && o.status === 'error'; }), kind); }
+  add('taste notes: a health word on the closed list ("light") is not shown, and a word is shown once', JSON.stringify(tw(['light', 'tangy', 'smoky'])) === '["tangy","smoky"]' && JSON.stringify(tw(['tangy', 'tangy', 'smoky'])) === '["tangy","smoky"]', JSON.stringify(tw(['light', 'tangy', 'smoky'])) + ' ' + JSON.stringify(tw(['tangy', 'tangy', 'smoky'])));
+  { const hp = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }), ids = Object.keys(hp.check(mealsReply(platePlain())).hooks || {}), id = ids[0];
+    const got = id ? (hp.check(mealsReply(Object.assign(platePlain(), { planned_around: [id, id] }))).meals || [{}])[0].planned : null;
+    add('a hook cited twice is named once', !id || JSON.stringify(got) === JSON.stringify([id]), JSON.stringify(got)); }
+  for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
+    const body = kind === 'meals' ? mealsReply(platePlain()) : kind === 'rescue' ? { dish: { name: 'Dal', portion: 'about 300 g', kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8, contains: ['plain'] } } : { items: [{ food: 'dal', grams: 200, group: 'protein' }], kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8 };
+    add('a reply with status "refer" is a referral whatever refer_reason says (S7)', k.check(Object.assign({}, body, { status: 'refer', refer_reason: 'none' })).status === 'refer', kind); }
+  { const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), d = (o) => ({ status: 'ok', refer_reason: 'none', dish: Object.assign({ name: 'Veg thali', portion: 'about 450 g', kcal: 580, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] }, o) });
+    add('Rescue: a dish with a figure missing is not helped, fibre too', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(f => rp.check(d({ [f]: undefined })).status !== 'ok') && rp.check(d({})).status === 'ok', 'a dish with a missing figure was helped, or the control was not'); }
   add('a plate that is not an object is dropped, with no error', safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [null, 'Dal', 7, platePlain()] }).meals || []).length, -1) === 1 && safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [[], platePlain()] }).meals || []).length, -1) === 1, 'a null, text, number or list plate threw or was offered'); }
 
 // ---------- S7: referral ----------
