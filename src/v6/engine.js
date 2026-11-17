@@ -345,7 +345,7 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
 }
 
-/* ---------- Read the menu (docs/FEATURE-menu.md): before ordering. Gemini reads the dishes that are on the menu;
+/* ---------- DORMANT since 17 Nov (owner removed menu reading; plan() refuses "menu", nothing calls this section). Read the menu (docs/FEATURE-menu.md): before ordering. Gemini reads the dishes that are on the menu;
    code checks each one, scores it against this meal (fitOf, riseOf) and ranks. Gemini never ranks ---------- */
 function menuText(v){return typeof v==="string"?v.slice(0,2000).replace(/["\\]+/g," ").trim().replace(/\s*[\r\n]+\s*/g," | ").replace(/\s+/g," "):"";}   /* 2,000 typed characters; a line break becomes " | " */
 /* words only, in any script: punctuation, currency marks and line breaks become spaces */
@@ -683,7 +683,12 @@ function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
-KINDS=["meals","rescue","log","tune","menu"];
+/* Menu reading is off (owner, 17 Nov, option survey, "Remove menu reading (Recommended)": "Take "Read the menu" and "type the menu" off
+   Rescue and refuse menu requests in the engine. Rescue keeps "Name the dish". The menu code stays dormant in the repository. The
+   menu-orders bar is dropped, and both gates run again on the smaller build."). "menu" is not a kind: the server answers /api/menu with
+   404 (it posts only to the kinds listed here), and plan() refuses it before anything else, so no prompt is built. The menu code below
+   (menuText, buildMenuPrompt, menuSchema, checkMenu and the helpers only it calls) stays in the repository, dormant and unreachable. */
+KINDS=["meals","rescue","log","tune"];
 /* a logged item keeps its name when a banned word is in it (a brand, say): the word goes, the food stays (review, 15 Nov) */
 function banOut(t){t=norm(t);if(NONLATIN.test(t))return "";var q=t.replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
 /* misspellings of kidney ("kidni", "kidneyy", "kidnies", "kindey") refer as kidney does, but not "kidnap" or a kidney bean (safety audit m2).
@@ -742,6 +747,7 @@ function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.tes
 function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
   var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
 plan=function(kind,body){
+  if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
   var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
@@ -757,7 +763,5 @@ plan=function(kind,body){
     return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok"){o.hacks=rescueMoves(o.dish,pl,p);pruneMoves(o.dish,o.hacks);}return o;}};}
   if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
     return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:function(d){return checkLog(d,c);}};}
-  if(kind==="menu"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};var mh=hooksFor(p,file,c,pl);
-    return {prompt:buildMenuPrompt(p,c,file,pl,mh),schema:menuSchema(mh.map(function(h){return h.id;})),image:true,weight:1,check:function(d){return checkMenu(d,p,c,pl,mh);}};}
   return {error:"bad_request"};
 };

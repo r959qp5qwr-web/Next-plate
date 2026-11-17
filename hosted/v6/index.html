@@ -710,7 +710,7 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 /* ===== v6 additions, Raw Linen only ===== */
 .tip.directive{font-size:16.5px;line-height:23px;margin:2px 2px 0}
 .tip.directive .linkbtn,.tip .linkbtn{display:flex;min-height:30px;margin-top:4px;color:#6B3A1F;font-size:14.5px}
-.hero .planned,.plate.wait .planned,.order .planned{margin:8px 0 0;font:600 18px/21px var(--hand);color:var(--olive)}
+.hero .planned,.plate.wait .planned{margin:8px 0 0;font:600 18px/21px var(--hand);color:var(--olive)}
 .hero .planned span{white-space:nowrap}
 .logrow{display:flex;justify-content:space-between;gap:10px;padding:2px 16px 12px}
 .logrow .linkbtn svg.i{width:15px;height:15px}
@@ -725,25 +725,8 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 .why p.lead{font:italic 500 18px/25px var(--display);color:var(--ink)}
 .acts.two{grid-template-columns:1fr 1fr}
 .acts.two .primary{grid-column:1/-1}
-/* Read the menu (Rescue tab): two entries side by side, the typed-menu box, the order card */
+/* Rescue tab: the entry tools (menu reading removed, owner 17 Nov) */
 .entries{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start}
-.menu-in{display:flex;flex-direction:column;align-items:center}
-.menu-in .btn{min-height:50px;padding:0 16px 0 14px;white-space:nowrap}
-.menu-in .linkbtn{min-height:30px}
-.menu-box{display:flex;flex-direction:column;gap:10px}
-.menu-box textarea{display:block;width:100%;min-height:176px;border:0;border-radius:4px;background:var(--surface);box-shadow:var(--shadow);padding:12px 14px;font:italic 400 17px/24px var(--text);color:var(--ink);resize:none}
-.menu-box textarea:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-.card.order{display:flex;flex-direction:column;gap:6px;padding:16px;scroll-margin-top:12px}
-.order .hero-top{justify-content:flex-start;gap:2px 10px}.order .hchip{padding:0}
-.order .dish{font-size:29px;line-height:33px;margin:2px 0 0}
-.order .tsub{font-style:italic;font-size:16px;line-height:22px;color:var(--ink2);margin:0}
-.order .owith{margin:4px 0 0;font-size:18px;line-height:24px}.order .owith .cap{margin-right:2px}
-.order .oask{margin:0;font:600 21px/25px var(--hand);color:var(--clay)}
-.order .read4{padding:12px 2px 6px}
-.order .apx{font:400 19px var(--text);margin-right:3px}
-.order .planned{margin:2px 0 0}.order .planned span{white-space:nowrap}
-.order>.btn{margin-top:10px}
-.alt.menu{grid-template-columns:minmax(0,1fr) 20px}
 /* Owner-approved items from the Kinfolk Raw Linen review: 1 portion ring, 2 one colour per nutrient, 4 Pair it, 5 taste notes (3, the stoneware plate, is drawn in plate.js) */
 :root{--pro:#B0613D;--veg:#6B7A3A;--grain:#B8862D;--side:#7A4958;--other:#CDB89A}
 .n-pro{--nc:var(--pro)}.n-veg{--nc:var(--veg)}.n-grain{--nc:var(--grain)}.n-side{--nc:var(--side)}.n-ink{--nc:var(--ink3)}
@@ -806,14 +789,13 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 /* --- one text face for functional text: the handwriting face leaves labels, figures and status --- */
 #app .tip,#app .tip b,#app .note,#app .tiles .tile2 .v,#app .read4 .v,#app .tcard .cap,#app .risev,#app .cmp-row .val,#app .pv,#app .hero .cuis,
 #app .slide-v b,#app .readline .asked,#app .ringmid b,#app .ctr output,#app .hero .suffix,#app .hero .planned,#app .plate.wait .planned,
-#app .order .planned,#app .order .oask,#app .pairs .ph b{font-family:var(--text)}
+#app .pairs .ph b{font-family:var(--text)}
 #app .tip.directive,#app .tip{font:400 17px/25px var(--text);color:var(--ink)}
 #app .tip b{font-style:italic;font-weight:600}
 #app .note p{font-size:16px;line-height:23px}
-#app .hero .planned,#app .plate.wait .planned,#app .order .planned{font:italic 500 16.5px/23px var(--text);color:var(--olive-t)}
+#app .hero .planned,#app .plate.wait .planned{font:italic 500 16.5px/23px var(--text);color:var(--olive-t)}
 #app .hero .suffix{font:italic 500 17px/23px var(--text);color:var(--clay-t)}
 #app .readline .asked{font:italic 500 19px/26px var(--text);color:var(--clay-t)}
-#app .order .oask{font:italic 500 17px/24px var(--text);color:var(--clay-t)}
 #app .pairs .ph b{font:italic 600 19px/24px var(--text)}
 #app .pairs .ph small{font-size:15px;color:var(--ink2)}
 #app .scribble{font-size:22px;line-height:24px}
@@ -862,9 +844,6 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 
 /* --- Rescue entry: two labelled parts, full width --- */
 #app .entries{display:flex;flex-direction:column;gap:14px;align-items:stretch}
-#app .menu-in{align-items:stretch;gap:4px}
-#app .menu-in .btn{width:100%;justify-content:center;min-height:50px}
-#app .menu-in .linkbtn{align-self:center}
 #app .entries form.rin{display:flex;flex-direction:column;gap:6px}
 #app .rin-row{display:flex;gap:8px;align-items:center}
 #app .rin-row input{flex:1;min-width:0;min-height:50px;font-size:17px}
@@ -886,7 +865,7 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .linkbtn,#app .linkbtn span{color:var(--clay-t)}
 #app .brand{font-size:clamp(24px,8.2vw,34px);letter-spacing:.14em;padding-left:.14em;line-height:1.1}
 #app .cap{white-space:normal}
-#app .entries form.rin,#app .rin-row,#app .menu-in{width:100%;min-width:0}
+#app .entries form.rin,#app .rin-row{width:100%;min-width:0}
 #app .tip .linkbtn,#app .tip .linkbtn span{color:#55301A}
 #app .slide-v b{color:var(--clay-t)}
 #app .band-m{color:var(--band-m)!important}#app .band-s{color:var(--band-s)!important}
@@ -923,7 +902,6 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .tcard{min-width:0}
 /* Rescue entry: labels on the left, like every other caption */
 #app .entries .cap{text-align:left}
-#app .menu-in .menu-box{margin-top:6px}
 /* Pair it stays one phrase */
 #app .pairs .ph{flex-wrap:wrap;row-gap:2px}
 #app .pairs .ph b{white-space:nowrap}
@@ -949,8 +927,6 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .entries form.rin{align-items:stretch}
 #app .entries form.rin .cap{text-align:left}
 #app .cb-ax{margin-top:-18px}
-#app .menu-box textarea{font-style:normal}
-#app .menu-in .fine{text-align:center;margin:2px 0 0}
 #app .day-h{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
 /* ===== Critic round 3 ===== */
 /* Rescue: each 'after' bar in its nutrient's colour (one colour per nutrient, everywhere); a rise or fall is an arrow in words */
@@ -964,7 +940,7 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 /* plate actions: the wider button holds 'Next plate (1/2)' on one line */
 #app .acts.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
 /* ===== Critic round 4 ===== */
-#app .note #menu-retry,#app .note #log-retry{min-height:44px}
+#app .note #log-retry{min-height:44px}
 @media (max-width:359.98px){#app #next svg.i{display:none}#app #next{padding:0 8px}}
 
 /* Critic round 6: a figure never breaks from its unit. The figure and unit stay on one line; where the tiles are too narrow for that
@@ -1012,16 +988,8 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .confirm .pick-acts .btn{flex:1 1 auto;white-space:nowrap}
 /* Critic round 8: why a one-tap change is off is said on screen (a tooltip never shows on a phone) */
 #app .tune.alc .tnote{grid-column:1/-1;margin:2px 0 0;text-align:center}
-/* Critic round 8: how much to have is the order's second fact, after the dish; it reads at the size of the side, in ink, upright */
-#app .order .por{margin:4px 0 0;font:500 18px/24px var(--text);font-style:normal;color:var(--ink);font-variant-numeric:lining-nums}
 
-/* round 28: the grain question on a menu order (diabetes) */
-#app .order .gask{margin:12px 0 0;background:transparent;border:1px solid var(--line)}
-#app .order .gask .gq{margin:0 0 4px;font:600 19px/25px var(--text);color:var(--ink)}
-#app .order .gask .fine{margin:0 0 10px}
-#app .order .gok{margin:10px 0 0}
 #app .note .linkbtn{display:flex;margin-top:4px;padding:0;text-decoration:underline;text-underline-offset:3px}#app .note .linkbtn,#app .note .linkbtn span{color:#55301A}
-#app .gno{margin:0 0 8px}#app .gno .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
 /* screen inventory, 14 Nov: states not captured before */
 #app .hab[aria-pressed="true"]{background:#4F5A2E}                      /* pressed habit: paper text 6.6:1 */
 #app .hab[aria-pressed="true"] small{color:#E4E8CF}                       /* its line under: 5.9:1 (the --ink2 rule above was winning) */
@@ -1066,17 +1034,10 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .hab{justify-content:flex-start}
 #app .sitbox .cap{margin:6px 0 4px}
 #app .sit[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
-#app .menu-in .fine{text-align:left}#app .menu-in .linkbtn{align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
 #app .ans-read.wait::after{content:none;animation:none}   /* the old animation set content and drew a second, stray set of dots (R2-B5 080-2) */
 #app .ans-read.wait .lw{white-space:nowrap}
 #app .ans-read.wait .lw::after{content:"";display:inline-block;width:1.2em;animation:dots 1.4s steps(4,end) infinite}
-#app .order .oask{font:400 17px/24px var(--text);font-style:normal;color:var(--ink)}#app .order .oask b{font-weight:600}
 #app .cmp-cap{margin:6px 0 2px}
-#app .order .gok,#app .gno{font:400 16.5px/24px var(--text);font-style:normal;color:var(--ink)}
-#app .order .gok .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
-#app .order .gask .gq{text-wrap:balance}
-#app .menu-box textarea{field-sizing:content;max-height:32vh;box-shadow:inset 0 0 0 1px var(--ink3)}  /* the box grows with the menu and looks like a box */
-@media (max-height:600px){#app .menu-box textarea{min-height:110px}}
 #app .note .btn{min-height:44px}
 #app .tab[aria-current="page"]::before{bottom:2px}                                                 /* the mark under the open tab clears its word at large text */
 #app .rw .rcap{margin:0 0 6px}
@@ -1119,7 +1080,6 @@ input[type=range]::-moz-range-thumb{background:#B0613D;border:0}input[type=range
 #app .sits .sit{white-space:normal;text-align:left;max-width:100%}
 #app .move i{border-radius:6px}                                                                       /* moves can be ticked together: a box, not a radio circle (R2-B6 081-4) */
 #app .verdict{margin:6px 0 2px;font:400 17px/24px var(--text);color:var(--ink)}
-#app .gno .linkbtn,#app .order .gok .linkbtn{display:flex;width:max-content}                       /* the link sits on its own line at every width, so the sentence keeps its spacing (R2-B7 110-2) */
 #app .empty-card .asked{margin:0 0 4px;font:italic 400 17px/24px var(--text);color:var(--ink2)}
 #app .fine.hidden{color:var(--ink);margin:12px 0 4px}
 #app #v-build .card.bigplate:has(~ .stick){padding-bottom:64px}                                          /* the held button never sits on the last stepper row (R2-B5 074-2) */
@@ -2634,7 +2594,7 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
 }
 
-/* ---------- Read the menu (docs/FEATURE-menu.md): before ordering. Gemini reads the dishes that are on the menu;
+/* ---------- DORMANT since 17 Nov (owner removed menu reading; plan() refuses "menu", nothing calls this section). Read the menu (docs/FEATURE-menu.md): before ordering. Gemini reads the dishes that are on the menu;
    code checks each one, scores it against this meal (fitOf, riseOf) and ranks. Gemini never ranks ---------- */
 function menuText(v){return typeof v==="string"?v.slice(0,2000).replace(/["\\]+/g," ").trim().replace(/\s*[\r\n]+\s*/g," | ").replace(/\s+/g," "):"";}   /* 2,000 typed characters; a line break becomes " | " */
 /* words only, in any script: punctuation, currency marks and line breaks become spaces */
@@ -2972,7 +2932,12 @@ function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
-KINDS=["meals","rescue","log","tune","menu"];
+/* Menu reading is off (owner, 17 Nov, option survey, "Remove menu reading (Recommended)": "Take "Read the menu" and "type the menu" off
+   Rescue and refuse menu requests in the engine. Rescue keeps "Name the dish". The menu code stays dormant in the repository. The
+   menu-orders bar is dropped, and both gates run again on the smaller build."). "menu" is not a kind: the server answers /api/menu with
+   404 (it posts only to the kinds listed here), and plan() refuses it before anything else, so no prompt is built. The menu code below
+   (menuText, buildMenuPrompt, menuSchema, checkMenu and the helpers only it calls) stays in the repository, dormant and unreachable. */
+KINDS=["meals","rescue","log","tune"];
 /* a logged item keeps its name when a banned word is in it (a brand, say): the word goes, the food stays (review, 15 Nov) */
 function banOut(t){t=norm(t);if(NONLATIN.test(t))return "";var q=t.replace(/[\r\n"\\]+/g," ").slice(0,60).replace(new RegExp(BANRX.source,"ig")," ").replace(/\s{2,}/g," ").replace(/^[\s,;:.\-]+|[\s,;:\-]+$/g,"").trim();return /[a-z]/i.test(q)?q.charAt(0).toUpperCase()+q.slice(1):"";}
 /* misspellings of kidney ("kidni", "kidneyy", "kidnies", "kindey") refer as kidney does, but not "kidnap" or a kidney bean (safety audit m2).
@@ -3031,6 +2996,7 @@ function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.tes
 function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
   var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
 plan=function(kind,body){
+  if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
   var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
@@ -3046,8 +3012,6 @@ plan=function(kind,body){
     return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok"){o.hacks=rescueMoves(o.dish,pl,p);pruneMoves(o.dish,o.hacks);}return o;}};}
   if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
     return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:function(d){return checkLog(d,c);}};}
-  if(kind==="menu"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};var mh=hooksFor(p,file,c,pl);
-    return {prompt:buildMenuPrompt(p,c,file,pl,mh),schema:menuSchema(mh.map(function(h){return h.id;})),image:true,weight:1,check:function(d){return checkMenu(d,p,c,pl,mh);}};}
   return {error:"bad_request"};
 };
 </script>
@@ -3284,7 +3248,7 @@ function save(){try{
   localStorage.setItem("np6",JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:STORE,k:KEYCODE}));}catch(e){}}
 function logEv(type,o,meal){var e={t:Date.now(),type:type,meal:meal||C.meal};if(o)for(var k in o)e[k]=o[k];EV.push(e);save();}
 var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",step:0,fresh:true,hab:{veg:false,walk:false,lemon:false},ratio:null,preset:"mode",
-  rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},mtext:"",mopen:false,mres:null,mbusy:false,merr:"",msel:0,mmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
+  rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
 function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
@@ -3308,8 +3272,8 @@ function pruneKept(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[
 function clockMeal(h){return h<4?"dinner":h<11?"breakfast":h<15.5?"lunch":h<18.5?"snack":"dinner";}
 function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;CLOCK=clockMeal(hr);
   if(dayOf(now.getTime())!==DAY){DAY=dayOf(now.getTime());C.meal=CLOCK;STORE={day:DAY,res:{},shown:{}};APP={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;
-    /* yesterday's Rescue, menu and log answers and the grain answers go too (S12): the day starts at 4 am */
-    UI.rres=null;UI.rmoves={};UI.rtext="";UI.mres=null;UI.mfull=null;UI.mmoves={};UI.msel=0;UI.mno=[];UI.myes={};UI.maside=[];UI.mkey="";UI.mundo=false;UI.merr="";UI.mfix="";UI.mnone=false;UI.rerr="";UI.lres=null;UI.ltext="";UI.lerr="";}   /* a tab open past the day's start starts the new day (S12) */FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());pruneKept();
+    /* yesterday's Rescue and log answers go too (S12): the day starts at 4 am */
+    UI.rres=null;UI.rmoves={};UI.rtext="";UI.rerr="";UI.lres=null;UI.ltext="";UI.lerr="";}   /* a tab open past the day's start starts the new day (S12) */FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());pruneKept();
   HOOKS=hooksFor(profileOut(),FILE,{meal:C.meal,hour:C.meal===CLOCK?hr:null,mode:C.mode},PL);}
 /* a tap that logs or clears first checks the day: after the day changes, the screen is drawn for the new day instead (S12) */
 function dayMoved(){if(dayOf(Date.now())===DAY)return false;refresh();render();try{$("scroll").scrollTop=0;}catch(e){}return true;}
@@ -3345,7 +3309,6 @@ function referHead(e,r){if(r.urgent){e.appendChild(el("h2","urgent",URGENTLINE))
 /* Every tap that shows a composed state or writes the log goes through act() (safety round 5): the day is checked first (S12), then the
    composed result the tap would make (S5, S6). test/safety/check.js reads app.js and fails if a click handler that logs or clears does not. */
 function act(check,fn,onDay){return function(){if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
-function orderSum(r,o,moves){var a={};MENUK.forEach(function(k){a[k]=o.n[k];});(r.moves||[]).forEach(function(m,k){if(moves[k]&&m.kind==="portion")a=scaleN(a,m.scale);});return a;}
 /* moving to another meal starts its plate fresh: no plate choice, swap or change carries over (correctness review, minor) */
 /* a refusal shows the info mark, not the tick that a done action shows */
 var toast0=toast;toast=function(t,warn){var u=$("toast").querySelector("use"),h=warn?"#i-info":"#i-check";if(u&&u.getAttribute("href")!==h)u.setAttribute("href",h);toast0(t,warn);};
@@ -3364,12 +3327,12 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 /* ---------- talking to the server ---------- */
 var ERRS={not_set_up:"Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so.",   /* owner, 14 Nov, option survey (R2-B5 068) */
   bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
-  bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",photos_off:"Next Plate can't read photos at the moment. Type the menu instead.",bad_image:"That file couldn't be read as a photo. Take a new photo of the menu, or type it.",
+  bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",
   busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",timeout:"Next Plate took too long to answer. Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
 var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_image","bad_request"];
 function RETRY(code){return NORETRY.indexOf(code)<0;}
-/* a limit, the link or meal planning switched off stops every request until it changes: Plate, Rescue, the menu and the log sheet all turn
+/* a limit, the link or meal planning switched off stops every request until it changes: Plate, Rescue and the log sheet all turn
    their send controls off and keep what was typed (second screen review, R2-B6 083, R2-B7 104 and 106, R2-B4 057, R2-B5 068) */
 function lockOn(code){if(/^limit_/.test(code)||code==="bad_key"||code==="not_set_up")UI.lock=code;}
 /* the daily limit resets at midnight UTC on the server; say when in the phone's own clock */
@@ -3888,23 +3851,19 @@ function renderBuild(){
   v.appendChild(el("p","fine","The curve is for the plate named above and moves with the habits you tick. A new share of the plate shows here once you plan with it. It shows only which way your sugar may go, not a blood-sugar reading."));
 }
 
-/* ---------- 03 Rescue: read the menu (before ordering, docs/FEATURE-menu.md) and name the dish (already chosen) ---------- */
+/* ---------- 03 Rescue: name the dish (menu reading removed, owner 17 Nov; docs/FEATURE-menu.md) ---------- */
 var DISHES=APPDISHES;   /* tagged in np-core (audit B5) */
-function shrink(file,cb,max){
-  var img=new Image(),url=URL.createObjectURL(file);img.onload=function(){var s=Math.min(1,(max||1024)/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);cb(c.toDataURL("image/jpeg",.82).split(",")[1]);};img.onerror=function(){cb(null);};img.src=url;
-}
 /* Rescue: after a tap, what comes back is shown where the person can see it (on small phones it starts below the fold) */
 function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(!v||v.hidden||!s)return;var kids=[].slice.call(v.children),t=null,seen=false;
   /* the answer, wait or note: the first part that is not the heading, the line under it or an entry tool (they may come before or after it) */
-  for(var j=0;j<kids.length;j++){var k=kids[j];if(/(^| )(panel-h|lede|entries|sits|sitbox|menu-box|again-h)( |$)/.test(k.className))continue;t=k;break;}
+  for(var j=0;j<kids.length;j++){var k=kids[j];if(/(^| )(panel-h|lede|entries|sits|sitbox|again-h)( |$)/.test(k.className))continue;t=k;break;}
   if(!t)return;var r=t.getBoundingClientRect(),sr=s.getBoundingClientRect();if(r.top<sr.top+8||r.top>sr.top+sr.height*0.5)s.scrollTo({top:Math.max(0,s.scrollTop+r.top-sr.top-12),behavior:RM?"auto":"smooth"});},60);}
-function rescue(text,image){
-  if(UI.rbusy||UI.mbusy||UI.lock)return;UI.rbusy=true;UI.rerr="";UI.rkeep="";UI.rretry=false;UI.merr="";UI.mres=null;UI.mopen=false;UI.rtext=text||"Photo of the menu";render();revealOut();
-  var rmeal=C.meal,body={profile:profileOut(),ctx:{meal:rmeal,time:clockText(),text:text||"",photo:!!image,appetite:appetite()},file:fileOut()};if(image)body.image=image;
+function rescue(text){
+  if(UI.rbusy||UI.lock)return;UI.rbusy=true;UI.rerr="";UI.rkeep="";UI.rretry=false;UI.rtext=text||"";render();revealOut();
+  var rmeal=C.meal,body={profile:profileOut(),ctx:{meal:rmeal,time:clockText(),text:text||"",photo:false,appetite:appetite()},file:fileOut()};
   var sent=askedFor();   /* a reply made for answers changed during the wait is not shown; it is asked for again (Critic round 36) */
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
-    if(askedFor()!==sent){if(!blocked())rescue(text,image);else render();return;}
+    if(askedFor()!==sent){if(!blocked())rescue(text);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
     else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
@@ -3912,167 +3871,29 @@ function rescue(text,image){
     else{UI.rerr=errText(j.code,"rescue");UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
     render();if(UI.rerr)$("said").textContent=UI.rerr;});
 }
-/* The menu, as a photo or as typed text. The server reads, checks and ranks; the page only shows what came back. */
-function readMenu(text,image){
-  if(UI.mbusy||UI.rbusy||UI.lock)return;refresh();UI.mnone=false;var meal=C.meal,tg=PL?PL.target:null;
-  UI.mbusy=true;UI.mlast={t:text||"",i:image||null};UI.merr="";UI.mfix="";UI.mundo=false;UI.rerr="";UI.mres=null;UI.rres=null;UI.rtext="";UI.mopen=false;UI.mtext=text||"";render();revealOut();
-  var body={profile:profileOut(),ctx:{meal:meal,time:clockText(),hour:meal===CLOCK?Math.round(hr*100)/100:null,dayNo:dayNo(),mode:C.mode,appetite:appetite(),text:text||""},file:fileOut()};if(image)body.image=image;
-  var sent=askedFor();
-  api("/api/menu",body,function(s,j){UI.mbusy=false;setTimeout(revealOut,0);
-    if(askedFor()!==sent){if(!blocked()&&C.meal===meal)readMenu(text,image);else render();return;}
-    if(s===200&&j.status==="ok"&&j.orders&&j.orders.length){UI.mres={meal:meal,target:tg,place:j.place||"",orders:j.orders,leave:j.leave||[],tip:j.tip||"",hooks:j.hooks||{},note:j.note||"",scriptNote:j.scriptNote||"",moves:j.moves||[],dropped:j.dropped||{}};UI.msel=0;UI.mmoves={};UI.mtext="";grainKey(meal,text,image);UI.mfull=JSON.parse(JSON.stringify(UI.mres));UI.mundo=false;grainFilter();}
-    else if(s===200&&j.status==="refer")UI.mres={status:"refer",read:j.read,urgent:!!j.urgent};
-    else{UI.mretry=s!==200&&RETRY(j.code);lockOn(j.code);UI.mfix=j.status==="script"?"script":j.status==="unreadable"||j.code==="photos_off"||j.code==="bad_image"?(j.code==="photos_off"?"type":"both"):"";UI.mnone=s===200&&j.status!=="unreadable"&&j.status!=="script";UI.merr=s!==200?(j.code==="upstream_error"&&image?"Next Plate couldn't read your menu just now. Your photo is kept.":errText(j.code,"menu")):j.status==="script"?SCRIPTNOTE:j.status==="unreadable"?"Next Plate couldn't read that menu. Try a clearer photo, or type the menu.":j.read||"No dish on that menu fits your food rules for this meal. Try another page of the menu, or name the dish you want.";UI.mopen=!!text;}   /* the engine names the rules when nothing fits */
-    render();if(UI.merr)$("said").textContent=UI.merr;});
-}
-/* Rounds 29-30: the grains the person said are not available, kept for this menu and this meal only (a new menu or meal starts afresh);
-   a two-grain order asks about each grain in turn; "Change answer" undoes a No as well as a Yes. */
-function grainParts(g){return String(g||"").split(/\s+and\s+/).filter(Boolean);}
-function grainPlural(g){return / and /.test(g)||/(?:s|bhature)$/.test(g)&&!/(?:rice|dals?)$/.test(g);}
-function grainGone(g){UI.mno=UI.mno||[];return grainParts(g).some(function(x){return UI.mno.indexOf(x)>=0;});}
-function grainKey(meal,t,i){var si=String(i||""),hs=0;for(var q=0;q<si.length;q+=Math.max(1,Math.floor(si.length/997)))hs=(hs*31+si.charCodeAt(q))|0;var k=meal+"|"+(t||("photo:"+si.length+":"+hs));if(UI.mkey!==k){UI.mkey=k;UI.mno=[];UI.myes={};}UI.maside=[];}
-function grainFilter(){var r=UI.mres;if(!r||!r.orders)return;var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
-  if(keep.length){if(keep.length<r.orders.length){r.orders=keep;UI.msel=0;}return;}
-  grainNone(true);}
-function grainNone(again){var g=(UI.mno||[]).join(" and "),yes=Object.keys(UI.myes||{}).filter(function(k){return UI.myes[k]&&(UI.mno||[]).indexOf(k)<0;});UI.mres=null;UI.mopen=false;UI.mundo=true;UI.mfix="";
-  /* two short sentences; with a Yes on record the step names the grain they confirmed (second screen review, R2-B8 115, R2-B7 111-1) */
-  UI.merr=(again?"Earlier you said ":"You said ")+g+(grainPlural(g)?" are":" is")+" not available. Every order Next Plate picked from this menu needs "+(UI.mno.length>1?"one of them":grainPlural(g)?"them":"it")+". "+
-    (yes.length?"You said "+yes.join(" and ")+(yes.length>1||grainPlural(yes[0])?" are":" is")+" available: name your dish with "+(yes.length>1||grainPlural(yes[0])?"them":"it")+" instead.":"Ask which grain they have, then name your dish with it.");}
-function grainUndo(){UI.mno=[];UI.maside=[];UI.mundo=false;UI.merr="";$("said").textContent="The order asks about the grain again.";if(UI.mfull){UI.mres=JSON.parse(JSON.stringify(UI.mfull));UI.msel=0;UI.mmoves={};}render();var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus();}}
-function grainNo(g){UI.mno=UI.mno||[];if(UI.mno.indexOf(g)<0)UI.mno.push(g);var r=UI.mres;
-  var keep=r.orders.filter(function(x){return !x.grain||!grainGone(x.grain);});
-  /* the orders a No sets aside, and whether the person had said Yes to another grain of the same order (owner, 14 Nov, option survey) */
-  UI.maside=(UI.maside||[]).concat(r.orders.filter(function(x){return keep.indexOf(x)<0;}).map(function(x){return {name:x.name,g:g,too:grainParts(x.grain).some(function(y){return y!==g&&UI.myes&&UI.myes[y];})};}));
-  if(!keep.length){grainNone();render();var n=document.querySelector("#v-rescue .note");if(n){n.tabIndex=-1;n.focus();n.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}$("said").textContent=UI.merr;return;}
-  r.orders=keep;UI.msel=0;UI.mmoves={};render();var nx=r.orders[0];$("said").textContent="Next order: "+nx.name+(nx["with"]?" with "+nx["with"]:"")+".";
-  var tl=$("order-grain-said"),gq0=$("order-grain"),sc0=$("scroll");if(tl)tl.scrollIntoView({block:"start",behavior:"auto"});   /* round 32: the answer line and the next dish stay in view */
-  if(gq0&&sc0){var bq=gq0.getBoundingClientRect(),bar=Math.min.apply(null,[].slice.call(document.querySelectorAll("#tabs")).map(function(x){return x.getBoundingClientRect().top;}).concat([innerHeight]));if(bq.bottom>bar-8)sc0.scrollTop+=Math.max(0,Math.min(bq.bottom-bar+16,tl?tl.getBoundingClientRect().top-sc0.getBoundingClientRect().top-8:0));}   /* and the next question's Yes and No (R2-B7 110-1) */
-  var q=$("order-grain-q")||$("order-card");if(q){if(q.id==="order-card")q.tabIndex=-1;q.focus({preventScroll:true});}}
-/* why the order before this one went: "Dal Tadka needs roti too, so it is set aside." (owner, 14 Nov, option survey) */
-function asideText(){var by={};(UI.maside||[]).forEach(function(a){var k=a.g+(a.too?"|too":"");(by[k]=by[k]||[]).push(a.name);});
-  return Object.keys(by).map(function(k){var n=by[k],g=k.split("|")[0],too=/\|too$/.test(k);return n.join(" and ")+(n.length>1?" need ":" needs ")+g+(too?" too":"")+", so "+(n.length>1?"they are":"it is")+" set aside. ";}).join("");}
-function orderView(v,r){
-  if(r.status==="refer"){var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si);referHead(e,r);v.appendChild(e);return;}
-  if(UI.msel>=r.orders.length)UI.msel=0;
-  var mn=mealName(r.meal).toLowerCase(),o=r.orders[UI.msel],a={},hab={veg:false,walk:false,lemon:false},moved=false;
-  MENUK.forEach(function(k){a[k]=o.n[k];});
-  var share="";   /* a portion move changes the figures: the card says so after the portion, and the logged title carries it (second screen review, R2-B7 098) */
-  r.moves.forEach(function(m,k){if(!UI.mmoves[k])return;moved=true;if(m.kind==="portion"){a=scaleN(a,m.scale);share={0.5:"eating half",0.67:"eating two thirds",0.75:"eating three quarters",2:"a double portion"}[m.scale]||"a changed portion";}if(m.kind==="sequence")hab.veg=true;if(m.kind==="move")hab.walk=true;});
-  var fit=moved?fitOf(a,r.target):o.fit,band=moved?riseOf(a,hab).band:o.rise;
-  if(UI.mno&&UI.mno.length){var gn0=UI.mno.join(" and "),gl=el("p","fine gno");gl.id="order-grain-said";gl.appendChild(document.createTextNode("You said "+gn0+(grainPlural(gn0)?" are":" is")+" not available. "+asideText()));
-    var gu0=btn("linkbtn","Change "+(UI.mno.length>1?"these answers":gn0+" answer"),null,"order-grain-redo");   /* each link names the answer it changes (R2-B8 116-1) */gu0.addEventListener("click",grainUndo);gl.appendChild(gu0);v.appendChild(gl);}   /* round 31: a No leaves a trace and can be undone */
-  if(r.note){var nt=el("div","note");nt.setAttribute("role","note");nt.appendChild(ic("info"));nt.appendChild(el("p",null,r.note));v.appendChild(nt);}
-  if(r.scriptNote){var sn=el("div","note");sn.id="menu-script-note";sn.setAttribute("role","note");sn.appendChild(ic("info"));sn.appendChild(el("p",null,r.scriptNote));v.appendChild(sn);}   /* a menu partly in another script (audit m5) */
-  var card=el("article","card order");card.id="order-card";card.appendChild(el("p","cap",(r.note?"The closest order":"Your order")+" · "+mn));
-  var top=el("div","hero-top");
-  function chip(t,icon){var c=el("span","hchip"+(icon?" fit":""));if(icon)c.appendChild(ic(icon));c.appendChild(el("span",null,t));return c;}
-  /* an order that fits only if the kitchen agrees shows the client's rules plainly, without the tick that reads as met (Critic round 38, finding 3) */
-  var ruleIc=o.askIf?null:"check";top.appendChild(chip(lab("diet",P.diet),ruleIc));P.leave.forEach(function(k){top.appendChild(chip("No "+lab("leave",k).toLowerCase(),ruleIc));});
-  if(o.fit!=null)top.appendChild(chip("Close to your target: "+o.fit+(fit!==o.fit?"\u00A0→\u00A0"+fit:"")+"\u00A0/\u00A0100","target"));
-  add(card,top,el("h3","dish",o.name));
-  if(o.portion||share)card.appendChild(el("p","por",(o.portion||"")+(share?(o.portion?" ":"")+"("+share+")":"")));
-  if(o["with"]){var w=el("p","owith");w.appendChild(el("span","cap","with"));w.appendChild(document.createTextNode(" "+o["with"]));card.appendChild(w);}
-  if(o.ask){var oa=el("p","oask");oa.appendChild(el("b",null,"Ask the waiter: "));oa.appendChild(document.createTextNode(o.ask));card.appendChild(oa);
-    if(o.askIf){var oc=el("p","oask",o.askIf);oc.id="order-cond";card.appendChild(oc);}}   /* the order fits only if they make it that way (owner, 16 Nov) */
-  var rd=el("div","read4 six");
-  function cell(cap,val,unit,cls,was){var d=el("div","tcard");d.appendChild(el("p","cap",cap));
-    if(was!=null&&String(was)!==String(val)){var w=el("p","was",was+(unit?"\u00A0"+unit:"")+"\u00A0\u2192");w.setAttribute("aria-label","as served "+was+(unit?" "+unit:"")+", now");d.appendChild(w);}   /* as served, then after the move */
-    var x=el("span","v"+(cls?" "+cls:""));if(unit)x.appendChild(el("i","apx","≈"));x.appendChild(el("span","mono",val));if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
-  /* with a move ticked each figure shows the change, as the score does: as served, then after the move */
-  add(rd,cell("Energy",String(a.kcal),"kcal",null,o.n.kcal),cell("Protein",String(a.protein),"g",null,o.n.protein),cell("Sugar rise",band,null,bandCls(band),o.rise));var rw=el("div","rw ord");rw.appendChild(rd);card.appendChild(rw);
-  var tags=hooksSaid(o.planned||[],r.meal||C.meal,r.hooks);
-  if(tags.length){var pa=el("p","planned");pa.id="order-planned";pa.appendChild(document.createTextNode("Planned around: "));tags.forEach(function(t,i){if(i)pa.appendChild(document.createTextNode("\u00A0· "));pa.appendChild(el("span",null,t));});card.appendChild(pa);}
-  var go=btn("btn primary","I'll order this","check","order-go");
-  go.addEventListener("click",act(function(){var w=composedWhy(orderSum(r,o,UI.mmoves),o.n,{meal:r.meal});if(w)UI.mmoves={};return w;},function(){clearSlot(r.meal);logEv("ordered",{title:o.name+(o["with"]?" with "+String(o["with"]).replace(/, (\u2248\u00A0\d+\u00A0g)$/," ($1)"):"")+(share?" ("+share+")":""),kcal:a.kcal,protein:a.protein,carbs:a.carbs,fats:a.fats,fiber:a.fiber,planned:o.planned||[]},r.meal);
-    UI.mres=null;UI.mtext="";pickMeal(r.meal);show("plate");toast("Counted for "+mn+". Your next meals adjust to it.");}));
-  /* Round 28 (owner decision): with diabetes the plan keeps a grain. When the grain is a side or part of the portion, the person
-     confirms it is available before ordering; "No" moves to the next order with another grain, or back to the menu. */
-  /* Round 29: answers are kept by the grain's name for this session, so "Also on this menu" and a fresh read of the menu do not ask
-     again or bring back a grain the person said is not there. */
-  UI.myes=UI.myes||{};
-  var gpend=grainParts(o.grain).filter(function(x){return !UI.myes[x];}),gnow=gpend[0];
-  var gdone=grainParts(o.grain).filter(function(x){return UI.myes[x];});
-  if(gnow&&gdone.length){var gk=el("p","fine gok");gk.id="order-grain-ok";gk.appendChild(document.createTextNode(gdone.join(" and ").charAt(0).toUpperCase()+gdone.join(" and ").slice(1)+": available, you checked. "));
-    var gu1=btn("linkbtn","Change "+gdone.join(" and ")+" answer",null,"order-grain-undo1");gu1.addEventListener("click",function(){gdone.forEach(function(x){delete UI.myes[x];});render();var q=$("order-grain-q");if(q)q.focus();});gk.appendChild(gu1);card.appendChild(gk);}   /* a Yes tapped by mistake can be undone at once (R2-B8 114-2) */   /* the first answer stays on screen while the second grain is asked */
-  if(gnow){var gq=el("div","confirm gask");gq.id="order-grain";gq.setAttribute("role","group");gq.setAttribute("aria-labelledby","order-grain-q");
-    var gt=el("p","gq",(grainPlural(gnow)?"Are ":"Is ")+gnow+" available now?");gt.id="order-grain-q";gt.tabIndex=-1;
-    var gn=el("p","fine","Your plan keeps "+gnow+" with this meal. Ask before you order.");
-    var gy=btn("btn","Yes","check","order-grain-yes"),gx=btn("btn","No","x","order-grain-no"),ga=el("div","pick-acts");add(ga,gy,gx);
-    gy.addEventListener("click",function(){UI.myes[gnow]=true;render();var b=$("order-grain-q")||$("order-go");if(b)b.focus();});
-    gx.addEventListener("click",function(){grainNo(gnow);});
-    add(gq,gt,gn,ga);card.appendChild(gq);}
-  else{if(o.grain){var gc=el("p","fine gok");gc.id="order-grain-ok";gc.appendChild(document.createTextNode(o.grain.charAt(0).toUpperCase()+o.grain.slice(1)+": available, you checked. "));
-      var gu=btn("linkbtn","Change "+o.grain+" answer",null,"order-grain-undo");gu.addEventListener("click",function(){grainParts(o.grain).forEach(function(x){delete UI.myes[x];});render();var q=$("order-grain-q");if(q)q.focus();});gc.appendChild(gu);card.appendChild(gc);}
-    card.appendChild(go);}
-  v.appendChild(card);
-  if(r.moves.length){var mh=el("div","sec-h");mh.appendChild(el("h3",null,"The two moves that help most"));v.appendChild(mh);
-    var mv=el("div","moves");r.moves.forEach(function(m,k){var b=el("button","move");b.type="button";b.id="order-move-"+k;setPressed(b,!!UI.mmoves[k]);var ii=el("i");ii.appendChild(ic("check"));
-      var tx=el("span"),sc=m.kind==="portion"?scaleN(o.n,m.scale):null;tx.appendChild(document.createTextNode(m.title));
-      tx.appendChild(el("small",null,sc?"≈\u00A0"+sc.kcal+"\u00A0kcal · ≈\u00A0"+sc.protein+"\u00A0g protein":"softens the rise"));add(b,ii,tx);
-      b.addEventListener("click",act(function(){var nx=JSON.parse(JSON.stringify(UI.mmoves));nx[k]=!nx[k];return composedWhy(orderSum(r,o,nx),o.n,{meal:r.meal});},function(){UI.mmoves[k]=!UI.mmoves[k];render();var t=document.querySelector("#v-rescue .note")||$("order-card"),sc=$("scroll");if(t&&sc&&t.getBoundingClientRect().top<sc.getBoundingClientRect().top)t.scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}));mv.appendChild(b);});
-    v.appendChild(mv);}
-  if(r.orders.length>1){var ah=el("div","sec-h");ah.appendChild(el("h3",null,"Also on this menu"));v.appendChild(ah);
-    var wrap=el("div","alts");r.orders.forEach(function(x,i){if(i===UI.msel)return;var b=el("button","alt menu");b.type="button";b.id="order-alt-"+i;
-      var tx=el("span");tx.appendChild(el("b",null,x.name));tx.appendChild(el("small",null,(x["with"]?"with "+x["with"]+"\u00A0· ":"")+"≈\u00A0"+x.n.kcal+"\u00A0kcal\u00A0· ≈\u00A0"+x.n.protein+"\u00A0g\u00A0protein"+(x.fit!=null?"\u00A0· Close to your target:\u00A0"+x.fit+"\u00A0/\u00A0100":"")+(x.askIf?"\u00A0· "+(x.askRow||x.askIf):"")));   /* the same condition as on the order card (Critic round 38, finding 3) */   /* a line never starts with a separator (R2-B6 091-2) */
-      add(b,tx,ic("chev"));b.addEventListener("click",act(null,function(){logEv("chosen",{title:x.name,from:"menu"},r.meal);UI.msel=i;UI.mmoves={};render();$("order-card").scrollIntoView({block:"start",behavior:RM?"auto":"smooth"});}));wrap.appendChild(b);});
-    v.appendChild(wrap);}
-  if(r.leave.length){var lh=el("div","sec-h");lh.appendChild(el("h3",null,"Leave for another day"));v.appendChild(lh);
-    var ul=el("ul","checks");ul.id="order-leave";r.leave.forEach(function(l){var li=el("li","no"),xi=el("i");xi.appendChild(ic("x"));var sp=el("span");sp.appendChild(el("b",null,l.name+". "));sp.appendChild(document.createTextNode(l.why));add(li,xi,sp);ul.appendChild(li);});v.appendChild(ul);}
-  if(r.tip){var tp=el("p","tip");tp.id="order-tip";tp.appendChild(el("b",null,"How to eat it. "));tp.appendChild(document.createTextNode(r.tip));v.appendChild(tp);}
-  var dn=r.dropped.diet||0;
-  if(dn){var hid=el("p","fine hidden",dn+(dn>1?" dishes on this menu did":" dish on this menu did")+" not pass your food rules, so "+(dn>1?"they are":"it is")+" not shown.");hid.id="order-hidden";v.appendChild(hid);}   /* on its own line (R2-B6 091-1) */
-  v.appendChild(el("p","fine",(r.place?"Read as: "+r.place+". ":"")+"Estimates for how this kind of place usually serves it. Kitchens vary. The menu is read by AI (Google Gemini). Next Plate checks the dishes against your food rules and ranks them."));
-}
-/* once there is an answer, an order, a wait or an error, it leads and the entry tools follow it; "Read the menu" is then no longer the main button (screen review B4-B6) */
-function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.mres||UI.rres||UI.merr||UI.rerr||UI.mbusy||UI.rbusy))return;
-  var ent=v.querySelector(".entries"),ch=v.querySelector(".sitbox"),mc=$("mcam");if(mc)mc.classList.remove("primary");
-  if(ent){if(UI.mres||UI.rres){var hd=el("h3","again-h","Another menu or dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
+/* once there is an answer, a wait or an error, it leads and the entry tools follow it (screen review B4-B6) */
+function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.rres||UI.rerr||UI.rbusy))return;
+  var ent=v.querySelector(".entries"),ch=v.querySelector(".sitbox");
+  if(ent){if(UI.rres){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
 function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}   /* as Builder: the card's one button clears the tab bar (R2-B8 120-1) */
-  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),me=el("div","menu-in"),busy=UI.mbusy||UI.rbusy,wait=busy||!!UI.lock;   /* at a limit or without the link nothing is sent */
+  var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),busy=UI.rbusy,wait=busy||!!UI.lock;   /* at a limit or without the link nothing is sent */
   /* what Rescue gives, first and at body size (screen review B4, B5) */
-  if(!(UI.mres||UI.rres||UI.merr||UI.rerr||busy||UI.mopen)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Photograph the menu for the order that fits your "+mn+" best, or name the dish you chose to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
-  me.appendChild(el("p","cap","At a restaurant or a function"));
-  var mb=btn(UI.mopen||UI.lock?"btn":"btn primary","Read the menu","camera","mcam"),mf=el("input");mf.type="file";mf.accept="image/*";mf.hidden=true;mf.id="mfile";mb.disabled=wait;   /* nothing looks ready that a wait would drop */
-  mb.addEventListener("click",function(){mf.click();});
-  mf.addEventListener("change",function(){var file=mf.files&&mf.files[0];if(!file)return;shrink(file,function(b){if(!b){UI.merr=errText("bad_image");UI.mretry=false;UI.mfix="both";render();$("said").textContent=UI.merr;return;}readMenu("",b);},1600);});
-  var mt=btn("linkbtn",UI.mopen?"Hide the typed menu":"or type the menu",null,"mtype");mt.disabled=busy||!!UI.lock&&!UI.mopen;mt.setAttribute("aria-expanded",UI.mopen?"true":"false");
-  mt.addEventListener("click",function(){UI.mopen=!UI.mopen;render();if(UI.mopen)setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});
-  var pn=el("p","fine","The photo goes to Google Gemini to read the dishes.");pn.id="photo-note";
-  /* while a note offers its own photo and type buttons, the same entry tools are not repeated under it (R2-B6 093-1, R2-B7 101) */
-  var dupl=UI.merr&&UI.mfix;if(UI.mfix==="type"){mb.disabled=true;}
-  if(!dupl)add(me,mb);if(!UI.mopen&&!dupl)me.appendChild(pn);if(!dupl)me.appendChild(mt);me.appendChild(mf);
-  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Already chosen? Name the dish");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
-  var go=el("button","send"+(UI.rerr&&UI.rretry||UI.merr&&UI.mretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,null);});
-  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;add(ent,me);v.appendChild(ent);
-  if(UI.mopen&&!UI.mbusy){
-    var bx=el("form","menu-box"),ta=el("textarea");ta.id="mtext";ta.maxLength=2000;ta.rows=7;ta.placeholder="Paste or type the menu. One dish per line.";var tn=el("p","fine","The menu goes to Google Gemini to read the dishes.");ta.value=UI.mtext||"";ta.setAttribute("aria-label","The menu, typed or pasted");
-    ta.addEventListener("input",function(){UI.mtext=ta.value;});ta.addEventListener("blur",function(){ta.scrollTop=0;});ta.addEventListener("paste",function(){setTimeout(function(){ta.scrollTop=0;},0);});setTimeout(function(){ta.scrollTop=0;},0);   /* the box opens at the top of the menu (R2-B6 089-2) */
-    var rdm=btn(UI.merr&&(UI.mretry||UI.mnone)||UI.lock?"btn":"btn primary","Read this menu for "+mn,"spark","mgo");rdm.type="submit";rdm.disabled=!!UI.lock;   /* with a Try again on screen, that is the one main button */
-    bx.addEventListener("submit",function(e){e.preventDefault();var t=ta.value.trim();if(t.length>2&&!UI.lock)readMenu(t,null);});
-    add(bx,ta,tn,rdm);me.appendChild(bx);
-  }else{
-    var sb=el("div","sitbox"),ch=el("div","sits"),chc=el("p","cap","Or tap a common dish");chc.id="dish-cap";add(sb,chc,ch);DISHES.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.disabled=wait;b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d,null);});ch.appendChild(b);});
-    v.appendChild(sb);
-  }
+  if(!(UI.rres||UI.rerr||busy)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
+  var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Name the dish you chose");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
+  var go=el("button","send"+(UI.rerr&&UI.rretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t);});
+  var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;v.appendChild(ent);
+  var sb=el("div","sitbox"),ch=el("div","sits"),chc=el("p","cap","Or tap a common dish");chc.id="dish-cap";add(sb,chc,ch);DISHES.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.disabled=wait;b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d);});ch.appendChild(b);});
+  v.appendChild(sb);
   ent.appendChild(f);
-  if(UI.mbusy){v.appendChild(waitCard("Reading the menu for your "+mn,"The menu is being read",true,UI.mlast&&UI.mlast.t?"If this doesn't work, your typed menu comes back.":""));return;}
   if(UI.rbusy){v.appendChild(waitCard("Working out "+UI.rtext.toLowerCase(),"The dish is being worked out",true));return;}
-  if(UI.lock&&!UI.merr&&!UI.rerr){var ln=el("div","note");ln.id="rescue-lock";ln.setAttribute("role","note");ln.appendChild(ic("info"));ln.appendChild(el("p",null,errText(UI.lock,"rescue")));v.appendChild(ln);}   /* why the tools are off */
-  [UI.merr,UI.rerr].forEach(function(t,k){if(!t)return;var n=el("div",k===0&&UI.mundo?"note":"note err");   /* the person's own No is not an error (R2-B7 109-1) */n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,t));
-    if(k===1&&UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x,null);});tx.appendChild(tb);}
-    if(k===0&&UI.mundo){var ub=btn("linkbtn",UI.mno&&UI.mno.length>1?"Change answers":"Change answer",null,"menu-grain-undo");ub.addEventListener("click",grainUndo);tx.appendChild(ub);
-      var nd=btn("btn","Name the dish",null,"menu-name-dish");nd.addEventListener("click",function(){var x=$("rin");if(x){x.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});x.focus({preventScroll:true});}});tx.appendChild(nd);}
-    if(k===0&&UI.mfix){if(UI.mfix==="both"){var tp=btn("btn primary","Take another photo","camera","menu-photo-again");tp.addEventListener("click",function(){$("mfile").click();});tx.appendChild(tp);}
-      var ty=btn("btn","Type the menu",null,"menu-type-instead");ty.addEventListener("click",function(){UI.mopen=true;UI.merr="";UI.mfix="";render();setTimeout(function(){var x=$("mtext");if(x)x.focus();},60);});tx.appendChild(ty);}   /* the two next steps the note names, in the note (screen review B5) */
-    if(k===0&&UI.mnone&&!UI.mundo){var nd2=btn("btn","Name the dish",null,"menu-none-name");nd2.addEventListener("click",function(){var x=$("rin");if(x){x.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});x.focus({preventScroll:true});}});tx.appendChild(nd2);
-      var ph2=btn("btn","Photograph another page","camera","menu-none-photo");ph2.addEventListener("click",function(){$("mfile").click();});tx.appendChild(ph2);}   /* the two steps the note names, in the note (R2-B6 092-1) */
-    if(k===0&&UI.mlast&&UI.mretry&&(UI.mlast.t||UI.mlast.i)){var mb2=btn("btn primary","Try again","refresh","menu-retry");mb2.addEventListener("click",function(){var x=UI.mlast;UI.merr="";readMenu(x.t,x.i);});tx.appendChild(mb2);}
-    n.appendChild(tx);v.appendChild(n);});
-  if(UI.mres){orderView(v,UI.mres);return;}
+  if(UI.lock&&!UI.rerr){var ln=el("div","note");ln.id="rescue-lock";ln.setAttribute("role","note");ln.appendChild(ic("info"));ln.appendChild(el("p",null,errText(UI.lock,"rescue")));v.appendChild(ln);}   /* why the tools are off */
+  if(UI.rerr){var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,UI.rerr));
+    if(UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x);});tx.appendChild(tb);}
+    n.appendChild(tx);v.appendChild(n);}
   var r=UI.rres;
   if(!r)return;
   if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
@@ -4117,7 +3938,7 @@ var ANS0="",SAFE0="";function answers(){return JSON.stringify([profileOut(),P.co
 function rules(){return JSON.stringify([P.diet,P.leave.slice().sort(),P.conds.slice().sort(),P.meds,P.age,P.cm,P.kg,P.sex,P.act]);}   /* the body figures set the usual size (audit B9) */
 /* "at": the question the sheet opens on, when a card sends the person to one answer (screen review B2, B6) */
 function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
-function closeSheet(){var fd=UI.sheet==="food"&&answers()!==ANS0;UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.mres=null;UI.mfull=null;UI.merr="";UI.mundo=false;UI.mno=[];UI.myes={};UI.maside=[];UI.mkey="";UI.mfix="";UI.mnone=false;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* "Change answer" cannot bring back orders made under the old rules (M9) */
+function closeSheet(){var fd=UI.sheet==="food"&&answers()!==ANS0;UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text,image){
@@ -4170,8 +3991,8 @@ function renderSheet(){
   goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
   var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));
   dq.appendChild(el("p",null,"Your answers and your food record are kept on this phone. There is no account, and no name is sent."));
-  dq.appendChild(el("p",null,"Google Gemini plans for you. It gets your answers, your meals from the last few days, what you type and any menu photo."));
-  dq.appendChild(el("p",null,"This happens each time Next Plate plans a plate (also when you open it), counts a meal you typed, rescues a dish or reads a menu."));
+  dq.appendChild(el("p",null,"Google Gemini plans for you. It gets your answers, your meals from the last few days and what you type."));
+  dq.appendChild(el("p",null,"This happens each time Next Plate plans a plate (also when you open it), counts a meal you typed or rescues a dish."));
   if(!UI.wipe){var wb=btn("btn danger-link","Remove my data from this phone",null,"wipe");wb.addEventListener("click",function(){UI.wipe=true;renderSheet();var x=$("wipe-keep");if(x)x.focus({preventScroll:true});});dq.appendChild(wb);}
   else{var cf=el("div","confirm");cf.setAttribute("role","alertdialog");cf.setAttribute("aria-labelledby","wipe-q");var q=el("p",null,"Remove your answers, your food record and today's plates from this phone? This cannot be undone. The code from your coach's link stays, so the app still opens.");q.id="wipe-q";cf.appendChild(q);
     var kr=el("div","pick-acts"),kp=btn("btn","Keep my data",null,"wipe-keep"),rm=btn("btn danger","Remove my data",null,"wipe-yes");

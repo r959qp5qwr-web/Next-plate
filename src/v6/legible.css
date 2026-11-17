@@ -28,14 +28,13 @@
 /* --- one text face for functional text: the handwriting face leaves labels, figures and status --- */
 #app .tip,#app .tip b,#app .note,#app .tiles .tile2 .v,#app .read4 .v,#app .tcard .cap,#app .risev,#app .cmp-row .val,#app .pv,#app .hero .cuis,
 #app .slide-v b,#app .readline .asked,#app .ringmid b,#app .ctr output,#app .hero .suffix,#app .hero .planned,#app .plate.wait .planned,
-#app .order .planned,#app .order .oask,#app .pairs .ph b{font-family:var(--text)}
+#app .pairs .ph b{font-family:var(--text)}
 #app .tip.directive,#app .tip{font:400 17px/25px var(--text);color:var(--ink)}
 #app .tip b{font-style:italic;font-weight:600}
 #app .note p{font-size:16px;line-height:23px}
-#app .hero .planned,#app .plate.wait .planned,#app .order .planned{font:italic 500 16.5px/23px var(--text);color:var(--olive-t)}
+#app .hero .planned,#app .plate.wait .planned{font:italic 500 16.5px/23px var(--text);color:var(--olive-t)}
 #app .hero .suffix{font:italic 500 17px/23px var(--text);color:var(--clay-t)}
 #app .readline .asked{font:italic 500 19px/26px var(--text);color:var(--clay-t)}
-#app .order .oask{font:italic 500 17px/24px var(--text);color:var(--clay-t)}
 #app .pairs .ph b{font:italic 600 19px/24px var(--text)}
 #app .pairs .ph small{font-size:15px;color:var(--ink2)}
 #app .scribble{font-size:22px;line-height:24px}
@@ -84,9 +83,6 @@
 
 /* --- Rescue entry: two labelled parts, full width --- */
 #app .entries{display:flex;flex-direction:column;gap:14px;align-items:stretch}
-#app .menu-in{align-items:stretch;gap:4px}
-#app .menu-in .btn{width:100%;justify-content:center;min-height:50px}
-#app .menu-in .linkbtn{align-self:center}
 #app .entries form.rin{display:flex;flex-direction:column;gap:6px}
 #app .rin-row{display:flex;gap:8px;align-items:center}
 #app .rin-row input{flex:1;min-width:0;min-height:50px;font-size:17px}
@@ -108,7 +104,7 @@
 #app .linkbtn,#app .linkbtn span{color:var(--clay-t)}
 #app .brand{font-size:clamp(24px,8.2vw,34px);letter-spacing:.14em;padding-left:.14em;line-height:1.1}
 #app .cap{white-space:normal}
-#app .entries form.rin,#app .rin-row,#app .menu-in{width:100%;min-width:0}
+#app .entries form.rin,#app .rin-row{width:100%;min-width:0}
 #app .tip .linkbtn,#app .tip .linkbtn span{color:#55301A}
 #app .slide-v b{color:var(--clay-t)}
 #app .band-m{color:var(--band-m)!important}#app .band-s{color:var(--band-s)!important}
@@ -145,7 +141,6 @@
 #app .tcard{min-width:0}
 /* Rescue entry: labels on the left, like every other caption */
 #app .entries .cap{text-align:left}
-#app .menu-in .menu-box{margin-top:6px}
 /* Pair it stays one phrase */
 #app .pairs .ph{flex-wrap:wrap;row-gap:2px}
 #app .pairs .ph b{white-space:nowrap}
@@ -171,8 +166,6 @@
 #app .entries form.rin{align-items:stretch}
 #app .entries form.rin .cap{text-align:left}
 #app .cb-ax{margin-top:-18px}
-#app .menu-box textarea{font-style:normal}
-#app .menu-in .fine{text-align:center;margin:2px 0 0}
 #app .day-h{margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
 /* ===== Critic round 3 ===== */
 /* Rescue: each 'after' bar in its nutrient's colour (one colour per nutrient, everywhere); a rise or fall is an arrow in words */
@@ -186,7 +179,7 @@
 /* plate actions: the wider button holds 'Next plate (1/2)' on one line */
 #app .acts.two{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
 /* ===== Critic round 4 ===== */
-#app .note #menu-retry,#app .note #log-retry{min-height:44px}
+#app .note #log-retry{min-height:44px}
 @media (max-width:359.98px){#app #next svg.i{display:none}#app #next{padding:0 8px}}
 
 /* Critic round 6: a figure never breaks from its unit. The figure and unit stay on one line; where the tiles are too narrow for that
@@ -234,16 +227,8 @@
 #app .confirm .pick-acts .btn{flex:1 1 auto;white-space:nowrap}
 /* Critic round 8: why a one-tap change is off is said on screen (a tooltip never shows on a phone) */
 #app .tune.alc .tnote{grid-column:1/-1;margin:2px 0 0;text-align:center}
-/* Critic round 8: how much to have is the order's second fact, after the dish; it reads at the size of the side, in ink, upright */
-#app .order .por{margin:4px 0 0;font:500 18px/24px var(--text);font-style:normal;color:var(--ink);font-variant-numeric:lining-nums}
 
-/* round 28: the grain question on a menu order (diabetes) */
-#app .order .gask{margin:12px 0 0;background:transparent;border:1px solid var(--line)}
-#app .order .gask .gq{margin:0 0 4px;font:600 19px/25px var(--text);color:var(--ink)}
-#app .order .gask .fine{margin:0 0 10px}
-#app .order .gok{margin:10px 0 0}
 #app .note .linkbtn{display:flex;margin-top:4px;padding:0;text-decoration:underline;text-underline-offset:3px}#app .note .linkbtn,#app .note .linkbtn span{color:#55301A}
-#app .gno{margin:0 0 8px}#app .gno .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
 /* screen inventory, 14 Nov: states not captured before */
 #app .hab[aria-pressed="true"]{background:#4F5A2E}                      /* pressed habit: paper text 6.6:1 */
 #app .hab[aria-pressed="true"] small{color:#E4E8CF}                       /* its line under: 5.9:1 (the --ink2 rule above was winning) */
@@ -288,17 +273,10 @@
 #app .hab{justify-content:flex-start}
 #app .sitbox .cap{margin:6px 0 4px}
 #app .sit[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
-#app .menu-in .fine{text-align:left}#app .menu-in .linkbtn{align-self:flex-start;text-decoration:underline;text-underline-offset:3px}
 #app .ans-read.wait::after{content:none;animation:none}   /* the old animation set content and drew a second, stray set of dots (R2-B5 080-2) */
 #app .ans-read.wait .lw{white-space:nowrap}
 #app .ans-read.wait .lw::after{content:"";display:inline-block;width:1.2em;animation:dots 1.4s steps(4,end) infinite}
-#app .order .oask{font:400 17px/24px var(--text);font-style:normal;color:var(--ink)}#app .order .oask b{font-weight:600}
 #app .cmp-cap{margin:6px 0 2px}
-#app .order .gok,#app .gno{font:400 16.5px/24px var(--text);font-style:normal;color:var(--ink)}
-#app .order .gok .linkbtn{display:inline-flex;text-decoration:underline;text-underline-offset:3px;padding:0}
-#app .order .gask .gq{text-wrap:balance}
-#app .menu-box textarea{field-sizing:content;max-height:32vh;box-shadow:inset 0 0 0 1px var(--ink3)}  /* the box grows with the menu and looks like a box */
-@media (max-height:600px){#app .menu-box textarea{min-height:110px}}
 #app .note .btn{min-height:44px}
 #app .tab[aria-current="page"]::before{bottom:2px}                                                 /* the mark under the open tab clears its word at large text */
 #app .rw .rcap{margin:0 0 6px}
@@ -341,7 +319,6 @@
 #app .sits .sit{white-space:normal;text-align:left;max-width:100%}
 #app .move i{border-radius:6px}                                                                       /* moves can be ticked together: a box, not a radio circle (R2-B6 081-4) */
 #app .verdict{margin:6px 0 2px;font:400 17px/24px var(--text);color:var(--ink)}
-#app .gno .linkbtn,#app .order .gok .linkbtn{display:flex;width:max-content}                       /* the link sits on its own line at every width, so the sentence keeps its spacing (R2-B7 110-2) */
 #app .empty-card .asked{margin:0 0 4px;font:italic 400 17px/24px var(--text);color:var(--ink2)}
 #app .fine.hidden{color:var(--ink);margin:12px 0 4px}
 #app #v-build .card.bigplate:has(~ .stick){padding-bottom:64px}                                          /* the held button never sits on the last stepper row (R2-B5 074-2) */
