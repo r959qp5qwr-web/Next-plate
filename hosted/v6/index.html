@@ -1691,19 +1691,21 @@ function badWords(p){
    "cashew butter" ("Cashew butter masala" is a butter masala with cashews). Two readings are held:
    - "rice" also ends a rice dish, so "rice milk" is a product only when nothing but a joining word comes before it ("Rice milk porridge",
      "Oats in rice milk"; not "Brown rice milk rice");
-   - a nut butter before "masala" is a butter masala ("Almond butter masala"). */
+   - a plant cream or nut butter before a dish word (masala, curry, gravy, rice, korma, makhani) reads as dairy: "Almond butter masala" is a
+     butter masala, and a restaurant's "Cashew cream masala" or "Peanut butter curry" often adds dairy (coordinator's default, fix-r12; the
+     owner may decide otherwise). "Coconut milk curry", "Peanut butter toast" and "Soy curd rice" stay plant. */
 var PLANTW=["coconut milk","almond milk","oat milk","soy milk","soya milk","rice milk","cashew milk","coconut cream","cashew cream","peanut butter","almond butter",
   "soy curd","soya curd","coconut yogurt","coconut yoghurt","soy yogurt","soya yogurt"];
 /* the word before is taken with the match, as no expression here looks behind (Safari before 16.4) */
-var PLANT=new RegExp("(\\b[a-z]+\\s+)?\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b(\\s+masala\\b)?","g");
+var PLANT=new RegExp("(\\b[a-z]+\\s+)?\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b(\\s+(?:masala|curry|gravy|rice|korma|makhani)\\b)?","g");
 var PLANTJOIN=/^(?:with|in|and|of|on|plus|or|using|a|an|the)\s+$/;
 /* "rice" (and "chawal") also ends a rice dish ("brown rice", "jeera rice", "curd rice", "dal chawal"), so a rice product is one only when
    nothing but a joining word comes before it (fix-r12, the carve-outs read with the frame grid) */
 function riceTail(w,pre){return /^(?:rice|chawal)$/.test(w)&&!!pre&&!PLANTJOIN.test(pre);}
-function plantOut(t){return t.replace(PLANT,function(m,pre,prod,masala){var w=prod.split(/\s+/);
-  if(masala&&w[1]==="butter")return m;
+function plantOut(t){return t.replace(PLANT,function(m,pre,prod,dish){var w=prod.split(/\s+/);
+  if(dish&&/^(?:cream|butter)$/.test(w[1]))return m;
   if(riceTail(w[0],pre))return m;
-  return (pre||"")+w[0]+" plant"+(masala||"");});}
+  return (pre||"")+w[0]+" plant"+(dish||"");});}
 /* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
 var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}   /* Hindi plurals in -e (phulke, kulche, bhature) are listed as words */
 /* a rice or chawal flatbread is one only when the rice does not end another dish: "Dal chawal roti", "Jeera rice paratha" and "Brown rice

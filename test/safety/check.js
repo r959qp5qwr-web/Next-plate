@@ -78,15 +78,19 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   const NUTS = ['almond', 'cashew', 'peanut'], SOYW = ['soy', 'soya'];
   let shownV = 0;
   for (const f of FRAMES) for (const x of LEFT) for (const y of RIGHT) { const name = cap(f.replace('X', x).replace('Y', y)), prod = PLANTOK.includes(x + ' ' + y);
-    const plantOK = prod && !(x === 'rice' && TAIL.test(f)) && !(y === 'butter' && / masala$/.test(f));
+    // a plant cream or nut butter before a dish word reads as dairy (coordinator's default, fix-r12): "Cashew cream masala", "Peanut butter curry"
+    const plantOK = prod && !(x === 'rice' && TAIL.test(f)) && !(/^(?:cream|butter)$/.test(y) && /^X Y (?:rice|masala|curry)$|^brown X Y rice$/.test(f));
     for (const [o, want] of [[{ diet: 'vegan' }, plantOK], [{ leave: ['dairy'] }, plantOK], [{ leave: ['nut'] }, !NUTS.includes(x)], [{ leave: ['soya'] }, !SOYW.includes(x)]]) {
       const r = plateOffered(o, withItem(name, ['plain'], ['plain'])); if (o.diet === 'vegan' && r.ok) shownV++;
       add('S1-S2 plant products: named one by one (grid, tags stripped)', r.ok === want, `${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'} (${r.why || ''}), expected ${want ? 'shown' : 'dropped'}`); } }
-  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 140, `only ${shownV} plant-product cells shown to a vegan client`);
+  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 120, `only ${shownV} plant-product cells shown to a vegan client`);
   // the audit's names, and the products that still pass
   for (const [name, o, want] of [['Brown rice curd rice', { diet: 'vegan' }, false], ['Brown rice curd rice', { leave: ['dairy'] }, false], ['Red rice curd rice', { diet: 'vegan' }, false], ['Rice curd', { leave: ['dairy'] }, false],
     ['Rice curd and pickle', { diet: 'vegan' }, false], ['Leftover rice curd mix', { leave: ['dairy'] }, false], ['Rice yogurt bowl', { diet: 'vegan' }, false], ['Curd rice', { diet: 'vegan' }, false], ['Peanut curd rice', { diet: 'vegan' }, false],
     ['Cashew butter masala', { diet: 'vegan' }, false], ['Cashew butter masala', { leave: ['dairy'] }, false], ['Almond butter masala', { diet: 'vegan' }, false],
+    ['Cashew cream masala', { diet: 'vegan' }, false], ['Coconut cream masala', { leave: ['dairy'] }, false], ['Peanut butter curry', { diet: 'vegan' }, false], ['Almond butter rice', { diet: 'vegan' }, false],
+    ['Cashew cream gravy', { diet: 'vegan' }, false], ['Coconut cream korma', { diet: 'vegan' }, false], ['Cashew cream makhani', { leave: ['dairy'] }, false], ['Coconut cream curry', { diet: 'vegan' }, false],
+    ['Coconut milk korma', { diet: 'vegan' }, true], ['Coconut milk rice', { diet: 'vegan' }, true], ['Coconut cream', { diet: 'vegan' }, true],
     ['Coconut milk curry', { diet: 'vegan' }, true], ['Rice milk porridge', { diet: 'vegan' }, true], ['Oats in rice milk', { diet: 'vegan' }, true], ['Oat milk porridge', { diet: 'vegan' }, true], ['Soy curd rice', { diet: 'vegan' }, true],
     ['Almond butter toast', { diet: 'vegan' }, true], ['Peanut butter toast', { diet: 'vegan' }, true], ['Thin coconut milk', { leave: ['dairy'] }, true],
     ['Almond milk', { leave: ['nut'] }, false], ['Soy milk', { leave: ['soya'] }, false], ['Peanut butter toast', { leave: ['nut'] }, false]]) {
