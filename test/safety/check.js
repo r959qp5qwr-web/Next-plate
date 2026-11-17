@@ -180,6 +180,22 @@ for (const [tag, names] of Object.entries(HO.script)) for (const name of names) 
   for (const [k, v] of Object.entries(HO)) { if (k === 'notHidden') continue; const list = Array.isArray(v) ? v : [].concat(...Object.values(v));
     for (const n of list) { const l = n.toLowerCase(); add('held-out names stay out of the engine', !new RegExp('(?<![a-z\\u0900-\\u0bff])' + l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-z\\u0900-\\u0bff])').test(src), `"${n}" (${k}) appears in src/v5/core.js or src/v6/engine.js`); } } }
 
+// ---------- m7 (fix-r15; safety audit of c666d34): the grain-dish list and the wheat list are held together ----------
+// Every word of the engine's grain-dish list (GRAINT, read from the page) is classed by this test's own table (lexicon.json "grainForms15"
+// and known.wheat): wheat, not wheat (by group, with the reason) or held out of the wheat list with its cost. A word in no class fails, so a new
+// GRAINT word must be classed; every wheat form is read as wheat in four frames, and no "not wheat" word is (the false-hit side).
+{ const GF = L.grainForms15 || {}, NOTW = [].concat(...Object.values(GF.notWheat || {})), HELD = GF.heldOut || {}, WH = new Set(L.wheat), wp = prof({ leave: ['wheat'] });
+  const gw = typeof GRAINT === 'string' ? GRAINT.split('|') : [];
+  add('m7 the grain-dish list is read from the page', gw.length > 200, `${gw.length} GRAINT words`);
+  for (const w of gw) { const cls = [WH.has(w) || (/s$/.test(w) && WH.has(w.slice(0, -1))) ? 'wheat' : null, NOTW.includes(w) ? 'not wheat' : null, w in HELD ? 'held out' : null].filter(Boolean);
+    add('m7 every grain-dish word is classed (wheat, not wheat, or held out with a reason)', cls.length === 1, `"${w}": ${cls.length ? cls.join(' and ') : 'in no class'}`);
+    if (cls[0] === 'wheat') for (const t of [cap(w), 'Veg ' + w, cap(w) + ' with dal', 'Dal and ' + w]) add('m7 every wheat form the grain-dish list knows is read as wheat', crosses(t, wp), `wheat left out: "${t}" was not read as wheat`);
+    if (cls[0] === 'not wheat') add('m7 no false hit: a grain-dish word that is not wheat is not read as wheat', !crosses(cap(w), wp), `wheat left out: "${cap(w)}" was read as wheat`); }
+  // the audit's names, and the forms beside them, as a plate item tagged "plain", for a wheat-free client
+  for (const n of ['Chappathi', 'Chapathy', 'Ruti', 'Parotha', 'Bhatoora', 'Kochuri', 'Veg chow mein', 'Veg sandwich', 'Kathi roll', 'Paneer frankie', 'Dabeli', 'Veg thukpa', 'Khubz', 'Kuboos', 'Penne arrabbiata', 'Macaroni', 'Orzo salad',
+    'Veg ravioli', 'Veg lasagne', 'Gnocchi', 'Veg sub', 'Spring rolls', 'Thin crust pizza', 'Methi muthia', 'Thalipeeth', 'Rava uppittu', 'Semiya upma', 'Garlic toasts', 'Veg burgers'])
+    add('m7 the audit\'s wheat names are not offered to a wheat-free client with a plain tag', !plateOffered({ leave: ['wheat'] }, withItem(n, ['plain'], ['plain'])).ok, `"${n}" was offered`); }
+
 // ---------- S1-S4 on whole replies through plan(kind).check(), the word net alone (tags that leave the food out) ----------
 const plateWith = (food, madeOf) => { const m = J(fx.meals.meals[0]); m.title = 'Dal with ' + food; m.items[1] = { food: cap(food), grams: 80, group: 'carbs', contains: ['grain'] }; m.grain = { food: cap(food), made_of: madeOf, grams: 80 }; return m; };
 for (const t of L.wheat) { const c = checkMeal(plateWith(plural(t), 'whole wheat'), prof({ leave: ['wheat'] })); add('S1 plate', !c.meal, `wheat left out, plate "Dal with ${plural(t)}" was offered`); }
@@ -699,6 +715,34 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
   const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
   add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
   add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
+// ---------- m3 (fix-r15; safety audit of c666d34): the Rescue portion line is the one weight the model wrote, read whole ----------
+{ const por = (t) => { const r = rescueOut({}, 'Veg thali', { name: 'Veg thali', portion: t }, []); return r.status === 'ok' ? r.dish.portion : '(not helped)'; };
+  for (const t of ['1 bowl curry (300g) with 2 naans (180g)', '1 bowl curry (300 g) with 2 naans (180 g)', '1,200 g', '250-300 g', '250 to 300 g', '2 x 150 g', '150 g each', '350.5 g', '0 g', 'one plate'])
+    add('m3 a portion with more than one weight, a digit group, a range or no whole weight shows no portion line', por(t) === '', `"${t}" shows ${JSON.stringify(por(t))}`);
+  for (const [t, want] of [['about 550 g', '≈ 550 g'], ['1 handi, about 650 g', '≈ 650 g'], ['1 plate, 420 grams', '≈ 420 g'], ['2 naans with a bowl of curry, 480g', '≈ 480 g']])
+    add('m3 one weight is shown as written (control)', por(t) === want, `"${t}" shows ${JSON.stringify(por(t))}`); }
+// ---------- m9 (fix-r15): the subtitle is read whole up to 1,000 characters, a cap for time only; beyond it the plate drops ----------
+{ const sub = (n) => { const m = platePlain(); let t = 'Sprouted moong and jowar roti'; while (t.length < n) t += ' with cucumber'; m.subtitle = t.slice(0, n - 1) + 'y'; return m; };   // ends on a letter, so no trim moves the length
+  const t0 = Date.now(), long = plateOffered({}, sub(60000)).ok, ms = Date.now() - t0;
+  add('m9 the subtitle: read whole to 1,000 characters, the plate drops beyond, in little time', plateOffered({}, sub(1000)).ok && !plateOffered({}, sub(1001)).ok && !long && ms < 500, `1,000: ${plateOffered({}, sub(1000)).ok}, 1,001: ${plateOffered({}, sub(1001)).ok}, 60,000: ${long} in ${ms} ms`);
+  const bad = platePlain(); bad.subtitle = 'Sprouted moong with ' + 'cucumber '.repeat(100).slice(0, 900) + ' and paneer'; add('m9 the subtitle is read whole up to the cap: a barred word at its end drops the plate', !plateOffered({ leave: ['dairy'] }, bad).ok, 'paneer at the end of a 940-character subtitle was not read'); }
+
+// ---------- m2 (fix-r15; safety audit of c666d34): a one-tap change that moves the declared grain moves its carbs the same way ----------
+// The recorded change (eval/v5/results-live-r37.json, "Gujarati Toor Dal with Bajra Rotla", express): Bajra rotla 80 g to 120 g with 2 g carbs
+// less, honest tags added; it is not offered on the plate path or the tune path. Controls: grain up with carbs up, grain down with carbs
+// down, and the grain moved with carbs unchanged are offered; grain down with carbs up is not.
+{ const src = J(require(path.join(__dirname, '../../eval/v5/results-live-r37.json')).find(r => r.id === 'jain-lunch').reply.raw.meals.find(m => /Bajra Rotla/.test(m.title)));
+  src.contains = ['grain']; src.items.forEach(i => { i.contains = /rotla|rice/i.test(i.food) ? ['grain'] : ['plain']; }); src.swaps = { protein: [], base: [] };
+  const exp = J(src.alchemy.express); src.alchemy = {};
+  const run2 = (after, dc, dk) => { const m = J(src); m.alchemy.express = Object.assign(J(exp), { contains: ['plain'], add_item: '', add_grams: 0, grain_grams_after: after, deltaCarbs: dc, deltaKcal: dk });
+    const out = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'jain' }), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(m)).meals[0], null);
+    const kept = out && Object.assign({}, out, { swaps: { protein: [], base: [] }, alchemy: {} }), tp = kept && plan('tune', { profile: Object.assign({}, BASE, { diet: 'jain' }), slot: 'lunch', meal: kept });
+    const t = safe(() => tp.check({ swaps: { protein: [], base: [] }, alchemy: m.alchemy }), {}); return [!!(out && out.alchemy.express), !!(t.alchemy && t.alchemy.express), !!out]; };
+  const rec = run2(120, -2, -15);
+  add('m2 the recorded change (grain up, carbs down) is not offered', rec[2] && !rec[0] && !rec[1], JSON.stringify(rec));
+  for (const [after, dc, dk, want, what] of [[120, 6, 15, true, 'grain up, carbs up'], [60, -6, -30, true, 'grain down, carbs down'], [120, 0, 15, true, 'grain up, carbs unchanged'], [60, 4, 10, false, 'grain down, carbs up'], [80, -2, -15, true, 'grain unchanged']]) {
+    const r = run2(after, dc, dk); add('m2 a grain change goes with its carbs, by direction only', r[2] && r[0] === want && r[1] === want, `${what} (${after} g, ${dc} g carbs): plate path ${r[0]}, tune path ${r[1]}, expected ${want}`); } }
+
 // ---------- the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a model figure is read as written, or its element is dropped ----------
 // B1: on insulin or sugar tablets a swap's or a change's kcal delta past -400 was cut to -400 before the S6 line read it, so a plate under the
 // usual size by the model's own figures was offered, and shown 40 to 50 kcal above what the model wrote. A plate 430 kcal over the usual

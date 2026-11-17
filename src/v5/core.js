@@ -103,7 +103,15 @@ var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds"
     /* (fix-r14; safety audit of 7eaadcf, backlog head) wheat words the grain lists (GRAINMATW, GRAINT) know, and the Hindi plurals the S8 piece
        list (CNTPIECE) knows; one plural of roti is held out by the lexicon and stays out */
     "wholewheat","wholemeal","durum","spelt","multigrain","rotiya","chapatiya","chapatiyaan","chapatiyon","puriya","puriyaan","parathon","samoson",
-    "bhaturon","kulchon","kachoriyan","kachoriyaan","kachoriyon","golgappe","golgappa","rotliyan","rotliyaan"],
+    "bhaturon","kulchon","kachoriyan","kachoriyaan","kachoriyon","golgappe","golgappa","rotliyan","rotliyaan",
+    /* (fix-r15; safety audit of c666d34, m7) every wheat dish and spelling the grain-dish list (GRAINT) knows; a check holds the two lists
+       together (test/safety/check.js, "m7"). Wheat by default, fail closed: a roll, a sub, a crust, muthia, thalipeeth and uppittu (rava).
+       Held out of this list, each with its cost in the recorded replies: flatbread (203 plates shown to a wheat-free client, most of them
+       sorghum, jowar or bajra flatbreads), pancake (44: moong and besan pancakes), cracker (2: jowar and bajra roti crackers), cake (4: pulse
+       and rice cakes; a sweet cake is read as sweet), and "chow" or "mein" alone (chow-chow is a vegetable, "mein" is Hindi for "in") */
+    "chappathi","chapathy","ruti","parotha","bhatoora","kochuri","chow mein","sandwich","sandwiches","roll","rolls","frankie","dabeli","thukpa",
+    "khubz","kuboos","kubboos","penne","macaroni","orzo","ravioli","lasagne","lasagna","gnocchi","sub","subs","semiya","toasts","burgers","crust",
+    "muthia","muthiya","thalipeeth","uppittu"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
 var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi",
   "sweet lassi","mango lassi","mango shake",   /* sweet drinks (safety audit of b4633dd, backlog head) */
@@ -897,10 +905,11 @@ function checkMeal(m,p){
   if(!m||typeof m!=="object")return {drop:"shape"};
   /* the raw-field rule (fix-r14): every field is read whole. More than seven items (safety audit of 7eaadcf, M2: an eighth item was neither
      checked nor shown while its energy stayed in the figures), a title over 70 characters, a grain name over 200 or what it is made of over
-     40, or a field that is not readable text, drops the plate; nothing is cut to fit. The subtitle has no cap: 20 recorded subtitles run
-     past the old 120 (owner question), and none is shown. */
+     40, or a field that is not readable text, drops the plate; nothing is cut to fit. The subtitle (never shown) is read whole up to 1,000
+     characters and drops the plate beyond: a cap for time only (fix-r15; safety audit of c666d34, m9: a 60,000-character subtitle took
+     about 1.4 s a plate), about five times the longest of the 1,157 distinct recorded subtitles (209 characters; 20 run past 120). */
   var mi=Array.isArray(m.items)?m.items:[];if(mi.length>7)return {drop:"shape"};
-  var gr=m.grain&&typeof m.grain==="object"?m.grain:{},rawTitle=modelText(m.title,70),rawSub=modelText(m.subtitle,1e6),rawGF=modelText(gr.food,200),rawGM=modelText(gr.made_of,40);
+  var gr=m.grain&&typeof m.grain==="object"?m.grain:{},rawTitle=modelText(m.title,70),rawSub=modelText(m.subtitle,1000),rawGF=modelText(gr.food,200),rawGM=modelText(gr.made_of,40);
   if(rawTitle==null||rawSub==null||rawGF==null||rawGM==null)return {drop:"shape"};
   var items=mi.map(function(it){
     var rf=modelText(it&&it.food,200);return {food:rf&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",grams:fig(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
@@ -973,7 +982,11 @@ function checkMeal(m,p){
        plate would show the grain and the change's figures would have taken it off ("Rice" named for the item "Jeera rice", 200 g listed;
        safety audits of b4633dd m4 and 530a503 m1) */
     if(!dg&&after===0&&items.some(function(i){return i.grams>=30&&isGrain(i.food);}))return;
-    if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
+    /* (fix-r15; safety audit of c666d34, m2) a change that moves the declared grain moves its carbs the same way: more grain with fewer carbs,
+       or less grain with more carbs, is not offered ("Bajra rotla goes to 120 g" with 2 g carbs less). Direction only, no tolerance figure;
+       carbs unchanged pass */
+    if(dg&&after!=null&&after!==dg.grams&&(after>dg.grams?x.deltaCarbs<0:x.deltaCarbs>0))return;
+    if(dg&&after!=null&&after!==dg.grams)x.grainAfter=after;   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
     al[k]=x;});
@@ -1042,9 +1055,18 @@ function checkRescue(r,p,c){
      A dish name over 80 characters or not readable text is not helped. */
   var dname=modelText(d.name,80);
   if(dname==null||tagList(d.contains).indexOf("supplement")>=0||supp(typed)||supp(dname))return {status:"empty",reason:"diet",dropped:{dish:1}};
-  var g=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(String(d.portion||"")),por=g?"≈ "+Math.round(+g[1])+" g":"";   /* the weight, written by the engine */
+  var por=portionLine(d.portion);   /* the weight, written by the engine */
   return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:"",breakdown:"",contains:tagList(d.contains)},hacks:[]};
 }
+
+/* (fix-r15; safety audit of c666d34, m3) the Rescue portion line is the one weight the model wrote, read whole: a single grams figure, a
+   whole number with no digit group, not one end of a range, not a count times a weight and not a weight for each piece. More than one weight
+   ("1 bowl curry (300 g) with 2 naans (180 g)"), "1,200 g", "250-300 g", "2 x 150 g" or "150 g each" shows no portion line, as a field the
+   checks cannot read whole shows nothing (the raw-field rule) */
+function portionLine(t){t=typeof t==="string"?t:"";var all=t.match(/\d[\d,.]*\s*(?:g|gm|gms|grams?)\b/gi)||[];if(all.length!==1)return "";
+  var m=/(\d[\d,.]*)\s*(?:g|gm|gms|grams?)\b/i.exec(t),n=m[1],before=t.slice(0,m.index),after=t.slice(m.index+m[0].length);
+  if(!/^\d+$/.test(n)||+n<1||/\d\s*(?:-|\u2013|\u2014|to|x|\u00D7|\*)\s*$/i.test(before)||/^\s*(?:each|per\b|apiece|a\s+piece)/i.test(after))return "";
+  return "\u2248 "+(+n)+" g";}
 
 /* ---------- prompts. Built only from validated fields; the server builds them itself ---------- */
 function rulesText(p){

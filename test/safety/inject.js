@@ -124,6 +124,9 @@ const basePlate = (schema) => { const m = project(J(srcPlate), schema); m.contai
   m.swaps.protein.forEach(s => { s.contains = ['plain']; }); m.swaps.base.forEach(s => { s.contains = ['grain']; });
   for (const k of ['protein', 'base']) m.swaps[k][TARGET[k]].grams = MARK[k];
   for (const c of Object.keys(m.alchemy)) Object.assign(m.alchemy[c], { contains: ['plain'], add_item: '', add_grams: 0 });
+  // the recorded express change raises the grain (80 g to 120 g) while its carbs fall 2 g: m2 of the safety audit of c666d34, now not offered
+  // (fix-r15). The base keeps it at the grain's own grams, so every change is offered and no drop below is vacuous
+  if (m.alchemy.express) m.alchemy.express.grain_grams_after = m.grain.grams;
   m.taste = ['tangy', 'smoky', 'spicy']; m.planned_around = ['plain_day']; return m; };
 const RESC = rec('eval/v6/results-window-72758ac.json', 'rescue-with-day'), RESCTEXT = 'Paneer butter masala with 2 butter naan';
 const LOG = rec('eval/v6/results-window-72758ac.json', 'log-thali'), LOGTEXT = 'dal, 2 roti, bhindi sabzi, small bowl rice, salad';
