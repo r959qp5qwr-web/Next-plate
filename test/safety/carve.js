@@ -95,6 +95,11 @@ for (const e of NEXT) for (const [jn, js] of [['', ' '], ['-', '-'], ['and', ' a
   cells++; const t = e.head + js + w, r = refers(t), exempt = (jn === '' || jn === '-') && e.ok.test(w);
   add(e.id + ': kept from a referral only when the next word is in its list', !(r === false && !exempt), `"${t}" was not referred`);
   if (exempt && r !== false) add(e.id + ': control, a listed next word keeps it from a referral', refers(e.plain + js + w) !== false, `"${t}" was referred`); }
+// a plant product keeps its own nut or soya word in every cell, whatever the neighbour (S1: nut-free and soya-free clients)
+for (const [ph, o] of [['almond milk', { leave: ['nut'] }], ['cashew milk', { leave: ['nut'] }], ['cashew cream', { leave: ['nut'] }], ['peanut butter', { leave: ['nut'] }], ['almond butter', { leave: ['nut'] }],
+  ['soy milk', { leave: ['soya'] }], ['soya milk', { leave: ['soya'] }], ['soy curd', { leave: ['soya'] }], ['soya yogurt', { leave: ['soya'] }]]) for (const c of cellsOf(ph, '', 'cucumber', null)) {
+  cells++; const name = cap(c.text);
+  add('a plant product keeps its own nut or soya word (S1, nut-free and soya-free)', shownPlate(o, name) !== true, `${JSON.stringify(o)}: "${name}" was shown`); }
 // the swap and one-tap path, on a sample of the plate cells and the audit's names
 const AUDIT = [['Watermelon fresh lime juice', D], ['Pineapple tangy lemon juice', D], ['Caramel puffed rice cakes', D], ['Mango brown rice cakes', D], ['Watermelon lime juice', D], ['Orange and lemon juice', DV], ['Carrot and amla juice', DV], ['Mango and lime juice', DV], ['Pineapple lemon juice', D], ['Mint lime juice', D], ['Ginger lemon juice', D],
   ['Coconut rice cakes', DV], ['Mango rice cakes', DV], ['Banana rice cake', D], ['Date rice cakes', D], ['Caramel rice cakes', D]];

@@ -12,7 +12,7 @@ const RICEBREADS = ['rice roti', 'chawal ki roti', 'akki roti', 'rice paratha'];
 const PLANTMILK = ['coconut milk', 'almond milk', 'oat milk', 'soy milk', 'soya milk', 'rice milk', 'cashew milk', 'soy curd', 'soya curd', 'coconut yogurt', 'coconut yoghurt', 'soy yogurt', 'soya yogurt'];
 const PLANTFAT = ['coconut cream', 'cashew cream', 'peanut butter', 'almond butter'];
 const NEGPRE = ['with|and|but|rotis?|phulkas?|chapatis?|parathas?|flatbread|curry|dal|sabzi|chutney|salad|raita|greens|ghugni|bhaja|paste|chana|milk|tea|coffee|dish|dry', 'served|cooked|made|prepared|plain|warm|small'];
-const D = { health: 'diabetes' }, DV = { diet: 'veg', health: 'diabetes' }, VEGAN = { diet: 'vegan' }, NODAIRY = { leave: ['dairy'] }, NOWHEAT = { leave: ['wheat'] }, VEG = { diet: 'veg' };
+const D = { health: 'diabetes' }, DV = { diet: 'veg', health: 'diabetes' }, VEGAN = { diet: 'vegan' }, NODAIRY = { leave: ['dairy'] }, NOWHEAT = { leave: ['wheat'] }, VEG = { diet: 'veg' }, JAIN = { diet: 'jain' };
 const FOOD = [
   { id: 'lemon or lime juice (S4)', cls: 'sweet', rx: /\b(?:lemon|lime|nimbu|amla)\s+juice\b/g, word: /juice/, phrases: ['lemon juice', 'lime juice', 'nimbu juice', 'amla juice'], profiles: [D, DV],
     pre: two('with', 'fresh|tangy|tsps?|tbsps?|teaspoons?|tablespoons?|spoons?|spoonfuls?|\\d+(?:\\.\\d+)?|a|one|half'), post: set('and|with|squeeze|squeezed|dressing') },
@@ -28,7 +28,7 @@ const FOOD = [
   { id: 'rice and millet noodles, not wheat (S1)', cls: 'wheat', rx: /\b(?:rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(?:noodles?|vermicelli|pasta|sevai)\b/g, word: /\w+$/, phrases: ['rice noodles', 'ragi noodles', 'millet pasta', 'glass noodles', 'jowar vermicelli', 'rice sevai', 'konjac noodles', 'shirataki noodles', 'rice noodle'],
     profiles: [NOWHEAT], pre: two('with|in', 'plain|thin|flat'), post: set('with|and|salad|soup|bowl|stir') },
   { id: 'millet and rice bread, not wheat (S1)', cls: 'wheat', rx: /\b(?:jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(?:bread|breads|toast)\b/g, word: /\w+$/, phrases: ['jowar bread', 'bajra bread', 'ragi toast', 'millet bread', 'rice bread', 'gluten-free bread'], profiles: [NOWHEAT], pre: two('with', 'plain|soft'), post: set('with|and') },
-  { id: 'plant keema, not meat (S2)', cls: 'meat', rx: /\b(?:soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(?:keema|kheema)\b/g, word: /\w+$/, phrases: ['soya keema', 'mushroom keema', 'paneer keema', 'kathal keema', 'jackfruit keema', 'tofu kheema', 'veg keema', 'nutrela keema'], profiles: [VEG],
+  { id: 'plant keema, not meat (S2)', cls: 'meat', rx: /\b(?:soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(?:keema|kheema)\b/g, word: /\w+$/, phrases: ['soya keema', 'mushroom keema', 'paneer keema', 'kathal keema', 'jackfruit keema', 'tofu kheema', 'veg keema', 'nutrela keema'], profiles: [VEG, JAIN],
     pre: two('with'), post: set('matar|mutter|peas|masala|curry|with|and') },
   { id: 'sol kadhi, not dairy (S1, S2)', cls: 'dairy', rx: /\bsol\s+kadhi\b/g, word: /kadhi/, phrases: ['sol kadhi'], profiles: [VEGAN, NODAIRY], pre: two('with'), post: set('with|and|rice') },
   { id: 'butter beans, not dairy (S1, S2)', cls: 'dairy', rx: /\bbutter\s+beans?\b/g, word: /butter/, phrases: ['butter beans', 'butter bean'], profiles: [VEGAN, NODAIRY], pre: two('with|in', 'a|the'), post: set('with|and|curry|salad|sabzi|masala') },
@@ -63,4 +63,4 @@ const honest = (s, cls) => { let t = String(s).toLowerCase();
   for (const e of FOOD) if (e.cls === cls && e.rx) t = t.replace(e.rx, (m, i, str) => { const a = postTok(str, i + m.length);
     return walkPre(str, i, e.pre) && (!a || e.post.test(a)) ? m.replace(e.word, w => ' '.repeat(w.length)) : m; });
   return t; };
-module.exports = { FOOD, TYPED, NEXT, D, DV, VEGAN, NODAIRY, NOWHEAT, VEG, preTok, postTok, honest, allowed, walkPre };
+module.exports = { FOOD, TYPED, NEXT, D, DV, VEGAN, NODAIRY, NOWHEAT, VEG, JAIN, preTok, postTok, honest, allowed, walkPre };
