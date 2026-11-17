@@ -371,6 +371,11 @@ for (const [n, o] of FOUND) {
   for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
     const body = kind === 'meals' ? mealsReply(platePlain()) : kind === 'rescue' ? { dish: { name: 'Dal', portion: 'about 300 g', kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8, contains: ['plain'] } } : { items: [{ food: 'dal', grams: 200, group: 'protein' }], kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8 };
     add('a reply with status "refer" is a referral whatever refer_reason says (S7)', k.check(Object.assign({}, body, { status: 'refer', refer_reason: 'none' })).status === 'refer', kind); }
+  { const lg = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: '2 roti and dal' } }), lr = (o, it) => Object.assign({ status: 'ok', refer_reason: 'none', items: it || [{ food: 'dal', grams: 200, group: 'protein' }], kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8 }, o);
+    add('log: a reply with a figure missing is not read, fibre too', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(f => lg.check(lr({ [f]: undefined })).status !== 'ok') && lg.check(lr({})).status === 'ok', 'a log reply with a missing figure was read');
+    const items = lg.check(lr({}, [{ food: 'dal', group: 'protein' }, { food: '2 roti', grams: 140, group: 'carbs' }, { food: 'roti', grams: 140, group: 'carbs' }])).items || [];
+    add('log: an item with no grams, or not in the name shape, is not listed', JSON.stringify(items.map(i => i.food)) === '["roti"]', JSON.stringify(items));
+    for (const kind of ['meals', 'rescue', 'log', 'tune']) add('a request with no profile, no context or (log) no text is refused, with no error', [{}, { profile: BASE }, kind === 'log' ? { profile: BASE, ctx: { meal: 'lunch' } } : null].filter(Boolean).every(b => { const o = safe(() => plan(kind, b), { threw: 1 }); return !o.threw && o.error; }), kind); }
   { const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), d = (o) => ({ status: 'ok', refer_reason: 'none', dish: Object.assign({ name: 'Veg thali', portion: 'about 450 g', kcal: 580, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] }, o) });
     add('Rescue: a dish with a figure missing is not helped, fibre too', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(f => rp.check(d({ [f]: undefined })).status !== 'ok') && rp.check(d({})).status === 'ok', 'a dish with a missing figure was helped, or the control was not'); }
   add('a plate that is not an object is dropped, with no error', safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [null, 'Dal', 7, platePlain()] }).meals || []).length, -1) === 1 && safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [[], platePlain()] }).meals || []).length, -1) === 1, 'a null, text, number or list plate threw or was offered'); }
@@ -789,6 +794,16 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
   // stand-ins for the page around it. A missing function is a FAIL, not a skip.
   { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null; return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
     const appP = (o) => Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+    // the kept-plate rule at load and render (fix-r14, found by the mutation run): pruneKept takes off every kept plate whose base fails its
+    // own check (baseWhy: figures agree, S5, S6), and the whole reply when none is left; a stored entry that is not a reply is left alone
+    { const ctx = { STORE: { res: { a: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }, { items: [1] }, null, { ok: 1 }] }, b: { rules: 'R', meal: 'lunch', meals: [{ items: [1] }] },
+        c: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }] }, d: null, e: { rules: 'R', meal: 'lunch' }, f: { rules: 'R', meal: 'lunch', meals: [] } }, shown: { lunch: 'b' } },
+      rules: () => 'R', baseWhy: (m) => m.ok ? '' : 'refused', UI: { sel: 2, alc: {}, swp: 0, swb: 0 } };
+      const ok = run(['pruneKept'], ctx, '(pruneKept(), true)');
+      add('kept plates: pruneKept takes off each plate whose base fails its check, and the reply when none is left', ok === true && ctx.STORE.res.a && ctx.STORE.res.a.meals.length === 1 && !ctx.STORE.res.b && ctx.STORE.shown.lunch === null
+        && ctx.STORE.res.c.meals.length === 1 && 'd' in ctx.STORE.res && ctx.STORE.res.e && ctx.STORE.res.f, ok === null ? 'pruneKept not found or threw' : JSON.stringify(ctx.STORE));
+      const ctx2 = { STORE: { res: { c: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }] } }, shown: {} }, rules: () => 'R', baseWhy: () => '', UI: { sel: 1 } };
+      add('kept plates: nothing taken off leaves the selection as it is', run(['pruneKept'], ctx2, '(pruneKept(), true)') === true && ctx2.UI.sel === 1, JSON.stringify(ctx2.UI)); }
     // m1: composedWhy keeps S5 (the grain stays with diabetes) and S6 (on medicines, the usual size) on every composed state
     { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
       const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, kcal: 4 * p + 4 * c + 9 * f }), base = fig(25, 80, 20);
