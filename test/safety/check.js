@@ -180,6 +180,22 @@ for (const [tag, names] of Object.entries(HO.script)) for (const name of names) 
   for (const [k, v] of Object.entries(HO)) { if (k === 'notHidden') continue; const list = Array.isArray(v) ? v : [].concat(...Object.values(v));
     for (const n of list) { const l = n.toLowerCase(); add('held-out names stay out of the engine', !new RegExp('(?<![a-z\\u0900-\\u0bff])' + l.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![a-z\\u0900-\\u0bff])').test(src), `"${n}" (${k}) appears in src/v5/core.js or src/v6/engine.js`); } } }
 
+// ---------- m7 (fix-r15; safety audit of c666d34): the grain-dish list and the wheat list are held together ----------
+// Every word of the engine's grain-dish list (GRAINT, read from the page) is classed by this test's own table (lexicon.json "grainForms15"
+// and known.wheat): wheat, not wheat (by group, with the reason) or held out of the wheat list with its cost. A word in no class fails, so a new
+// GRAINT word must be classed; every wheat form is read as wheat in four frames, and no "not wheat" word is (the false-hit side).
+{ const GF = L.grainForms15 || {}, NOTW = [].concat(...Object.values(GF.notWheat || {})), HELD = GF.heldOut || {}, WH = new Set(L.wheat), wp = prof({ leave: ['wheat'] });
+  const gw = typeof GRAINT === 'string' ? GRAINT.split('|') : [];
+  add('m7 the grain-dish list is read from the page', gw.length > 200, `${gw.length} GRAINT words`);
+  for (const w of gw) { const cls = [WH.has(w) || (/s$/.test(w) && WH.has(w.slice(0, -1))) ? 'wheat' : null, NOTW.includes(w) ? 'not wheat' : null, w in HELD ? 'held out' : null].filter(Boolean);
+    add('m7 every grain-dish word is classed (wheat, not wheat, or held out with a reason)', cls.length === 1, `"${w}": ${cls.length ? cls.join(' and ') : 'in no class'}`);
+    if (cls[0] === 'wheat') for (const t of [cap(w), 'Veg ' + w, cap(w) + ' with dal', 'Dal and ' + w]) add('m7 every wheat form the grain-dish list knows is read as wheat', crosses(t, wp), `wheat left out: "${t}" was not read as wheat`);
+    if (cls[0] === 'not wheat') add('m7 no false hit: a grain-dish word that is not wheat is not read as wheat', !crosses(cap(w), wp), `wheat left out: "${cap(w)}" was read as wheat`); }
+  // the audit's names, and the forms beside them, as a plate item tagged "plain", for a wheat-free client
+  for (const n of ['Chappathi', 'Chapathy', 'Ruti', 'Parotha', 'Bhatoora', 'Kochuri', 'Veg chow mein', 'Veg sandwich', 'Kathi roll', 'Paneer frankie', 'Dabeli', 'Veg thukpa', 'Khubz', 'Kuboos', 'Penne arrabbiata', 'Macaroni', 'Orzo salad',
+    'Veg ravioli', 'Veg lasagne', 'Gnocchi', 'Veg sub', 'Spring rolls', 'Thin crust pizza', 'Methi muthia', 'Thalipeeth', 'Rava uppittu', 'Semiya upma', 'Garlic toasts', 'Veg burgers'])
+    add('m7 the audit\'s wheat names are not offered to a wheat-free client with a plain tag', !plateOffered({ leave: ['wheat'] }, withItem(n, ['plain'], ['plain'])).ok, `"${n}" was offered`); }
+
 // ---------- S1-S4 on whole replies through plan(kind).check(), the word net alone (tags that leave the food out) ----------
 const plateWith = (food, madeOf) => { const m = J(fx.meals.meals[0]); m.title = 'Dal with ' + food; m.items[1] = { food: cap(food), grams: 80, group: 'carbs', contains: ['grain'] }; m.grain = { food: cap(food), made_of: madeOf, grams: 80 }; return m; };
 for (const t of L.wheat) { const c = checkMeal(plateWith(plural(t), 'whole wheat'), prof({ leave: ['wheat'] })); add('S1 plate', !c.meal, `wheat left out, plate "Dal with ${plural(t)}" was offered`); }
@@ -221,6 +237,8 @@ for (const title of ['Give the rice to your family and eat the rajma', 'Let the 
 // and a large order still gets a portion move (no false hit)
 for (const kcal of [700, 900, 1200, 1600]) for (const carbs of [60, 100, 160]) { const fats = Math.round((kcal - 4 * 24 - 4 * carbs) / 9);   // figures that agree (A2)
   const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal, carbs, protein: 24, fats }, []);
+  // (fix-r15, the figure rule) 700 kcal with 160 g carbs leaves fats under 0: a figure out of range is not helped, where it was read as 0 g
+  if (fats < 0) { add('S5 rescue engine moves', r.status !== 'ok', `diabetes ${kcal} kcal ${carbs} g carbs: a dish with ${fats} g fats was helped`); continue; }
   add('S5 rescue engine moves', r.status === 'ok' && (r.hacks || []).every(h => h.kind !== 'portion' || -h.deltaCarbs <= carbs * 0.5) && (r.hacks || []).every(h => !/rice|roti|bread or rice/.test(h.title) || /last/.test(h.title)), `diabetes ${kcal} kcal ${carbs} g carbs: ${JSON.stringify((r.hacks || []).map(h => h.title + ' ' + h.deltaCarbs))}`); }
 { const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal: 1400, carbs: 100, protein: 24, fats: 101 }, []);
   add('S5 rescue no false hit', (r.hacks || []).some(h => h.kind === 'portion'), `diabetes: a 1400 kcal order got no portion move (${JSON.stringify(r.hacks)})`); }
@@ -697,6 +715,79 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
   const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
   add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
   add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
+// ---------- m3 (fix-r15; safety audit of c666d34): the Rescue portion line is the one weight the model wrote, read whole ----------
+{ const por = (t) => { const r = rescueOut({}, 'Veg thali', { name: 'Veg thali', portion: t }, []); return r.status === 'ok' ? r.dish.portion : '(not helped)'; };
+  for (const t of ['1 bowl curry (300g) with 2 naans (180g)', '1 bowl curry (300 g) with 2 naans (180 g)', '1,200 g', '250-300 g', '250 to 300 g', '2 x 150 g', '150 g each', '350.5 g', '0 g', 'one plate'])
+    add('m3 a portion with more than one weight, a digit group, a range or no whole weight shows no portion line', por(t) === '', `"${t}" shows ${JSON.stringify(por(t))}`);
+  for (const [t, want] of [['about 550 g', '≈ 550 g'], ['1 handi, about 650 g', '≈ 650 g'], ['1 plate, 420 grams', '≈ 420 g'], ['2 naans with a bowl of curry, 480g', '≈ 480 g']])
+    add('m3 one weight is shown as written (control)', por(t) === want, `"${t}" shows ${JSON.stringify(por(t))}`); }
+// ---------- m9 (fix-r15): the subtitle is read whole up to 1,000 characters, a cap for time only; beyond it the plate drops ----------
+{ const sub = (n) => { const m = platePlain(); let t = 'Sprouted moong and jowar roti'; while (t.length < n) t += ' with cucumber'; m.subtitle = t.slice(0, n - 1) + 'y'; return m; };   // ends on a letter, so no trim moves the length
+  const t0 = Date.now(), long = plateOffered({}, sub(60000)).ok, ms = Date.now() - t0;
+  add('m9 the subtitle: read whole to 1,000 characters, the plate drops beyond, in little time', plateOffered({}, sub(1000)).ok && !plateOffered({}, sub(1001)).ok && !long && ms < 500, `1,000: ${plateOffered({}, sub(1000)).ok}, 1,001: ${plateOffered({}, sub(1001)).ok}, 60,000: ${long} in ${ms} ms`);
+  const bad = platePlain(); bad.subtitle = 'Sprouted moong with ' + 'cucumber '.repeat(100).slice(0, 900) + ' and paneer'; add('m9 the subtitle is read whole up to the cap: a barred word at its end drops the plate', !plateOffered({ leave: ['dairy'] }, bad).ok, 'paneer at the end of a 940-character subtitle was not read'); }
+
+// ---------- m2 (fix-r15; safety audit of c666d34): a one-tap change that moves the declared grain moves its carbs the same way ----------
+// The recorded change (eval/v5/results-live-r37.json, "Gujarati Toor Dal with Bajra Rotla", express): Bajra rotla 80 g to 120 g with 2 g carbs
+// less, honest tags added; it is not offered on the plate path or the tune path. Controls: grain up with carbs up, grain down with carbs
+// down, and the grain moved with carbs unchanged are offered; grain down with carbs up is not.
+{ const src = J(require(path.join(__dirname, '../../eval/v5/results-live-r37.json')).find(r => r.id === 'jain-lunch').reply.raw.meals.find(m => /Bajra Rotla/.test(m.title)));
+  src.contains = ['grain']; src.items.forEach(i => { i.contains = /rotla|rice/i.test(i.food) ? ['grain'] : ['plain']; }); src.swaps = { protein: [], base: [] };
+  const exp = J(src.alchemy.express); src.alchemy = {};
+  const run2 = (after, dc, dk) => { const m = J(src); m.alchemy.express = Object.assign(J(exp), { contains: ['plain'], add_item: '', add_grams: 0, grain_grams_after: after, deltaCarbs: dc, deltaKcal: dk });
+    const out = safe(() => plan('meals', { profile: Object.assign({}, BASE, { diet: 'jain' }), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(m)).meals[0], null);
+    const kept = out && Object.assign({}, out, { swaps: { protein: [], base: [] }, alchemy: {} }), tp = kept && plan('tune', { profile: Object.assign({}, BASE, { diet: 'jain' }), slot: 'lunch', meal: kept });
+    const t = safe(() => tp.check({ swaps: { protein: [], base: [] }, alchemy: m.alchemy }), {}); return [!!(out && out.alchemy.express), !!(t.alchemy && t.alchemy.express), !!out]; };
+  const rec = run2(120, -2, -15);
+  add('m2 the recorded change (grain up, carbs down) is not offered', rec[2] && !rec[0] && !rec[1], JSON.stringify(rec));
+  for (const [after, dc, dk, want, what] of [[120, 6, 15, true, 'grain up, carbs up'], [60, -6, -30, true, 'grain down, carbs down'], [120, 0, 15, true, 'grain up, carbs unchanged'], [60, 4, 10, false, 'grain down, carbs up'], [80, -2, -15, true, 'grain unchanged']]) {
+    const r = run2(after, dc, dk); add('m2 a grain change goes with its carbs, by direction only', r[2] && r[0] === want && r[1] === want, `${what} (${after} g, ${dc} g carbs): plate path ${r[0]}, tune path ${r[1]}, expected ${want}`); } }
+
+// ---------- the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a model figure is read as written, or its element is dropped ----------
+// B1: on insulin or sugar tablets a swap's or a change's kcal delta past -400 was cut to -400 before the S6 line read it, so a plate under the
+// usual size by the model's own figures was offered, and shown 40 to 50 kcal above what the model wrote. A plate 430 kcal over the usual
+// size, figures that agree: a base swap of -440 kcal and a one-tap change of -450 kcal are not offered (on the plate path and the tune path);
+// a swap of -390 and a change of -380 that keep the plate at the usual size are offered, each with the figure the model wrote.
+{ const b1Plate = (K) => { const carbs = Math.round((K - 4 * 40 - 9 * 30) / 4);
+    return { title: 'Moong dal with brown rice', prepMinutes: 25, contains: ['grain'], kcal: K, protein: 40, carbs, fats: 30, fiber: 14, grain: { food: 'Brown rice', made_of: 'brown rice', grams: 350 },
+      items: [{ food: 'Moong dal', grams: 200, group: 'protein', contains: PT }, { food: 'Brown rice', grams: 350, group: 'carbs', contains: ['grain'] }, { food: 'Cucumber salad', grams: 100, group: 'greens', contains: PT }],
+      swaps: { protein: [], base: [{ food: 'Brown rice', grams: 350, made_of: 'brown rice', contains: ['grain'], ...z }] }, alchemy: {}, planned_around: [], taste: [] }; };
+  const ch = (dk, dp, dc, df) => ({ add_item: '', add_grams: 0, minutes: 20, grain_grams_after: 350, contains: PT, deltaKcal: dk, deltaProtein: dp, deltaCarbs: dc, deltaFats: df, deltaFiber: 0 });
+  const both = (o, m) => { const pl = plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }), a = safe(() => pl.check(mealsReply(J(m))).meals[0], null);
+    const kept = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(Object.assign(J(m), { swaps: { protein: [], base: [] }, alchemy: {} }))).meals[0], null);
+    const tp = kept && plan('tune', { profile: Object.assign({}, BASE, o), slot: 'lunch', meal: kept }), t = safe(() => tp.check({ swaps: m.swaps, alchemy: m.alchemy }), null);
+    return [['plate path', a], ['tune path', t && t.status === 'ok' ? t : null]]; };
+  for (const o of [{ health: 'diabetes', meds: 'yes' }, { health: 'diabetes', meds: 'unsure' }]) { const u = medsUsual(prof(o), 'lunch'), m = b1Plate(u + 430);
+    m.swaps.base.push({ food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: -440, deltaProtein: -4, deltaCarbs: -80, deltaFats: -12, deltaFiber: 0 },
+      { food: 'Jowar roti', grams: 90, made_of: 'jowar', contains: ['grain'], deltaKcal: -390, deltaProtein: -4, deltaCarbs: -70, deltaFats: -10, deltaFiber: 0 });
+    m.alchemy = { gut: ch(-450, -10, -35, -30), express: ch(-380, -5, -50, -18) };
+    for (const [where, c] of both(o, m)) {
+      add('figure rule B1: a swap or change past -400 kcal is not offered on medicines', !!c && !c.swaps.base.some(s => s.food === 'Bajra roti') && !c.alchemy.gut, `${JSON.stringify(o)} ${where}, usual ${u}, plate ${u + 430}: ${c ? JSON.stringify([c.swaps.base.map(s => [s.food, s.deltaKcal]), Object.keys(c.alchemy).map(k => [k, c.alchemy[k].deltaKcal])]) : 'plate not offered'}`);
+      add('figure rule B1: a swap and a change that keep the usual size are offered with the figure written (control)', !!c && c.swaps.base.some(s => s.food === 'Jowar roti' && s.deltaKcal === -390) && !!c.alchemy.express && c.alchemy.express.deltaKcal === -380, `${JSON.stringify(o)} ${where}: ${c ? JSON.stringify([c.swaps.base.map(s => [s.food, s.deltaKcal]), Object.keys(c.alchemy)]) : 'plate not offered'}`); } }
+  // the same cut on the half-the-carbs rule (S5 as the app holds it): diabetes, lunch, a swap of -100 g carbs is not offered; -60 g is, as written
+  { const o = { health: 'diabetes', meds: 'no' }, m = b1Plate(1100);
+    m.swaps.base.push({ food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: -400, deltaProtein: -4, deltaCarbs: -100, deltaFats: 2, deltaFiber: 0 },
+      { food: 'Jowar roti', grams: 90, made_of: 'jowar', contains: ['grain'], deltaKcal: -260, deltaProtein: -4, deltaCarbs: -60, deltaFats: 0, deltaFiber: 0 });
+    for (const [where, c] of both(o, m)) add('figure rule B1: a carbs delta past its range is not offered, one inside it is, as written (S5)', !!c && !c.swaps.base.some(s => s.food === 'Bajra roti') && c.swaps.base.some(s => s.food === 'Jowar roti' && s.deltaCarbs === -60), `diabetes ${where}: ${c ? JSON.stringify(c.swaps.base.map(s => [s.food, s.deltaCarbs])) : 'plate not offered'}`); }
+  // every combination the engine offers stays inside a plate's ranges: a swap and a change that each keep the fats at 4 g but together take
+  // them under 0 are not both offered (pruneCombos); each alone is a figure the model wrote and stays in range
+  { const m = platePlain(); Object.assign(m, { kcal: 520, protein: 22, carbs: 80, fats: 10, fiber: 14 });
+    m.swaps = { protein: [{ food: 'Sprouted moong', grams: 200, contains: PT, ...z }, { food: 'Steamed moong', grams: 180, contains: PT, deltaKcal: -50, deltaProtein: 0, deltaCarbs: 0, deltaFats: -6, deltaFiber: 0 }], base: [] };
+    m.alchemy = { gut: { add_item: '', add_grams: 0, minutes: 20, grain_grams_after: 90, contains: PT, deltaKcal: -50, deltaProtein: 0, deltaCarbs: 0, deltaFats: -6, deltaFiber: 0 } };
+    const c = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))).meals[0], null), both = !!c && c.swaps.protein.some(s => s.food === 'Steamed moong') && !!c.alchemy.gut, one = !!c && (c.swaps.protein.some(s => s.food === 'Steamed moong') || !!c.alchemy.gut);
+    add('figure rule: no combination offered leaves a plate\'s ranges (fats under 0)', !!c && !both && one, c ? JSON.stringify([c.swaps.protein.map(s => s.food), Object.keys(c.alchemy)]) : 'plate not offered'); }
+  // m5: an item's grams 0, null, "", -5, 1.5, "200" or a word drop the plate (they showed "1 g"); add_grams 0, null, "", -5 with a named food
+  // drop the change (it showed "Add 1 g ..."); a protein delta of -22 drops the change (it showed -10); controls as written
+  for (const g of [0, null, '', -5, 1.5, '200', 'x', 801]) { const m = platePlain(); m.items[2].grams = g; add('figure rule m5: an item weight that is not a weight drops the plate', !plateOffered({}, m).ok, `grams ${JSON.stringify(g)}: the plate was offered`); }
+  { const m = platePlain(); m.items[2].grams = 1; add('figure rule m5: a 1 g item is offered as written (control)', plateOffered({}, m).ok, 'a 1 g item dropped the plate'); }
+  for (const g of [0, null, '', -5, 501, 'x']) { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('', PT, 90), { add_item: 'Paneer cubes', add_grams: g }) });
+    add('figure rule m5: an added food with no weight drops the change', !(t.alchemy || {}).protein, `add_grams ${JSON.stringify(g)}: ${JSON.stringify((t.alchemy || {}).protein && t.alchemy.protein.note)}`); }
+  { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('', PT, 90), { add_item: 'Paneer cubes', add_grams: 60 }) }); add('figure rule m5: an added food with its weight is offered as written (control)', !!(t.alchemy || {}).protein && t.alchemy.protein.itemGrams === 60 && /Add 60\s+g paneer cubes/.test(t.alchemy.protein.note), JSON.stringify(t.alchemy)); }
+  { const t = tuneOut({}, 'lunch', { gut: Object.assign(NOTE('', PT, 90), { deltaKcal: -100, deltaProtein: -22, deltaCarbs: 4, deltaFats: -3 }) }), t2 = tuneOut({}, 'lunch', { gut: Object.assign(NOTE('', PT, 90), { deltaKcal: -60, deltaProtein: -9, deltaCarbs: -4, deltaFats: -1 }) });
+    add('figure rule m5: a change protein delta past -10 is not offered; one inside is, as written', !(t.alchemy || {}).gut && !!(t2.alchemy || {}).gut && t2.alchemy.gut.deltaProtein === -9, JSON.stringify([t.alchemy, t2.alchemy])); }
+  // the log took a kcal more than a fifth off its macros and put its own figure in place; now that reply is not read (0 of 30 recorded)
+  { const lg = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: 'dal and rice' } }), r = (k) => lg.check({ status: 'ok', refer_reason: 'none', items: [{ food: 'dal', grams: 200, group: 'protein' }], kcal: k, protein: 18, carbs: 60, fats: 10, fiber: 6 });
+    add('figure rule: the log shows the kcal written, or does not read the reply', r(900).status !== 'ok' && r(400).status === 'ok' && r(400).kcal === 400, JSON.stringify([r(900).status, r(900).kcal, r(400).kcal])); } }
 add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------
@@ -851,6 +942,135 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     { const f = run(['has', 'profileOut', 'hookProf', 'hooksSaid'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' }), medsUsual, hookSaid: typeof hookSaid === 'function' ? hookSaid : undefined }, 'hooksSaid');
       const out = f ? f(['lighter_now', 'late_now', 'protein_low'], 'lunch', { lighter_now: 'A lighter lunch', late_now: 'Late', protein_low: 'Protein' }) : null;
       add('m4 app: with diabetes the "Planned around" lines leave out lighter and late', !!out && out.length === 1 && out[0] === 'Protein', JSON.stringify(out)); }
+    // ---------- m6 (fix-r15; safety audit of c666d34): the app guards the audit's mutants removed with every Node check still passing ----------
+    const appSrc6 = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8');
+    // the S6 plate flag: a kept base plate under the usual size on medicines is refused by itself (the base is the plate: only the flag can)
+    { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
+      const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, fiber: 6, kcal: 4 * p + 4 * c + 9 * f }), small = fig(14, 60, 8), dm = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }));
+      add('m6 app S6: a kept plate under the usual size is refused on its own (the plate flag)', !!dm && dm.u > small.kcal && !!dm.composedWhy(small, small, { meal: 'lunch', plate: true }) && !dm.composedWhy(small, small, { meal: 'lunch' }), dm ? JSON.stringify([dm.u, dm.composedWhy(small, small, { meal: 'lunch', plate: true })]) : 'composedWhy not found'); }
+    // the rules stamp holds every answer the food rules and the usual size are made of: one tick or figure changed changes the stamp
+    { const P0 = appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes', diet: 'veg', leave: ['nut'] }), st = (P) => run(['rules'], { P }, 'rules()'), s0 = st(P0);
+      for (const [what, o] of [['a food left out (dairy)', { leave: ['nut', 'dairy'] }], ['a condition (high BP)', { conds: ['diabetes', 'bp'] }], ['the diet', { diet: 'vegan' }], ['the medicine answer', { meds: 'no' }],
+        ['weight', { kg: 80 }], ['height', { cm: 170 }], ['age', { age: 60 }], ['sex', { sex: 'm' }], ['activity', { act: 'mod' }]])
+        add('m6 app: the rules stamp changes with every answer it is made of', !!s0 && st(Object.assign({}, P0, o)) !== s0, `${what}: the stamp did not change (${s0})`); }
+    // high BP is read from the ticks: diabetes and high BP ticked together send bp, and the engine applies S3
+    { const f = run(['has', 'profileOut'], { P: appP({ conds: ['diabetes', 'bp'], health: 'diabetes', meds: 'no' }) }, 'profileOut()'), pr = f && safe(() => plan('meals', { profile: f, ctx: { meal: 'lunch' } }).prompt, '');
+      add('m6 app: high BP ticked beside diabetes is sent and read (S3)', !!f && f.bp === true && /High blood pressure: no pickle/.test(pr || ''), JSON.stringify(f && f.bp)); }
+    // the wait guards: a second tap during a wait sends nothing (plates and the log)
+    { let sentP = 0; const UIp = { busy: '' }; const cp = { UI: UIp, refresh: () => {}, render: () => {}, logEv: () => {}, C: { meal: 'lunch' }, ctxKey: () => 'k', askedFor: () => 's', api: () => { sentP++; }, profileOut: () => ({}), ctxOut: () => ({}), fileOut: () => ({}), $: () => ({}) };
+      const mp = run(['makePlates'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
+      add('m6 app: a second plates request during a wait sends nothing (the wait guard)', !!mp && sentP === 1, mp ? `${sentP} requests` : 'makePlates not found');
+      let sentL = 0; const UIl = { lbusy: false, lock: '' }; const cl = { UI: UIl, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: () => { sentL++; }, $: () => ({}) };
+      const lo = run(['logOther'], cl, 'logOther'); if (lo) { lo('dal and rice'); lo('dal and rice'); }
+      add('m6 app: a second log request during a wait sends nothing (the wait guard)', !!lo && sentL === 1, lo ? `${sentL} requests` : 'logOther not found'); }
+    // blocked(): a kidney condition or pregnancy ticked blocks every tab once set-up is done; diabetes or high BP does not
+    for (const [conds, want] of [[['kidney'], true], [['preg'], true], [['diabetes', 'kidney'], true], [['diabetes'], false], [['bp'], false], [[], false]]) {
+      const b = run(['has', 'blocked'], { P: appP({ conds, done: true }) }, 'blocked()'); add('m6 app: blocked() holds a kidney condition or pregnancy ticked', b === want, `${JSON.stringify(conds)}: ${b}`); }
+    // the tap checks and the render-time clears, read from the source: the one-tap and the swap handlers run plateWhy on the composed plate and
+    // put the state back before refusing; the Plate and Rescue renders clear a tap state that no longer holds
+    { const hero = grab('heroCard'), rp = grab('renderPlate'), rr = grab('renderRescue0');
+      add('m6 app: the one-tap handler refuses a composed plate that fails, and puts the state back', /var why=plateWhy\(m\);if\(why\)\{UI\.alc=snap\.alc;UI\.swb=snap\.swb;refuse\(why\);/.test(hero), 'not found in heroCard');
+      add('m6 app: the swap handler refuses a composed plate that fails, and puts the state back', /var why=plateWhy\(m\);if\(why\)\{UI\.alc=snap\.alc;UI\[x\[2\]\]=snap\.v;refuse\(why\);/.test(hero), 'not found in heroCard');
+      add('m6 app: the Plate render clears a tap state that no longer holds', /var m=curMeal\(\);if\(plateWhy\(m\)\)\{UI\.alc=\{\};UI\.swp=0;UI\.swb=0;\}var vw=viewOf\(m\);/.test(rp), 'not found in renderPlate');
+      add('m6 app: the Rescue render clears ticks that no longer hold', /if\(rescueWhy\(r,UI\.rmoves\)\)UI\.rmoves=\{\};/.test(rr), 'not found in renderRescue0'); }
+    // the figure rule in the app (fix-r15): a composed figure is the plate's plus what is on it, never floored at 0; a figure under 0 is refused;
+    // the Rescue figures shown and logged are the checked ones (no floor). A plate kept from an older build can carry such a swap.
+    { const vf = run(['viewOf', 'swapAt'], { UI: { swp: 1, swb: 0, alc: {} }, ALCH, sameName }, 'viewOf');
+      const m = { title: 'Moong dal with jowar roti', kcal: 300, protein: 20, carbs: 40, fats: 3, fiber: 5, minutes: 10, items: [{ food: 'Moong dal', grams: 150, group: 'protein' }, { food: 'Jowar roti', grams: 60, group: 'carbs' }], grain: { food: 'Jowar roti', grams: 60 },
+        swaps: { protein: [{ food: 'Moong dal', grams: 150, ...z }, { food: 'Tofu bhurji', grams: 100, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -4, deltaFats: -6, deltaFiber: 0 }], base: [] }, alchemy: {} };
+      const v = vf && safe(() => vf(m), null); add('figure rule app: viewOf does not floor a composed figure at 0', !!v && v.n.fats === -3, v ? JSON.stringify(v.n) : 'viewOf not found');
+      const cw = run(['has', 'profileOut', 'composedWhy'], { P: appP({}), C: { meal: 'lunch' }, figsAgree, medsUsual }, 'composedWhy'), neg = { kcal: 404, protein: 30, carbs: 80, fats: -4, fiber: 5 };
+      add('figure rule app: composedWhy refuses a figure under 0', !!cw && !!cw(neg, neg, { meal: 'lunch' }) && !cw(Object.assign({}, neg, { fats: 4, kcal: 476 }), neg, { meal: 'lunch' }), cw ? JSON.stringify(cw(neg, neg, { meal: 'lunch' })) : 'composedWhy not found');
+      add('figure rule app: the Rescue figures shown and logged are the checked ones (no floor)', /\["kcal","protein","carbs","fats","fiber"\]\.forEach\(function\(k\)\{a\[k\]=Math\.round\(a\[k\]\);\}\);/.test(grab('renderRescue0')), 'renderRescue0 floors a figure');
+      add('m1 as a class: the Plate\'s example asks go through appAskOK', /PROMPTS\.filter\(function\(e\)\{return typeof appAskOK==="function"\?appAskOK\(e,profileOut\(\)\)/.test(grab('askBlock')), 'askBlock does not filter with appAskOK'); }
+    // ---------- fix-r15: three findings that need no model slip (safety audit of c666d34, m1, m4, m8), and the insulin-profile default ----------
+    // m8: an unanswered medicine question (diabetes ticked from My food, which does not ask it) is read as "not sure" everywhere, as the engine
+    // reads it: the skipped-meal warning and the snack rule (onMeds) and what is sent (profileOut)
+    { const at = (o) => run(['has', 'onMeds', 'profileOut'], { P: appP(o) }, '{ on: onMeds(), sent: profileOut().meds }');
+      const cases = [[{ conds: ['diabetes'], health: 'diabetes', meds: '' }, true, 'unsure'], [{ conds: ['diabetes'], health: 'diabetes', meds: 'unsure' }, true, 'unsure'], [{ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }, true, 'yes'],
+        [{ conds: ['diabetes'], health: 'diabetes', meds: 'no' }, false, 'no'], [{ conds: ['bp'], health: 'bp', meds: '' }, false, 'no'], [{ conds: [], health: 'none', meds: '' }, false, 'no']];
+      for (const [o, on, sent] of cases) { const r = at(o); add('m8 app: an unanswered medicine question is read as "not sure" everywhere', !!r && r.on === on && r.sent === sent, `${JSON.stringify(o)}: ${JSON.stringify(r)}`); } }
+    // m4: the phone runs the nets plan() runs, before anything is sent. api() is taken from app.js with a fetch that counts: typed referral,
+    // pregnancy, kidney and urgent text, and one low-sugar sign on an insulin profile, are answered on the phone with no request, as plan()
+    // answers them; food text is sent
+    { let fetched = 0; const mk = () => run(['api'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
+      const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
+      const phone = (t, prof) => { let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
+      const want = [['chest pain since morning, what can I eat', plain, true], ['I am pregnant, what can I order', plain, false], ['kidney problem, had dal and rice', plain, false], ['feeling shaky, what should I eat', ins, true], ['sugar low, what now', plain, true]];
+      for (const [t, prof, urgent] of want) { const r = phone(t, prof);
+        add('m4 app S7: typed referral text is answered on the phone, with no request', !!f && !r.sent && !!r.got && r.got[0] === 200 && r.got[1].status === 'refer' && r.got[1].read === SAFETY && (urgent ? r.got[1].urgent === URGENTLINE : !r.got[1].urgent), `"${t}": ${JSON.stringify(r)}`); }
+      for (const [t, prof] of [['Masala dosa with chutney', plain], ['feeling shaky, what should I eat', plain], ['feeling shaky, what should I eat', Object.assign({}, ins, { meds: 'no' })], ['Something light with paneer', ins]]) { const r = phone(t, prof);
+        add('m4 app S7: food text is sent (control)', !!f && r.sent && !r.got, `"${t}" (${prof.health}, meds ${prof.meds}): ${JSON.stringify(r)}`); }
+      // the phone and the server give one answer: every typed string of the S7 lists, on the three typed kinds, for a profile without and with
+      // insulin (the phone's typedReferral against plan()'s reply)
+      const S7T = [].concat(L.referText, HO.referText, L.notReferText, L.referWindow, L.referWindowFamily, L.notReferWindow, L.referFound || [], L.notReferFound || [], L.referFound12 || [], L.notReferFound12 || [], L.urgentFound || [], L.urgentFound12 || [], L.urgentFound14 || [], L.notUrgentFound14 || [], L.referPunct || [], L.urgentPunct || [], L.notReferPunct || [], L.urgentMedsProfile15 || [], L.notUrgentMedsProfile15 || []);
+      let pairs = 0; for (const prof of [plain, ins]) for (const t of S7T) { const ph = typeof typedReferral === 'function' ? typedReferral(t, prof) : undefined;
+        for (const kind of ['meals', 'rescue', 'log']) { const pl = safe(() => plan(kind, { profile: prof, ctx: { meal: 'lunch', text: t } }), {}), sv = pl.reply || null; pairs++;
+          add('m4 S7: the phone and the server give one answer to typed text', ph !== undefined && JSON.stringify(ph) === JSON.stringify(sv) && (!!sv || !!pl.prompt), `${kind} (${prof.health}, meds ${prof.meds}) "${t}": phone ${JSON.stringify(ph)}, server ${JSON.stringify(sv)}`); } }
+      console.log(`m4 phone and server: ${S7T.length} typed strings, ${pairs} kind and profile pairs`); }
+    // S7, the insulin-profile default (coordinator, fix-r15; the owner or a clinician may change it; not clinically reviewed): diabetes with
+    // insulin or sugar tablets, or not sure, and one low-sugar sign typed, is referred with the line to get help now on every typed kind; the
+    // same text with no medicine, or with no diabetes, is not (a single sign needs the medicine named or a second sign there)
+    for (const kind of ['meals', 'rescue', 'log']) { const at = (o, t) => safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }, o), ctx: { meal: 'lunch', text: t } }), {});
+      for (const t of L.urgentMedsProfile15 || []) { for (const meds of ['yes', 'unsure']) { const r = at({ health: 'diabetes', meds }, t);
+          add('S7 insulin profile: one low-sugar sign is referred with the line to get help now', !!(r.reply && r.reply.status === 'refer' && r.reply.urgent === URGENTLINE && !r.prompt), `${kind}, meds ${meds}: "${t}" ${r.reply ? JSON.stringify(r.reply) : 'went to the model'}`); }
+        if (!/^(?:hypo|sugar low)$/.test(t)) for (const o of [{ health: 'diabetes', meds: 'no' }, { health: 'none' }, { health: 'bp' }]) add('S7 insulin profile: the same sign with no medicine goes to the model (control)', !!at(o, t).prompt, `${kind} ${JSON.stringify(o)}: "${t}" was referred`); }
+      for (const t of L.notUrgentMedsProfile15 || []) add('S7 insulin profile: food text is not referred (control)', !!at({ health: 'diabetes', meds: 'yes' }, t).prompt, `${kind}: "${t}" was referred`); }
+    // m1, as a class: with diabetes (the reason-line rule, hookSaid) and on insulin or sugar tablets (the medicines floor), no sentence the
+    // engine or the app writes advises eating less, lighter or skipping. Generated over profiles x every half hour x meal states x the four
+    // meals: Today's directive (done and not), the reason line with every hook of the moment cited, the "Planned around" tags, the day's notes,
+    // one-tap change notes and Rescue moves (a figure statement, "About 60 kcal less" or "Eat about half", is allowed only where the plate stays
+    // at the usual size, checked on the figures), and every string in app.js and the app's own options, each allowed one named with its reason.
+    { const ADV = /\b(?:light|lighter|lightly|less|skip\w*|smaller|cut\s+(?:down|back)|eat\s+(?:about\s+)?(?:half|two\s+thirds|three\s+quarters)|keep\s+it\s+light)\b/i;
+      const NOTEOK = [[/^Lunch is the largest meal and dinner a lighter one\b/, 'the day\'s split: the usual sizes, which the medicines floor holds'], [/^Keep meals regular\. Skipping a meal on insulin/, 'a warning against skipping'],
+        [/eating less can drop blood sugar too far/, 'a warning against eating less'], [/500 kcal less for obesity/, 'the source of a deficit, allowed only with no medicine (no deficit on medicines)', 'nofloor']];
+      const PROFS = [['diabetes, insulin yes', { health: 'diabetes', meds: 'yes' }], ['diabetes, not sure', { health: 'diabetes', meds: 'unsure' }], ['diabetes, no medicine', { health: 'diabetes', meds: 'no' }],
+        ['diabetes and high BP, insulin yes, building strength', { health: 'diabetes', meds: 'yes', bp: true, goal: 'build' }], ['diabetes, not sure, no body figures', { health: 'diabetes', meds: 'unsure', cm: 0, kg: 0, age: 0 }]];
+      const T0 = { kcal: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: [] }, ml = (meal, kind, kcal) => ({ meal, kind, title: kind === 'skipped' ? '' : 'Dal and rice', kcal: kind === 'skipped' ? 0 : kcal, protein: 20 });
+      const STATES = [['nothing logged', { today: T0, patterns: [] }], ['a heavy day so far', { today: Object.assign({}, T0, { kcal: 2000, protein: 50, meals: [ml('breakfast', 'had', 900), ml('lunch', 'had', 1100)] }), patterns: [] }],
+        ['lunch skipped', { today: Object.assign({}, T0, { meals: [ml('lunch', 'skipped')] }), patterns: [] }], ['ate out', { today: Object.assign({}, T0, { kcal: 1200, protein: 30, meals: [ml('lunch', 'rescued', 1200)] }), patterns: [] }],
+        ['a long gap', { today: Object.assign({}, T0, { kcal: 350, protein: 10, lastHoursAgo: 8, lastKcal: 350, meals: [ml('breakfast', 'had', 350)] }), patterns: [] }],
+        ['late dinners, a skipped meal and a repeated food this week', { today: T0, patterns: [{ id: 'late_dinner', n: 5, of: 6 }, { id: 'skips_meal', meal: 'breakfast', n: 4, of: 7 }, { id: 'skips_meal', meal: 'dinner', n: 4, of: 7 }, { id: 'repeat', slot: 'm', food: 'dal', n: 6 }, { id: 'repeat', slot: 'b', food: 'poha', n: 6 }] }]];
+      let cells = 0, FLOOR = false; const hit = (t) => { t = String(t || ''); const x = t.replace(/\b\d+\u00A0?\s*kcal\s+less\b/g, ''); return ADV.test(x) && !NOTEOK.some(([r, , only]) => r.test(t) && !(only === 'nofloor' && FLOOR)); };
+      for (const [pn, o] of PROFS) { const p = readProfile(Object.assign({}, BASE, o)), floor = p.meds === 'yes' || p.meds === 'unsure'; FLOOR = floor;
+        for (const [sn, fileIn] of STATES) { const file = readFile(fileIn);
+          for (const meal of SLOTS) { const pl = planDay(p, file, meal, 5), hp = { health: p.health, medsUsual: medsUsual(p, meal) };
+            for (let h = 0; h < 24; h += 0.5) { const hooks = hooksFor(p, file, { meal, hour: h, mode: 'desk' }, pl); cells++;
+              const lines = [['the directive', directive(p, pl, hooks, meal, false)], ['the directive (day done)', directive(p, pl, hooks, meal, true)],
+                ['the reason line', reasonLine({ kcal: pl ? pl.target.kcal : 600, protein: pl ? pl.target.protein : 20, grain: { food: 'Jowar roti', grams: 80 } }, hooks, pl, hp, meal)]].concat(hooks.filter(x => hookSaid(x.id, hp)).map(x => ['a "Planned around" tag', x.tag]));
+              for (const [where, t] of lines) if (hit(t)) add('m1 as a class: no engine sentence advises eating less, lighter or skipping, with diabetes or on medicines', false, `${pn}, ${sn}, ${meal} at ${h}: ${where}: "${t}"`); } } }
+        const dt = dayTargets6(p); for (const [lab0, t] of dt ? dt.notes : []) add('m1 as a class: the day\'s notes', !hit(lab0) && !hit(t), `${pn}: "${lab0} ${t}"`);
+        if (floor) { // one-tap change notes and Rescue moves on medicines: the figure statements keep the usual size
+          const u = medsUsual(p, 'lunch');
+          if (u) { const m = platePlain(), pk = u + 100; Object.assign(m, { kcal: pk, protein: Math.round(pk * 0.2 / 4), carbs: Math.round(pk * 0.5 / 4), fats: Math.round(pk * 0.3 / 9) }); m.items.forEach(i => { i.grams = Math.round(i.grams * pk / 500); }); m.grain.grams = m.items[1].grams;
+            const kept = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }).check(mealsReply(m)).meals[0], null), tp = kept && plan('tune', { profile: Object.assign({}, BASE, o), slot: 'lunch', meal: kept });
+            const ch = (dk, dp, dc, df, after) => ({ add_item: '', add_grams: 0, minutes: 15, grain_grams_after: after, contains: PT, deltaKcal: dk, deltaProtein: dp, deltaCarbs: dc, deltaFats: df, deltaFiber: 0 });
+            const t = safe(() => tp.check({ swaps: { protein: [], base: [] }, alchemy: { glucose: ch(-60, 0, -10, -2, kept.grain.grams), gut: ch(-150, -5, -20, -6, kept.grain.grams), express: ch(-20, 0, -4, -0, kept.grain.grams) } }), {});
+            for (const [k, x] of Object.entries(t.alchemy || {})) add('m1 as a class: a change note on medicines keeps the usual size', !hit(x.note) && kept.kcal + x.deltaKcal >= u, `${pn}: "${x.note}" on a ${kept.kcal} kcal plate, usual ${u}`);
+            add('m1 as a class: a change notes were read on medicines (non-vacuous)', Object.keys(t.alchemy || {}).length >= 1, `${pn}: ${JSON.stringify(t)}`);
+            for (const f of [1.2, 2, 3]) { const k = Math.round(u * f / 10) * 10, d = { name: 'Veg thali', kcal: k, protein: Math.round(k * 0.15 / 4), carbs: Math.round(k * 0.55 / 4), fats: Math.round(k * 0.30 / 9), fiber: 8, contains: ['grain'] }, r = rescueOut(o, 'Veg thali', d, []);
+              for (const mv of r.hacks || []) add('m1 as a class: a Rescue move on medicines keeps the usual size', mv.kind === 'portion' ? d.kcal + mv.deltaKcal >= u : !hit(mv.title), `${pn}: "${mv.title}" on a ${k} kcal dish, usual ${u}`); } } } }
+      // controls: the directive's late line is still said with no condition, so the scan is not reading empty lines
+      { const p = readProfile(Object.assign({}, BASE, { health: 'none' })), file = readFile({ today: T0, patterns: [] }), pl = planDay(p, file, 'dinner', 5);
+        add('m1 as a class: with no condition the late line is still said (control)', /keep it light/.test(directive(p, pl, hooksFor(p, file, { meal: 'dinner', hour: 22.5, mode: 'desk' }, pl), 'dinner', false)), 'the late line was not said with no condition'); }
+      // every string in app.js, and the app's own options and example asks: an advice word is allowed only in the strings named here, each with
+      // its reason; the example ask "A light dinner after a heavy lunch" is not offered on medicines (and still is with no medicine)
+      const APPOK = { 'skipped': 'an event kind, not shown', 'skipx': 'a class name', 'log-skip': 'an element id', 'Skipped it': 'the button that records a skipped meal; it advises nothing', 'Skipped ': 'the logged card\'s title, "Skipped lunch": a record',
+        ', skipped': 'the meal tab\'s label for a skipped meal: a record', 'less': 'a figure statement on a swap ("(8 g less carbs)"); the swap keeps the usual size on medicines (S6, the engine)', 'Less ': 'the Builder stepper\'s label ("Less grains"): a share of the plate, not its size',
+        'less oil': 'the cooking choice the client makes', 'These can cause low sugar when you eat less, so the plates stay steadier for you.': 'a warning against eating less on medicines',
+        [typeof MEDSWARN === 'string' ? MEDSWARN : '_']: 'the low-sugar warning after a skipped meal' };
+      const appSrc2 = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''), lits = [...new Set(appSrc2.match(/"(?:[^"\\\n]|\\.)*"/g) || [])].map(x => JSON.parse(x));
+      const medsW = (/var MEDSWARN="((?:[^"\\]|\\.)*)"/.exec(appSrc2) || [])[1]; if (medsW) APPOK[JSON.parse('"' + medsW + '"')] = 'the low-sugar warning after a skipped meal: a warning against skipping';
+      for (const t of lits) if (ADV.test(t)) add('m1 as a class: every app string with an advice word is named with its reason', t in APPOK, `src/v6/app.js: "${t.slice(0, 90)}"`);
+      const OPTOK = { 'Light': 'the mood the client chooses for the plate\'s style; every plate on medicines is still at least the usual size (S6)', 'Light activity': 'the client\'s activity level, not advice', 'Less oil': 'the cooking choice the client makes' };
+      for (const k of Object.keys(OPT)) for (const [, lab0] of OPT[k]) if (ADV.test(lab0)) add('m1 as a class: every option label with an advice word is named with its reason', lab0 in OPTOK, `OPT.${k}: "${lab0}"`);
+      const askOn = (o) => (typeof APPASKS !== 'undefined' ? APPASKS : []).filter(e => safe(() => appAskOK(e, readProfile(Object.assign({}, BASE, o))), true)).map(e => e[0]);
+      for (const meds of ['yes', 'unsure']) add('m1 as a class: no example ask for a lighter meal on medicines', !askOn({ health: 'diabetes', meds }).some(t => ADV.test(t)), `meds ${meds}: ${JSON.stringify(askOn({ health: 'diabetes', meds }))}`);
+      add('m1 as a class: the four example asks with no medicine (control; the review state pins them)', askOn({ health: 'diabetes', meds: 'no' }).length === 4, JSON.stringify(askOn({ health: 'diabetes', meds: 'no' })));
+      // on medicines the snack is never passed over: nextOffer from app.js with little room left
+      const no = (meds) => run(['has', 'onMeds', 'slotOf', 'nextOpen', 'nextOffer'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds }), C: { meal: 'lunch' }, SLOTS, PL: {}, FILE: { today: { meals: [{ meal: 'breakfast', kind: 'had' }, { meal: 'lunch', kind: 'had' }] } }, snackRoom: () => 40 }, 'nextOffer()');
+      add('m1 as a class: on medicines the snack is never passed over', JSON.stringify(no('yes')) === '{"meal":"snack","low":false}' && JSON.stringify(no('')) === '{"meal":"snack","low":false}' && JSON.stringify(no('no')) === '{"meal":"dinner","low":true}', JSON.stringify([no('yes'), no(''), no('no')]));
+      console.log(`m1 as a class: ${cells} profile, state, meal and hour cells, ${lits.length} app strings`); }
   }
   // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
   // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures

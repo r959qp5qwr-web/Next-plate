@@ -45,7 +45,9 @@ var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",s
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
-function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
+/* the medicine answer: with diabetes an unanswered question (ticked from My food, which does not ask it) is read as "not sure", as the engine
+   reads it, everywhere on the phone (fix-r15; safety audit of c666d34, m8: the skipped-meal warning and the snack rule read it as "no") */
+function onMeds(){return has("diabetes")&&P.meds!=="no";}
 /* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
 var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
@@ -77,7 +79,7 @@ function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
    untick, and kept plates against the current rules and body figures. It runs on every tap, at render and again just before anything is
    logged; a state that fails is not offered and not logged, and #said says why. ---------- */
 function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
-  if(!figsAgree(n))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine */
+  if(!figsAgree(n)||["protein","carbs","fats","fiber"].some(function(k){return n[k]<0;}))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine; a figure under 0 is no plate (fix-r15) */
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}
@@ -146,6 +148,11 @@ function errText(code,where){
   if(code==="bad_key"&&KEYCODE)return REFUSED;
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
+  /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
+     anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
+     gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
+  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  if(tr){cb(200,tr);return;}
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
@@ -196,7 +203,9 @@ function viewOf(m){
   /* a change to the grain works on the planned grain item only: when that item is not on the plate as planned (swapped away), the state is
      refused by plateWhy, so no note names an item that is not on the plate (S10; final audit M1) */
   var suffix=[],grainMiss=false;ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food){var gf=false;for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){gf=true;if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}if(!gf)grainMiss=true;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.max(0,Math.round(n[k]));});
+  /* the figures are the plate's plus what is on it, as the engine passed them: not floored at 0 (fix-r15, the figure rule); a combination that
+     would take one below 0 is refused by composedWhy */
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.round(n[k]);});
   /* a swap is named in the title and in what is logged: "..., with tofu bhurji in place of paneer tikka" (second screen review, R2-B2 025-1) */
   var parts=swapped.map(function(x){return x.to.toLowerCase()+" in place of "+x.from.toLowerCase().replace(/,.*$/,"");}).concat(suffix.map(function(x){return x.toLowerCase();}));
   return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped,grainMiss:grainMiss};
@@ -222,7 +231,9 @@ function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(S
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
 function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
-  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
+  /* on insulin or sugar tablets the snack is never passed over: its usual size is the floor too (fix-r15, m1 as a class; it was passed over
+     unless a meal was skipped, R2-B2 021-1) */
+  var room=snackRoom();if(room==null||room>=120||onMeds())return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
@@ -492,7 +503,7 @@ function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
   if(UI.lock){var lk=el("p","fine asklock",lockLine());lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
-  var pr=el("div","prompts");PROMPTS.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
+  var pr=el("div","prompts");PROMPTS.filter(function(e){return typeof appAskOK==="function"?appAskOK(e,profileOut()):appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
 }
 function composer(host){
@@ -696,7 +707,7 @@ function renderRescue0(){
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.max(k==="protein"||k==="fiber"?0:Math.round(d[k]*.4),Math.round(a[k]));});
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.round(a[k]);});   /* shown and logged as checked (rescueSum): no floor (fix-r15) */
   var r0=riseOf(d,null),r1=riseOf(a,hab),tg=PL?PL.target:null,f0=fitOf(d,tg),f1=fitOf(a,tg);
   var inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");
   hl.appendChild(el("span","dish",d.name));hl.appendChild(el("span","dish-s",[d.portion,d.warning].filter(Boolean).join(" · ")));ih.appendChild(hl);inst.appendChild(ih);

@@ -152,8 +152,10 @@ function directive(p,pl,hooks,meal,done){
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
   var over=pl.eaten.kcal-pl.day.kcal;if(over>=50)s+="That is about "+Math.round(over/10)*10+"\u00A0kcal over today's "+pl.day.kcal+"\u00A0kcal. ";   /* the day over its target is said in words (R2-B3 044-1) */
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
-  var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
-  pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
+  /* with diabetes or on medicines the line says no "light", "lighter" or "late" hook, by the rule the reason line and "Planned around" share
+     (hookSaid; fix-r15, safety audit of c666d34, m1: "it's late, so keep it light" was said to a client on insulin) */
+  var hp={health:p&&p.health,medsUsual:medsUsual(p,meal)},pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
+  pri.some(function(id){return hookSaid(id,hp)&&hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
   var tail={late_now:"; it's late, so keep it light",protein_gap:", to catch up on protein",lighter_now:", lighter after earlier meals",ate_out:"; simple and home-style after eating out",long_gap:"; you've gone a while without food, so vegetables and protein first",late_dinner:"; a lighter, earlier dinner helps"};
   return s+(pick?tail[pick.id]:"")+".";
 }
@@ -327,13 +329,16 @@ function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTAST
 /* The kept plate's title and subtitle are the engine's own, written from its items, and the plate check reads the items apart; they are not
    read again as one text (fix-r14: reading the engine's join of the names, "... and lemon juice squeeze", kept 5 shown recorded plates from
    the tune path, on 3aabd26 too). Nothing shown comes from them: the engine writes both again from the items. */
-function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";return m;}
+function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";
+  if(m&&!("prepMinutes" in m))m.prepMinutes=meal.minutes;   /* a shown plate carries its minutes as "minutes"; the plate check reads them as written (fix-r15) */
+  return m;}
 function checkTune(r,p,meal){
   var m=keptPlate(meal);m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;m.why=[];
   var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
   return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
-function given(v,lo,hi){if(typeof v!=="number"||!isFinite(v))return null;v=Math.round(v);return v<lo||v>hi?null:v;}
+/* the log takes its figures as written, by the figure rule (fix-r15): an integer in range, or the reply is not read */
+function given(v,lo,hi){return fig(v,lo,hi);}
 function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer"};   /* refer_reason other than "none" is a referral (S7) */
@@ -343,12 +348,17 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   /* (fix-r14) every item is read: more than eight drops the reply (0 recorded replies hold more than 5), as a figure out of range does */
   var ri=Array.isArray(r.items)?r.items:[];if(ri.length>8)return {status:"empty"};
-  if(ri.some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
+  /* (fix-r15) every item's grams as written: a null, zero, out-of-range or non-number weight is not read as 1 g, the reply is not read, as an
+     out-of-range one already was; an item with no grams written is not listed (below) */
+  if(ri.some(function(it){return it&&"grams" in it&&given(it.grams,1,1500)==null;}))return {status:"empty"};
+  /* (fix-r15; the figure rule) the kcal shown and counted is the kcal the model wrote. The log used to put its own figure from the macros in
+     place of a kcal more than a fifth off them; that figure was not the model's, so such a reply is now not read ("didn't read as a meal"):
+     0 of the 30 recorded log replies were more than a fifth off */
+  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)return {status:"empty"};
   /* safety round 5: what the client said they ate is shown in their own words. The title is their typed text; an item is listed only when
      every word of its name is a word they typed (and it has the name shape); the model's assumption line is not shown. */
   var tw={};words(norm(typed)).forEach(function(w){tw[w]=1;});
-  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
+  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:it&&"grams" in it?given(it.grams,1,1500):null,group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
     .filter(function(i){return i.grams&&nameOK(i.food)&&words(i.food).every(function(w){return tw[w];});});
   var tt=quoted(typed,60);if(!tt||tt.length<typed.trim().length)tt="";   /* a long typed sentence is not used as the heading */
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
@@ -689,6 +699,10 @@ var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]]
   ["Chole bhature",["wheat","grain","onion_garlic","root_veg","dairy"]],["Veg biryani with raita",["grain","dairy","onion_garlic","root_veg","nuts"]],["Masala dosa with chutney",["grain","root_veg","onion_garlic"]],
   ["A slice of tiramisu after dinner",["dairy","egg","wheat","sweet"]]];
 function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(function(t){return b.indexOf(t)>=0;});}
+/* on insulin or sugar tablets an example ask that asks for a lighter or smaller meal is not offered (fix-r15, m1 as a class: no app or engine
+   sentence advises eating less, lighter or skipping when the medicines floor applies) */
+var LESSASK=/\b(?:light|lighter|less|smaller|skip\w*)\b/i;
+function appAskOK(e,p){return appFoodOK(e,p)&&!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&LESSASK.test(e[0]));}
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
@@ -778,6 +792,18 @@ var URGENTTXT=new RegExp("\\b(?:"+[
 var URGENTSIGNS=new RegExp(URGENTSIGN.source,"gi");
 function signKinds(t){var k={};(t.match(URGENTSIGNS)||[]).forEach(function(w){w=w.toLowerCase();k[/^shak|^shiv|^trembl/.test(w)?"shake":/^swe|^pas/.test(w)?"sweat":/^diz|^gidd|^chak/.test(w)?"dizzy":/^conf|^ghab/.test(w)?"confused":"vision"]=1;});return Object.keys(k).length;}
 function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t)||signKinds(t)>=2;}
+/* S7, the insulin-profile default (fix-r15; safety audit of c666d34, owner question on the urgent-symptom scope; the coordinator's default,
+   which the owner or a clinician may change; not clinically reviewed). With diabetes and insulin or sugar tablets (meds "yes" or "not sure";
+   an unanswered question is read as "not sure"), one low-sugar sign typed is urgent with no medicine named in the text: the profile names
+   it. The signs are the net's own list (shaky, sweating, dizzy, confused and the rest); "hypo" and "sugar low" are urgent for everyone. */
+function medsSign(t,p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&URGENTSIGN.test(String(t||""));}
+function urgentFor(t,p){return urgentTyped(t)||medsSign(t,p);}
+function referFor(t,p){return referTyped(t)||medsSign(t,p);}
+/* the reply to typed text that is referred before the model: one function for plan() on the server and the app on the phone, which runs it
+   before it sends, so offline, on a timeout or with a refused code the referral still shows (fix-r15; safety audit of c666d34, m4). Text is
+   read as plan() reads it (folded at intake); null when the text goes to the model. */
+function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t||!referFor(t,p))return null;
+  return urgentFor(t,p)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]};}
 /* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
    of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
    than a person's own usual size). 0 when the person is not on that medicine. */
@@ -789,7 +815,7 @@ plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
   /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */

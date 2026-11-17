@@ -1264,7 +1264,15 @@ var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds"
     /* (fix-r14; safety audit of 7eaadcf, backlog head) wheat words the grain lists (GRAINMATW, GRAINT) know, and the Hindi plurals the S8 piece
        list (CNTPIECE) knows; one plural of roti is held out by the lexicon and stays out */
     "wholewheat","wholemeal","durum","spelt","multigrain","rotiya","chapatiya","chapatiyaan","chapatiyon","puriya","puriyaan","parathon","samoson",
-    "bhaturon","kulchon","kachoriyan","kachoriyaan","kachoriyon","golgappe","golgappa","rotliyan","rotliyaan"],
+    "bhaturon","kulchon","kachoriyan","kachoriyaan","kachoriyon","golgappe","golgappa","rotliyan","rotliyaan",
+    /* (fix-r15; safety audit of c666d34, m7) every wheat dish and spelling the grain-dish list (GRAINT) knows; a check holds the two lists
+       together (test/safety/check.js, "m7"). Wheat by default, fail closed: a roll, a sub, a crust, muthia, thalipeeth and uppittu (rava).
+       Held out of this list, each with its cost in the recorded replies: flatbread (203 plates shown to a wheat-free client, most of them
+       sorghum, jowar or bajra flatbreads), pancake (44: moong and besan pancakes), cracker (2: jowar and bajra roti crackers), cake (4: pulse
+       and rice cakes; a sweet cake is read as sweet), and "chow" or "mein" alone (chow-chow is a vegetable, "mein" is Hindi for "in") */
+    "chappathi","chapathy","ruti","parotha","bhatoora","kochuri","chow mein","sandwich","sandwiches","roll","rolls","frankie","dabeli","thukpa",
+    "khubz","kuboos","kubboos","penne","macaroni","orzo","ravioli","lasagne","lasagna","gnocchi","sub","subs","semiya","toasts","burgers","crust",
+    "muthia","muthiya","thalipeeth","uppittu"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
 var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi",
   "sweet lassi","mango lassi","mango shake",   /* sweet drinks (safety audit of b4633dd, backlog head) */
@@ -2015,8 +2023,19 @@ function containsText(){return "- contains: every dish, item, swap and change ca
 function nameText(){return "- Every name (item, swap, a food a change adds, dish, side) is plain letters, spaces and hyphens only: no digits, commas, brackets or other marks, and no counts or measures in words (\"Paneer tikka\", not \"Paneer tikka, charred\"; \"Idli\", not \"Two idli\" or \"Plate of idli\"). A name in any other shape is not shown.";}
 function referText(){return "- refer_reason: \"none\", unless what they wrote says they are pregnant or breastfeeding (\"pregnancy\"), have a kidney condition (\"kidney\"), or describes something urgent for a doctor (\"other_urgent\"), in any language or spelling. Any value but \"none\" sends them to their coach or doctor.";}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
+/* num() reads the phone's own fields (the profile, the context, the food file), never a figure the model wrote */
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
-function delta(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):0;}
+/* the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a figure the model writes is taken as written or its element is dropped.
+   An integer in the field's range is the figure; anything else (past either end of the range, a zero where zero is no amount, null, a
+   string, a fraction, a word) is null, and the caller drops the element the figure belongs to. Nothing is cut or rounded to fit, so a figure
+   shown or checked is the figure the model wrote. */
+function fig(v,lo,hi){return typeof v==="number"&&isFinite(v)&&Math.round(v)===v&&v>=lo&&v<=hi?v:null;}
+/* a field the schema asks for but an older reply shape leaves out (a one-tap change's minutes, its grain grams after, an add_grams with no
+   food added) is read as not given; written, it is read by fig() */
+function figOpt(o,k,lo,hi){return !o||!(k in o)?{v:null,ok:true}:{v:fig(o[k],lo,hi),ok:fig(o[k],lo,hi)!=null};}
+/* the ranges of a plate's figures: a plate after any swap or change stays inside them, or that swap, change or combination is not offered */
+var PLATER={kcal:[40,2500],protein:[0,250],carbs:[0,400],fats:[0,200],fiber:[0,80]};
+function plateIn(n){return Object.keys(PLATER).every(function(k){return n[k]>=PLATER[k][0]&&n[k]<=PLATER[k][1];});}
 var GROUPS=["protein","greens","carbs","fats","other"];
 
 /* ---------- the meal Gemini returns: [S] CURATED_MEALS + [P] MEALS_DB, in grams and kcal (D3) ---------- */
@@ -2038,7 +2057,7 @@ function pruneCombos(n,swaps,al){var keys=Object.keys(al),dropped=0;
     for(var i=0;i<P.length&&!bad;i++)for(var j=0;j<B.length&&!bad;j++)for(var mask=0;mask<(1<<keys.length)&&!bad;mask++){
       var parts=[];if(i>0)parts.push(["protein",i]);if(j>0)parts.push(["base",j]);keys.forEach(function(k,b){if(mask&(1<<b))parts.push(["al",k]);});
       var x=n;parts.forEach(function(q){x=addN(x,q[0]==="al"?al[q[1]]:swaps[q[0]][q[1]]);});
-      if(!figsAgree(x))bad=parts;}
+      if(!figsAgree(x)||!plateIn(x))bad=parts;}   /* and every combination stays inside a plate's ranges (fix-r15) */
     if(!bad)break;
     var worst=bad.slice().sort(function(a,b){var da=a[0]==="al"?al[a[1]]:swaps[a[0]][a[1]],db=b[0]==="al"?al[b[1]]:swaps[b[0]][b[1]];return off(db)-off(da);})[0];
     if(!worst)break;dropped++;if(worst[0]==="al")delete al[worst[1]];else swaps[worst[0]].splice(worst[1],1);}
@@ -2047,13 +2066,14 @@ function checkMeal(m,p){
   if(!m||typeof m!=="object")return {drop:"shape"};
   /* the raw-field rule (fix-r14): every field is read whole. More than seven items (safety audit of 7eaadcf, M2: an eighth item was neither
      checked nor shown while its energy stayed in the figures), a title over 70 characters, a grain name over 200 or what it is made of over
-     40, or a field that is not readable text, drops the plate; nothing is cut to fit. The subtitle has no cap: 20 recorded subtitles run
-     past the old 120 (owner question), and none is shown. */
+     40, or a field that is not readable text, drops the plate; nothing is cut to fit. The subtitle (never shown) is read whole up to 1,000
+     characters and drops the plate beyond: a cap for time only (fix-r15; safety audit of c666d34, m9: a 60,000-character subtitle took
+     about 1.4 s a plate), about five times the longest of the 1,157 distinct recorded subtitles (209 characters; 20 run past 120). */
   var mi=Array.isArray(m.items)?m.items:[];if(mi.length>7)return {drop:"shape"};
-  var gr=m.grain&&typeof m.grain==="object"?m.grain:{},rawTitle=modelText(m.title,70),rawSub=modelText(m.subtitle,1e6),rawGF=modelText(gr.food,200),rawGM=modelText(gr.made_of,40);
+  var gr=m.grain&&typeof m.grain==="object"?m.grain:{},rawTitle=modelText(m.title,70),rawSub=modelText(m.subtitle,1000),rawGF=modelText(gr.food,200),rawGM=modelText(gr.made_of,40);
   if(rawTitle==null||rawSub==null||rawGF==null||rawGM==null)return {drop:"shape"};
   var items=mi.map(function(it){
-    var rf=modelText(it&&it.food,200);return {food:rf&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
+    var rf=modelText(it&&it.food,200);return {food:rf&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",grams:fig(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
   });
   /* every item is a model name: it has the name shape, grams and its own tags, or the whole plate is dropped, so the figures always match
      the items shown (S8, S10; safety round 5) */
@@ -2072,8 +2092,10 @@ function checkMeal(m,p){
   var title=engineTitle(items),sub=engineSub(items);
   var dg=declaredGrain(m.grain,items);items.forEach(function(it){delete it.rawFood;});   /* the grain is identified on the raw names */
   if(p.health==="diabetes"&&p.slot!=="snack"&&!dg)return {drop:"diabetes-grain"};   /* rule 3: a declared grain item, made of a true grain, on the plate, 30 g or more */
-  var n={kcal:num(m.kcal,40,2500),protein:num(m.protein,0,250),carbs:num(m.carbs,0,400),fats:num(m.fats,0,200),fiber:num(m.fiber,0,80)};
+  var n={kcal:fig(m.kcal,40,2500),protein:fig(m.protein,0,250),carbs:fig(m.carbs,0,400),fats:fig(m.fats,0,200),fiber:fig(m.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {drop:"numbers"};
+  /* the minutes and the grain's grams are figures too: written out of range or not as a number, the plate is not offered (fix-r15) */
+  var pM=figOpt(m,"prepMinutes",0,180),gG=figOpt(m.grain&&typeof m.grain==="object"?m.grain:null,"grams",0,1500);if(!pM.ok||!gG.ok)return {drop:"numbers"};
   var est=4*n.protein+4*n.carbs+9*n.fats;
   if(!figsAgree(n))return {drop:"energy"};
   var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
@@ -2081,7 +2103,10 @@ function checkMeal(m,p){
      made_of is only what travels with the swap. More than three in a list drops that list; a name over 200 characters or a made_of over 40
      drops the swap. */
   function swapList(list,kind){var L=Array.isArray(list)?list:[];if(L.length>3)return [];return L.map(function(s){
-      var mo=modelText(s&&s.made_of,40),rf=modelText(s&&s.food,200);return {food:rf&&mo!=null&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",rawMade:mo||"",made_of:mo&&isGrainMaterial(mo)?clean(mo,40):"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
+      var mo=modelText(s&&s.made_of,40),rf=modelText(s&&s.food,200);return {food:rf&&mo!=null&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",rawMade:mo||"",made_of:mo&&isGrainMaterial(mo)?clean(mo,40):"",raw:s&&s.contains,grams:fig(s&&s.grams,1,800),deltaKcal:fig(s&&s.deltaKcal,-400,400),deltaProtein:fig(s&&s.deltaProtein,-40,40),deltaCarbs:fig(s&&s.deltaCarbs,-80,80),deltaFats:fig(s&&s.deltaFats,-40,40),deltaFiber:fig(s&&s.deltaFiber,-20,20)};})
+    /* (fix-r15; safety audit of c666d34, B1) a swap's grams and deltas as written, or the swap is not offered: a delta past its range is
+       dropped, never cut, so the S6 line below reads the model's own figure; the plate after the swap stays inside a plate's ranges */
+    .filter(function(s){return s.grams!=null&&s.deltaKcal!=null&&s.deltaProtein!=null&&s.deltaCarbs!=null&&s.deltaFats!=null&&s.deltaFiber!=null&&plateIn(addN(n,s));})
     .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" ; "+s.rawMade,p)&&!supp(s.rawFood+" ; "+s.rawMade)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.rawMade)&&isGrain(s.rawFood)&&s.grams>=30))&&
@@ -2095,9 +2120,15 @@ function checkMeal(m,p){
      grain left; the minutes; the figures). The model's own note, if it sends one, is read for the grain and food rules and never shown. */
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
-    var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
-    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=modelText(a.add_item,200),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
-    if(rawItem==null||(rawItem&&!item)||(item&&!ig))return;   /* an item over its cap or not readable text: the change is not offered (fix-r14) */
+    /* (fix-r15; safety audit of c666d34, B1 and m5) every figure as written, or the change is not offered: a delta past its range drops, never
+       cut; the minutes and the grain grams after, when given, are read the same way (an older reply shape leaves them out); a food added
+       takes its own grams, 1 to 500, and with none added the grams are 0 or not given. The plate after the change stays inside a plate's
+       ranges. */
+    var mi=figOpt(a,"minutes",0,180),ga=figOpt(a,"grain_grams_after",0,800);
+    var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:fig(a.deltaKcal,-400,400),deltaProtein:fig(a.deltaProtein,-10,40),deltaCarbs:fig(a.deltaCarbs,-80,40),deltaFats:fig(a.deltaFats,-30,30),deltaFiber:fig(a.deltaFiber,-10,20),minutes:mi.v};
+    if(!mi.ok||!ga.ok||x.deltaKcal==null||x.deltaProtein==null||x.deltaCarbs==null||x.deltaFats==null||x.deltaFiber==null||!plateIn(addN(n,x)))return;
+    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=ga.v,rawItem=modelText(a.add_item,200),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ag=figOpt(a,"add_grams",0,500),ig=item?fig(a.add_grams,1,500):null;
+    if(rawItem==null||(rawItem&&!item)||(item&&!ig)||!ag.ok)return;   /* an item over its cap or not readable text: the change is not offered (fix-r14) */
     if(contentsBad(a.contains,item||raw,p)||crosses(raw+" ; "+rawItem,p)||supp(raw+" ; "+rawItem))return;
     if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
     x.contains=tagList(a.contains);
@@ -2107,17 +2138,21 @@ function checkMeal(m,p){
        offered: grams after other than the reply's own grain grams ("Rice" 200 g, a change to 150 g), or any grain grams after when the reply
        gives none (it cannot be told). Grams after equal to the reply's grain grams, or 0 with no grain, change no grain and stay (S10; safety
        audit of ba4d8dc, M2) */
-    if(!dg&&after!=null){var gg=num(m.grain&&m.grain.grams,0,1500)||0;if(gg>0?after!==gg:after>0)return;}
+    if(!dg&&after!=null){var gg=gG.v||0;if(gg>0?after!==gg:after>0)return;}
     /* with no declared grain, a change that says no grain is left ("grain grams after" 0) while a grain item stays listed is not offered: the
        plate would show the grain and the change's figures would have taken it off ("Rice" named for the item "Jeera rice", 200 g listed;
        safety audits of b4633dd m4 and 530a503 m1) */
     if(!dg&&after===0&&items.some(function(i){return i.grams>=30&&isGrain(i.food);}))return;
-    if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
+    /* (fix-r15; safety audit of c666d34, m2) a change that moves the declared grain moves its carbs the same way: more grain with fewer carbs,
+       or less grain with more carbs, is not offered ("Bajra rotla goes to 120 g" with 2 g carbs less). Direction only, no tolerance figure;
+       carbs unchanged pass */
+    if(dg&&after!=null&&after!==dg.grams&&(after>dg.grams?x.deltaCarbs<0:x.deltaCarbs>0))return;
+    if(dg&&after!=null&&after!==dg.grams)x.grainAfter=after;   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
     al[k]=x;});
   pruneCombos(n,swaps,al);   /* figures agree on every combination (A2) */
-  return {meal:{title:title,subtitle:sub,cuisine:"",minutes:num(m.prepMinutes,0,180)||0,items:items,
+  return {meal:{title:title,subtitle:sub,cuisine:"",minutes:pM.v||0,items:items,
     kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,why:[],swaps:swaps,alchemy:al,grain:dg||{food:"",made_of:"",grams:0},contains:tagList(m.contains)}};
 }
 /* the plate title and subtitle the engine writes from the checked items (names only) */
@@ -2169,7 +2204,7 @@ function checkRescue(r,p,c){
   var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer",read:SAFETY};
-  var d=r.dish||{},n={kcal:num(d.kcal,40,4000),protein:num(d.protein,0,300),carbs:num(d.carbs,0,500),fats:num(d.fats,0,300),fiber:num(d.fiber,0,80)};
+  var d=r.dish||{},n={kcal:fig(d.kcal,40,4000),protein:fig(d.protein,0,300),carbs:fig(d.carbs,0,500),fats:fig(d.fats,0,300),fiber:fig(d.fiber,0,80)};   /* as written, or not helped (fix-r15) */
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null||!figsAgree(n))return {status:"empty"};   /* figures agree (A2) */
   var dn=typed&&typed.length<=60&&typed.split(/\s+/).length<=8?quoted(typed.charAt(0).toUpperCase()+typed.slice(1),60):"Your dish";
   if(!dn)dn="Your dish";
@@ -2181,9 +2216,18 @@ function checkRescue(r,p,c){
      A dish name over 80 characters or not readable text is not helped. */
   var dname=modelText(d.name,80);
   if(dname==null||tagList(d.contains).indexOf("supplement")>=0||supp(typed)||supp(dname))return {status:"empty",reason:"diet",dropped:{dish:1}};
-  var g=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(String(d.portion||"")),por=g?"≈ "+Math.round(+g[1])+" g":"";   /* the weight, written by the engine */
+  var por=portionLine(d.portion);   /* the weight, written by the engine */
   return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:"",breakdown:"",contains:tagList(d.contains)},hacks:[]};
 }
+
+/* (fix-r15; safety audit of c666d34, m3) the Rescue portion line is the one weight the model wrote, read whole: a single grams figure, a
+   whole number with no digit group, not one end of a range, not a count times a weight and not a weight for each piece. More than one weight
+   ("1 bowl curry (300 g) with 2 naans (180 g)"), "1,200 g", "250-300 g", "2 x 150 g" or "150 g each" shows no portion line, as a field the
+   checks cannot read whole shows nothing (the raw-field rule) */
+function portionLine(t){t=typeof t==="string"?t:"";var all=t.match(/\d[\d,.]*\s*(?:g|gm|gms|grams?)\b/gi)||[];if(all.length!==1)return "";
+  var m=/(\d[\d,.]*)\s*(?:g|gm|gms|grams?)\b/i.exec(t),n=m[1],before=t.slice(0,m.index),after=t.slice(m.index+m[0].length);
+  if(!/^\d+$/.test(n)||+n<1||/\d\s*(?:-|\u2013|\u2014|to|x|\u00D7|\*)\s*$/i.test(before)||/^\s*(?:each|per\b|apiece|a\s+piece)/i.test(after))return "";
+  return "\u2248 "+(+n)+" g";}
 
 /* ---------- prompts. Built only from validated fields; the server builds them itself ---------- */
 function rulesText(p){
@@ -2570,8 +2614,10 @@ function directive(p,pl,hooks,meal,done){
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
   var over=pl.eaten.kcal-pl.day.kcal;if(over>=50)s+="That is about "+Math.round(over/10)*10+"\u00A0kcal over today's "+pl.day.kcal+"\u00A0kcal. ";   /* the day over its target is said in words (R2-B3 044-1) */
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
-  var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
-  pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
+  /* with diabetes or on medicines the line says no "light", "lighter" or "late" hook, by the rule the reason line and "Planned around" share
+     (hookSaid; fix-r15, safety audit of c666d34, m1: "it's late, so keep it light" was said to a client on insulin) */
+  var hp={health:p&&p.health,medsUsual:medsUsual(p,meal)},pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
+  pri.some(function(id){return hookSaid(id,hp)&&hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
   var tail={late_now:"; it's late, so keep it light",protein_gap:", to catch up on protein",lighter_now:", lighter after earlier meals",ate_out:"; simple and home-style after eating out",long_gap:"; you've gone a while without food, so vegetables and protein first",late_dinner:"; a lighter, earlier dinner helps"};
   return s+(pick?tail[pick.id]:"")+".";
 }
@@ -2745,13 +2791,16 @@ function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTAST
 /* The kept plate's title and subtitle are the engine's own, written from its items, and the plate check reads the items apart; they are not
    read again as one text (fix-r14: reading the engine's join of the names, "... and lemon juice squeeze", kept 5 shown recorded plates from
    the tune path, on 3aabd26 too). Nothing shown comes from them: the engine writes both again from the items. */
-function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";return m;}
+function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";
+  if(m&&!("prepMinutes" in m))m.prepMinutes=meal.minutes;   /* a shown plate carries its minutes as "minutes"; the plate check reads them as written (fix-r15) */
+  return m;}
 function checkTune(r,p,meal){
   var m=keptPlate(meal);m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;m.why=[];
   var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
   return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
-function given(v,lo,hi){if(typeof v!=="number"||!isFinite(v))return null;v=Math.round(v);return v<lo||v>hi?null:v;}
+/* the log takes its figures as written, by the figure rule (fix-r15): an integer in range, or the reply is not read */
+function given(v,lo,hi){return fig(v,lo,hi);}
 function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer"};   /* refer_reason other than "none" is a referral (S7) */
@@ -2761,12 +2810,17 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   /* (fix-r14) every item is read: more than eight drops the reply (0 recorded replies hold more than 5), as a figure out of range does */
   var ri=Array.isArray(r.items)?r.items:[];if(ri.length>8)return {status:"empty"};
-  if(ri.some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
+  /* (fix-r15) every item's grams as written: a null, zero, out-of-range or non-number weight is not read as 1 g, the reply is not read, as an
+     out-of-range one already was; an item with no grams written is not listed (below) */
+  if(ri.some(function(it){return it&&"grams" in it&&given(it.grams,1,1500)==null;}))return {status:"empty"};
+  /* (fix-r15; the figure rule) the kcal shown and counted is the kcal the model wrote. The log used to put its own figure from the macros in
+     place of a kcal more than a fifth off them; that figure was not the model's, so such a reply is now not read ("didn't read as a meal"):
+     0 of the 30 recorded log replies were more than a fifth off */
+  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)return {status:"empty"};
   /* safety round 5: what the client said they ate is shown in their own words. The title is their typed text; an item is listed only when
      every word of its name is a word they typed (and it has the name shape); the model's assumption line is not shown. */
   var tw={};words(norm(typed)).forEach(function(w){tw[w]=1;});
-  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
+  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:it&&"grams" in it?given(it.grams,1,1500):null,group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
     .filter(function(i){return i.grams&&nameOK(i.food)&&words(i.food).every(function(w){return tw[w];});});
   var tt=quoted(typed,60);if(!tt||tt.length<typed.trim().length)tt="";   /* a long typed sentence is not used as the heading */
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
@@ -3107,6 +3161,10 @@ var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]]
   ["Chole bhature",["wheat","grain","onion_garlic","root_veg","dairy"]],["Veg biryani with raita",["grain","dairy","onion_garlic","root_veg","nuts"]],["Masala dosa with chutney",["grain","root_veg","onion_garlic"]],
   ["A slice of tiramisu after dinner",["dairy","egg","wheat","sweet"]]];
 function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(function(t){return b.indexOf(t)>=0;});}
+/* on insulin or sugar tablets an example ask that asks for a lighter or smaller meal is not offered (fix-r15, m1 as a class: no app or engine
+   sentence advises eating less, lighter or skipping when the medicines floor applies) */
+var LESSASK=/\b(?:light|lighter|less|smaller|skip\w*)\b/i;
+function appAskOK(e,p){return appFoodOK(e,p)&&!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&LESSASK.test(e[0]));}
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
@@ -3196,6 +3254,18 @@ var URGENTTXT=new RegExp("\\b(?:"+[
 var URGENTSIGNS=new RegExp(URGENTSIGN.source,"gi");
 function signKinds(t){var k={};(t.match(URGENTSIGNS)||[]).forEach(function(w){w=w.toLowerCase();k[/^shak|^shiv|^trembl/.test(w)?"shake":/^swe|^pas/.test(w)?"sweat":/^diz|^gidd|^chak/.test(w)?"dizzy":/^conf|^ghab/.test(w)?"confused":"vision"]=1;});return Object.keys(k).length;}
 function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t)||signKinds(t)>=2;}
+/* S7, the insulin-profile default (fix-r15; safety audit of c666d34, owner question on the urgent-symptom scope; the coordinator's default,
+   which the owner or a clinician may change; not clinically reviewed). With diabetes and insulin or sugar tablets (meds "yes" or "not sure";
+   an unanswered question is read as "not sure"), one low-sugar sign typed is urgent with no medicine named in the text: the profile names
+   it. The signs are the net's own list (shaky, sweating, dizzy, confused and the rest); "hypo" and "sugar low" are urgent for everyone. */
+function medsSign(t,p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&URGENTSIGN.test(String(t||""));}
+function urgentFor(t,p){return urgentTyped(t)||medsSign(t,p);}
+function referFor(t,p){return referTyped(t)||medsSign(t,p);}
+/* the reply to typed text that is referred before the model: one function for plan() on the server and the app on the phone, which runs it
+   before it sends, so offline, on a timeout or with a refused code the referral still shows (fix-r15; safety audit of c666d34, m4). Text is
+   read as plan() reads it (folded at intake); null when the text goes to the model. */
+function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t||!referFor(t,p))return null;
+  return urgentFor(t,p)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]};}
 /* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
    of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
    than a person's own usual size). 0 when the person is not on that medicine. */
@@ -3207,7 +3277,7 @@ plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
   /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
@@ -3463,7 +3533,9 @@ var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",s
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
-function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
+/* the medicine answer: with diabetes an unanswered question (ticked from My food, which does not ask it) is read as "not sure", as the engine
+   reads it, everywhere on the phone (fix-r15; safety audit of c666d34, m8: the skipped-meal warning and the snack rule read it as "no") */
+function onMeds(){return has("diabetes")&&P.meds!=="no";}
 /* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
 var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
@@ -3495,7 +3567,7 @@ function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
    untick, and kept plates against the current rules and body figures. It runs on every tap, at render and again just before anything is
    logged; a state that fails is not offered and not logged, and #said says why. ---------- */
 function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
-  if(!figsAgree(n))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine */
+  if(!figsAgree(n)||["protein","carbs","fats","fiber"].some(function(k){return n[k]<0;}))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine; a figure under 0 is no plate (fix-r15) */
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}
@@ -3564,6 +3636,11 @@ function errText(code,where){
   if(code==="bad_key"&&KEYCODE)return REFUSED;
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
+  /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
+     anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
+     gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
+  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  if(tr){cb(200,tr);return;}
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
@@ -3614,7 +3691,9 @@ function viewOf(m){
   /* a change to the grain works on the planned grain item only: when that item is not on the plate as planned (swapped away), the state is
      refused by plateWhy, so no note names an item that is not on the plate (S10; final audit M1) */
   var suffix=[],grainMiss=false;ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food){var gf=false;for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){gf=true;if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}if(!gf)grainMiss=true;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.max(0,Math.round(n[k]));});
+  /* the figures are the plate's plus what is on it, as the engine passed them: not floored at 0 (fix-r15, the figure rule); a combination that
+     would take one below 0 is refused by composedWhy */
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.round(n[k]);});
   /* a swap is named in the title and in what is logged: "..., with tofu bhurji in place of paneer tikka" (second screen review, R2-B2 025-1) */
   var parts=swapped.map(function(x){return x.to.toLowerCase()+" in place of "+x.from.toLowerCase().replace(/,.*$/,"");}).concat(suffix.map(function(x){return x.toLowerCase();}));
   return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped,grainMiss:grainMiss};
@@ -3640,7 +3719,9 @@ function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(S
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
 function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
-  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
+  /* on insulin or sugar tablets the snack is never passed over: its usual size is the floor too (fix-r15, m1 as a class; it was passed over
+     unless a meal was skipped, R2-B2 021-1) */
+  var room=snackRoom();if(room==null||room>=120||onMeds())return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
@@ -3910,7 +3991,7 @@ function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
   if(UI.lock){var lk=el("p","fine asklock",lockLine());lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
-  var pr=el("div","prompts");PROMPTS.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
+  var pr=el("div","prompts");PROMPTS.filter(function(e){return typeof appAskOK==="function"?appAskOK(e,profileOut()):appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
 }
 function composer(host){
@@ -4114,7 +4195,7 @@ function renderRescue0(){
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.max(k==="protein"||k==="fiber"?0:Math.round(d[k]*.4),Math.round(a[k]));});
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.round(a[k]);});   /* shown and logged as checked (rescueSum): no floor (fix-r15) */
   var r0=riseOf(d,null),r1=riseOf(a,hab),tg=PL?PL.target:null,f0=fitOf(d,tg),f1=fitOf(a,tg);
   var inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");
   hl.appendChild(el("span","dish",d.name));hl.appendChild(el("span","dish-s",[d.portion,d.warning].filter(Boolean).join(" · ")));ih.appendChild(hl);inst.appendChild(ih);

@@ -655,6 +655,20 @@ const STATES = [
   ['plate-band-gentle', seed(), bandFits('Gentle'), bandRoute(BANDPLATE(525, 26, 40, 29, 18))],
   ['plate-band-sharp', seed(), bandFits('Sharp'), bandRoute(BANDPLATE(775, 20, 140, 15, 8))],
 
+  // fix-r15 (safety audit of c666d34, m4): typed referral text gets the referral on the phone, with no request, when the request would fail:
+  // offline with urgent text on the Plate ask, offline with pregnancy text on Rescue, and with the code refused by the server on the log
+  ['plate-ask-offline-urgent', seed(), async (p, h) => { await h.plate(p); let sent = 0; await p.route('**/api/meals', r => { sent++; return OFF(r); });
+    await p.fill('#askin', 'chest pain since morning, what can I eat'); await p.press('#askin', 'Enter'); await h.settle(900);
+    const r = await p.evaluate(() => ({ head: ((document.querySelector('#v-plate .empty-card h2.urgent') || {}).textContent || ''), card: ((document.querySelector('#v-plate .empty-card') || {}).textContent || ''), err: !!document.querySelector('#ask-retry') }));
+    if (sent || r.err || !/contact your doctor or emergency care/.test(r.head) || !/coach and doctor/i.test(r.card)) throw new Error('offline, typed urgent text does not get the referral with the line to get help now (' + JSON.stringify(r) + ', ' + sent + ' requests)'); }],
+  ['rescue-offline-pregnancy', seed(), async (p, h) => { await h.plate(p); let sent = 0; await p.route('**/api/rescue', r => { sent++; return OFF(r); }); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'I am pregnant, what can I order'); await p.press('#rin', 'Enter'); await h.settle(800); await h.inView(p, '#v-rescue .empty-card', 'the referral');
+    const t = await p.evaluate(() => ((document.querySelector('#v-rescue .empty-card') || {}).textContent || '') + '|' + !!document.querySelector('#rescue-retry'));
+    if (sent || !/coach and doctor/i.test(t) || /\|true$/.test(t)) throw new Error('offline, typed pregnancy text on Rescue does not get the referral (' + t + ', ' + sent + ' requests)'); }],
+  ['sheet-log-refused-kidney', seed(), async (p, h) => { await h.plate(p); let sent = 0; await p.route('**/api/log', r => { sent++; return J(401, { code: 'bad_key' })(r); }); await p.click('#log-other'); await h.settle();
+    await p.fill('#login', 'kidney problem, had dal and rice'); await p.press('#login', 'Enter'); await h.settle(900);
+    const t = await p.evaluate(() => { const n = document.querySelector('#log-note'); return n ? n.className + '|' + n.textContent : ''; });
+    if (sent || !/refer/.test(t) || !/coach and doctor/i.test(t) || /code was not accepted/.test(t)) throw new Error('with the code refused, typed kidney text on the log does not get the referral (' + t + ', ' + sent + ' requests)'); }],
   ['sheet-log-referred', seed(), async (p, h) => { await h.plate(p); await p.click('#log-other'); await h.settle(); await p.fill('#login', 'I am pregnant, I had dal and rice'); await p.press('#login', 'Enter'); await h.settle(1200);
     const t = await p.textContent('#sheet'); if (!/coach and doctor/i.test(t) || /didn.t read as a meal/i.test(t)) throw new Error('the log sheet does not show the referral');
     // Critic round 38, finding 11: on a referral "Count it" (it only sends the words again) is not the main button, and "It is counted" is not said
