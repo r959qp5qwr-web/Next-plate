@@ -675,3 +675,9 @@ on a meal's protein energy (rules: protein cap).
   names a stand-in (lauki roti, broccoli pasta) and "crispy noodle" also names a crust on a salad, so they are read the safe way.
   Round 21 listed soya chaap roll and chilli paneer noodles as grains; "soya roll" and "paneer noodles" also name stand-in bases, so they
   are read the safe way.
+- D8 Builder refusal note (owner, 17 Nov, option survey: "Keep it (Recommended)"): a refused step's note sits in a held strip directly above
+  "Plan … with this plate", with the same slip, colours and type as before (fix-r10, Critic round 41 finding 1). The owner was shown the
+  refused state at 320 px and at 360 px with 130 % text, and was told the strip covers the lower rows until scrolled. Option text: "Keep the
+  note in the held strip above the button, as in the two screenshots. No row moves under a held thumb, and tests check this on every row at
+  every width." That the strip covers the lower rows at large text is accepted; no stepper may move under a held thumb (review.js
+  builder-still).
