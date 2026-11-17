@@ -769,6 +769,13 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
     m.swaps.base.push({ food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: -400, deltaProtein: -4, deltaCarbs: -100, deltaFats: 2, deltaFiber: 0 },
       { food: 'Jowar roti', grams: 90, made_of: 'jowar', contains: ['grain'], deltaKcal: -260, deltaProtein: -4, deltaCarbs: -60, deltaFats: 0, deltaFiber: 0 });
     for (const [where, c] of both(o, m)) add('figure rule B1: a carbs delta past its range is not offered, one inside it is, as written (S5)', !!c && !c.swaps.base.some(s => s.food === 'Bajra roti') && c.swaps.base.some(s => s.food === 'Jowar roti' && s.deltaCarbs === -60), `diabetes ${where}: ${c ? JSON.stringify(c.swaps.base.map(s => [s.food, s.deltaCarbs])) : 'plate not offered'}`); }
+  // every combination the engine offers stays inside a plate's ranges: a swap and a change that each keep the fats at 4 g but together take
+  // them under 0 are not both offered (pruneCombos); each alone is a figure the model wrote and stays in range
+  { const m = platePlain(); Object.assign(m, { kcal: 520, protein: 22, carbs: 80, fats: 10, fiber: 14 });
+    m.swaps = { protein: [{ food: 'Sprouted moong', grams: 200, contains: PT, ...z }, { food: 'Steamed moong', grams: 180, contains: PT, deltaKcal: -50, deltaProtein: 0, deltaCarbs: 0, deltaFats: -6, deltaFiber: 0 }], base: [] };
+    m.alchemy = { gut: { add_item: '', add_grams: 0, minutes: 20, grain_grams_after: 90, contains: PT, deltaKcal: -50, deltaProtein: 0, deltaCarbs: 0, deltaFats: -6, deltaFiber: 0 } };
+    const c = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))).meals[0], null), both = !!c && c.swaps.protein.some(s => s.food === 'Steamed moong') && !!c.alchemy.gut, one = !!c && (c.swaps.protein.some(s => s.food === 'Steamed moong') || !!c.alchemy.gut);
+    add('figure rule: no combination offered leaves a plate\'s ranges (fats under 0)', !!c && !both && one, c ? JSON.stringify([c.swaps.protein.map(s => s.food), Object.keys(c.alchemy)]) : 'plate not offered'); }
   // m5: an item's grams 0, null, "", -5, 1.5, "200" or a word drop the plate (they showed "1 g"); add_grams 0, null, "", -5 with a named food
   // drop the change (it showed "Add 1 g ..."); a protein delta of -22 drops the change (it showed -10); controls as written
   for (const g of [0, null, '', -5, 1.5, '200', 'x', 801]) { const m = platePlain(); m.items[2].grams = g; add('figure rule m5: an item weight that is not a weight drops the plate', !plateOffered({}, m).ok, `grams ${JSON.stringify(g)}: the plate was offered`); }
@@ -966,6 +973,16 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m6 app: the swap handler refuses a composed plate that fails, and puts the state back', /var why=plateWhy\(m\);if\(why\)\{UI\.alc=snap\.alc;UI\[x\[2\]\]=snap\.v;refuse\(why\);/.test(hero), 'not found in heroCard');
       add('m6 app: the Plate render clears a tap state that no longer holds', /var m=curMeal\(\);if\(plateWhy\(m\)\)\{UI\.alc=\{\};UI\.swp=0;UI\.swb=0;\}var vw=viewOf\(m\);/.test(rp), 'not found in renderPlate');
       add('m6 app: the Rescue render clears ticks that no longer hold', /if\(rescueWhy\(r,UI\.rmoves\)\)UI\.rmoves=\{\};/.test(rr), 'not found in renderRescue0'); }
+    // the figure rule in the app (fix-r15): a composed figure is the plate's plus what is on it, never floored at 0; a figure under 0 is refused;
+    // the Rescue figures shown and logged are the checked ones (no floor). A plate kept from an older build can carry such a swap.
+    { const vf = run(['viewOf', 'swapAt'], { UI: { swp: 1, swb: 0, alc: {} }, ALCH, sameName }, 'viewOf');
+      const m = { title: 'Moong dal with jowar roti', kcal: 300, protein: 20, carbs: 40, fats: 3, fiber: 5, minutes: 10, items: [{ food: 'Moong dal', grams: 150, group: 'protein' }, { food: 'Jowar roti', grams: 60, group: 'carbs' }], grain: { food: 'Jowar roti', grams: 60 },
+        swaps: { protein: [{ food: 'Moong dal', grams: 150, ...z }, { food: 'Tofu bhurji', grams: 100, deltaKcal: -40, deltaProtein: 0, deltaCarbs: -4, deltaFats: -6, deltaFiber: 0 }], base: [] }, alchemy: {} };
+      const v = vf && safe(() => vf(m), null); add('figure rule app: viewOf does not floor a composed figure at 0', !!v && v.n.fats === -3, v ? JSON.stringify(v.n) : 'viewOf not found');
+      const cw = run(['has', 'profileOut', 'composedWhy'], { P: appP({}), C: { meal: 'lunch' }, figsAgree, medsUsual }, 'composedWhy'), neg = { kcal: 404, protein: 30, carbs: 80, fats: -4, fiber: 5 };
+      add('figure rule app: composedWhy refuses a figure under 0', !!cw && !!cw(neg, neg, { meal: 'lunch' }) && !cw(Object.assign({}, neg, { fats: 4, kcal: 476 }), neg, { meal: 'lunch' }), cw ? JSON.stringify(cw(neg, neg, { meal: 'lunch' })) : 'composedWhy not found');
+      add('figure rule app: the Rescue figures shown and logged are the checked ones (no floor)', /\["kcal","protein","carbs","fats","fiber"\]\.forEach\(function\(k\)\{a\[k\]=Math\.round\(a\[k\]\);\}\);/.test(grab('renderRescue0')), 'renderRescue0 floors a figure');
+      add('m1 as a class: the Plate\'s example asks go through appAskOK', /PROMPTS\.filter\(function\(e\)\{return typeof appAskOK==="function"\?appAskOK\(e,profileOut\(\)\)/.test(grab('askBlock')), 'askBlock does not filter with appAskOK'); }
     // ---------- fix-r15: three findings that need no model slip (safety audit of c666d34, m1, m4, m8), and the insulin-profile default ----------
     // m8: an unanswered medicine question (diabetes ticked from My food, which does not ask it) is read as "not sure" everywhere, as the engine
     // reads it: the skipped-meal warning and the snack rule (onMeds) and what is sent (profileOut)
