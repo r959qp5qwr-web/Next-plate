@@ -287,7 +287,42 @@ for (const [n, o] of FOUND) {
   for (const t of ['chest is paining', 'my chest is paining since morning', 'sine me dard ho raha hai', 'feeling shaky and sweaty', 'shaky and sweaty', 'dizzy and confused', 'left arm pain', 'pain in my left arm', 'gasping for breath'])
     for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true]) add('Found words (safety audit of 9dd1b13): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
   for (const t of ['glimepiride', 'metformin with dinner?', 'gliclazide 80', 'sweaty after the gym, light dinner', 'a shaky table at the dhaba'])
-    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`); }
+    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`);
+  // ---------- found items of the safety audit of 7eaadcf (backlog; D1 "Fix found, then watch"; fix-r14) ----------
+  // S7: the 14 urgent phrasings it found, in each box, with and without medicines ticked; food text that shares a word stays unreferred
+  for (const t of L.urgentFound14 || []) for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true])
+    add('Found words (safety audit of 7eaadcf): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
+  add('Found words (safety audit of 7eaadcf): the lexicon holds the 14 urgent phrasings', (L.urgentFound14 || []).length === 14, `${(L.urgentFound14 || []).length} listed`);
+  for (const t of L.notUrgentFound14 || []) add('Found words (safety audit of 7eaadcf): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`);
+  // S8: a size word before a measure that opens a name goes with it, generated from the engine's size and opening-measure lists
+  for (const [n, want] of [['Full plate rice', 'Rice'], ['Full plate biryani', 'Biryani'], ['Full bowl dal', 'Dal'], ['Full glass buttermilk', 'Buttermilk'], ['Heaped spoon ghee', 'Ghee'], ['Level tsp ghee', 'Ghee'],
+    ['Full fat curd', 'Full fat curd'], ['Full cream milk', 'Full cream milk'], ['Big bowl salad', 'Salad']])
+    add('Found words (safety audit of 7eaadcf): a size before a measure that opens a name (S8)', safe(() => showName(n), '') === want, `"${n}" shows "${safe(() => showName(n), '')}", expected "${want}"`);
+  { const sizes = MEASSIZE.replace(/^\(\?:|\)$/g, '').split('|'), meas = MEASOPEN.map(w => w.replace(/\(\?:[^)]*\)\?|\\w\*|\?/g, '').replace(/c\?/g, 'c').replace(/h\?/g, 'h'));
+    for (const z of sizes) for (const m of meas) { const n = cap(z + ' ' + m + ' dal'), s = safe(() => showName(n), '');
+      add('Found words (safety audit of 7eaadcf): every size before every opening measure goes (S8, generated)', s === 'Dal', `"${n}" shows "${s}"`); } }
+  // S1, S2: every wheat and egg form of the S8 piece list (CNTPIECE) is in the food lists, so the two lists hold together. Each form is
+  // classed here; a form the engine adds that is not classed fails, so a new piece word is read for its food first.
+  { const expand = (src) => { const out = []; const alts = (s) => { const a = [], b = ''; let d = 0, cur = ''; for (const ch of s) { if (ch === '(') d++; if (ch === ')') d--; if (ch === '|' && !d) { a.push(cur); cur = ''; } else cur += ch; } a.push(cur); return a; };
+      const forms = (s) => { if (!s) return ['']; const g = /^\(\?:([^()]*)\)(\?)?/.exec(s); if (g) { const rest = forms(s.slice(g[0].length)), opts = alts(g[1]).concat(g[2] ? [''] : []); return opts.flatMap(o => rest.map(r => o + r)); }
+        const c = s.charAt(0), opt = s.charAt(1) === '?', rest = forms(s.slice(opt ? 2 : 1)); return (opt ? [c, ''] : [c]).flatMap(x => rest.map(r => x + r)); };
+      for (const alt of alts(src.replace(/^\(\?:/, '').replace(/\)$/, ''))) out.push(...forms(alt)); return [...new Set(out)]; };
+    const WHEAT = /^(?:rotis?|rotiya|rotiyaan|chapatiya|chapatiyan|chapatiyaan|puriya|puriyan|puriyaan|rotlis?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|momos?|parottas?|porottas?|khakhras?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|kachoriyan|kachoriyaan|kachoriyon|golgappe|golgappas?|luchis?|luchchis?|littis?|baatis?|batis?|theple|rotiyon|puriyon|chapatiyon|rotliyan|rotliyaan)$/;
+    const EGG = /^(?:eggs?|yolks?|anda|ande|anday|andey|andon)$/;
+    // not wheat or egg by default, each with its reason: rice, pulse, millet, sweet and fruit pieces; rotla, rotle and bhakri are millet
+    // flatbreads (bajra, jowar) the grain list reads; "rotti" names rice rotis in the south ("Kori rotti" is tracked); "whites" alone is no food word
+    const OTHER = /^(?:rotlas?|rotle|bhakris?|bhakriyan|bhakriyaan|rottis?|idlis?|idlies|idliyan|idliyaan|idliyon|dosas?|dose|doson|uttapams?|appams?|vadas?|wadas?|vade|wade|vadon|pakoras?|pakode|pakore|pakodon|pakodis?|pakodiyan|pakodiyaan|pakodiyon|cutlets?|kebabs?|tikkis?|tikkiyan|tikkiyaan|chillas?|cheelas?|chille|cheele|ladoos?|laddoos?|laddus?|dhoklas?|dhokle|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|apples?|bananas?|oranges?|whites?)$/;
+    const HELD = new Set(HO.wheat.concat(HO.egg).map(x => x.toLowerCase()));   // a held-out name stays out of the engine, so its form is not required
+    const forms = expand(CNTPIECE); const wf = prof({ leave: ['wheat'] }), vg = prof({ diet: 'veg' });
+    add('Found words (safety audit of 7eaadcf): the piece list was read', forms.length > 150, `${forms.length} forms`);
+    for (const f of forms) { if (HELD.has(f)) continue;
+      const cls = WHEAT.test(f) ? 'wheat' : EGG.test(f) ? 'egg' : OTHER.test(f) ? 'other' : null;
+      add('Found words (safety audit of 7eaadcf): every form of the S8 piece list is classed as wheat, egg or other', !!cls, `"${f}" is in CNTPIECE and in no class of this test`);
+      if (cls === 'wheat') add('Found words (safety audit of 7eaadcf): every wheat form of the piece list is in the wheat list (S1)', crosses(cap(f), wf), `"${f}" was not read as wheat`);
+      if (cls === 'egg') add('Found words (safety audit of 7eaadcf): every egg form of the piece list is in the egg list (S2)', crosses(cap(f), vg), `"${f}" was not read as egg`); }
+    for (const [n, o] of [['Andey ki bhurji', { diet: 'veg' }], ['Do andey', { diet: 'veg' }], ['Wholewheat bhakri', { leave: ['wheat'] }], ['Spelt flatbread', { leave: ['wheat'] }], ['Durum pasta', { leave: ['wheat'] }],
+      ['Multigrain bhakri', { leave: ['wheat'] }], ['Wholemeal toast', { leave: ['wheat'] }], ['Kachoriyan', { leave: ['wheat'] }], ['Golgappe', { leave: ['wheat'] }], ['Two yolks', { diet: 'veg' }]])
+      add('Found words (safety audit of 7eaadcf): the audit\'s names are read (S1, S2)', crosses(n, prof(o)), `${JSON.stringify(o)}: "${n}" was not read`); } }
 
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
