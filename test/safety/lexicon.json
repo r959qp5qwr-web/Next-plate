@@ -597,7 +597,12 @@
     "motte",
     "guddu",
     "omlet",
-    "anday"
+    "anday",
+    "dim sheddo",
+    "dim sheddho",
+    "dim shorshe",
+    "dim poshto",
+    "dim dalna"
    ],
    "dairy": [
     "dal makhani",
@@ -669,7 +674,8 @@
     "puriyon",
     "bati",
     "dal bati",
-    "luchchi"
+    "luchchi",
+    "wrap"
    ],
    "soya": [
     "soyabean",
@@ -698,7 +704,24 @@
     "pudding",
     "sweet lassi",
     "mango lassi",
-    "mango shake"
+    "mango shake",
+    "milkshake",
+    "banana shake",
+    "date shake",
+    "dates shake",
+    "strawberry shake",
+    "chikoo shake",
+    "chiku shake",
+    "fruit shake",
+    "thick shake",
+    "thickshake",
+    "smoothie",
+    "thandai",
+    "rose milk",
+    "badam milk",
+    "sweet pongal",
+    "shakkarpara",
+    "puran poli"
    ],
    "salty": [
     "pickled",
@@ -726,7 +749,26 @@
     "softgel",
     "vitamin pills",
     "iron drops",
-    "omega 3 capsules"
+    "omega 3 capsules",
+    "multivitamins",
+    "complan",
+    "whey",
+    "whey shake",
+    "protein bar",
+    "protein bars",
+    "protein isolate",
+    "electral",
+    "ors",
+    "becosules",
+    "shelcal",
+    "zincovit",
+    "biotin",
+    "folic acid",
+    "pediasure",
+    "boost drink",
+    "ensure milk",
+    "ensure drink",
+    "tang drink"
    ]
   }
  },
@@ -1113,20 +1155,14 @@
   ],
   "supplement": [
    "Cod liver oil",
-   "Biotin",
    "Glucon-D",
    "Triphala",
    "Giloy",
    "Shilajit",
-   "Complan",
-   "PediaSure",
    "Threptin",
    "Revital",
-   "Becosules",
-   "Shelcal",
    "Liv 52",
    "Limcee",
-   "Zincovit",
    "Neurobion",
    "Evion",
    "Supradyn",

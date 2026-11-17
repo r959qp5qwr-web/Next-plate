@@ -113,6 +113,30 @@ for (const { m, slot, at } of plates) { const key = JSON.stringify([m.title, (m.
       for (const s of [sm.forYou, ...Object.values(sm.alchemy).map(c => c.note)].filter(Boolean)) for (const n of sentenceNames(s)) { const why = s8bad(n);
         if (why) fail('S8 scan: a reason line or change note names a food with a count, a measure or a stub', `${at} "${s}" (${why} in "${n}")`); } } } }
 
+// ---------- the found words of fix-r13 against every recorded string (safety audit of 9dd1b13, backlog; D1 "Fix found, then watch") ----------
+// Every string under eval/ (names, notes, pairing tips, typed asks): a word fixed in this round may hit only the dishes it names. The
+// supplement and urgent readings are compared whole: the strings that read as a supplement or as urgent are the ones listed here, each read.
+const allStr = new Set(); const walkAll = (o) => { if (typeof o === 'string') { if (o.trim() && o.length < 400) allStr.add(o); } else if (Array.isArray(o)) o.forEach(walkAll); else if (o && typeof o === 'object') Object.values(o).forEach(walkAll); };
+for (const f of jsons(path.join(ROOT, 'eval'))) { try { walkAll(JSON.parse(fs.readFileSync(f, 'utf8'))); } catch (e) {} }
+const NONE13 = [['the sweet drinks and sweets', /\b(?:milkshakes?|(?:banana|dates?|strawberry|chikoo|chiku|fruit|thick)\s+shakes?|thickshakes?|smoothies?|thandai|rose\s+milk|badam\s+milk|sweet\s+pongal|shakkarpara|puran\s+poli)\b/i],
+  ['the supplements', /\b(?:multivitamins|complan|whey|protein\s+bars?|protein\s+isolate|electral|ors|becosules|shelcal|zincovit|biotin|folic\s+acid|pediasure|boost\s+drink|ensure\s+(?:milk|drink)|tang\s+drink)\b/i],
+  ['a lettuce wrap', /\blettuce\s+wraps?\b/i]];
+for (const [what, rx] of NONE13) { const hit = [...allStr].filter(x => rx.test(x));
+  if (hit.length) fail(`fix-r13 found words: ${what} hit no recorded string`, hit.slice(0, 5).map(x => JSON.stringify(x)).join('; ')); }
+// the egg dishes and the wraps are found in the recorded replies: each hit is that dish, read as egg or wheat
+const egg13 = [...allStr].filter(x => /\bdim\s+(?:sheddo|sheddho|shorshe|poshto|dalna)\b/i.test(x)), wrap13 = [...allStr].filter(x => /\bwraps?\b/i.test(x));
+const vegP = a.readProfile(Object.assign({}, BASE, { diet: 'veg' })), wheatP = a.readProfile(Object.assign({}, BASE, { leave: ['wheat'] }));
+for (const x of egg13) if (!a.crosses(x, vegP)) fail('fix-r13 found words: a recorded Bengali egg dish reads as egg', JSON.stringify(x));
+for (const x of wrap13) if (!a.crosses(x, wheatP)) fail('fix-r13 found words: a recorded wrap reads as wheat', JSON.stringify(x));
+// "dim" with no egg dish after it is not egg
+for (const x of [...allStr].filter(x => /\bdim\b/i.test(x) && !/\bdim\s+(?:sheddo|sheddho|shorshe|poshto|dalna|kosha|posto|bhuna)\b/i.test(x) && !/\begg|\bdimer\b|\banda\b/i.test(x))) if (a.crosses(x, vegP)) fail('fix-r13 found words: "dim" alone is not egg', JSON.stringify(x));
+// the readings ca94d43 already had: a supplement word of the old list (supplements, tablets, pills, protein powder, enzymes, zinc) in pairing
+// tips that are never shown, in typed asks and in the model's referral lines; chest pain in typed asks and in the model's referral lines
+const OLDSUPP = /\b(?:supplements?|tablets?|pills?|protein\s+powder|enzymes|zinc)\b|-supplements?\b/i, OLDURG = /\bchest\s+(?:pain|discomfort)/i;
+const suppNow = [...allStr].filter(x => a.supp(x)), urgNow = [...allStr].filter(x => a.urgentTyped(x));
+for (const x of suppNow) if (!OLDSUPP.test(x)) fail('fix-r13 found words: no new recorded string reads as a supplement (S9)', JSON.stringify(x));
+for (const x of urgNow) if (!OLDURG.test(x)) fail('fix-r13 found words: no new recorded string reads as urgent (S7)', JSON.stringify(x));
+console.log(`fix-r13 found words: ${allStr.size} recorded strings read; ${egg13.length} egg dishes and ${wrap13.length} wraps found (true hits), ${suppNow.length} supplement and ${urgNow.length} urgent readings, each an old word (22 and 14 on ca94d43)`);
 console.log(`recorded: ${plates.length} plates (${seen.size} distinct), ${names.size} distinct names`);
 console.log(`S1-S4 replay, tags stripped: ${replayN} plate and profile checks, ${shownN} plates shown (${Object.entries(perProfile).map(([k, v]) => k + ' ' + v).join(', ')})`);
 for (const [k, v] of Object.entries(perProfile)) if (v < 300) fail('recorded data read', `${k}: only ${v} plates shown, the replay is near empty for this profile`);

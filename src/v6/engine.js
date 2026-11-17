@@ -755,11 +755,16 @@ var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diab
 var URGENTTXT=new RegExp("\\b(?:"+[
   "(?:blood\\s+)?sugar\\s+(?:level\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+|bahut\\s+|bohot\\s+|bahot\\s+|bohut\\s+|bhot\\s+|bht\\s+|kaafi\\s+|kafi\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",
   "low\\s+(?:blood\\s+)?sugar(?![\\s-]*(?:free|desserts?|sweets?|biscuits?|cookies?|cakes?|chai|tea|coffee|version|recipes?|snacks?|juices?|drinks?)\\b)","hypo(?:glycaemi\\w*|glycemi\\w*|s)?",
-  "chest\\s+(?:pains?|tight\\w*|pressure|heavi\\w*|discomfort)","pain\\s+in\\s+(?:my\\s+|the\\s+)?chest","(?:seen[ae]|chhati|chati|chest)\\s+(?:me|mein|mai)\\s+(?:dard|pain|jalan)","heart\\s+attack",
+  "chest\\s+(?:is\\s+|feels?\\s+)?(?:pains?|paining|hurts?|hurting|tight\\w*|pressure|heavi\\w*|discomfort)","pain\\s+in\\s+(?:my\\s+|the\\s+)?(?:chest|left\\s+arm)","left\\s+arm\\s+(?:pain\\w*|hurts?|hurting)",
+  "(?:seen[ae]|seeney|sine|chhati|chati|chest)\\s+(?:me|mein|mai)\\s+(?:dard|pain|jalan)","heart\\s+attack","gasp(?:ing|ed)?",
   "faint(?:ed|ing|ness)?","feel(?:ing)?\\s+faint","pass(?:ed|ing)\\s+out","black(?:ed|ing)\\s+out","behosh\\w*","collaps\\w*",
   "breathless\\w*","short(?:ness)?\\s+of\\s+breath","(?:can'?t|cannot|can\\s+not|unable\\s+to|difficult(?:y)?\\s+(?:to\\s+)?|trouble)\\s*breath\\w*","breathing\\s+(?:problem|difficult\\w*|trouble|issue)","saa?ns\\s+(?:nahi|phool\\w*|lene\\s+me\\w*|ki\\s+takleef)",
   "disoriented"].join("|")+")\\b","i");
-function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t);}
+/* two different low-sugar signs together are urgent with no medicine named ("shaky and sweaty", "dizzy and confused"; safety audit of 9dd1b13,
+   backlog; fix-r13). A medicine's name alone is not a sign ("glimepiride", "metformin"). */
+var URGENTSIGNS=new RegExp(URGENTSIGN.source,"gi");
+function signKinds(t){var k={};(t.match(URGENTSIGNS)||[]).forEach(function(w){w=w.toLowerCase();k[/^shak|^shiv|^trembl/.test(w)?"shake":/^swe|^pas/.test(w)?"sweat":/^diz|^gidd|^chak/.test(w)?"dizzy":/^conf|^ghab/.test(w)?"confused":"vision"]=1;});return Object.keys(k).length;}
+function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t)||signKinds(t)>=2;}
 /* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
    of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
    than a person's own usual size). 0 when the person is not on that medicine. */

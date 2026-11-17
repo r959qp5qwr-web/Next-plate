@@ -254,6 +254,35 @@ for (const [n, o] of FOUND) {
   add('Found gaps (safety audit of b4633dd): a plate item with a "plain" tag', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
   add('Found gaps (safety audit of b4633dd): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
 
+// ---------- safety audit of 9dd1b13, the found words ("Fix found, then watch", D1; fix-r13): each fixed and tested, with a control ----------
+{ const F13 = [
+    ...['Dim Sheddo with rice', 'Dim Sheddho', 'Dim Shorshe', 'Dim poshto', 'Dim Dalna with roti'].map(n => [n, { diet: 'veg' }]),
+    ...['Paneer Tikka Wrap', 'Soya Bhurji Wrap', 'Egg Bhurji Wrap with Mint Dahi', 'Veg wraps', 'Lettuce wrap'].map(n => [n, { leave: ['wheat'] }]),
+    ...['Milkshake', 'Banana milkshake', 'Strawberry milkshake', 'Banana shake', 'Date shake', 'Mango smoothie', 'Thandai', 'Rose milk', 'Badam milk', 'Sweet pongal', 'Shakkarpara', 'Puran poli'].map(n => [n, { health: 'diabetes' }])];
+  for (const [n, o] of F13) {
+    add('Found words (safety audit of 9dd1b13): a plate item with a "plain" tag is dropped', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
+    add('Found words (safety audit of 9dd1b13): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
+  // "dim" alone, "dim sum" and "dimly" are not egg; "shake" alone is the verb of the recorded notes ("Shake sattu in cool water")
+  for (const [t, o] of [['Veg dim sum', { diet: 'veg' }], ['Dim light dinner', { diet: 'veg' }], ['A dimly lit cafe thali', { diet: 'veg' }], ['Dim', { diet: 'veg' }], ['Shake sattu in cool water', { health: 'diabetes' }]])
+    add('Found words (safety audit of 9dd1b13): no false hit', !crosses(t, prof(o)), `${JSON.stringify(o)}: "${t}" was ruled out`);
+  // S9: the supplements shown with a "plain" tag; brand names that are English words count only as a whole name or before a drink word
+  for (const n of ['Multivitamins', 'Complan', 'Whey', 'Whey shake', 'Protein bar', 'Electral', 'ORS', 'Becosules', 'Shelcal', 'Zincovit', 'Biotin', 'Folic acid', 'Pediasure', 'Boost drink', 'Boost', 'Ensure', 'Ensure milk', 'Soy protein isolate', 'Tang'])
+    add('Found words (safety audit of 9dd1b13): a supplement with a "plain" tag is dropped (S9)', !plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was offered`);
+  for (const t of ['Ensure thorough boiling of chickpeas.', 'Add 70 grams of fresh paneer to boost the protein.', 'Acidity enhances the tang of the chutney.', 'Sattu shake'])
+    add('Found words (safety audit of 9dd1b13): no false hit (S9)', !supp(t), `"${t}" was read as a supplement`);
+  // S8: measures that open a name, and the stubs
+  for (const [n, want] of [['Bowlful dal', 'Dal'], ['Serving dal', 'Dal'], ['Karchi dal', 'Dal'], ['Plateful rice', 'Rice'], ['Glassful buttermilk', 'Buttermilk'], ['Cupful milk', 'Milk'], ['Scoop dal', 'Dal'], ['Portion rice', 'Rice'],
+    ['Pcs paneer', 'Paneer'], ['Pieces chicken', 'Chicken'], ['Ladle sambar', 'Sambar'], ['Mutthi chana', 'Chana'], ['Kilo chicken', 'Chicken'], ['Litre buttermilk', 'Buttermilk'], ['Ml milk', 'Milk'],
+    ['Half dozen almonds', 'Almonds'], ['Chammach bhar ghee', 'Ghee'], ['Katori bhar dal', 'Dal'], ['2 chammach bhar ghee', 'Ghee'],
+    ['Portion control salad', 'Portion control salad'], ['Muthiya', 'Muthiya'], ['Vati dal khaman', 'Vati dal khaman'], ['Cup cake', 'Cup cake'], ['Glass noodles', 'Glass noodles']])
+    add('Found words (safety audit of 9dd1b13): a measure that opens a name, and the stubs (S8)', safe(() => showName(n), '') === want, `"${n}" shows "${safe(() => showName(n), '')}", expected "${want}"`);
+  // S7: the urgent phrasings, typed in each box, with and without medicines ticked; a medicine's name alone is not urgent
+  const urgentOn = (kind, t, meds) => { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { health: 'diabetes', meds: meds ? 'yes' : 'no' }), ctx: { meal: 'lunch', text: t } }), {}); return !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent); };
+  for (const t of ['chest is paining', 'my chest is paining since morning', 'sine me dard ho raha hai', 'feeling shaky and sweaty', 'shaky and sweaty', 'dizzy and confused', 'left arm pain', 'pain in my left arm', 'gasping for breath'])
+    for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true]) add('Found words (safety audit of 9dd1b13): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
+  for (const t of ['glimepiride', 'metformin with dinner?', 'gliclazide 80', 'sweaty after the gym, light dinner', 'a shaky table at the dhaba'])
+    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'rescue', 'log']) {
