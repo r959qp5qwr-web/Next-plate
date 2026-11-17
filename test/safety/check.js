@@ -935,6 +935,37 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     { const f = run(['has', 'profileOut', 'hookProf', 'hooksSaid'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' }), medsUsual, hookSaid: typeof hookSaid === 'function' ? hookSaid : undefined }, 'hooksSaid');
       const out = f ? f(['lighter_now', 'late_now', 'protein_low'], 'lunch', { lighter_now: 'A lighter lunch', late_now: 'Late', protein_low: 'Protein' }) : null;
       add('m4 app: with diabetes the "Planned around" lines leave out lighter and late', !!out && out.length === 1 && out[0] === 'Protein', JSON.stringify(out)); }
+    // ---------- m6 (fix-r15; safety audit of c666d34): the app guards the audit's mutants removed with every Node check still passing ----------
+    const appSrc6 = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8');
+    // the S6 plate flag: a kept base plate under the usual size on medicines is refused by itself (the base is the plate: only the flag can)
+    { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
+      const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, fiber: 6, kcal: 4 * p + 4 * c + 9 * f }), small = fig(14, 60, 8), dm = mk(appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }));
+      add('m6 app S6: a kept plate under the usual size is refused on its own (the plate flag)', !!dm && dm.u > small.kcal && !!dm.composedWhy(small, small, { meal: 'lunch', plate: true }) && !dm.composedWhy(small, small, { meal: 'lunch' }), dm ? JSON.stringify([dm.u, dm.composedWhy(small, small, { meal: 'lunch', plate: true })]) : 'composedWhy not found'); }
+    // the rules stamp holds every answer the food rules and the usual size are made of: one tick or figure changed changes the stamp
+    { const P0 = appP({ conds: ['diabetes'], health: 'diabetes', meds: 'yes', diet: 'veg', leave: ['nut'] }), st = (P) => run(['rules'], { P }, 'rules()'), s0 = st(P0);
+      for (const [what, o] of [['a food left out (dairy)', { leave: ['nut', 'dairy'] }], ['a condition (high BP)', { conds: ['diabetes', 'bp'] }], ['the diet', { diet: 'vegan' }], ['the medicine answer', { meds: 'no' }],
+        ['weight', { kg: 80 }], ['height', { cm: 170 }], ['age', { age: 60 }], ['sex', { sex: 'm' }], ['activity', { act: 'mod' }]])
+        add('m6 app: the rules stamp changes with every answer it is made of', !!s0 && st(Object.assign({}, P0, o)) !== s0, `${what}: the stamp did not change (${s0})`); }
+    // high BP is read from the ticks: diabetes and high BP ticked together send bp, and the engine applies S3
+    { const f = run(['has', 'profileOut'], { P: appP({ conds: ['diabetes', 'bp'], health: 'diabetes', meds: 'no' }) }, 'profileOut()'), pr = f && safe(() => plan('meals', { profile: f, ctx: { meal: 'lunch' } }).prompt, '');
+      add('m6 app: high BP ticked beside diabetes is sent and read (S3)', !!f && f.bp === true && /High blood pressure: no pickle/.test(pr || ''), JSON.stringify(f && f.bp)); }
+    // the wait guards: a second tap during a wait sends nothing (plates and the log)
+    { let sentP = 0; const UIp = { busy: '' }; const cp = { UI: UIp, refresh: () => {}, render: () => {}, logEv: () => {}, C: { meal: 'lunch' }, ctxKey: () => 'k', askedFor: () => 's', api: () => { sentP++; }, profileOut: () => ({}), ctxOut: () => ({}), fileOut: () => ({}), $: () => ({}) };
+      const mp = run(['makePlates'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
+      add('m6 app: a second plates request during a wait sends nothing (the wait guard)', !!mp && sentP === 1, mp ? `${sentP} requests` : 'makePlates not found');
+      let sentL = 0; const UIl = { lbusy: false, lock: '' }; const cl = { UI: UIl, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: () => { sentL++; }, $: () => ({}) };
+      const lo = run(['logOther'], cl, 'logOther'); if (lo) { lo('dal and rice'); lo('dal and rice'); }
+      add('m6 app: a second log request during a wait sends nothing (the wait guard)', !!lo && sentL === 1, lo ? `${sentL} requests` : 'logOther not found'); }
+    // blocked(): a kidney condition or pregnancy ticked blocks every tab once set-up is done; diabetes or high BP does not
+    for (const [conds, want] of [[['kidney'], true], [['preg'], true], [['diabetes', 'kidney'], true], [['diabetes'], false], [['bp'], false], [[], false]]) {
+      const b = run(['has', 'blocked'], { P: appP({ conds, done: true }) }, 'blocked()'); add('m6 app: blocked() holds a kidney condition or pregnancy ticked', b === want, `${JSON.stringify(conds)}: ${b}`); }
+    // the tap checks and the render-time clears, read from the source: the one-tap and the swap handlers run plateWhy on the composed plate and
+    // put the state back before refusing; the Plate and Rescue renders clear a tap state that no longer holds
+    { const hero = grab('heroCard'), rp = grab('renderPlate'), rr = grab('renderRescue0');
+      add('m6 app: the one-tap handler refuses a composed plate that fails, and puts the state back', /var why=plateWhy\(m\);if\(why\)\{UI\.alc=snap\.alc;UI\.swb=snap\.swb;refuse\(why\);/.test(hero), 'not found in heroCard');
+      add('m6 app: the swap handler refuses a composed plate that fails, and puts the state back', /var why=plateWhy\(m\);if\(why\)\{UI\.alc=snap\.alc;UI\[x\[2\]\]=snap\.v;refuse\(why\);/.test(hero), 'not found in heroCard');
+      add('m6 app: the Plate render clears a tap state that no longer holds', /var m=curMeal\(\);if\(plateWhy\(m\)\)\{UI\.alc=\{\};UI\.swp=0;UI\.swb=0;\}var vw=viewOf\(m\);/.test(rp), 'not found in renderPlate');
+      add('m6 app: the Rescue render clears ticks that no longer hold', /if\(rescueWhy\(r,UI\.rmoves\)\)UI\.rmoves=\{\};/.test(rr), 'not found in renderRescue0'); }
     // ---------- fix-r15: three findings that need no model slip (safety audit of c666d34, m1, m4, m8), and the insulin-profile default ----------
     // m8: an unanswered medicine question (diabetes ticked from My food, which does not ask it) is read as "not sure" everywhere, as the engine
     // reads it: the skipped-meal warning and the snack rule (onMeds) and what is sent (profileOut)
