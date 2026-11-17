@@ -66,6 +66,69 @@ const tuneOut = (o, slot, alch, swaps) => { const m = platePlain(); const p = Ob
 const NOTE = (note, tags, after) => ({ titleSuffix: '+ a change', note, minutes: 20, grain_grams_after: after == null ? 90 : after, contains: tags, deltaKcal: 60, deltaProtein: 8, deltaCarbs: 2, deltaFats: 3, deltaFiber: 0 });
 const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || /"contents/.test(JSON.stringify(r || {}));
 
+// ---------- S1-S2: plant milks, creams, curds and nut butters (safety audit of 530a503, B1) ----------
+// Every plant word the old rule knew before every dairy word it knew, in nine frames, tags stripped (the word net alone decides). Shown
+// only where this test's own list names the product, and never where the rice ends another dish ("Brown rice milk rice", "Jeera rice
+// milk") or a nut butter is a butter masala ("Almond butter masala"). The products, named one by one: a plant word before a dairy word is
+// not one ("Rice curd", "Peanut curd", "Cashew butter").
+{ const PLANTOK = ['coconut milk', 'almond milk', 'oat milk', 'soy milk', 'soya milk', 'rice milk', 'cashew milk', 'coconut cream', 'cashew cream', 'peanut butter', 'almond butter',
+    'soy curd', 'soya curd', 'coconut yogurt', 'coconut yoghurt', 'soy yogurt', 'soya yogurt'];
+  const LEFT = ['coconut', 'almond', 'oat', 'soy', 'soya', 'rice', 'cashew', 'peanut'], RIGHT = ['milk', 'curd', 'yogurt', 'yoghurt', 'cream', 'butter'];
+  const FRAMES = ['X Y', 'X Y rice', 'X Y masala', 'brown X Y rice', 'X Y with roti', 'X Y curry', 'dal X Y', 'jeera X Y', 'fried X Y'], TAIL = /^(?:brown|dal|jeera|fried) /;
+  const NUTS = ['almond', 'cashew', 'peanut'], SOYW = ['soy', 'soya'];
+  let shownV = 0;
+  for (const f of FRAMES) for (const x of LEFT) for (const y of RIGHT) { const name = cap(f.replace('X', x).replace('Y', y)), prod = PLANTOK.includes(x + ' ' + y);
+    const plantOK = prod && !(x === 'rice' && TAIL.test(f)) && !(y === 'butter' && / masala$/.test(f));
+    for (const [o, want] of [[{ diet: 'vegan' }, plantOK], [{ leave: ['dairy'] }, plantOK], [{ leave: ['nut'] }, !NUTS.includes(x)], [{ leave: ['soya'] }, !SOYW.includes(x)]]) {
+      const r = plateOffered(o, withItem(name, ['plain'], ['plain'])); if (o.diet === 'vegan' && r.ok) shownV++;
+      add('S1-S2 plant products: named one by one (grid, tags stripped)', r.ok === want, `${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'} (${r.why || ''}), expected ${want ? 'shown' : 'dropped'}`); } }
+  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 140, `only ${shownV} plant-product cells shown to a vegan client`);
+  // the audit's names, and the products that still pass
+  for (const [name, o, want] of [['Brown rice curd rice', { diet: 'vegan' }, false], ['Brown rice curd rice', { leave: ['dairy'] }, false], ['Red rice curd rice', { diet: 'vegan' }, false], ['Rice curd', { leave: ['dairy'] }, false],
+    ['Rice curd and pickle', { diet: 'vegan' }, false], ['Leftover rice curd mix', { leave: ['dairy'] }, false], ['Rice yogurt bowl', { diet: 'vegan' }, false], ['Curd rice', { diet: 'vegan' }, false], ['Peanut curd rice', { diet: 'vegan' }, false],
+    ['Cashew butter masala', { diet: 'vegan' }, false], ['Cashew butter masala', { leave: ['dairy'] }, false], ['Almond butter masala', { diet: 'vegan' }, false],
+    ['Coconut milk curry', { diet: 'vegan' }, true], ['Rice milk porridge', { diet: 'vegan' }, true], ['Oats in rice milk', { diet: 'vegan' }, true], ['Oat milk porridge', { diet: 'vegan' }, true], ['Soy curd rice', { diet: 'vegan' }, true],
+    ['Almond butter toast', { diet: 'vegan' }, true], ['Peanut butter toast', { diet: 'vegan' }, true], ['Thin coconut milk', { leave: ['dairy'] }, true],
+    ['Almond milk', { leave: ['nut'] }, false], ['Soy milk', { leave: ['soya'] }, false], ['Peanut butter toast', { leave: ['nut'] }, false]]) {
+    const r = plateOffered(o, withItem(name, ['plain'], ['plain']));
+    add('S1-S2 plant products: the audit\'s names (tags stripped)', r.ok === want, `${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'}, expected ${want ? 'shown' : 'dropped'}`); }
+  // a name is read apart from the next: a rice milk after another item is still a product
+  { const m = platePlain(); m.items[2] = { food: 'Rice milk', grams: 100, group: 'other', contains: ['plain'] }; add('S1-S2 names are read apart', plateOffered({ diet: 'vegan' }, m).ok, 'vegan: "Jowar roti" then "Rice milk" was read as "roti rice milk"'); } }
+
+// ---------- every other carve-out read before the word lists, in frames, tags stripped (fix-r12) ----------
+// Each rule that blanks or exempts text before a word list, with frames that open the name, follow a joining word, or put a word before it
+// that ends another dish ("Dal chawal roti", "Jeera rice noodles", "Garlic butter beans", "Chana keema"). Each cell is shown or dropped as
+// written here; the cells left open are TRACKED (tier 2, watched), not asserted.
+{ const TAIL = /^(?:dal|jeera|curd|lemon|fried|brown|rajma) /, OPEN = ['X Y', 'X Y with dal', 'X Y curry', 'with X Y', 'X ki Y'], TAILS = ['dal X Y', 'jeera X Y', 'curd X Y', 'lemon X Y', 'fried X Y', 'brown X Y', 'rajma X Y'];
+  const WHEATW = /^(?:rotis?|chapati|paratha|puri|noodles|vermicelli|pasta|sevai|bread|toast)$/;
+  const cells = [];
+  const grid = (id, L, R, frames, o, want) => { for (const f of frames) for (const x of L) for (const y of R) { if (f === 'X ki Y' && !/^(?:rotis?|bhakri|chapati|paratha|puri)$/.test(y)) continue; cells.push([id, cap(f.replace('X', x).replace('Y', y)), o, want(x, y, f)]); } };
+  grid('millet or rice flatbread', ['bajra', 'jowar', 'makki', 'ragi', 'nachni', 'rajgira', 'kuttu', 'singhara', 'rice', 'chawal', 'akki'], ['roti', 'rotis', 'bhakri', 'chapati', 'paratha', 'puri', 'thalipeeth'], OPEN.concat(TAILS), { leave: ['wheat'] },
+    (x, y, f) => !(TAIL.test(f) && /^(?:rice|chawal)$/.test(x) && WHEATW.test(y)));
+  grid('rice and millet noodles', ['rice', 'ragi', 'millet', 'glass', 'jowar', 'konjac', 'shirataki'], ['noodles', 'vermicelli', 'pasta', 'sevai'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
+  grid('millet and rice bread', ['jowar', 'bajra', 'ragi', 'millet', 'rice', 'gluten-free'], ['bread', 'toast'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
+  grid('plant keema', ['soya', 'soy', 'mushroom', 'kathal', 'jackfruit', 'veg', 'vegetable', 'paneer', 'tofu', 'chana', 'rajma', 'nutrela'], ['keema', 'kheema'], ['X Y', 'X Y matar', 'X Y with roti', 'dal X Y', 'lauki X Y'], { diet: 'veg' }, (x) => !/^(?:chana|rajma)$/.test(x));
+  grid('butter beans', ['butter'], ['beans', 'bean'], ['X Y', 'X Y curry', 'with X Y', 'salad with X Y', 'garlic X Y', 'lemon X Y', 'herb X Y', 'brown X Y', 'spiced X Y'], { diet: 'vegan' }, (x, y, f) => /^(?:X|with|salad with) /.test(f));
+  grid('sol kadhi', ['sol'], ['kadhi'], ['X Y', 'X Y with rice', 'rice with X Y'], { diet: 'vegan' }, () => true);
+  grid('rice cakes', ['rice'], ['cakes', 'cake'], ['X Y', 'idli X Y', 'steamed X Y', 'brown X Y', 'sweet X Y', 'jaggery X Y'], { health: 'diabetes' }, (x, y, f) => !/^(?:sweet|jaggery) /.test(f));
+  grid('sugar snap', ['sugar'], ['snap peas'], ['X Y', 'stir fried X Y', 'X Y salad'], { health: 'diabetes' }, () => true);
+  grid('lemon or amla juice', ['lemon', 'lime', 'nimbu', 'amla'], ['juice'], ['X Y', 'fresh X Y', 'salad with X Y', 'cucumber and X Y', 'sweet X Y'], { health: 'diabetes' }, (x, y, f) => !/^sweet /.test(f));
+  grid('negation, one word', ['no', 'without', 'skip', 'skip the', 'hold the', 'minus', 'instead of', 'swap out', 'leave out'], ['ghee', 'curd', 'paneer'], ['Dal X Y', 'Dal, X Y', 'Dal X Y or butter', 'Dal X oil and Y', 'Dal X Y and butter'], { leave: ['dairy'] }, (x, y, f) => !/ and /.test(f));
+  grid('-free and -less', ['egg-free', 'eggless', 'sugar-free', 'dairy-free', 'ghee-free'], ['cake', 'halwa', 'kheer', 'mayo', 'omelette'], ['X Y'], { diet: 'veg', health: 'diabetes' }, () => false);
+  for (const [id, name, o, want] of cells) { const r = plateOffered(o, withItem(name, ['plain'], ['plain']));
+    add('S1-S4 carve-outs: each reads only its own food (frame grid, tags stripped)', r.ok === want, `${id}, ${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'}, expected ${want ? 'shown' : 'dropped'}`); }
+  add('S1-S4 carve-outs: the grid read its cells', cells.length > 1500, `only ${cells.length} cells`);
+  // the open cells: a rice cake with coconut, and a juice of several, may be a sweet or a juice, or a savoury cake and a dressing
+  // ("grated carrots and lemon juice" is a dressing 11 times in the recorded replies): the sweet tag holds them; watched (tier 2)
+  const open = ['Coconut rice cakes', 'Orange and lemon juice', 'Carrot and amla juice'].map(n => n + ': ' + (plateOffered({ health: 'diabetes' }, withItem(n, ['plain'], ['plain'])).ok ? 'shown' : 'dropped'));
+  console.log('TRACKED (tier 2) carve-out cells left open, diabetes, tags stripped: ' + open.join('; '));
+  // the referral exclusions: a kidney or pregnancy word beside the bean, corn or colour word still refers; the food text alone does not
+  const refersT = (t) => { const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: t } }); return !!(pl.reply && pl.reply.status === 'refer'); };
+  for (const [t, want] of [['kidney beans curry', false], ['Kidney bean salad for lunch', false], ['weak kidney beans ok?', true], ['kidney, beans ok for dinner?', true], ['kidney beans for my kidney', true],
+    ['I have kidney stones, kidney beans ok', true], ['kidney beans with CKD', true], ['baby corn manchurian', false], ['delivered a baby corn soup', false], ['delivered a baby, corn soup ok?', true],
+    ['delivered my baby last week, baby corn ok?', true], ['tri-colour salad', false], ['third tri, colour salad?', true], ['third trimester tri-colour salad', true]])
+    add('S7 exclusions read only their own food (frame grid)', refersT(t) === want, `"${t}" ${want ? 'went to the model' : 'was referred'}`); }
+
 // ---------- held-out names, honest tags: the declared-contents check drops them, on every path ----------
 let heldN = 0, heldByWords = 0;
 const allWords = [].concat(NONVEG, EGGW, DAIRYW, JAINW, LEAVEW.nut, LEAVEW.wheat, LEAVEW.soya, SWEETS, SALTY);

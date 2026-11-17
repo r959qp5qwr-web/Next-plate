@@ -522,16 +522,44 @@ function badWords(p){
   if(p.bp)bad=bad.concat(SALTY);
   return bad;
 }
-var PLANT=/\b(coconut|almond|oat|soy|soya|rice|cashew|peanut)\s+(milk|curd|yogurt|yoghurt|cream|butter)\b/g;
+/* plant milks, creams, curds and nut butters: each a named product, never a plant word before any dairy word (safety audit of 530a503,
+   B1: the old rule read any of eight plant words before any of six dairy words as a plant food, so "Brown rice curd rice" lost its "curd"
+   for a vegan client). A product found is read as "<its first word> plant", so its own word still counts ("Almond milk" for a client who
+   leaves out nuts, "Soy milk" for soya). Not here, so read as dairy: "rice curd", "peanut curd", "almond curd", "coconut curd" and
+   "cashew butter" ("Cashew butter masala" is a butter masala with cashews). Two readings are held:
+   - "rice" also ends a rice dish, so "rice milk" is a product only when nothing but a joining word comes before it ("Rice milk porridge",
+     "Oats in rice milk"; not "Brown rice milk rice");
+   - a nut butter before "masala" is a butter masala ("Almond butter masala"). */
+var PLANTW=["coconut milk","almond milk","oat milk","soy milk","soya milk","rice milk","cashew milk","coconut cream","cashew cream","peanut butter","almond butter",
+  "soy curd","soya curd","coconut yogurt","coconut yoghurt","soy yogurt","soya yogurt"];
+/* the word before is taken with the match, as no expression here looks behind (Safari before 16.4) */
+var PLANT=new RegExp("(\\b[a-z]+\\s+)?\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b(\\s+masala\\b)?","g");
+var PLANTJOIN=/^(?:with|in|and|of|on|plus|or|using|a|an|the)\s+$/;
+/* "rice" (and "chawal") also ends a rice dish ("brown rice", "jeera rice", "curd rice", "dal chawal"), so a rice product is one only when
+   nothing but a joining word comes before it (fix-r12, the carve-outs read with the frame grid) */
+function riceTail(w,pre){return /^(?:rice|chawal)$/.test(w)&&!!pre&&!PLANTJOIN.test(pre);}
+function plantOut(t){return t.replace(PLANT,function(m,pre,prod,masala){var w=prod.split(/\s+/);
+  if(masala&&w[1]==="butter")return m;
+  if(riceTail(w[0],pre))return m;
+  return (pre||"")+w[0]+" plant"+(masala||"");});}
 /* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
 var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}   /* Hindi plurals in -e (phulke, kulche, bhature) are listed as words */
-var MILLETBREAD=/\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)(?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
+/* a rice or chawal flatbread is one only when the rice does not end another dish: "Dal chawal roti", "Jeera rice paratha" and "Brown rice
+   roti" read as wheat (fix-r12) */
+var MILLETBREAD=/(\b[a-z]+\s+)?\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)((?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*)\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
+function milletOut(t){return t.replace(MILLETBREAD,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" flatbread";});}
 /* good food a listed word sits inside: soya or mushroom keema, sol kadhi, butter beans, rice noodles, jowar bread, idli rice cakes, sugar snap
    peas (review of the test evidence, 15 Nov) */
-function notFood(t){return t.replace(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|chana|rajma|nutrela)\s+(keema|kheema)\b/g,"$1 mince").replace(/\bsol\s+kadhi\b/g,"sol curry")
-  .replace(/\bbutter\s+beans?\b/g,"lima beans").replace(/\b(rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(noodles?|vermicelli|pasta|sevai)\b/g,"$1 strands")
-  .replace(/\b(jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(bread|breads|toast)\b/g,"$1 loaf").replace(/\brice\s+cakes?\b/g,"rice rounds").replace(/\bsugar\s+snap\b/g,"snap");}
-function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(notFood(norm(text).toLowerCase()).replace(MILLETBREAD,"$1 flatbread").replace(NEG," ").replace(PLANT,"$1 plant").replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,"$1"));}
+/* (fix-r12, the frame grid: "Chana keema" and "Rajma keema" are a meat keema with chana or rajma, so they read as meat; "Garlic butter
+   beans" is beans in garlic butter, so butter beans are the bean only with nothing but a joining word before them; "Dal rice noodles",
+   "Fried rice noodles" and "Jeera rice toast" keep their wheat word; "Sweet rice cakes" are a sweet) */
+function notFood(t){return t.replace(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(keema|kheema)\b/g,"$1 mince").replace(/\bsol\s+kadhi\b/g,"sol curry")
+  .replace(/(\b[a-z]+\s+)?\bbutter\s+beans?\b/g,function(m,pre){return pre&&!PLANTJOIN.test(pre)?m:(pre||"")+"lima beans";})
+  .replace(/(\b[a-z]+\s+)?\b(rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(noodles?|vermicelli|pasta|sevai)\b/g,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" strands";})
+  .replace(/(\b[a-z]+\s+)?\b(jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(bread|breads|toast)\b/g,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" loaf";})
+  .replace(/(\b[a-z]+\s+)?\brice\s+cakes?\b/g,function(m,pre){return /^(?:sweet|sweetened)\s+$/.test(pre||"")?m:(pre||"")+"rice rounds";}).replace(/\bsugar\s+snap\b/g,"snap");}
+/* "sweet lime juice" is mosambi juice, a juice: it keeps its word (fix-r12) */
+function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(plantOut(milletOut(notFood(norm(text).toLowerCase())).replace(NEG," ")).replace(/(\b[a-z]+\s+)?\b(lemon|lime|nimbu|amla)\s+juice\b/g,function(m,pre,w){return /^sweet\s+$/.test(pre||"")?m:(pre||"")+w;}));}
 function supp(text){return wordRx(SUPPW).test(norm(text).toLowerCase());}
 
 /* ---------- declared contents (owner, 15 Nov, option survey: "Declared contents (Recommended)"). The model tags every dish, plate item,
@@ -773,9 +801,11 @@ function checkMeal(m,p){
   /* declared contents first (D1): the plate and each item, so a drop says which net caught it */
   var cb=contentsBad(m.contains,rawTitle,p);for(var ci=0;!cb&&ci<items.length;ci++)cb=contentsBad(items[ci].raw,items[ci].food,p);
   if(cb)return {drop:cb};
-  items.forEach(function(it){it.contains=tagList(it.raw);delete it.raw;});var rawItems=items.map(function(i){return i.rawFood;}).join(" ");
+  items.forEach(function(it){it.contains=tagList(it.raw);delete it.raw;});var rawItems=items.map(function(i){return i.rawFood;}).join(" ; ");
   /* the model's own title and subtitle are read for the food rules but never shown: the engine writes both from the checked items */
-  var all=rawTitle+" "+clean(m.subtitle,120)+" "+rawItems+" "+rawName(m.grain&&m.grain.food)+" "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
+  /* the names are read apart (" ; "), so no rule reads the last word of one name with the first of the next ("Jowar roti" then "Rice milk"
+     is not "roti rice milk"; fix-r12) */
+  var all=rawTitle+" ; "+clean(m.subtitle,120)+" ; "+rawItems+" ; "+rawName(m.grain&&m.grain.food)+" ; "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
   var title=engineTitle(items),sub=engineSub(items);
