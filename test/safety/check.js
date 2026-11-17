@@ -828,8 +828,10 @@ add('m4 tune slot on medicines', !!safe(() => plan('tune', { profile: Object.ass
   const appPart = page.slice(0, page.indexOf(open)) + page.slice(page.indexOf('</script>', a));
   const ENTRY = [['"Read the menu"', /read the menu/i], ['"type the menu"', /type the menu/i], ['"menu photo"', /menu photo/i], ['"photo of the menu"', /photo of the menu/i], ['/api/menu', /\/api\/menu/],
     ['an entry id (mcam, mfile, mtype, mtext, mgo)', /["'#](?:mcam|mfile|mtype|mtext|mgo)["'\s,)\]]/]];
-  if (/hosted\/v5/.test(process.argv[2] || '')) console.log('menu entry scan: not run on the v5 screens (not a release target; its Rescue keeps a v5 photo fallback, "Photo of the menu")');
-  else for (const [what, rx] of ENTRY) { const m = rx.exec(appPart); add('menu refused (owner, 17 Nov): the page offers no menu entry', !m, m ? `${what} found: ${JSON.stringify(appPart.slice(Math.max(0, m.index - 40), m.index + 40))}` : ''); } }
+  // the v5 screens (not a release target) keep their own Rescue camera, labelled "Photo of the menu", which posts to /api/rescue: that one
+  // pattern is not run there, and the report names it; every other pattern runs on all three pages
+  const V5 = /hosted\/v5/.test(process.argv[2] || ''); if (V5) console.log('menu entry scan, v5 screens: "photo of the menu" not run (the v5 Rescue camera posts a photo to /api/rescue; not a release target)');
+  for (const [what, rx] of ENTRY.filter(([w]) => !(V5 && w === '"photo of the menu"'))) { const m = rx.exec(appPart); add('menu refused (owner, 17 Nov): the page offers no menu entry', !m, m ? `${what} found: ${JSON.stringify(appPart.slice(Math.max(0, m.index - 40), m.index + 40))}` : ''); } }
 
 // ---------- report ----------
 let fail = 0;
