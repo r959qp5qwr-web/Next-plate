@@ -2592,8 +2592,10 @@ function directive(p,pl,hooks,meal,done){
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
   var over=pl.eaten.kcal-pl.day.kcal;if(over>=50)s+="That is about "+Math.round(over/10)*10+"\u00A0kcal over today's "+pl.day.kcal+"\u00A0kcal. ";   /* the day over its target is said in words (R2-B3 044-1) */
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
-  var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
-  pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
+  /* with diabetes or on medicines the line says no "light", "lighter" or "late" hook, by the rule the reason line and "Planned around" share
+     (hookSaid; fix-r15, safety audit of c666d34, m1: "it's late, so keep it light" was said to a client on insulin) */
+  var hp={health:p&&p.health,medsUsual:medsUsual(p,meal)},pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
+  pri.some(function(id){return hookSaid(id,hp)&&hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
   var tail={late_now:"; it's late, so keep it light",protein_gap:", to catch up on protein",lighter_now:", lighter after earlier meals",ate_out:"; simple and home-style after eating out",long_gap:"; you've gone a while without food, so vegetables and protein first",late_dinner:"; a lighter, earlier dinner helps"};
   return s+(pick?tail[pick.id]:"")+".";
 }
@@ -3137,6 +3139,10 @@ var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]]
   ["Chole bhature",["wheat","grain","onion_garlic","root_veg","dairy"]],["Veg biryani with raita",["grain","dairy","onion_garlic","root_veg","nuts"]],["Masala dosa with chutney",["grain","root_veg","onion_garlic"]],
   ["A slice of tiramisu after dinner",["dairy","egg","wheat","sweet"]]];
 function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(function(t){return b.indexOf(t)>=0;});}
+/* on insulin or sugar tablets an example ask that asks for a lighter or smaller meal is not offered (fix-r15, m1 as a class: no app or engine
+   sentence advises eating less, lighter or skipping when the medicines floor applies) */
+var LESSASK=/\b(?:light|lighter|less|smaller|skip\w*)\b/i;
+function appAskOK(e,p){return appFoodOK(e,p)&&!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&LESSASK.test(e[0]));}
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
@@ -3226,6 +3232,18 @@ var URGENTTXT=new RegExp("\\b(?:"+[
 var URGENTSIGNS=new RegExp(URGENTSIGN.source,"gi");
 function signKinds(t){var k={};(t.match(URGENTSIGNS)||[]).forEach(function(w){w=w.toLowerCase();k[/^shak|^shiv|^trembl/.test(w)?"shake":/^swe|^pas/.test(w)?"sweat":/^diz|^gidd|^chak/.test(w)?"dizzy":/^conf|^ghab/.test(w)?"confused":"vision"]=1;});return Object.keys(k).length;}
 function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t)||signKinds(t)>=2;}
+/* S7, the insulin-profile default (fix-r15; safety audit of c666d34, owner question on the urgent-symptom scope; the coordinator's default,
+   which the owner or a clinician may change; not clinically reviewed). With diabetes and insulin or sugar tablets (meds "yes" or "not sure";
+   an unanswered question is read as "not sure"), one low-sugar sign typed is urgent with no medicine named in the text: the profile names
+   it. The signs are the net's own list (shaky, sweating, dizzy, confused and the rest); "hypo" and "sugar low" are urgent for everyone. */
+function medsSign(t,p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&URGENTSIGN.test(String(t||""));}
+function urgentFor(t,p){return urgentTyped(t)||medsSign(t,p);}
+function referFor(t,p){return referTyped(t)||medsSign(t,p);}
+/* the reply to typed text that is referred before the model: one function for plan() on the server and the app on the phone, which runs it
+   before it sends, so offline, on a timeout or with a refused code the referral still shows (fix-r15; safety audit of c666d34, m4). Text is
+   read as plan() reads it (folded at intake); null when the text goes to the model. */
+function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t||!referFor(t,p))return null;
+  return urgentFor(t,p)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]};}
 /* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
    of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
    than a person's own usual size). 0 when the person is not on that medicine. */
@@ -3237,7 +3255,7 @@ plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
   /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
@@ -3493,7 +3511,9 @@ var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",s
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
-function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
+/* the medicine answer: with diabetes an unanswered question (ticked from My food, which does not ask it) is read as "not sure", as the engine
+   reads it, everywhere on the phone (fix-r15; safety audit of c666d34, m8: the skipped-meal warning and the snack rule read it as "no") */
+function onMeds(){return has("diabetes")&&P.meds!=="no";}
 /* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
 var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
@@ -3594,6 +3614,11 @@ function errText(code,where){
   if(code==="bad_key"&&KEYCODE)return REFUSED;
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
+  /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
+     anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
+     gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
+  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  if(tr){cb(200,tr);return;}
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
@@ -3672,7 +3697,9 @@ function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(S
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
 function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
-  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
+  /* on insulin or sugar tablets the snack is never passed over: its usual size is the floor too (fix-r15, m1 as a class; it was passed over
+     unless a meal was skipped, R2-B2 021-1) */
+  var room=snackRoom();if(room==null||room>=120||onMeds())return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
@@ -3942,7 +3969,7 @@ function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
   if(UI.lock){var lk=el("p","fine asklock",lockLine());lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
-  var pr=el("div","prompts");PROMPTS.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
+  var pr=el("div","prompts");PROMPTS.filter(function(e){return typeof appAskOK==="function"?appAskOK(e,profileOut()):appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
 }
 function composer(host){

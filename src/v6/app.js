@@ -45,7 +45,9 @@ var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",s
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
 function has(c){return P.conds.indexOf(c)>=0;}
-function onMeds(){return has("diabetes")&&(P.meds==="yes"||P.meds==="unsure");}
+/* the medicine answer: with diabetes an unanswered question (ticked from My food, which does not ask it) is read as "not sure", as the engine
+   reads it, everywhere on the phone (fix-r15; safety audit of c666d34, m8: the skipped-meal warning and the snack rule read it as "no") */
+function onMeds(){return has("diabetes")&&P.meds!=="no";}
 /* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
 var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
@@ -146,6 +148,11 @@ function errText(code,where){
   if(code==="bad_key"&&KEYCODE)return REFUSED;
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
 function api(path,body,cb){
+  /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
+     anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
+     gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
+  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  if(tr){cb(200,tr);return;}
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
@@ -224,7 +231,9 @@ function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(S
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
 function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
-  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
+  /* on insulin or sugar tablets the snack is never passed over: its usual size is the floor too (fix-r15, m1 as a class; it was passed over
+     unless a meal was skipped, R2-B2 021-1) */
+  var room=snackRoom();if(room==null||room>=120||onMeds())return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
@@ -494,7 +503,7 @@ function askBlock(host){
   var h=el("div","sec-h");h.appendChild(el("h3",null,"Ask for something else"));host.appendChild(h);
   if(UI.lock){var lk=el("p","fine asklock",lockLine());lk.id="ask-lock";host.appendChild(lk);return;}
   if(UI.busy){var wt=el("p","fine asklock","Wait for this plate first.");wt.id="ask-wait";host.appendChild(wt);}
-  var pr=el("div","prompts");PROMPTS.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
+  var pr=el("div","prompts");PROMPTS.filter(function(e){return typeof appAskOK==="function"?appAskOK(e,profileOut()):appFoodOK(e,profileOut());}).map(function(e){return e[0];}).slice(0,4).forEach(function(t,i){var b=el("button","prompt");b.type="button";b.id="prompt-"+i;b.disabled=!!UI.busy;b.appendChild(el("span",null,"“"+t+"”"));b.appendChild(ic("chev"));
     b.addEventListener("click",function(){makePlates(t);});pr.appendChild(b);});host.appendChild(pr);
 }
 function composer(host){

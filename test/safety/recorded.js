@@ -148,6 +148,12 @@ const OLDSUPP = /\b(?:supplements?|tablets?|pills?|protein\s+powder|enzymes|zinc
 const suppNow = [...allStr].filter(x => a.supp(x)), urgNow = [...allStr].filter(x => a.urgentTyped(x));
 for (const x of suppNow) if (!OLDSUPP.test(x)) fail('fix-r13 found words: no new recorded string reads as a supplement (S9)', JSON.stringify(x));
 for (const x of urgNow) if (!OLDURG.test(x)) fail('fix-r13 found words: no new recorded string reads as urgent (S7)', JSON.stringify(x));
+// fix-r15, the S7 insulin-profile default (coordinator; not clinically reviewed): one low-sugar sign typed is urgent on an insulin or
+// not-sure profile. Every recorded string is read with such a profile: none gains an urgent reading by the default (target 0)
+const insP = { health: 'diabetes', meds: 'yes' }, medsNow = typeof a.medsSign === 'function' ? [...allStr].filter(x => a.medsSign(a.norm(x), insP) && !a.urgentTyped(a.norm(x))) : null;
+if (!medsNow) fail('fix-r15 insulin-profile default: medsSign is on the page', 'medsSign not found');
+else for (const x of medsNow) fail('fix-r15 insulin-profile default: no recorded string gains an urgent reading on a medicines profile', JSON.stringify(x));
+console.log(`fix-r15 insulin-profile default: ${allStr.size} recorded strings read with a medicines profile, ${medsNow ? medsNow.length : '-'} new urgent readings`);
 console.log(`fix-r13 found words: ${allStr.size} recorded strings read; ${egg13.length} egg dishes and ${wrap13.length} wraps found (true hits), ${suppNow.length} supplement and ${urgNow.length} urgent readings, each an old word (22 and 14 on ca94d43)`);
 console.log(`fix-r14 found words: ${wheat14.length} wholewheat or multigrain strings and ${yolk14.length} yolk strings (true hits)`);
 console.log(`recorded: ${plates.length} plates (${seen.size} distinct), ${names.size} distinct names; ${reN} shown plates accepted again by the tune path`);

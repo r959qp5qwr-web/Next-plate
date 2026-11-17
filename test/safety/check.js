@@ -891,6 +891,94 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     { const f = run(['has', 'profileOut', 'hookProf', 'hooksSaid'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds: 'no' }), medsUsual, hookSaid: typeof hookSaid === 'function' ? hookSaid : undefined }, 'hooksSaid');
       const out = f ? f(['lighter_now', 'late_now', 'protein_low'], 'lunch', { lighter_now: 'A lighter lunch', late_now: 'Late', protein_low: 'Protein' }) : null;
       add('m4 app: with diabetes the "Planned around" lines leave out lighter and late', !!out && out.length === 1 && out[0] === 'Protein', JSON.stringify(out)); }
+    // ---------- fix-r15: three findings that need no model slip (safety audit of c666d34, m1, m4, m8), and the insulin-profile default ----------
+    // m8: an unanswered medicine question (diabetes ticked from My food, which does not ask it) is read as "not sure" everywhere, as the engine
+    // reads it: the skipped-meal warning and the snack rule (onMeds) and what is sent (profileOut)
+    { const at = (o) => run(['has', 'onMeds', 'profileOut'], { P: appP(o) }, '{ on: onMeds(), sent: profileOut().meds }');
+      const cases = [[{ conds: ['diabetes'], health: 'diabetes', meds: '' }, true, 'unsure'], [{ conds: ['diabetes'], health: 'diabetes', meds: 'unsure' }, true, 'unsure'], [{ conds: ['diabetes'], health: 'diabetes', meds: 'yes' }, true, 'yes'],
+        [{ conds: ['diabetes'], health: 'diabetes', meds: 'no' }, false, 'no'], [{ conds: ['bp'], health: 'bp', meds: '' }, false, 'no'], [{ conds: [], health: 'none', meds: '' }, false, 'no']];
+      for (const [o, on, sent] of cases) { const r = at(o); add('m8 app: an unanswered medicine question is read as "not sure" everywhere', !!r && r.on === on && r.sent === sent, `${JSON.stringify(o)}: ${JSON.stringify(r)}`); } }
+    // m4: the phone runs the nets plan() runs, before anything is sent. api() is taken from app.js with a fetch that counts: typed referral,
+    // pregnancy, kidney and urgent text, and one low-sugar sign on an insulin profile, are answered on the phone with no request, as plan()
+    // answers them; food text is sent
+    { let fetched = 0; const mk = () => run(['api'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
+      const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
+      const phone = (t, prof) => { let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
+      const want = [['chest pain since morning, what can I eat', plain, true], ['I am pregnant, what can I order', plain, false], ['kidney problem, had dal and rice', plain, false], ['feeling shaky, what should I eat', ins, true], ['sugar low, what now', plain, true]];
+      for (const [t, prof, urgent] of want) { const r = phone(t, prof);
+        add('m4 app S7: typed referral text is answered on the phone, with no request', !!f && !r.sent && !!r.got && r.got[0] === 200 && r.got[1].status === 'refer' && r.got[1].read === SAFETY && (urgent ? r.got[1].urgent === URGENTLINE : !r.got[1].urgent), `"${t}": ${JSON.stringify(r)}`); }
+      for (const [t, prof] of [['Masala dosa with chutney', plain], ['feeling shaky, what should I eat', plain], ['feeling shaky, what should I eat', Object.assign({}, ins, { meds: 'no' })], ['Something light with paneer', ins]]) { const r = phone(t, prof);
+        add('m4 app S7: food text is sent (control)', !!f && r.sent && !r.got, `"${t}" (${prof.health}, meds ${prof.meds}): ${JSON.stringify(r)}`); }
+      // the phone and the server give one answer: every typed string of the S7 lists, on the three typed kinds, for a profile without and with
+      // insulin (the phone's typedReferral against plan()'s reply)
+      const S7T = [].concat(L.referText, HO.referText, L.notReferText, L.referWindow, L.referWindowFamily, L.notReferWindow, L.referFound || [], L.notReferFound || [], L.referFound12 || [], L.notReferFound12 || [], L.urgentFound || [], L.urgentFound12 || [], L.urgentFound14 || [], L.notUrgentFound14 || [], L.referPunct || [], L.urgentPunct || [], L.notReferPunct || [], L.urgentMedsProfile15 || [], L.notUrgentMedsProfile15 || []);
+      let pairs = 0; for (const prof of [plain, ins]) for (const t of S7T) { const ph = typeof typedReferral === 'function' ? typedReferral(t, prof) : undefined;
+        for (const kind of ['meals', 'rescue', 'log']) { const pl = safe(() => plan(kind, { profile: prof, ctx: { meal: 'lunch', text: t } }), {}), sv = pl.reply || null; pairs++;
+          add('m4 S7: the phone and the server give one answer to typed text', ph !== undefined && JSON.stringify(ph) === JSON.stringify(sv) && (!!sv || !!pl.prompt), `${kind} (${prof.health}, meds ${prof.meds}) "${t}": phone ${JSON.stringify(ph)}, server ${JSON.stringify(sv)}`); } }
+      console.log(`m4 phone and server: ${S7T.length} typed strings, ${pairs} kind and profile pairs`); }
+    // S7, the insulin-profile default (coordinator, fix-r15; the owner or a clinician may change it; not clinically reviewed): diabetes with
+    // insulin or sugar tablets, or not sure, and one low-sugar sign typed, is referred with the line to get help now on every typed kind; the
+    // same text with no medicine, or with no diabetes, is not (a single sign needs the medicine named or a second sign there)
+    for (const kind of ['meals', 'rescue', 'log']) { const at = (o, t) => safe(() => plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }, o), ctx: { meal: 'lunch', text: t } }), {});
+      for (const t of L.urgentMedsProfile15 || []) { for (const meds of ['yes', 'unsure']) { const r = at({ health: 'diabetes', meds }, t);
+          add('S7 insulin profile: one low-sugar sign is referred with the line to get help now', !!(r.reply && r.reply.status === 'refer' && r.reply.urgent === URGENTLINE && !r.prompt), `${kind}, meds ${meds}: "${t}" ${r.reply ? JSON.stringify(r.reply) : 'went to the model'}`); }
+        if (!/^(?:hypo|sugar low)$/.test(t)) for (const o of [{ health: 'diabetes', meds: 'no' }, { health: 'none' }, { health: 'bp' }]) add('S7 insulin profile: the same sign with no medicine goes to the model (control)', !!at(o, t).prompt, `${kind} ${JSON.stringify(o)}: "${t}" was referred`); }
+      for (const t of L.notUrgentMedsProfile15 || []) add('S7 insulin profile: food text is not referred (control)', !!at({ health: 'diabetes', meds: 'yes' }, t).prompt, `${kind}: "${t}" was referred`); }
+    // m1, as a class: with diabetes (the reason-line rule, hookSaid) and on insulin or sugar tablets (the medicines floor), no sentence the
+    // engine or the app writes advises eating less, lighter or skipping. Generated over profiles x every half hour x meal states x the four
+    // meals: Today's directive (done and not), the reason line with every hook of the moment cited, the "Planned around" tags, the day's notes,
+    // one-tap change notes and Rescue moves (a figure statement, "About 60 kcal less" or "Eat about half", is allowed only where the plate stays
+    // at the usual size, checked on the figures), and every string in app.js and the app's own options, each allowed one named with its reason.
+    { const ADV = /\b(?:light|lighter|lightly|less|skip\w*|smaller|cut\s+(?:down|back)|eat\s+(?:about\s+)?(?:half|two\s+thirds|three\s+quarters)|keep\s+it\s+light)\b/i;
+      const NOTEOK = [[/^Lunch is the largest meal and dinner a lighter one\b/, 'the day\'s split: the usual sizes, which the medicines floor holds'], [/^Keep meals regular\. Skipping a meal on insulin/, 'a warning against skipping'],
+        [/eating less can drop blood sugar too far/, 'a warning against eating less'], [/500 kcal less for obesity/, 'the source of a deficit, allowed only with no medicine (no deficit on medicines)', 'nofloor']];
+      const PROFS = [['diabetes, insulin yes', { health: 'diabetes', meds: 'yes' }], ['diabetes, not sure', { health: 'diabetes', meds: 'unsure' }], ['diabetes, no medicine', { health: 'diabetes', meds: 'no' }],
+        ['diabetes and high BP, insulin yes, building strength', { health: 'diabetes', meds: 'yes', bp: true, goal: 'build' }], ['diabetes, not sure, no body figures', { health: 'diabetes', meds: 'unsure', cm: 0, kg: 0, age: 0 }]];
+      const T0 = { kcal: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: [] }, ml = (meal, kind, kcal) => ({ meal, kind, title: kind === 'skipped' ? '' : 'Dal and rice', kcal: kind === 'skipped' ? 0 : kcal, protein: 20 });
+      const STATES = [['nothing logged', { today: T0, patterns: [] }], ['a heavy day so far', { today: Object.assign({}, T0, { kcal: 2000, protein: 50, meals: [ml('breakfast', 'had', 900), ml('lunch', 'had', 1100)] }), patterns: [] }],
+        ['lunch skipped', { today: Object.assign({}, T0, { meals: [ml('lunch', 'skipped')] }), patterns: [] }], ['ate out', { today: Object.assign({}, T0, { kcal: 1200, protein: 30, meals: [ml('lunch', 'rescued', 1200)] }), patterns: [] }],
+        ['a long gap', { today: Object.assign({}, T0, { kcal: 350, protein: 10, lastHoursAgo: 8, lastKcal: 350, meals: [ml('breakfast', 'had', 350)] }), patterns: [] }],
+        ['late dinners, a skipped meal and a repeated food this week', { today: T0, patterns: [{ id: 'late_dinner', n: 5, of: 6 }, { id: 'skips_meal', meal: 'breakfast', n: 4, of: 7 }, { id: 'skips_meal', meal: 'dinner', n: 4, of: 7 }, { id: 'repeat', slot: 'm', food: 'dal', n: 6 }, { id: 'repeat', slot: 'b', food: 'poha', n: 6 }] }]];
+      let cells = 0, FLOOR = false; const hit = (t) => { t = String(t || ''); const x = t.replace(/\b\d+\u00A0?\s*kcal\s+less\b/g, ''); return ADV.test(x) && !NOTEOK.some(([r, , only]) => r.test(t) && !(only === 'nofloor' && FLOOR)); };
+      for (const [pn, o] of PROFS) { const p = readProfile(Object.assign({}, BASE, o)), floor = p.meds === 'yes' || p.meds === 'unsure'; FLOOR = floor;
+        for (const [sn, fileIn] of STATES) { const file = readFile(fileIn);
+          for (const meal of SLOTS) { const pl = planDay(p, file, meal, 5), hp = { health: p.health, medsUsual: medsUsual(p, meal) };
+            for (let h = 0; h < 24; h += 0.5) { const hooks = hooksFor(p, file, { meal, hour: h, mode: 'desk' }, pl); cells++;
+              const lines = [['the directive', directive(p, pl, hooks, meal, false)], ['the directive (day done)', directive(p, pl, hooks, meal, true)],
+                ['the reason line', reasonLine({ kcal: pl ? pl.target.kcal : 600, protein: pl ? pl.target.protein : 20, grain: { food: 'Jowar roti', grams: 80 } }, hooks, pl, hp, meal)]].concat(hooks.filter(x => hookSaid(x.id, hp)).map(x => ['a "Planned around" tag', x.tag]));
+              for (const [where, t] of lines) if (hit(t)) add('m1 as a class: no engine sentence advises eating less, lighter or skipping, with diabetes or on medicines', false, `${pn}, ${sn}, ${meal} at ${h}: ${where}: "${t}"`); } } }
+        const dt = dayTargets6(p); for (const [lab0, t] of dt ? dt.notes : []) add('m1 as a class: the day\'s notes', !hit(lab0) && !hit(t), `${pn}: "${lab0} ${t}"`);
+        if (floor) { // one-tap change notes and Rescue moves on medicines: the figure statements keep the usual size
+          const u = medsUsual(p, 'lunch');
+          if (u) { const m = platePlain(), pk = u + 100; Object.assign(m, { kcal: pk, protein: Math.round(pk * 0.2 / 4), carbs: Math.round(pk * 0.5 / 4), fats: Math.round(pk * 0.3 / 9) }); m.items.forEach(i => { i.grams = Math.round(i.grams * pk / 500); }); m.grain.grams = m.items[1].grams;
+            const kept = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch' } }).check(mealsReply(m)).meals[0], null), tp = kept && plan('tune', { profile: Object.assign({}, BASE, o), slot: 'lunch', meal: kept });
+            const ch = (dk, dp, dc, df, after) => ({ add_item: '', add_grams: 0, minutes: 15, grain_grams_after: after, contains: PT, deltaKcal: dk, deltaProtein: dp, deltaCarbs: dc, deltaFats: df, deltaFiber: 0 });
+            const t = safe(() => tp.check({ swaps: { protein: [], base: [] }, alchemy: { glucose: ch(-60, 0, -10, -2, kept.grain.grams), gut: ch(-150, -5, -20, -6, kept.grain.grams), express: ch(-20, 0, -4, -0, kept.grain.grams) } }), {});
+            for (const [k, x] of Object.entries(t.alchemy || {})) add('m1 as a class: a change note on medicines keeps the usual size', !hit(x.note) && kept.kcal + x.deltaKcal >= u, `${pn}: "${x.note}" on a ${kept.kcal} kcal plate, usual ${u}`);
+            add('m1 as a class: a change notes were read on medicines (non-vacuous)', Object.keys(t.alchemy || {}).length >= 1, `${pn}: ${JSON.stringify(t)}`);
+            for (const f of [1.2, 2, 3]) { const k = Math.round(u * f / 10) * 10, d = { name: 'Veg thali', kcal: k, protein: Math.round(k * 0.15 / 4), carbs: Math.round(k * 0.55 / 4), fats: Math.round(k * 0.30 / 9), fiber: 8, contains: ['grain'] }, r = rescueOut(o, 'Veg thali', d, []);
+              for (const mv of r.hacks || []) add('m1 as a class: a Rescue move on medicines keeps the usual size', mv.kind === 'portion' ? d.kcal + mv.deltaKcal >= u : !hit(mv.title), `${pn}: "${mv.title}" on a ${k} kcal dish, usual ${u}`); } } } }
+      // controls: the directive's late line is still said with no condition, so the scan is not reading empty lines
+      { const p = readProfile(Object.assign({}, BASE, { health: 'none' })), file = readFile({ today: T0, patterns: [] }), pl = planDay(p, file, 'dinner', 5);
+        add('m1 as a class: with no condition the late line is still said (control)', /keep it light/.test(directive(p, pl, hooksFor(p, file, { meal: 'dinner', hour: 22.5, mode: 'desk' }, pl), 'dinner', false)), 'the late line was not said with no condition'); }
+      // every string in app.js, and the app's own options and example asks: an advice word is allowed only in the strings named here, each with
+      // its reason; the example ask "A light dinner after a heavy lunch" is not offered on medicines (and still is with no medicine)
+      const APPOK = { 'skipped': 'an event kind, not shown', 'skipx': 'a class name', 'log-skip': 'an element id', 'Skipped it': 'the button that records a skipped meal; it advises nothing', 'Skipped ': 'the logged card\'s title, "Skipped lunch": a record',
+        ', skipped': 'the meal tab\'s label for a skipped meal: a record', 'less': 'a figure statement on a swap ("(8 g less carbs)"); the swap keeps the usual size on medicines (S6, the engine)', 'Less ': 'the Builder stepper\'s label ("Less grains"): a share of the plate, not its size',
+        'less oil': 'the cooking choice the client makes', 'These can cause low sugar when you eat less, so the plates stay steadier for you.': 'a warning against eating less on medicines',
+        [typeof MEDSWARN === 'string' ? MEDSWARN : '_']: 'the low-sugar warning after a skipped meal' };
+      const appSrc2 = fs.readFileSync(process.env.NP_APP || path.join(__dirname, '../../src/v6/app.js'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, ''), lits = [...new Set(appSrc2.match(/"(?:[^"\\\n]|\\.)*"/g) || [])].map(x => JSON.parse(x));
+      const medsW = (/var MEDSWARN="((?:[^"\\]|\\.)*)"/.exec(appSrc2) || [])[1]; if (medsW) APPOK[JSON.parse('"' + medsW + '"')] = 'the low-sugar warning after a skipped meal: a warning against skipping';
+      for (const t of lits) if (ADV.test(t)) add('m1 as a class: every app string with an advice word is named with its reason', t in APPOK, `src/v6/app.js: "${t.slice(0, 90)}"`);
+      const OPTOK = { 'Light': 'the mood the client chooses for the plate\'s style; every plate on medicines is still at least the usual size (S6)', 'Light activity': 'the client\'s activity level, not advice', 'Less oil': 'the cooking choice the client makes' };
+      for (const k of Object.keys(OPT)) for (const [, lab0] of OPT[k]) if (ADV.test(lab0)) add('m1 as a class: every option label with an advice word is named with its reason', lab0 in OPTOK, `OPT.${k}: "${lab0}"`);
+      const askOn = (o) => (typeof APPASKS !== 'undefined' ? APPASKS : []).filter(e => safe(() => appAskOK(e, readProfile(Object.assign({}, BASE, o))), true)).map(e => e[0]);
+      for (const meds of ['yes', 'unsure']) add('m1 as a class: no example ask for a lighter meal on medicines', !askOn({ health: 'diabetes', meds }).some(t => ADV.test(t)), `meds ${meds}: ${JSON.stringify(askOn({ health: 'diabetes', meds }))}`);
+      add('m1 as a class: the four example asks with no medicine (control; the review state pins them)', askOn({ health: 'diabetes', meds: 'no' }).length === 4, JSON.stringify(askOn({ health: 'diabetes', meds: 'no' })));
+      // on medicines the snack is never passed over: nextOffer from app.js with little room left
+      const no = (meds) => run(['has', 'onMeds', 'slotOf', 'nextOpen', 'nextOffer'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds }), C: { meal: 'lunch' }, SLOTS, PL: {}, FILE: { today: { meals: [{ meal: 'breakfast', kind: 'had' }, { meal: 'lunch', kind: 'had' }] } }, snackRoom: () => 40 }, 'nextOffer()');
+      add('m1 as a class: on medicines the snack is never passed over', JSON.stringify(no('yes')) === '{"meal":"snack","low":false}' && JSON.stringify(no('')) === '{"meal":"snack","low":false}' && JSON.stringify(no('no')) === '{"meal":"dinner","low":true}', JSON.stringify([no('yes'), no(''), no('no')]));
+      console.log(`m1 as a class: ${cells} profile, state, meal and hour cells, ${lits.length} app strings`); }
   }
   // S10 as a property (coordinator, 16 Nov): over every plate recorded under eval/, with a protein swap, a grain swap and a grain change put
   // on each, and with its own recorded swaps and changes, every tap state the app accepts has no two slots on one item, and the figures

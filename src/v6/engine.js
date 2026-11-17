@@ -152,8 +152,10 @@ function directive(p,pl,hooks,meal,done){
   if(pl.eaten.kcal>0)s+="So far "+kp(pl.eaten.kcal,pl.eaten.protein)+". ";
   var over=pl.eaten.kcal-pl.day.kcal;if(over>=50)s+="That is about "+Math.round(over/10)*10+"\u00A0kcal over today's "+pl.day.kcal+"\u00A0kcal. ";   /* the day over its target is said in words (R2-B3 044-1) */
   s+=lab("meal",meal)+": about "+kp(pl.target.kcal,pl.target.protein);
-  var pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
-  pri.some(function(id){return hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
+  /* with diabetes or on medicines the line says no "light", "lighter" or "late" hook, by the rule the reason line and "Planned around" share
+     (hookSaid; fix-r15, safety audit of c666d34, m1: "it's late, so keep it light" was said to a client on insulin) */
+  var hp={health:p&&p.health,medsUsual:medsUsual(p,meal)},pri=["late_now","protein_gap","lighter_now","ate_out","long_gap","late_dinner"],pick=null;
+  pri.some(function(id){return hookSaid(id,hp)&&hooks.some(function(h){if(h.id===id){pick=h;return true;}return false;});});
   var tail={late_now:"; it's late, so keep it light",protein_gap:", to catch up on protein",lighter_now:", lighter after earlier meals",ate_out:"; simple and home-style after eating out",long_gap:"; you've gone a while without food, so vegetables and protein first",late_dinner:"; a lighter, earlier dinner helps"};
   return s+(pick?tail[pick.id]:"")+".";
 }
@@ -697,6 +699,10 @@ var APPDISHES=[["Andhra mutton biryani",["meat","grain","dairy","onion_garlic"]]
   ["Chole bhature",["wheat","grain","onion_garlic","root_veg","dairy"]],["Veg biryani with raita",["grain","dairy","onion_garlic","root_veg","nuts"]],["Masala dosa with chutney",["grain","root_veg","onion_garlic"]],
   ["A slice of tiramisu after dinner",["dairy","egg","wheat","sweet"]]];
 function appFoodOK(e,p){var b=barredTags(p);return !crosses(e[0],p)&&!e[1].some(function(t){return b.indexOf(t)>=0;});}
+/* on insulin or sugar tablets an example ask that asks for a lighter or smaller meal is not offered (fix-r15, m1 as a class: no app or engine
+   sentence advises eating less, lighter or skipping when the medicines floor applies) */
+var LESSASK=/\b(?:light|lighter|less|smaller|skip\w*)\b/i;
+function appAskOK(e,p){return appFoodOK(e,p)&&!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&LESSASK.test(e[0]));}
 
 /* ---------- the entry point, replacing v5's. A request without a food file still works (it counts as a day with nothing logged).
    weight = how much of the daily allowance a call uses: a set of plates is 1, the small follow-ups are a quarter ---------- */
@@ -786,6 +792,18 @@ var URGENTTXT=new RegExp("\\b(?:"+[
 var URGENTSIGNS=new RegExp(URGENTSIGN.source,"gi");
 function signKinds(t){var k={};(t.match(URGENTSIGNS)||[]).forEach(function(w){w=w.toLowerCase();k[/^shak|^shiv|^trembl/.test(w)?"shake":/^swe|^pas/.test(w)?"sweat":/^diz|^gidd|^chak/.test(w)?"dizzy":/^conf|^ghab/.test(w)?"confused":"vision"]=1;});return Object.keys(k).length;}
 function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.test(t)&&URGENTCTX.test(t)||signKinds(t)>=2;}
+/* S7, the insulin-profile default (fix-r15; safety audit of c666d34, owner question on the urgent-symptom scope; the coordinator's default,
+   which the owner or a clinician may change; not clinically reviewed). With diabetes and insulin or sugar tablets (meds "yes" or "not sure";
+   an unanswered question is read as "not sure"), one low-sugar sign typed is urgent with no medicine named in the text: the profile names
+   it. The signs are the net's own list (shaky, sweating, dizzy, confused and the rest); "hypo" and "sugar low" are urgent for everyone. */
+function medsSign(t,p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure")&&URGENTSIGN.test(String(t||""));}
+function urgentFor(t,p){return urgentTyped(t)||medsSign(t,p);}
+function referFor(t,p){return referTyped(t)||medsSign(t,p);}
+/* the reply to typed text that is referred before the model: one function for plan() on the server and the app on the phone, which runs it
+   before it sends, so offline, on a timeout or with a refused code the referral still shows (fix-r15; safety audit of c666d34, m4). Text is
+   read as plan() reads it (folded at intake); null when the text goes to the model. */
+function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t||!referFor(t,p))return null;
+  return urgentFor(t,p)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]};}
 /* the usual size of a meal on insulin or sugar tablets (S6, owner decision D2): from the day's target; with no body figures, the day split
    of the energy floor (PARAM.floor; the women's floor when sex is not given, the lower of the two existing figures, so it never asks more
    than a person's own usual size). 0 when the person is not on that medicine. */
@@ -797,7 +815,7 @@ plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
   /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
