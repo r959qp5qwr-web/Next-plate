@@ -457,6 +457,10 @@
    "morning snack ideas",
    "good morning, something light"
   ],
+  "measure": ["pc", "pcs", "piece", "pieces", "nos", "bowl", "bowls", "bowlful", "cup", "cups", "kap", "glass", "glasses", "katori", "katoris", "katoriyan", "katoree", "katora", "katore",
+   "plate", "plates", "plateful", "tbsp", "tsp", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "spoon", "spoons", "spoonful", "ladle", "ladles", "slice", "slices", "serving", "servings",
+   "portion", "portions", "helping", "scoop", "scoops", "handful", "handfuls", "fistful", "pinch", "mug", "mugs", "tumbler", "tumblers", "chammach", "chamach", "mutthi", "muthi", "karchhi", "karchi",
+   "vati", "vatis", "kg", "kilo", "kilos", "kilogram", "litre", "liter", "ltr", "ml", "g", "gm", "gms", "gram", "grams"],
   "addedFromReports": {
    "meat": [
     "machli",
