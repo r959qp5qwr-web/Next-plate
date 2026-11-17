@@ -1,5 +1,5 @@
-// Combinatorial probes for owner rule 3 (Critic round 17's process note): grain x separator x verb x continuation for one-tap notes and
-// menu asks, dish x filling x bracket for grain names, coating grain x frying word x food for coatings. Each case has the verdict a reader
+// Combinatorial probes for owner rule 3 (Critic round 17's process note): grain x separator x verb x continuation for one-tap notes (the
+// menu asks went with menu reading, owner 17 Nov), dish x filling x bracket for grain names, coating grain x frying word x food for coatings. Each case has the verdict a reader
 // of the sentence would give; the rule check fails on any case the page gets wrong. Used by test/rules/check.js.
 module.exports = function (N, meal) {
 
@@ -7,13 +7,8 @@ const P = { goal: 'lose', focus: 'iron', diet: 'nonveg', health: 'diabetes', med
 function tapOK(C, note, after) { const p = C.readProfile(Object.assign({}, P)); p.slot = 'dinner'; const m = JSON.parse(JSON.stringify(meal));
   m.alchemy = { glucose: { titleSuffix: '(changed)', note, minutes: 18, grain_grams_after: after, deltaKcal: -10, deltaProtein: 0, deltaCarbs: -6, deltaFats: 0, deltaFiber: 1 } };
   const c = C.checkMeal(m, p); return !!(c.meal && c.meal.alchemy.glucose); }
-const typed = 'MAINS\nDal Tadka 240\nPaneer Tikka 320\nBREADS\nTandoori Roti 30\nRICE\nSteamed Rice 120';
-function askOK(C, side, ask, keepAsk) { const pl = C.plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: typed } });
-  const d = { as_written: 'Dal Tadka', portion: '1 bowl, about 300 g', kcal: 400, protein: 26, carbs: 30, fats: 18, fiber: 6, ask, grain_made_of: 'wheat', grain_grams: 80, with: side, with_kcal: 90, with_protein: 3, with_carbs: 18, with_fats: 1, with_fiber: 2 };
-  const o = (pl.check({ status: 'ok', place: 'R', dishes: [d], leave: [], tip: '' }).orders || [])[0];
-  return !!o && (keepAsk || !!o.ask); }   /* an ask the engine drops (a figure in it) never reaches the person: the order keeps its grain */
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-// ---------- one-tap notes and menu asks ----------
+// ---------- one-tap notes ----------
 const G = ['rice', 'roti', 'khichdi'];
 const removes = [], keeps = [];
 for (const g of G) {
@@ -75,8 +70,6 @@ for (const g of ['Rava', 'Sooji', 'Semolina', 'Rice flour', 'Atta', 'Wheat flour
   const judge = (kind, text, want, got) => { if (got !== want) wrong.push(kind + ': ' + text); };
   for (const r of removes) judge('one-tap removal offered', r, false, tapOK(N, r, 200));
   for (const k of keeps) judge('one-tap keep held', k, true, tapOK(N, k, 150));
-  for (const r of removes.filter(x => /\b(?:rice|roti)\b/i.test(x))) judge('menu ask removal offered', r, false, askOK(N, /rice/i.test(r) ? '1 Steamed Rice' : '1 Tandoori Roti', r));
-  for (const k of keeps.filter(x => /\b(?:rice|roti)\b/i.test(x))) judge('menu ask keep refused', k, true, askOK(N, /rice/i.test(k) ? '1 Steamed Rice' : '1 Tandoori Roti', k, true));
   for (const n of grainNames) judge('grain name refused', n, true, N.isGrain(n));
   for (const n of coatNames) judge('coating counted', n, false, N.isGrain(n));
   return { cases: removes.length + keeps.length + grainNames.length + coatNames.length, wrong };
