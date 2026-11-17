@@ -123,8 +123,10 @@ var ERRS={not_set_up:"Meal planning isn't switched on for this link. Send your c
   bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
   bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",
   busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",timeout:"Next Plate took too long to answer. Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
-/* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a photo that did not come through, a bad request */
-var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_image","bad_request"];
+/* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a bad request. "photos_off" stays: the
+   server still answers it to a request whose image is an empty string, which plan() lets through. "bad_image" went (fix-r12; Critic round
+   42, watch item 4): the server reads it only for a non-empty image, and plan() refuses every such request first (owner, 17 Nov) */
+var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_request"];
 function RETRY(code){return NORETRY.indexOf(code)<0;}
 /* a limit, the link or meal planning switched off stops every request until it changes: Plate, Rescue and the log sheet all turn
    their send controls off and keep what was typed (second screen review, R2-B6 083, R2-B7 104 and 106, R2-B4 057, R2-B5 068) */
