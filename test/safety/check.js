@@ -39,6 +39,26 @@ const RULES = [['S1', 'wheat', { leave: ['wheat'] }], ['S1', 'nut', { leave: ['n
   ['S3', 'salty', { health: 'bp' }], ['S3', 'salty', { health: 'diabetes', bp: true }], ['S4', 'sweet', { health: 'diabetes' }]];
 const AR = L.addedFromReports;
 for (const [id, cat, o] of RULES) for (const t of L[cat].concat(AR[cat] || [])) for (const f of forms(t)) add(id, crosses(f, prof(o)), `${JSON.stringify(o)}: "${f}"`);
+// ---------- the lexicon floor covers the engine's lists (fix-r13; safety audit of 9dd1b13, m1 and m2) ----------
+// The word-level tests read the lexicon's "known" lists, not the engine's: a word the engine lists and the lexicon lacks could be taken out
+// of the engine and no test would see it ("honey" or "sugar" out of SWEETS, "glassfuls?" out of MEASW passed every check). So every word of
+// every barred list, and every form each MEASW entry reads, is in the lexicon (singular or plural), or is held out below with its reason.
+// A new engine word fails here until the lexicon holds it; taking a lexicon word out of the engine fails the forms test above (lists) and
+// recorded.js's "the measure list holds the lexicon's measure words" (MEASW).
+{ const sing = w => w.replace(/ies$/, 'y').replace(/(ch|sh|x|ss)es$/, '$1').replace(/oes$/, 'o').replace(/([^s])s$/, '$1');
+  const lexOf = (...ks) => { const o = new Set(); for (const k of ks) for (const w of [].concat(L[k] || [], AR[k] || [])) { o.add(w.toLowerCase()); o.add(sing(w.toLowerCase())); } return o; };
+  const HELDOUT = { measure: { no: 'the negation word (S1); a measure only after a digit, which the detector reads on its own' } };
+  const LISTS = [['meat', () => MEATW.concat(FISHW), 'meat'], ['egg', () => EGGW, 'egg'], ['dairy', () => DAIRYW, 'dairy'], ['onion_garlic', () => ONIONW, 'jain'], ['root_veg', () => ROOTW, 'jain'],
+    ['wheat', () => LEAVEW.wheat, 'wheat'], ['nuts', () => LEAVEW.nut, 'nut'], ['soya', () => LEAVEW.soya, 'soya'], ['sweet', () => SWEETS, 'sweet'], ['salty_side', () => SALTY, 'salty'], ['supplement', () => SUPPW, 'supplement']];
+  for (const [tag, get, k] of LISTS) { const lex = lexOf(k), list = safe(get, []);
+    add('m1 the lexicon floor holds every word of the engine\'s barred lists', list.length > 0, `${tag}: the engine has no list`);
+    for (const w of list) add('m1 the lexicon floor holds every word of the engine\'s barred lists', lex.has(w) || lex.has(sing(w)) || !!(HELDOUT[tag] || {})[w], `${tag}: "${w}" is in the engine's list but not in lexicon.json known.${k} (add it, or hold it out here with a reason)`); }
+  // MEASW entries are expressions: each optional letter or group is read both ways; a stem with "\w*" is read as the stem
+  const expand = f => { f = f.replace(/\\w\*$/, ''); const m = /\(\?:([^()]*)\)\?|([a-z])\?/.exec(f); if (!m) return [f];
+    const head = f.slice(0, m.index), tail = f.slice(m.index + m[0].length), opt = m[1] !== undefined ? m[1] : m[2]; return [...expand(head + tail), ...expand(head + opt + tail)]; };
+  const floor = new Set((L.measure || []).map(w => w.toLowerCase())), mw = safe(() => MEASW, []);
+  add('m2 the lexicon floor holds every form of the engine\'s measure list (MEASW)', Array.isArray(mw) && mw.length > 30, 'np-core has no MEASW');
+  for (const f of mw) for (const w of expand(f)) add('m2 the lexicon floor holds every form of the engine\'s measure list (MEASW)', floor.has(w) || !!HELDOUT.measure[w], `MEASW "${f}" reads "${w}", which is not in lexicon.json known.measure`); }
 // none of these may be ruled out by the rule next to them (a false hit hides good food)
 for (const [cat, o] of [['notWheat', { leave: ['wheat'] }], ['notNut', { leave: ['nut'] }], ['notMeat', { diet: 'veg' }], ['notEgg', { diet: 'veg' }]])
   for (const t of L[cat]) add('S1-S2 no false hit', !crosses(t, prof(o)), `${JSON.stringify(o)}: "${t}" was ruled out`);
@@ -78,12 +98,14 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   const NUTS = ['almond', 'cashew', 'peanut'], SOYW = ['soy', 'soya'];
   let shownV = 0;
   for (const f of FRAMES) for (const x of LEFT) for (const y of RIGHT) { const name = cap(f.replace('X', x).replace('Y', y)), prod = PLANTOK.includes(x + ' ' + y);
-    // a plant cream or nut butter before a dish word reads as dairy (coordinator's default, fix-r12): "Cashew cream masala", "Peanut butter curry"
-    const plantOK = prod && !(x === 'rice' && TAIL.test(f)) && !(/^(?:cream|butter)$/.test(y) && /^X Y (?:rice|masala|curry)$|^brown X Y rice$/.test(f));
+    // a plant cream or nut butter before a dish word reads as dairy (coordinator's default, fix-r12): "Cashew cream masala", "Peanut butter curry";
+    // fail closed (fix-r13): a word before the product that is not in its set ("dal", "jeera", "fried", "brown") keeps the dairy word, for
+    // every product, as "rice" ending a rice dish did before; test/safety/carve.js reads every neighbour
+    const plantOK = prod && !TAIL.test(f) && !(/^(?:cream|butter)$/.test(y) && /^X Y (?:rice|masala|curry)$/.test(f));
     for (const [o, want] of [[{ diet: 'vegan' }, plantOK], [{ leave: ['dairy'] }, plantOK], [{ leave: ['nut'] }, !NUTS.includes(x)], [{ leave: ['soya'] }, !SOYW.includes(x)]]) {
       const r = plateOffered(o, withItem(name, ['plain'], ['plain'])); if (o.diet === 'vegan' && r.ok) shownV++;
       add('S1-S2 plant products: named one by one (grid, tags stripped)', r.ok === want, `${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'} (${r.why || ''}), expected ${want ? 'shown' : 'dropped'}`); } }
-  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 120, `only ${shownV} plant-product cells shown to a vegan client`);
+  add('S1-S2 plant products: the grid shows the named products (control)', shownV >= 70, `only ${shownV} plant-product cells shown to a vegan client`);
   // the audit's names, and the products that still pass
   for (const [name, o, want] of [['Brown rice curd rice', { diet: 'vegan' }, false], ['Brown rice curd rice', { leave: ['dairy'] }, false], ['Red rice curd rice', { diet: 'vegan' }, false], ['Rice curd', { leave: ['dairy'] }, false],
     ['Rice curd and pickle', { diet: 'vegan' }, false], ['Leftover rice curd mix', { leave: ['dairy'] }, false], ['Rice yogurt bowl', { diet: 'vegan' }, false], ['Curd rice', { diet: 'vegan' }, false], ['Peanut curd rice', { diet: 'vegan' }, false],
@@ -99,34 +121,13 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   // a name is read apart from the next: a rice milk after another item is still a product
   { const m = platePlain(); m.items[2] = { food: 'Rice milk', grams: 100, group: 'other', contains: ['plain'] }; add('S1-S2 names are read apart', plateOffered({ diet: 'vegan' }, m).ok, 'vegan: "Jowar roti" then "Rice milk" was read as "roti rice milk"'); } }
 
-// ---------- every other carve-out read before the word lists, in frames, tags stripped (fix-r12) ----------
-// Each rule that blanks or exempts text before a word list, with frames that open the name, follow a joining word, or put a word before it
-// that ends another dish ("Dal chawal roti", "Jeera rice noodles", "Garlic butter beans", "Chana keema"). Each cell is shown or dropped as
-// written here; the cells left open are TRACKED (tier 2, watched), not asserted.
-{ const TAIL = /^(?:dal|jeera|curd|lemon|fried|brown|rajma) /, OPEN = ['X Y', 'X Y with dal', 'X Y curry', 'with X Y', 'X ki Y'], TAILS = ['dal X Y', 'jeera X Y', 'curd X Y', 'lemon X Y', 'fried X Y', 'brown X Y', 'rajma X Y'];
-  const WHEATW = /^(?:rotis?|chapati|paratha|puri|noodles|vermicelli|pasta|sevai|bread|toast)$/;
-  const cells = [];
-  const grid = (id, L, R, frames, o, want) => { for (const f of frames) for (const x of L) for (const y of R) { if (f === 'X ki Y' && !/^(?:rotis?|bhakri|chapati|paratha|puri)$/.test(y)) continue; cells.push([id, cap(f.replace('X', x).replace('Y', y)), o, want(x, y, f)]); } };
-  grid('millet or rice flatbread', ['bajra', 'jowar', 'makki', 'ragi', 'nachni', 'rajgira', 'kuttu', 'singhara', 'rice', 'chawal', 'akki'], ['roti', 'rotis', 'bhakri', 'chapati', 'paratha', 'puri', 'thalipeeth'], OPEN.concat(TAILS), { leave: ['wheat'] },
-    (x, y, f) => !(TAIL.test(f) && /^(?:rice|chawal)$/.test(x) && WHEATW.test(y)));
-  grid('rice and millet noodles', ['rice', 'ragi', 'millet', 'glass', 'jowar', 'konjac', 'shirataki'], ['noodles', 'vermicelli', 'pasta', 'sevai'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
-  grid('millet and rice bread', ['jowar', 'bajra', 'ragi', 'millet', 'rice', 'gluten-free'], ['bread', 'toast'], OPEN.concat(TAILS), { leave: ['wheat'] }, (x, y, f) => !(TAIL.test(f) && x === 'rice'));
-  grid('plant keema', ['soya', 'soy', 'mushroom', 'kathal', 'jackfruit', 'veg', 'vegetable', 'paneer', 'tofu', 'chana', 'rajma', 'nutrela'], ['keema', 'kheema'], ['X Y', 'X Y matar', 'X Y with roti', 'dal X Y', 'lauki X Y'], { diet: 'veg' }, (x) => !/^(?:chana|rajma)$/.test(x));
-  grid('butter beans', ['butter'], ['beans', 'bean'], ['X Y', 'X Y curry', 'with X Y', 'salad with X Y', 'garlic X Y', 'lemon X Y', 'herb X Y', 'brown X Y', 'spiced X Y'], { diet: 'vegan' }, (x, y, f) => /^(?:X|with|salad with) /.test(f));
-  grid('sol kadhi', ['sol'], ['kadhi'], ['X Y', 'X Y with rice', 'rice with X Y'], { diet: 'vegan' }, () => true);
-  grid('rice cakes', ['rice'], ['cakes', 'cake'], ['X Y', 'idli X Y', 'steamed X Y', 'brown X Y', 'sweet X Y', 'jaggery X Y'], { health: 'diabetes' }, (x, y, f) => !/^(?:sweet|jaggery) /.test(f));
-  grid('sugar snap', ['sugar'], ['snap peas'], ['X Y', 'stir fried X Y', 'X Y salad'], { health: 'diabetes' }, () => true);
-  grid('lemon or amla juice', ['lemon', 'lime', 'nimbu', 'amla'], ['juice'], ['X Y', 'fresh X Y', 'salad with X Y', 'cucumber and X Y', 'sweet X Y'], { health: 'diabetes' }, (x, y, f) => !/^sweet /.test(f));
-  grid('negation, one word', ['no', 'without', 'skip', 'skip the', 'hold the', 'minus', 'instead of', 'swap out', 'leave out'], ['ghee', 'curd', 'paneer'], ['Dal X Y', 'Dal, X Y', 'Dal X Y or butter', 'Dal X oil and Y', 'Dal X Y and butter'], { leave: ['dairy'] }, (x, y, f) => !/ and /.test(f));
-  grid('-free and -less', ['egg-free', 'eggless', 'sugar-free', 'dairy-free', 'ghee-free'], ['cake', 'halwa', 'kheer', 'mayo', 'omelette'], ['X Y'], { diet: 'veg', health: 'diabetes' }, () => false);
-  for (const [id, name, o, want] of cells) { const r = plateOffered(o, withItem(name, ['plain'], ['plain']));
-    add('S1-S4 carve-outs: each reads only its own food (frame grid, tags stripped)', r.ok === want, `${id}, ${JSON.stringify(o)}: "${name}" was ${r.ok ? 'shown' : 'dropped'}, expected ${want ? 'shown' : 'dropped'}`); }
-  add('S1-S4 carve-outs: the grid read its cells', cells.length > 1500, `only ${cells.length} cells`);
-  // the open cells: a rice cake with coconut, and a juice of several, may be a sweet or a juice, or a savoury cake and a dressing
-  // ("grated carrots and lemon juice" is a dressing 11 times in the recorded replies): the sweet tag holds them; watched (tier 2)
-  const open = ['Coconut rice cakes', 'Orange and lemon juice', 'Carrot and amla juice'].map(n => n + ': ' + (plateOffered({ health: 'diabetes' }, withItem(n, ['plain'], ['plain'])).ok ? 'shown' : 'dropped'));
-  console.log('TRACKED (tier 2) carve-out cells left open, diabetes, tags stripped: ' + open.join('; '));
-  // the referral exclusions: a kidney or pregnancy word beside the bean, corn or colour word still refers; the food text alone does not
+// ---------- every other carve-out read before the word lists (fix-r12; fail closed since fix-r13) ----------
+// The hand-picked frames of fix-r12 (rice and millet flatbreads, noodles and bread, plant keema, butter beans, sol kadhi, rice cakes, sugar
+// snap, lemon or amla juice, negation, -free) are replaced by test/safety/carve.js, which generates its cells from the lexicon's lists and
+// the recorded names (safety audit of 9dd1b13, B1: the frames missed a fruit before lemon or lime juice). Each exemption takes its listed
+// word off only when the word next to it is in its own allowed set; the TRACKED cells of fix-r12 ("Coconut rice cakes", "Orange and lemon
+// juice", "Carrot and amla juice") are now dropped and asserted there.
+{   // the referral exclusions: a kidney or pregnancy word beside the bean, corn or colour word still refers; the food text alone does not
   const refersT = (t) => { const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: t } }); return !!(pl.reply && pl.reply.status === 'refer'); };
   for (const [t, want] of [['kidney beans curry', false], ['Kidney bean salad for lunch', false], ['weak kidney beans ok?', true], ['kidney, beans ok for dinner?', true], ['kidney beans for my kidney', true],
     ['I have kidney stones, kidney beans ok', true], ['kidney beans with CKD', true], ['baby corn manchurian', false], ['delivered a baby corn soup', false], ['delivered a baby, corn soup ok?', true],
@@ -164,7 +165,7 @@ add('D1 plain food kept', plateOffered({ diet: 'jain', leave: ['dairy', 'nut', '
 // held-out names that must not be hidden: honest tags with nothing the profile bars
 const NH = { meat: { diet: 'veg' }, dairy: { leave: ['dairy'] }, wheat: { leave: ['wheat'] }, soya: { leave: ['soya'] }, onion_garlic: { diet: 'jain' }, root_veg: { diet: 'jain' }, salty_side: { health: 'bp' }, sweet: { health: 'diabetes' }, nuts: { leave: ['nut'] } };
 const NHTAGS = { 'Sol kadhi with coconut milk': ['onion_garlic'], 'Coconut milk curry': ['onion_garlic'], 'Peanut chutney': ['nuts'], 'Coconut chutney': [], 'Hing tadka dal': [], 'Lauki sabzi': [], 'Cucumber raita': ['dairy'], 'Sprouts salad': [], 'Roasted chana': [], 'Sugar snap peas': [], 'Soya keema': ['soya', 'onion_garlic'], 'Mushroom keema': ['onion_garlic'], 'Kathal keema': ['onion_garlic'], 'Jackfruit biryani': ['grain', 'onion_garlic'], 'Veg seekh kebab': ['onion_garlic'], 'Rice noodles': ['grain'],
-  'Kuttu puri': ['grain'], 'Singhara puri': [], 'Jowar bread': ['grain'], 'Ragi dosa': ['grain'], 'Bajra roti': ['grain'], 'Makki di roti': ['grain'], 'Idli rice cakes': ['grain'], 'Sweet corn soup': ['grain'], 'Rajma curry': ['onion_garlic'], 'Chana masala': ['onion_garlic'] };
+  'Kuttu puri': ['grain'], 'Singhara puri': [], 'Jowar bread': ['grain'], 'Ragi dosa': ['grain'], 'Bajra roti': ['grain'], 'Makki di roti': ['grain'], 'Puffed rice cakes': ['grain'], 'Sweet corn soup': ['grain'], 'Rajma curry': ['onion_garlic'], 'Chana masala': ['onion_garlic'] };
 for (const [tag, names] of Object.entries(HO.notHidden)) for (const name of names) { const o = NH[tag]; const tags = NHTAGS[name] || [];
   // round 5: a dish with none of the tags declares "plain" (an empty list is dropped, the literal rule)
   const r = plateOffered(o, withItem(name, tags.length ? tags : ['plain']));
@@ -253,6 +254,41 @@ for (const [n, o] of FOUND) {
   add('Found gaps (safety audit of b4633dd): a plate item with a "plain" tag', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
   add('Found gaps (safety audit of b4633dd): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
 
+// ---------- safety audit of 9dd1b13, the found words ("Fix found, then watch", D1; fix-r13): each fixed and tested, with a control ----------
+{ const F13 = [
+    ...['Dim Sheddo with rice', 'Dim Sheddho', 'Dim Shorshe', 'Dim poshto', 'Dim Dalna with roti'].map(n => [n, { diet: 'veg' }]),
+    ...['Paneer Tikka Wrap', 'Soya Bhurji Wrap', 'Egg Bhurji Wrap with Mint Dahi', 'Veg wraps', 'Lettuce wrap'].map(n => [n, { leave: ['wheat'] }]),
+    ...['Milkshake', 'Banana milkshake', 'Strawberry milkshake', 'Banana shake', 'Date shake', 'Mango smoothie', 'Thandai', 'Rose milk', 'Badam milk', 'Sweet pongal', 'Shakkarpara', 'Puran poli'].map(n => [n, { health: 'diabetes' }])];
+  for (const [n, o] of F13) {
+    add('Found words (safety audit of 9dd1b13): a plate item with a "plain" tag is dropped', !plateOffered(o, withItem(n, ['plain'])).ok, `${JSON.stringify(o)}: plate item "${n}" tagged plain was offered`);
+    add('Found words (safety audit of 9dd1b13): offered to a client the rule does not bar (control)', plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was dropped with no rule`); }
+  // "dim" alone, "dim sum" and "dimly" are not egg; "shake" alone is the verb of the recorded notes ("Shake sattu in cool water")
+  for (const [t, o] of [['Veg dim sum', { diet: 'veg' }], ['Dim light dinner', { diet: 'veg' }], ['A dimly lit cafe thali', { diet: 'veg' }], ['Dim', { diet: 'veg' }], ['Shake sattu in cool water', { health: 'diabetes' }]])
+    add('Found words (safety audit of 9dd1b13): no false hit', !crosses(t, prof(o)), `${JSON.stringify(o)}: "${t}" was ruled out`);
+  // S9: the supplements shown with a "plain" tag; brand names that are English words count only as a whole name or before a drink word
+  for (const n of ['Multivitamins', 'Complan', 'Whey', 'Whey shake', 'Protein bar', 'Electral', 'ORS', 'Becosules', 'Shelcal', 'Zincovit', 'Biotin', 'Folic acid', 'Pediasure', 'Boost drink', 'Boost', 'Ensure', 'Ensure milk', 'Soy protein isolate', 'Tang'])
+    add('Found words (safety audit of 9dd1b13): a supplement with a "plain" tag is dropped (S9)', !plateOffered({}, withItem(n, ['plain'])).ok, `plate item "${n}" tagged plain was offered`);
+  // the same names as a swap and as the item a one-tap change adds, tags "plain" (the item is read apart from the change's own words)
+  for (const n of ['Ensure', 'Boost', 'Tang', 'Complan', 'Multivitamins', 'Protein bar', 'Whey']) {
+    const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('A drink with the meal.', ['plain']), { add_item: n, add_grams: 200 }) }, { protein: [{ food: n, grams: 150, contains: ['plain'], ...z }], base: [] });
+    add('Found words (safety audit of 9dd1b13): a supplement is not offered as a swap or a one-tap add (S9)', !Object.keys(t.alchemy || {}).length && !((t.swaps || {}).protein || []).length, `tune offered "${n}": ${JSON.stringify(Object.keys(t.alchemy || {}))} ${JSON.stringify(((t.swaps || {}).protein || []).map(x => x.food))}`); }
+  { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('A side to boost the protein.', ['plain']), { add_item: 'Boiled chana', add_grams: 80 }) });
+    add('Found words (safety audit of 9dd1b13): a one-tap add whose note says "boost" is offered (control)', Object.keys(t.alchemy || {}).length === 1, 'the change "Add boiled chana" with the note "A side to boost the protein." was dropped'); }
+  for (const t of ['Ensure thorough boiling of chickpeas.', 'Add 70 grams of fresh paneer to boost the protein.', 'Acidity enhances the tang of the chutney.', 'Sattu shake'])
+    add('Found words (safety audit of 9dd1b13): no false hit (S9)', !supp(t), `"${t}" was read as a supplement`);
+  // S8: measures that open a name, and the stubs
+  for (const [n, want] of [['Bowlful dal', 'Dal'], ['Serving dal', 'Dal'], ['Karchi dal', 'Dal'], ['Plateful rice', 'Rice'], ['Glassful buttermilk', 'Buttermilk'], ['Cupful milk', 'Milk'], ['Scoop dal', 'Dal'], ['Portion rice', 'Rice'],
+    ['Pcs paneer', 'Paneer'], ['Pieces chicken', 'Chicken'], ['Ladle sambar', 'Sambar'], ['Mutthi chana', 'Chana'], ['Kilo chicken', 'Chicken'], ['Litre buttermilk', 'Buttermilk'], ['Ml milk', 'Milk'],
+    ['Half dozen almonds', 'Almonds'], ['Chammach bhar ghee', 'Ghee'], ['Katori bhar dal', 'Dal'], ['2 chammach bhar ghee', 'Ghee'],
+    ['Portion control salad', 'Portion control salad'], ['Muthiya', 'Muthiya'], ['Vati dal khaman', 'Vati dal khaman'], ['Cup cake', 'Cup cake'], ['Glass noodles', 'Glass noodles']])
+    add('Found words (safety audit of 9dd1b13): a measure that opens a name, and the stubs (S8)', safe(() => showName(n), '') === want, `"${n}" shows "${safe(() => showName(n), '')}", expected "${want}"`);
+  // S7: the urgent phrasings, typed in each box, with and without medicines ticked; a medicine's name alone is not urgent
+  const urgentOn = (kind, t, meds) => { const pl = safe(() => plan(kind, { profile: Object.assign({}, BASE, { health: 'diabetes', meds: meds ? 'yes' : 'no' }), ctx: { meal: 'lunch', text: t } }), {}); return !!(pl.reply && pl.reply.status === 'refer' && pl.reply.urgent); };
+  for (const t of ['chest is paining', 'my chest is paining since morning', 'sine me dard ho raha hai', 'feeling shaky and sweaty', 'shaky and sweaty', 'dizzy and confused', 'left arm pain', 'pain in my left arm', 'gasping for breath'])
+    for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true]) add('Found words (safety audit of 9dd1b13): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
+  for (const t of ['glimepiride', 'metformin with dinner?', 'gliclazide 80', 'sweaty after the gym, light dinner', 'a shaky table at the dhaba'])
+    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`); }
+
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
 for (const kind of ['meals', 'rescue', 'log']) {
@@ -310,7 +346,7 @@ const SUPP = L.addedFromReports.supplement.concat(HO.supplement);
 for (const t of SUPP) {
   add('S9 plate (tag)', !plateOffered({}, withItem(cap(t), ['supplement'])).ok, `"${t}" tagged supplement was offered`);
   add('S9 one-tap (tag)', !Object.keys(tuneOut({}, 'lunch', { protein: NOTE('Add ' + t + ' after the meal.', ['supplement']) }).alchemy || {}).length, `one-tap "${t}" was offered`); }
-for (const t of L.addedFromReports.supplement.concat(['Protinex shake', 'Ensure plus', 'iron pills', 'a vitamin C tablet', 'Horlicks', 'spirulina'])) {
+for (const t of (L.supplement || []).concat(L.addedFromReports.supplement, ['Protinex shake', 'Ensure plus', 'iron pills', 'a vitamin C tablet', 'Horlicks', 'spirulina'])) {
   add('S9 word net (lying tag)', !plateOffered({}, withItem(cap(t), ['dairy'])).ok, `"${t}" tagged dairy (no supplement tag) was offered`);
   const r = rescueOut({}, 'Dal rice', { name: 'Dal rice' }, [{ title: 'Have ' + t + ' after the meal', kind: 'sequence', contains: ['dairy'], deltaKcal: 60, deltaProtein: 8, deltaCarbs: 6, deltaFats: 1, deltaFiber: 0 }, WALK]);
   add('S9 Rescue (word net)', !(r.hacks || []).some(h => h.title.includes(t)), `Rescue move with "${t}" was offered`); }

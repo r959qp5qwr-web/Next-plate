@@ -85,7 +85,8 @@ function fitOf(n,t){
 var MEATW=["chicken","mutton","meat","keema","bacon","ham","sausage","pepperoni","lamb","pork","beef","salami","turkey","goat","kheema","murgh","murg","kozhi","gosht","boti","nihari","paya","kaleji","mangsho","duck","haleem","galouti"];
 var FISHW=["fish","prawn","prawns","shrimp","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","seafood","crab","anchovy","squid","macher","maach","machh","meen","bombil","chingri","chingdi","ilish","hilsa","kekda","mussel","clam","oyster","lobster","octopus","machli","machhli","macchi","machher","jhinga","jheenga","kolambi","chemmeen","nethili","bhetki","kingfish","catfish","shellfish","karimeen"];
 var NONVEG=MEATW.concat(FISHW);   /* regional names (safety invariants S2, 15 Nov) */
-var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo","mutta","dimer","motte","guddu","omlet","anday"];
+var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo","mutta","dimer","motte","guddu","omlet","anday",
+  "dim sheddo","dim sheddho","dim shorshe","dim poshto","dim dalna"];   /* the Bengali egg dishes the safety audit of 9dd1b13 found in the recorded replies (D1, fix-r13); "dim" alone, "dim sum" and "dimly" are not egg */
 var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam","makhani","dal makhani","rasgulla","gulab jamun","kalakand","ghi","panir","chhach","mishti doi","milkshake","custard","ras malai","rabdi","phirni","peda","sandesh"];
 var ONIONW=["onion","onions","garlic","shallot","leek","spring onion","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","ulli","scallion","scallions",
   "pyaza","lasooni","piyaji"];   /* onion forms of listed words (safety audit of b4633dd, backlog head): "Bhindi do pyaza", "Lasooni palak", "Piyaji" */
@@ -94,14 +95,28 @@ var JAINW=ONIONW.concat(ROOTW);
 var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds","walnut","walnuts","cashew","cashews","pistachio","pistachios","hazelnut","pecan","groundnut","mungfali","moongphali","kaju","badam","pista","akhrot","shengdana","shingdana","chironji","badaam","moongfali","cashewnut","cashewnuts","kajoo","singdana","palli","chikki","kadalai mittai"],   /* chikki: peanut brittle by default (safety audit of b4633dd, backlog head) */
   wheat:["wheat","atta","roti","phulka","chapati","naan","paratha","dalia","broken wheat","bread","toast","khakhra","semolina","suji","rava","maida","pasta","noodles","noodle","farro","freekeh","couscous","bulgur","seitan","sourdough","pita","tortilla","soba","fulka","chapathi","chappati","rotli","parotta","porotta","kulcha","puri","poori","luchi","bhatura","thepla","poli","puran poli","baati","litti","lapsi","upma","sooji","sheera","sevai","seviyan","vermicelli","pav","pao","bun","rusk","mathri","samosa","kachori","biscuit","momos","momo","pizza","spaghetti","chowmein","dhokli","kesari","parantha","rawa","daliya","chapatti","bhature","kulche","phulke","maggi","burger","gehun","gehu","gehoon",
     /* Hindi plurals the S8 count list knows (safety audit of b4633dd, backlog head): "Do parathe", "Samose", "Dal bati" */
-    "parathe","paranthe","rotiyaan","chapatiyan","puriyan","samose","theple","rotiyon","puriyon","bati","luchchi"],
+    "parathe","paranthe","rotiyaan","chapatiyan","puriyan","samose","theple","rotiyon","puriyon","bati","luchchi",
+    /* a wrap is a wheat flatbread by default (safety audit of 9dd1b13, backlog head: "Paneer Tikka Wrap", "Soya Bhurji Wrap"); no recorded name
+       holds a lettuce wrap, so "Lettuce wrap" reads as wheat too (fail closed, fix-r13) */
+    "wrap"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
 var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi",
-  "sweet lassi","mango lassi","mango shake"];   /* sweet drinks (safety audit of b4633dd, backlog head) */
+  "sweet lassi","mango lassi","mango shake",   /* sweet drinks (safety audit of b4633dd, backlog head) */
+  /* sweet drinks and sweets with the tag left off (safety audit of 9dd1b13, backlog; fix-r13): a milkshake, a fruit shake or smoothie, thandai,
+     rose or badam milk, sweet pongal, shakkarpara, puran poli. "Shake" alone is not listed: the recorded notes use the verb ("Shake sattu in
+     cool water") */
+  "milkshake","banana shake","date shake","dates shake","strawberry shake","chikoo shake","chiku shake","fruit shake","thick shake","thickshake",
+  "smoothie","thandai","rose milk","badam milk","sweet pongal","shakkarpara","puran poli"];
 var SALTY=["pickle","achar","achaar","papad","papadum","papadam","appalam","namkeen","chips","chip","soy sauce","bhujia","farsan","pickled","avakaya","oorugai","thokku","sev","mixture","chakli","murukku","chivda","pappadam","pappad","papads","wafers","wafer","kurkure"];
 /* D2: no supplements, powders, tablets or doses (S9). Brands and forms that are only a supplement; "vitamin", "omega 3" and "drops" alone
    also name food ("lemon has vitamin C", "the starch drops"), so they count in a supplement phrase. The declared "supplement" tag is the main check. */
-var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey","protinex","ensure plus","ensure powder","ensure shake","glass of ensure","glucerna","horlicks","bournvita","herbalife","spirulina","moringa powder","ashwagandha","omega 3 capsule","omega 3 capsules","omega-3 capsules","omega 3 supplement","vitamin pill","vitamin pills","vitamin tablet","vitamin drops","vitamin gummies","vitamin d drops","vitamin c tablet","vitamin supplement","pill","pills","iron drops","oral drops","metamucil","softgel","softgels","sachet"];
+var SUPPW=["supplement","supplements","capsule","capsules","tablet","tablets","whey protein","whey isolate","whey powder","protein powder","protein shake","psyllium","isabgol","collagen","creatine","multivitamin","magnesium","zinc","vitamin d3","vitamin b12","omega-3 capsule","fish oil","bcaa","pre-workout","electrolyte powder","melatonin","l-theanine","coq10","peptopro","enzymes","probiotic capsule","protein scoop","scoop of protein","scoop of whey","protinex","ensure plus","ensure powder","ensure shake","glass of ensure","glucerna","horlicks","bournvita","herbalife","spirulina","moringa powder","ashwagandha","omega 3 capsule","omega 3 capsules","omega-3 capsules","omega 3 supplement","vitamin pill","vitamin pills","vitamin tablet","vitamin drops","vitamin gummies","vitamin d drops","vitamin c tablet","vitamin supplement","pill","pills","iron drops","oral drops","metamucil","softgel","softgels","sachet",
+  /* the supplements the safety audit of 9dd1b13 found shown with a "plain" tag (backlog, D1; fix-r13) */
+  "multivitamins","complan","whey","whey shake","protein bar","protein bars","protein isolate","electral","ors","becosules","shelcal","zincovit",
+  "biotin","folic acid","pediasure","boost drink","ensure milk","ensure drink","tang drink"];
+/* brand names that are also English words ("ensure", "boost", "tang") count as a supplement only as a whole name or before a drink word,
+   as the recorded notes use the words ("Ensure thorough boiling", "boost the protein", "enhances the tang") */
+var SUPPNAME=/^(?:an?\s+|a\s+glass\s+of\s+)?(?:ensure|boost|tang)(?:\s+(?:milk|drink|shake|powder))?$/;
 /* invented precision and medical claims ([S] "+2000 % curcumin", "mTOR", "mg/dL") */
 var CLAIM=/%|\bmg\s*\/\s*dl\b|\bmtor\b|\bleucine\b|\bglut4\b|\bcortisol\b|\bmelatonin\b|\binsulin\b|\bdetox|\bcures?\b|\bcured\b|\btreat(ment|ing|ed)\b|\btreats?\s+(your|the|it|this|that|diabetes|anaemia|anemia|deficienc|blood|sugar|pain|weight|pcos|thyroid)|\bguarantee|\bheal(s|ing)?\b|\bhrv\b|\bmyofibrillar\b|\binflammat|\bimmun/i;
 var NEG=/\b(no|without|skip the|skip|hold the|minus|instead of|swap out|leave out)\s+(?!(?:added|extra|more|much)\b)[a-z]+(\s+or\s+[a-z]+)?|\b[a-z]+-free\b/g;   /* "no oil and ghee" still shows ghee; "no extra ghee" and "no added sugar" mean some is there (safety invariant S1, 15 Nov) */
@@ -523,6 +538,26 @@ function badWords(p){
   if(p.bp)bad=bad.concat(SALTY);
   return bad;
 }
+/* Fail closed (fix-r13; safety audit of 9dd1b13, B1, the fourth fail of one shape: a rule that took a listed word off let the word next
+   to it through). A rule below that takes a listed word off, or reads it as another food, does so only when the word next to its phrase,
+   before and after, is in that rule's own allowed set, a short list written out. The neighbour is read in the same text: the nearest run of
+   characters with no space in it. Only the start or end of the text, or a comma, semicolon, colon, full stop, question or exclamation mark
+   or bracket, counts as nothing; any other mark (a hyphen, slash, "&", "+", the "~" a negated word leaves) is a neighbour, and no set holds
+   one. Each set has two kinds of word: a joining word, which ends the reading ("with" in "Cucumber with lemon juice"), and a word that
+   describes the phrase ("fresh", "plain", "warm", a count), after which the next word out is read the same way, so "Watermelon fresh lime
+   juice", "Mango brown rice cakes" and "Multigrain small bajra roti" keep their listed word (fix-r13; the advisor's review). */
+var NBSTOP=/[,;:.?!()\[\]]/;
+/* the token next to position i, before it (back) or after it: its text, where the reading goes on from, and whether a stop mark closes it */
+function nbTok(s,i,back){var r,t;if(back){var h=s.slice(0,i).replace(/\s+$/,"");if(!h)return null;var m=/\S+$/.exec(h);r=m[0];if(NBSTOP.test(r.charAt(r.length-1)))return null;
+    t=r.replace(/^[,;:.?!()\[\]]+/,"");return {t:t,at:m.index,edge:t.length<r.length};}
+  var k=s.slice(i),g=k.replace(/^\s+/,"");if(!g)return null;r=/^\S+/.exec(g)[0];if(NBSTOP.test(r.charAt(0)))return null;t=r.replace(/[,;:.?!()\[\]]+$/,"");
+  return {t:t,at:i+(k.length-g.length)+r.length,edge:t.length<r.length};}
+function nbSet(join,mod){return {join:new RegExp("^(?:"+join+")$"),mod:mod?new RegExp("^(?:"+mod+")$"):null};}
+function nbWalk(s,i,set,back){for(var n=0;n<8;n++){var r=nbTok(s,i,back);if(!r||set.join.test(r.t))return true;if(!set.mod||!set.mod.test(r.t))return false;if(r.edge)return true;i=r.at;}return false;}
+function nbFits(s,i,j,pre,post){return nbWalk(s,i,pre,true)&&nbWalk(s,j,post,false);}
+/* a rice cake is the savoury round only with nothing, "plain", "puffed" or "brown" before it, and nothing, "and" or "with" after it:
+   "Mango rice cakes", "Coconut rice cakes" and "Steamed rice cakes" keep their "cake" (fix-r13; safety audit of 9dd1b13, B1) */
+var RCAKEPRE=nbSet("","plain|puffed|brown|\\d+|a|one|two"),RCAKEPOST=nbSet("and|with");
 /* plant milks, creams, curds and nut butters: each a named product, never a plant word before any dairy word (safety audit of 530a503,
    B1: the old rule read any of eight plant words before any of six dairy words as a plant food, so "Brown rice curd rice" lost its "curd"
    for a vegan client). A product found is read as "<its first word> plant", so its own word still counts ("Almond milk" for a client who
@@ -536,34 +571,61 @@ function badWords(p){
 var PLANTW=["coconut milk","almond milk","oat milk","soy milk","soya milk","rice milk","cashew milk","coconut cream","cashew cream","peanut butter","almond butter",
   "soy curd","soya curd","coconut yogurt","coconut yoghurt","soy yogurt","soya yogurt"];
 /* the word before is taken with the match, as no expression here looks behind (Safari before 16.4) */
-var PLANT=new RegExp("(\\b[a-z]+\\s+)?\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b(\\s+(?:masala|curry|gravy|rice|korma|makhani)\\b)?","g");
-var PLANTJOIN=/^(?:with|in|and|of|on|plus|or|using|a|an|the)\s+$/;
-/* "rice" (and "chawal") also ends a rice dish ("brown rice", "jeera rice", "curd rice", "dal chawal"), so a rice product is one only when
-   nothing but a joining word comes before it (fix-r12, the carve-outs read with the frame grid) */
-function riceTail(w,pre){return /^(?:rice|chawal)$/.test(w)&&!!pre&&!PLANTJOIN.test(pre);}
-function plantOut(t){return t.replace(PLANT,function(m,pre,prod,dish){var w=prod.split(/\s+/);
-  if(dish&&/^(?:cream|butter)$/.test(w[1]))return m;
-  if(riceTail(w[0],pre))return m;
-  return (pre||"")+w[0]+" plant"+(dish||"");});}
+var PLANT=new RegExp("\\b("+PLANTW.join("|").replace(/ /g,"\\s+")+")\\b","g");
+/* fail closed (fix-r13): a product is one only with nothing, a joining word, an article or "plain", "light", "thin", "fresh" or
+   "unsweetened" before it, so "Dal coconut milk", "Jeera rice milk", "Brown rice milk rice" and "Rice and almond milk" keep their dairy word;
+   after a milk, curd or yogurt only nothing, "with", "and", "plain", "strained" or a dish it is cooked into (curry, rice, korma, gravy, masala,
+   porridge, stew); after a cream or nut butter only nothing, "with", "and" or "toast" ("Peanut butter curry", "Cashew cream masala" read as
+   dairy, the coordinator's default of fix-r12) */
+var PLANTPRE=nbSet("with|in|of|on|plus|or|using","a|an|the|plain|light|thin|fresh|unsweetened"),PLANTPOSTM=nbSet("with|and|plain|strained|curry|rice|korma|gravy|masala|porridge|stew"),PLANTPOSTB=nbSet("with|and|toast");
+function plantOut(t){return t.replace(PLANT,function(m,prod,i,s){var w=prod.split(/\s+/);
+  return nbFits(s,i,i+m.length,PLANTPRE,/^(?:cream|butter)$/.test(w[1])?PLANTPOSTB:PLANTPOSTM)?w[0]+" plant":m;});}
 /* a listed food also matches its plural ("phulkas", "papads", "pastries"); a flatbread named after a millet or rice is not wheat (safety invariants S1-S4, 15 Nov) */
 var FOODRX={};function foodRx(list){var k=list.join("|");if(!FOODRX[k])FOODRX[k]=new RegExp("\\b("+list.map(function(w){var e=w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");return /[^aeiou]y$/.test(w)?e+"|"+e.slice(0,-1)+"ies":e+"(?:e?s)?";}).join("|")+")\\b","i");return FOODRX[k];}   /* Hindi plurals in -e (phulke, kulche, bhature) are listed as words */
-/* a rice or chawal flatbread is one only when the rice does not end another dish: "Dal chawal roti", "Jeera rice paratha" and "Brown rice
-   roti" read as wheat (fix-r12) */
-var MILLETBREAD=/(\b[a-z]+\s+)?\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)((?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*)\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
-function milletOut(t){return t.replace(MILLETBREAD,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" flatbread";});}
+/* a millet or rice flatbread is one only with an allowed word next to it (fix-r13, fail closed): before a millet one, nothing, a joining word,
+   a count, "millet" ("Finger millet ragi roti") or a way it is made or served (warm, hot, small, soft, crisp, toasted, roasted, fresh,
+   rustic, plain, cooked, ready, handmade, hand-patted, thin) or the two verbs of the recorded one-tap notes ("downsize", "reduce"); before a
+   rice one only nothing, a joining word, an article or a count, as "rice" also ends a rice dish ("Dal chawal roti", "Jeera rice paratha",
+   "Brown rice roti" read as wheat). After either, nothing, "and", "with", "without", "alongside", "cracker", "to" or "weight" (the notes).
+   "Multigrain bajra roti", "Dal and jowar roti" and "Methi-bajra roti" keep their wheat word. */
+var FLATPRE=nbSet("with|on|alongside","a|an|the|one|two|\\d+|millet|finger|pearl|warm|hot|small|soft|crisp|toasted|roasted|fresh|rustic|plain|cooked|ready|handmade|hand-patted|thin|downsize|reduce"),
+  FLATPRER=nbSet("with|on|alongside","a|an|the|one|two|\\d+"),FLATPOST=nbSet("and|with|without|alongside|crackers?|to|weight");
+var MILLETBREAD=/\b(bajra|bajre|bajri|jowar|jwari|makki|makai|maize|ragi|nachni|rajgira|kuttu|singhara|singhare|rice|chawal|akki)((?:\s+(?:ki|di|ka|ke|da|de|atta|flour))*)\s+(rotis?|rotti|rotlas?|rotlis?|bhakris?|chapatis?|parathas?|puris?|thalipeeth)\b/g;
+function milletOut(t){return t.replace(MILLETBREAD,function(m,w,x,y,i,s){return nbFits(s,i,i+m.length,/^(?:rice|chawal|akki)$/.test(w)?FLATPRER:FLATPRE,FLATPOST)?w+" flatbread":m;});}
 /* good food a listed word sits inside: soya or mushroom keema, sol kadhi, butter beans, rice noodles, jowar bread, idli rice cakes, sugar snap
    peas (review of the test evidence, 15 Nov) */
 /* (fix-r12, the frame grid: "Chana keema" and "Rajma keema" are a meat keema with chana or rajma, so they read as meat; "Garlic butter
    beans" is beans in garlic butter, so butter beans are the bean only with nothing but a joining word before them; "Dal rice noodles",
    "Fried rice noodles" and "Jeera rice toast" keep their wheat word; "Sweet rice cakes" are a sweet) */
-function notFood(t){return t.replace(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(keema|kheema)\b/g,"$1 mince").replace(/\bsol\s+kadhi\b/g,"sol curry")
-  .replace(/(\b[a-z]+\s+)?\bbutter\s+beans?\b/g,function(m,pre){return pre&&!PLANTJOIN.test(pre)?m:(pre||"")+"lima beans";})
-  .replace(/(\b[a-z]+\s+)?\b(rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(noodles?|vermicelli|pasta|sevai)\b/g,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" strands";})
-  .replace(/(\b[a-z]+\s+)?\b(jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(bread|breads|toast)\b/g,function(m,pre,w){return riceTail(w,pre)?m:(pre||"")+w+" loaf";})
-  .replace(/(\b[a-z]+\s+)?\brice\s+cakes?\b/g,function(m,pre){return /^(?:sweet|sweetened)\s+$/.test(pre||"")?m:(pre||"")+"rice rounds";}).replace(/\bsugar\s+snap\b/g,"snap");}
-/* "sweet lime juice" is mosambi juice, a juice: it keeps its word (fix-r12) */
-function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(plantOut(milletOut(notFood(norm(text).toLowerCase())).replace(NEG," ")).replace(/(\b[a-z]+\s+)?\b(lemon|lime|nimbu|amla)\s+juice\b/g,function(m,pre,w){return /^sweet\s+$/.test(pre||"")?m:(pre||"")+w;}));}
-function supp(text){return wordRx(SUPPW).test(norm(text).toLowerCase());}
+/* fail closed (fix-r13): each reading holds only with an allowed word next to its phrase, before and after; any other word keeps the listed
+   word ("Dal soya keema", "Lauki mushroom keema", "Dal ragi noodles", "Multigrain jowar bread", "Glazed sugar snap peas" keep theirs) */
+var KEEMAPRE=nbSet("with"),KEEMAPOST=nbSet("matar|mutter|peas|masala|curry|with|and"),SOLPRE=nbSet("with"),SOLPOST=nbSet("with|and|rice"),
+  BBPRE=nbSet("with|in","a|the"),BBPOST=nbSet("with|and|curry|salad|sabzi|masala"),NOODPRE=nbSet("with|in","plain|thin|flat"),NOODPOST=nbSet("with|and|salad|soup|bowl|stir"),
+  LOAFPRE=nbSet("with","plain|soft"),LOAFPOST=nbSet("with|and"),SNAPPRE=nbSet("with","fresh|steamed|sauteed|blanched|fried|stir"),SNAPPOST=nbSet("peas?");
+function nbRead(rx,pre,post,to){return function(t){return t.replace(rx,function(m){var i=arguments[arguments.length-2],s=arguments[arguments.length-1];return nbFits(s,i,i+m.length,pre,post)?to(m):m;});};}
+var NOTFOOD=[nbRead(/\b(soya|soy|mushroom|kathal|jackfruit|veg|vegetable|paneer|tofu|nutrela)\s+(?:keema|kheema)\b/g,KEEMAPRE,KEEMAPOST,function(m){return m.split(/\s+/)[0]+" mince";}),
+  nbRead(/\bsol\s+kadhi\b/g,SOLPRE,SOLPOST,function(){return "sol curry";}),
+  nbRead(/\bbutter\s+beans?\b/g,BBPRE,BBPOST,function(){return "lima beans";}),
+  nbRead(/\b(?:rice|ragi|millet|glass|jowar|konjac|shirataki)\s+(?:noodles?|vermicelli|pasta|sevai)\b/g,NOODPRE,NOODPOST,function(m){return m.split(/\s+/)[0]+" strands";}),
+  nbRead(/\b(?:jowar|bajra|ragi|millet|rice|gluten[\s-]free)\s+(?:bread|breads|toast)\b/g,LOAFPRE,LOAFPOST,function(m){return m.replace(/\s+(?:bread|breads|toast)$/,"")+" loaf";}),
+  nbRead(/\brice\s+cakes?\b/g,RCAKEPRE,RCAKEPOST,function(){return "rice rounds";}),
+  nbRead(/\bsugar\s+snap\b/g,SNAPPRE,SNAPPOST,function(){return "snap";})];
+function notFood(t){return NOTFOOD.reduce(function(x,f){return f(x);},t);}
+/* lemon, lime, nimbu or amla juice is a dressing, not a drink, only with nothing, "fresh", "tangy", a spoon measure or "with" before it, and
+   nothing, "and", "with", "squeeze", "squeezed" or "dressing" after it: "Watermelon lime juice", "Orange and lemon juice", "Sweet-lime juice"
+   and "No sugar lime juice" keep their "juice" (fix-r13; safety audit of 9dd1b13, B1). A glass, cup or mug of it is a drink, so those
+   measures are not in the set. A negated word leaves a mark ("~") in its place, so the word next to the juice is never read as nothing. */
+var JUICEPRE=nbSet("with","fresh|tangy|tsps?|tbsps?|teaspoons?|tablespoons?|spoons?|spoonfuls?|\\d+(?:\\.\\d+)?|a|one|half"),JUICEPOST=nbSet("and|with|squeeze|squeezed|dressing");
+/* a word negated alone ("Phulka without ghee", "no sugar") is left out (S1) only with an allowed word next to the negation (fix-r13, fail
+   closed): before it, nothing, a joining word, a way it is made or served, or one of the dish words the recorded replies put there (roti,
+   phulka, chapati, paratha, curry, dal, sabzi, chutney, salad, raita, greens, ghugni, bhaja, paste, chana, milk, tea, coffee, dish, dry);
+   after the negated word, nothing, "and", "with" or "but". A word that turns the negation round ("don't skip ghee", "never without butter",
+   "can't do without ghee") is in no set, so the listed word stands; so does one after it ("no ghee rice"). After "X-free" the word is the
+   food it describes, from a short list (cake, biscuit, cookie, bread, mayo, mayonnaise, omelette, chutney, "version"): "Egg-free cake" is
+   left free of egg, "Egg-free paneer" and "Sugar-free shake" keep their listed word. */
+var NEGNBPRE=nbSet("with|and|but|rotis?|phulkas?|chapatis?|parathas?|flatbread|curry|dal|sabzi|chutney|salad|raita|greens|ghugni|bhaja|paste|chana|milk|tea|coffee|dish|dry","served|cooked|made|prepared|plain|warm|small"),NEGNBPOST=nbSet("and|with|but"),FREENBPOST=nbSet("and|with|but|cakes?|biscuits?|cookies?|bread|mayo|mayonnaise|omelettes?|chutney|version");
+function crosses(text,p){var b=badWords(p);return !!b.length&&foodRx(b).test(plantOut(milletOut(notFood(norm(text).toLowerCase())).replace(NEG,function(m){var i=arguments[arguments.length-2],s=arguments[arguments.length-1];return nbFits(s,i,i+m.length,NEGNBPRE,/-free$/.test(m)?FREENBPOST:NEGNBPOST)?" ~ ":m;})).replace(/\b(lemon|lime|nimbu|amla)\s+juice\b/g,function(m,w,i,s){return nbFits(s,i,i+m.length,JUICEPRE,JUICEPOST)?w:m;}));}
+function supp(text){var t=norm(text).toLowerCase();return wordRx(SUPPW).test(t)||t.split(/\s*[;,()]\s*/).some(function(x){return SUPPNAME.test(x.replace(/[.!?]+$/,"").trim());});}
 
 /* ---------- declared contents (owner, 15 Nov, option survey: "Declared contents (Recommended)"). The model tags every dish, plate item,
    swap, one-tap change, menu order and its side, Rescue dish and Rescue move from this fixed list, and code drops anything whose tags break
@@ -635,18 +697,18 @@ var CNTNAMEW="(?![\\s-]+(?:spice|bean|pot|layer|cheese|jewel|star|season|seasons
    taken off alone (cntOff, below). */
 var CNTTENS="(?:twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)";
 var CNTUNIT="(?:one|two|three|four|five|six|seven|eight|nine)";
-var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNTUNIT+"\\b))|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\\b(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?=[\\s-]+[a-z])(?![\\s-]+(?:"+CNTTENS+"|hundred)\\b)"+CNTNAMEW+")-?","gi");
+var CNTBIG=new RegExp("\\b(?:"+CNTTENS+"(?:[\\s-]+"+CNTUNIT+"\\b|(?![\\s-]+"+CNTUNIT+"\\b))|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|hundred)\\b(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+(?:of|bhar)\\b)?|(?=[\\s-]+[a-z])(?![\\s-]+(?:"+CNTTENS+"|hundred)\\b)"+CNTNAMEW+")-?","gi");
 /* a number word right after a tens word is part of that number ("sixty five", "fifty fifty") and is not taken off alone. Read from the text
    before the match, with no look-behind: older phone browsers (Safari before 16.4) reject it and would lose the whole script. */
 var CNTTENSBEFORE=new RegExp("\\b"+CNTTENS+"[\\s-]+$","i");
 function cntOff(h,rx){return h.replace(rx,function(m){var at=arguments[arguments.length-2],str=arguments[arguments.length-1];return CNTTENSBEFORE.test(str.slice(0,at))?m:" ";});}
 /* a range of number words is one count ("Three to four idlis", "two or three rotis"; safety audit of 530a503, c1: "To idlis" before) */
 var CNTNUMW="(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)";
-var CNTWORD=new RegExp("\\b(?:half\\s+a\\s+dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|"+CNTNUMW+"(?:[\\s-]+(?:to|or)[\\s-]+"+CNTNUMW+"\\b|-"+CNTNUMW+"\\b)?)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+of\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTNAMEW+")-?","gi");
+var CNTWORD=new RegExp("\\b(?:half\\s+(?:a\\s+)?dozen|a\\s+(?:dozen|couple\\s+of|pair\\s+of)|dozen|couple\\s+of|pair\\s+of|"+CNTNUMW+"(?:[\\s-]+(?:to|or)[\\s-]+"+CNTNUMW+"\\b|-"+CNTNUMW+"\\b)?)\\b(?:\\s+and\\s+a\\s+half)?(?:[\\s-]+(?:thirds?|fourths?|quarters?)(?:\\s+(?:of|bhar)\\b)?)?(?:(?:\\s+|-)(?:x\\s+)?(?:(?:small|medium|large|big|full|heaped|level)\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+(?:of|bhar)\\b)?|"+CNTNAMEW+")-?","gi");
 /* the Hindi numbers, with the spellings "dus", "gyarah" and "barah" (safety audit of ba4d8dc, M1) */
 var CNTHINDI="ek|do|teen|char|chaar|panch|paanch|chhe|chhah|chha|che|saat|aath|nau|das|dus|gyarah|gyaarah|barah|baarah|aadha|adha|aadhi|adhi|dedh|dhai|dhaai";
-var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+CNTAHEAD+")","gi");
-var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+of\\s+","gi");
+var CNTQTY=new RegExp("\\b(?:half|single|quarter|"+CNTHINDI+")(?![\\s-]+(?:boiled|boil|fry|fried|cooked)\\b)(?:\\s+(?:an?|whole|full|small|medium|large|big))?(?:\\s+"+CNTMEAS+"\\b\\.?(?:\\s+(?:of|bhar)\\b)?|"+CNTAHEAD+")","gi");
+var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small|medium|large|big|full|half|heaped|level)\\s+)?"+CNTMEAS+"\\s+(?:of|bhar)\\s+","gi");
 /* a measure word with no number that opens a name is a household measure too ("Glass buttermilk", "Bowl dal"; Critic round 40, finding 3;
    "Katora dal", "Chammach ghee", "Tsp ghee", "Spoon ghee", "Pinch salt", "Pinch of salt": safety audit of b4633dd;
    a pinch inside a name is left to the name rules);
@@ -655,8 +717,12 @@ var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small
    name, so none can be a word the list does not hold. Others stay: "Vati dal khaman", "Portion control salad", "Gram flour chilla", "No
    onion dal"; "Kg rice" and "Gm dal" are watched */
 var MEASOPEN=["glass(?:es)?","bowls?","katori\\w*","katoree\\w*","katora\\w*","katore\\w*","plates?","tumblers?","handfuls?","fistfuls?","pinch(?:es)?","cups?","mugs?",
-  "chammach\\w*","chamach\\w*","tsps?","tbsps?","teaspoons?","tablespoons?","spoons?","spoonfuls?"];
-var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASOPEN.indexOf(w)>=0;}).join("|")+")(?:\\s+of)?\\s+(?!(?:cakes?|noodles|vermicelli)\\b)(?=[a-z])","i");
+  "chammach\\w*","chamach\\w*","tsps?","tbsps?","teaspoons?","tablespoons?","spoons?","spoonfuls?",
+  /* the measures the safety audit of 9dd1b13 found opening a name ("Bowlful dal", "Serving dal", "Karchi dal", "Plateful rice", "Scoop dal",
+     "Pieces chicken", "Kilo chicken", "Ml milk"; fix-r13); "Portion control salad" keeps its name (below) */
+  "bowlfuls?","platefuls?","glassfuls?","cupfuls?","mugfuls?","servings?","portions?","helpings?","scoops?","pcs?","pieces?","ladles?","ladlefuls?",
+  "karc?hhi\\w*","karchi","mutth?i\\w*","muthi","kilos?","litres?","liters?","ml"];
+var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASOPEN.indexOf(w)>=0;}).join("|")+")(?:\\s+(?:of|bhar))?\\s+(?!(?:cakes?|noodles|vermicelli|control)\\b)(?=[a-z])","i");
 /* a measure word that ends a name, with no number before it, goes the same way ("Paneer portion" shows "Paneer", "Ghee teaspoon" "Ghee",
    "Salt pinch" "Salt"; fix-r12): only the words that never end a food's own name. A bowl, plate, cup, glass, mug, slice, piece, spoon or
    tumbler stays ("Kala chana chaat bowl", "Curd cup", "Coffee mug", "Cucumber slices"), and so do vati ("Dal vati") and katori, whose own
@@ -665,14 +731,14 @@ var MEASENDW=["portions?","servings?","helpings?","tsps?","tbsps?","teaspoons?",
   "pinch(?:es)?","scoops?","ladles?","ladlefuls?","bowlfuls?","cupfuls?","glassfuls?","platefuls?","mugfuls?","tumblerfuls?","chammach\\w*","chamach\\w*","chammuch",
   "mutth?i\\w*","muthi","karc?hhi\\w*","karchi","kgs?","kilos?","kilograms?","litres?","liters?","ltrs?","ml"];
 var MEASEND=new RegExp("(\\b[a-z]+)\\s+(?:"+MEASW.filter(function(w){return MEASENDW.indexOf(w)>=0;}).join("|")+")$","i");
-var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
+var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+(?:of|bhar)\\b)?","gi");
 /* katori in every form ("katori", "katoris", "katoriyan", "katoree", and "katora", "katore": safety audit of b4633dd) is a household measure (S8) */
 var KATORI=/\b(?:katori|katoree|katora|katore)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 /* the digit count takes the measure after it from the one list, with a size before it and an "of" after it ("1 tsp of ghee" goes whole, so
    no "with of" is left), and a range ("2 to 3", "2-3", "2 or 3"; fix-r12) */
 /* (a size with no measure after it goes only as small, medium or large, as before: "1 full fat curd" keeps "Full fat curd") */
-var DIGMEAS="(?:(?:"+MEASSIZE+"\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?:small|medium|large)\\b)";
+var DIGMEAS="(?:(?:"+MEASSIZE+"\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+(?:of|bhar)\\b)?|(?:small|medium|large)\\b)";
 var DIGNUM="\\d+(?:[.\\/\\u2044]\\d+)?";
 var DIGALL=new RegExp("\\b"+DIGNUM+"(?:\\s*(?:-|to|or)\\s*"+DIGNUM+")?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
 /* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Short keep-list (Recommended)"): "Keep a number only if it is
@@ -688,7 +754,7 @@ var DIGALL=new RegExp("\\b"+DIGNUM+"(?:\\s*(?:-|to|or)\\s*"+DIGNUM+")?\\s*(?:x\\
    - A marked price goes whole first, with its mark ("- Rs 240", "Rs. 240", "\u20B9240", "240/-", ": 240", "@ 240"). */
 var MENUKEEP=/^(?:chicken|gobi|gobhi|paneer|mushroom|fish|prawns?|mutton|baby\s+corn)\s+65\b|\b7[\s-]*up\b/gi;
 var MENUMEAS="(?:(?:pcs?|pieces?|nos?|bowls?|cups?|glass(?:es)?|katori\\w*|plates?|plts?|tbsp|tsp|spoons?|ladles?|slices?|small|medium|large|g|gm|grams?|ml|servings?|portions?|kgs?|kilos?|ltrs?|litres?|liters?|l|handis?|persons?|people|pax|inch(?:es)?)\\b\\.?)";
-var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+of\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
+var MENUCOUNT=new RegExp("\\b\\d+\\s+in\\s+\\d+\\b|\\b\\d+(?:[.\\/\\u2044]\\d+)?\\s*(?:x\\s+)?"+MENUMEAS+"(?:\\s+(?:of|bhar)\\b)?|\\b\\d+(?:[.\\/\\u2044]\\d+)?(?:\\s*x\\b)?|\\bx\\s*\\d+\\b","gi");
 /* a count before a last word the name already holds goes with that word ("Chole Bhature 2 Bhature 120" shows "Chole Bhature"; "Paneer Butter
    Masala with 2 Butter Naan" keeps its "Butter"; safety audit c2) */
 function menuCount(h){var keep=[],m;MENUKEEP.lastIndex=0;while((m=MENUKEEP.exec(h)))keep.push([m.index,m.index+m[0].length]);
@@ -827,7 +893,7 @@ function checkMeal(m,p){
   var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
   function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
       var mo=quoted(s&&s.made_of,40),rf=rawName(s&&s.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,made_of:isGrainMaterial(mo)?mo:"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
+    .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" ; "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
       !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.rawFood)&&s.grams>=30))&&
       /* round 13: a protein swap takes the place of the first protein item. It may not take the place of the declared grain item, for any
@@ -843,7 +909,7 @@ function checkMeal(m,p){
     var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
     var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=a.add_item==null||a.add_item===""?"":rawName(a.add_item),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
     if((rawItem&&!item)||(item&&!ig))return;
-    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" "+rawItem,p)||supp(raw+" "+rawItem))return;
+    if(contentsBad(a.contains,item||raw,p)||crosses(raw+" ; "+rawItem,p)||supp(raw+" ; "+rawItem))return;
     if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
     x.contains=tagList(a.contains);
     CUR_SLOT=p.slot||"";var kg=dg&&after!=null&&after>=Math.max(30,dg.grams*0.5)&&keepsGrain(raw,n.carbs,x.deltaCarbs);CUR_SLOT="";

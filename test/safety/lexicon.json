@@ -1,5 +1,5 @@
 {
- "_note": "Test vocabulary for docs/SAFETY-INVARIANTS.md, in two parts. \"known\": names that may be copied into the engine's word lists (src/v5/core.js); the word-level checks use them. \"heldout\": names that must NEVER be copied into the engine; test/safety/check.js asserts none appears in src/v5/core.js or src/v6/engine.js, and they must be caught by the declared-contents check (D1), not by the word lists. A held-out name found by a review is not moved into the engine: the tag check is what holds it. Regional names: Hindi, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada, Malayalam, Konkani, Bengali, Odia, Assamese, Kashmiri and North-East usage, with Devanagari and Tamil spellings under \"script\" (caught by the script rule). Coach review welcome.",
+ "_note": "Test vocabulary for docs/SAFETY-INVARIANTS.md, in two parts. \"known\": names that may be copied into the engine's word lists (src/v5/core.js); the word-level checks use them. \"heldout\": names that must NEVER be copied into the engine; test/safety/check.js asserts none appears in src/v5/core.js or src/v6/engine.js, and they must be caught by the declared-contents check (D1), not by the word lists. A held-out name found by a review is not moved into the engine: the tag check is what holds it. One exception (fix-r13, coordinator): the six supplement names the safety audit of 9dd1b13 found shown with a \"plain\" tag (Complan, Biotin, PediaSure, Becosules, Shelcal, Zincovit) moved to known.addedFromReports.supplement and into the engine, under D1 \"Fix found, then watch\"; reversible. The known lists also hold every word of the engine's barred lists and every form of MEASW (fix-r13, m1 and m2), which test/safety/check.js asserts. Regional names: Hindi, Marathi, Gujarati, Punjabi, Tamil, Telugu, Kannada, Malayalam, Konkani, Bengali, Odia, Assamese, Kashmiri and North-East usage, with Devanagari and Tamil spellings under \"script\" (caught by the script rule). Coach review welcome.",
  "known": {
   "wheat": [
    "roti",
@@ -46,7 +46,25 @@
    "pasta",
    "noodles",
    "wheat",
-   "noodle"
+   "noodle",
+   "broken wheat",
+   "farro",
+   "freekeh",
+   "couscous",
+   "bulgur",
+   "seitan",
+   "sourdough",
+   "pita",
+   "tortilla",
+   "soba",
+   "chappati",
+   "porotta",
+   "pao",
+   "biscuit",
+   "kesari",
+   "gehun",
+   "gehu",
+   "gehoon"
   ],
   "nut": [
    "kaju",
@@ -65,7 +83,8 @@
    "chironji",
    "hazelnut",
    "pecan",
-   "nuts"
+   "nuts",
+   "shingdana"
   ],
   "dairy": [
    "dahi",
@@ -101,7 +120,24 @@
    "payasam",
    "cheese",
    "cream",
-   "yogurt"
+   "yogurt",
+   "yoghurt",
+   "kadhi",
+   "labneh",
+   "feta",
+   "halloumi",
+   "tzatziki",
+   "whey",
+   "kefir",
+   "skyr",
+   "cottage cheese",
+   "thair",
+   "tayir",
+   "makkhan",
+   "makhani",
+   "rabdi",
+   "peda",
+   "sandesh"
   ],
   "soya": [
    "soya",
@@ -111,7 +147,11 @@
    "soya chunks",
    "meal maker",
    "tempeh",
-   "edamame"
+   "edamame",
+   "miso",
+   "soybean",
+   "soy sauce",
+   "soy milk"
   ],
   "meat": [
    "chicken",
@@ -147,7 +187,32 @@
    "squid",
    "mussel",
    "clam",
-   "seafood"
+   "seafood",
+   "meat",
+   "bacon",
+   "ham",
+   "sausage",
+   "pepperoni",
+   "lamb",
+   "pork",
+   "beef",
+   "salami",
+   "turkey",
+   "goat",
+   "tuna",
+   "salmon",
+   "rawas",
+   "sardine",
+   "mackerel",
+   "anchovy",
+   "machh",
+   "oyster",
+   "lobster",
+   "octopus",
+   "machhli",
+   "macchi",
+   "machher",
+   "jheenga"
   ],
   "egg": [
    "egg",
@@ -156,7 +221,9 @@
    "muttai",
    "omelette",
    "omelet",
-   "akuri"
+   "akuri",
+   "mayonnaise",
+   "mayo"
   ],
   "jain": [
    "onion",
@@ -180,7 +247,15 @@
    "suran",
    "sweet potato",
    "shakarkandi",
-   "arbi"
+   "arbi",
+   "shallot",
+   "leek",
+   "spring onion",
+   "lahsun",
+   "beet",
+   "jimikand",
+   "shakarkand",
+   "kamal kakdi"
   ],
   "salty": [
    "pickle",
@@ -193,7 +268,10 @@
    "bhujia",
    "farsan",
    "chip",
-   "wafer"
+   "wafer",
+   "papadam",
+   "soy sauce",
+   "mixture"
   ],
   "sweet": [
    "jalebi",
@@ -208,7 +286,38 @@
    "mithai",
    "kheer",
    "payasam",
-   "shrikhand"
+   "shrikhand",
+   "juice",
+   "sugar",
+   "cola",
+   "soft drink",
+   "ice cream",
+   "dessert",
+   "rosogolla",
+   "rasmalai",
+   "peda",
+   "chikki",
+   "sheera",
+   "kesari",
+   "modak",
+   "malpua",
+   "basundi",
+   "rabri",
+   "syrup",
+   "sweetened",
+   "honey",
+   "jaggery",
+   "gur",
+   "tiramisu",
+   "cake",
+   "pastry",
+   "chocolate",
+   "date syrup",
+   "kalakand",
+   "ras malai",
+   "gulabjamun",
+   "mishti doi",
+   "rabdi"
   ],
   "notWheat": [
    "jowar bhakri",
@@ -463,7 +572,8 @@
   "measure": ["pc", "pcs", "piece", "pieces", "nos", "bowl", "bowls", "bowlful", "cup", "cups", "kap", "glass", "glasses", "katori", "katoris", "katoriyan", "katoree", "katora", "katore",
    "plate", "plates", "plateful", "tbsp", "tsp", "tablespoon", "tablespoons", "teaspoon", "teaspoons", "spoon", "spoons", "spoonful", "ladle", "ladles", "slice", "slices", "serving", "servings",
    "portion", "portions", "helping", "scoop", "scoops", "handful", "handfuls", "fistful", "pinch", "mug", "mugs", "tumbler", "tumblers", "chammach", "chamach", "mutthi", "muthi", "karchhi", "karchi",
-   "vati", "vatis", "kg", "kilo", "kilos", "kilogram", "litre", "liter", "ltr", "ml", "g", "gm", "gms", "gram", "grams"],
+   "vati", "vatis", "kg", "kilo", "kilos", "kilogram", "litre", "liter", "ltr", "ml", "g", "gm", "gms", "gram", "grams", "bowlfuls", "cupful", "cupfuls", "kaps", "glassful", "glassfuls", "platefuls", "tbsps", "tsps", "tablespoonful", "tablespoonfuls", "teaspoonful", "teaspoonfuls", "spoonfuls", "ladleful", "ladlefuls", "helpings", "fistfuls", "pinches", "mugful", "mugfuls", "tumblerful", "tumblerfuls", "chammuch", "mutti", "karhhi", "kgs", "kilograms", "litres", "liters", "ltrs"],
+  "supplement": ["supplement", "supplements", "capsule", "capsules", "tablet", "tablets", "whey protein", "whey isolate", "whey powder", "protein powder", "protein shake", "psyllium", "isabgol", "collagen", "creatine", "multivitamin", "magnesium", "zinc", "vitamin d3", "vitamin b12", "omega-3 capsule", "fish oil", "bcaa", "pre-workout", "electrolyte powder", "melatonin", "l-theanine", "coq10", "peptopro", "enzymes", "probiotic capsule", "protein scoop", "scoop of protein", "scoop of whey", "ensure plus", "ensure powder", "ensure shake", "glass of ensure", "omega 3 capsule", "omega-3 capsules", "omega 3 supplement", "vitamin pill", "vitamin pills", "vitamin tablet", "vitamin drops", "vitamin gummies", "vitamin d drops", "vitamin c tablet", "vitamin supplement", "pill", "pills", "oral drops", "softgels", "sachet"],
   "addedFromReports": {
    "meat": [
     "machli",
@@ -487,7 +597,12 @@
     "motte",
     "guddu",
     "omlet",
-    "anday"
+    "anday",
+    "dim sheddo",
+    "dim sheddho",
+    "dim shorshe",
+    "dim poshto",
+    "dim dalna"
    ],
    "dairy": [
     "dal makhani",
@@ -559,7 +674,8 @@
     "puriyon",
     "bati",
     "dal bati",
-    "luchchi"
+    "luchchi",
+    "wrap"
    ],
    "soya": [
     "soyabean",
@@ -588,7 +704,24 @@
     "pudding",
     "sweet lassi",
     "mango lassi",
-    "mango shake"
+    "mango shake",
+    "milkshake",
+    "banana shake",
+    "date shake",
+    "dates shake",
+    "strawberry shake",
+    "chikoo shake",
+    "chiku shake",
+    "fruit shake",
+    "thick shake",
+    "thickshake",
+    "smoothie",
+    "thandai",
+    "rose milk",
+    "badam milk",
+    "sweet pongal",
+    "shakkarpara",
+    "puran poli"
    ],
    "salty": [
     "pickled",
@@ -616,7 +749,26 @@
     "softgel",
     "vitamin pills",
     "iron drops",
-    "omega 3 capsules"
+    "omega 3 capsules",
+    "multivitamins",
+    "complan",
+    "whey",
+    "whey shake",
+    "protein bar",
+    "protein bars",
+    "protein isolate",
+    "electral",
+    "ors",
+    "becosules",
+    "shelcal",
+    "zincovit",
+    "biotin",
+    "folic acid",
+    "pediasure",
+    "boost drink",
+    "ensure milk",
+    "ensure drink",
+    "tang drink"
    ]
   }
  },
@@ -1003,20 +1155,14 @@
   ],
   "supplement": [
    "Cod liver oil",
-   "Biotin",
    "Glucon-D",
    "Triphala",
    "Giloy",
    "Shilajit",
-   "Complan",
-   "PediaSure",
    "Threptin",
    "Revital",
-   "Becosules",
-   "Shelcal",
    "Liv 52",
    "Limcee",
-   "Zincovit",
    "Neurobion",
    "Evion",
    "Supradyn",
@@ -1126,7 +1272,7 @@
     "Roasted chana"
    ],
    "sweet": [
-    "Idli rice cakes",
+    "Puffed rice cakes",
     "Sugar snap peas",
     "Sweet corn soup"
    ],
