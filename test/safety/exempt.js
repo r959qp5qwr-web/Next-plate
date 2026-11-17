@@ -2,7 +2,8 @@
 // copy, written apart from the engine (src/v5/core.js and src/v6/engine.js), read by test/safety/carve.js (the generated grid) and by
 // test/safety/recorded.js (an exemption phrase in a shown recorded name is honest only when its neighbours are in its set).
 // A token is the run of characters with no space next to the phrase; the start or end of the text, a comma, semicolon, colon, full stop,
-// question or exclamation mark or bracket is nothing; any other mark is a token no set holds.
+// question or exclamation mark is nothing; a bracket is not nothing: the reading goes through it to the word beyond (fix-r14: "Watermelon
+// (lime juice)" reads "watermelon"); any other mark is a token no set holds.
 const set = w => new RegExp('^(?:' + w + ')$');
 // a set before the phrase has joining words, which end the reading, and describing words, after which the next word out is read the same way
 const two = (join, mod) => ({ join: set(join), mod: mod ? set(mod) : null });
@@ -51,13 +52,16 @@ const NEXT = [
   { id: 'low sugar food (S7 urgent)', head: 'low sugar', plain: 'low salt', refer: true, ok: set('free|desserts?|sweets?|biscuits?|cookies?|cakes?|chai|tea|coffee|version|recipes?|snacks?|juices?|drinks?') },
   { id: 'expecting guests (S7)', head: 'expecting', plain: 'having', refer: true, ok: set('guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery') }];
 
-const STOP = /[,;:.?!()\[\]]/;
-const preTok = (s, i) => { const h = s.slice(0, i).replace(/\s+$/, ''); if (!h) return ''; const m = /\S+$/.exec(h)[0]; return STOP.test(m.charAt(m.length - 1)) ? '' : m.replace(/^[,;:.?!()\[\]]+/, ''); };
-const postTok = (s, j) => { const h = s.slice(j).replace(/^\s+/, ''); if (!h) return ''; const m = /^\S+/.exec(h)[0]; return STOP.test(m.charAt(0)) ? '' : m.replace(/[,;:.?!()\[\]]+$/, ''); };
+const STOP = /[,;:.?!]/, BRK = /[()\[\]]/;
+const preTok = (s, i) => { const h = s.slice(0, i).replace(/\s+$/, ''); if (!h) return ''; const mm = /\S+$/.exec(h), m = mm[0].replace(/[()\[\]]+$/, ''); if (!m) return preTok(s, mm.index);
+  return STOP.test(m.charAt(m.length - 1)) ? '' : m.replace(/^[,;:.?!()\[\]]+/, ''); };
+const postTok = (s, j) => { const k = s.slice(j), h = k.replace(/^\s+/, ''); if (!h) return ''; const m0 = /^\S+/.exec(h)[0], m = m0.replace(/^[()\[\]]+/, ''); if (!m) return postTok(s, j + (k.length - h.length) + m0.length);
+  return STOP.test(m.charAt(0)) ? '' : m.replace(/[,;:.?!()\[\]]+$/, ''); };
 // the name with each exemption phrase of class cls blanked where its neighbours are in its set (the listed word only), lower case
 // the reading before a phrase: a joining word ends it, a describing word passes it on to the next word out, any other token keeps the word
-const walkPre = (str, i, spec) => { for (let n = 0; n < 8; n++) { const h = str.slice(0, i).replace(/\s+$/, ''); if (!h) return true; const m = /\S+$/.exec(h), r = m[0];
-  if (STOP.test(r.charAt(r.length - 1))) return true; const t = r.replace(/^[,;:.?!()\[\]]+/, ''); if (spec.join.test(t)) return true; if (!spec.mod || !spec.mod.test(t)) return false; if (t.length < r.length) return true; i = m.index; } return false; };
+const walkPre = (str, i, spec) => { for (let n = 0; n < 8; n++) { const h = str.slice(0, i).replace(/\s+$/, ''); if (!h) return true; const m = /\S+$/.exec(h), r = m[0].replace(/[()\[\]]+$/, '');
+  if (!r) { i = m.index; continue; } if (STOP.test(r.charAt(r.length - 1))) return true; const t = r.replace(/^[,;:.?!()\[\]]+/, ''); if (spec.join.test(t)) return true; if (!spec.mod || !spec.mod.test(t)) return false;
+  if (t.length < r.length && !BRK.test(r.slice(0, r.length - t.length))) return true; i = m.index; } return false; };
 const allowed = (spec, tok) => spec.join ? spec.join.test(tok) || !!(spec.mod && spec.mod.test(tok)) : spec.test(tok);
 const honest = (s, cls) => { let t = String(s).toLowerCase();
   for (const e of FOOD) if (e.cls === cls && e.rx) t = t.replace(e.rx, (m, i, str) => { const a = postTok(str, i + m.length);

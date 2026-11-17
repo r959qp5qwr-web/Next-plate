@@ -67,7 +67,7 @@ const offeredNames = (m) => [...(m.items || []).map(i => i.food), m.grain && m.g
 const { honest } = require('./exempt.js');
 const barredHit = (s, cls) => honestName(s, cls) ? null : WORDS[cls].exec(honest(s, cls === 'salty' ? 'none' : cls).replace(NEGW, ' '));
 const perProfile = {};
-const seen = new Set(); let replayN = 0, shownN = 0;
+const seen = new Set(); let replayN = 0, shownN = 0, reN = 0;
 for (const { m, slot, at } of plates) {
   const key = JSON.stringify([m.title, (m.items || []).map(i => i && i.food), m.swaps, m.alchemy, slot]); if (seen.has(key)) continue; seen.add(key);
   const x = stripTags(m);
@@ -79,6 +79,10 @@ for (const { m, slot, at } of plates) {
         if (hit) fail(`S1-S4 replay, tags stripped: ${pname} shown a ${cls} word`, `${at} "${s}" (${hit[0]}; recorded "${m.title}")`); }
       if (o.health === 'diabetes' && slot !== 'snack' && !(sm.grain && sm.grain.grams >= 30 && (sm.items || []).some(i => i.food === sm.grain.food)))
         fail('S5 replay: with diabetes the grain stays', `${at} "${sm.title}" shown with grain ${JSON.stringify(sm.grain)}`); }
+    // every shown plate is accepted again by plan('tune'), which reads the engine's own output through the plate check (its title, items,
+    // grain and what the grain is made of; fix-r14: a cap or a raw read must hold on what the engine writes)
+    for (const sm of out.meals || []) { reN++; let ok = false; try { ok = !!a.plan('tune', { profile: p, slot, meal: J(sm) }).check; } catch (e) {}
+      if (!ok) fail('a shown plate is accepted again by the tune path (fix-r14)', `${at} ${pname}: "${sm.title}" (${sm.items.length} items)`); }
     // the recorded swaps and one-tap changes, offered on the shown plate (the tune path), tags stripped
     if ((x.swaps || x.alchemy) && (out.meals || [])[0]) { const sh = out.meals[0];
       let t; try { const pl = a.plan('tune', { profile: p, slot, meal: J(sh) }); t = pl.check ? pl.check({ swaps: x.swaps, alchemy: x.alchemy }) : null; } catch (e) { t = null; }
@@ -130,6 +134,14 @@ for (const x of egg13) if (!a.crosses(x, vegP)) fail('fix-r13 found words: a rec
 for (const x of wrap13) if (!a.crosses(x, wheatP)) fail('fix-r13 found words: a recorded wrap reads as wheat', JSON.stringify(x));
 // "dim" with no egg dish after it is not egg
 for (const x of [...allStr].filter(x => /\bdim\b/i.test(x) && !/\bdim\s+(?:sheddo|sheddho|shorshe|poshto|dalna|kosha|posto|bhuna)\b/i.test(x) && !/\begg|\bdimer\b|\banda\b/i.test(x))) if (a.crosses(x, vegP)) fail('fix-r13 found words: "dim" alone is not egg', JSON.stringify(x));
+// the found words of fix-r14 (safety audit of 7eaadcf, backlog): the words with no recorded occurrence hit no recorded string; the ones with
+// one are read as the food they name in each string they hit (every "wholewheat" and "multigrain" string names a wheat dish, every "yolk"
+// string an egg)
+const NONE14 = /\b(?:wholemeal|durum|spelt|rotiya|chapatiya|chapatiyaan|chapatiyon|puriya|puriyaan|parathon|samoson|bhaturon|kulchon|kachoriyan|kachoriyaan|kachoriyon|golgappe|golgappas?|rotliyan|rotliyaan|andey|andon)\b/i;
+for (const x of [...allStr].filter(x => NONE14.test(x))) fail('fix-r14 found words: a word with no recorded occurrence hits no recorded string', JSON.stringify(x));
+const wheat14 = [...allStr].filter(x => /\b(?:wholewheat|multigrain)\b/i.test(x)), yolk14 = [...allStr].filter(x => /\byolks?\b/i.test(x));
+for (const x of wheat14) if (!a.crosses(x, wheatP)) fail('fix-r14 found words: a recorded wholewheat or multigrain string reads as wheat', JSON.stringify(x));
+for (const x of yolk14) if (!a.crosses(x, vegP)) fail('fix-r14 found words: a recorded yolk string reads as egg', JSON.stringify(x));
 // the readings ca94d43 already had: a supplement word of the old list (supplements, tablets, pills, protein powder, enzymes, zinc) in pairing
 // tips that are never shown, in typed asks and in the model's referral lines; chest pain in typed asks and in the model's referral lines
 const OLDSUPP = /\b(?:supplements?|tablets?|pills?|protein\s+powder|enzymes|zinc)\b|-supplements?\b/i, OLDURG = /\bchest\s+(?:pain|discomfort)/i;
@@ -137,7 +149,8 @@ const suppNow = [...allStr].filter(x => a.supp(x)), urgNow = [...allStr].filter(
 for (const x of suppNow) if (!OLDSUPP.test(x)) fail('fix-r13 found words: no new recorded string reads as a supplement (S9)', JSON.stringify(x));
 for (const x of urgNow) if (!OLDURG.test(x)) fail('fix-r13 found words: no new recorded string reads as urgent (S7)', JSON.stringify(x));
 console.log(`fix-r13 found words: ${allStr.size} recorded strings read; ${egg13.length} egg dishes and ${wrap13.length} wraps found (true hits), ${suppNow.length} supplement and ${urgNow.length} urgent readings, each an old word (22 and 14 on ca94d43)`);
-console.log(`recorded: ${plates.length} plates (${seen.size} distinct), ${names.size} distinct names`);
+console.log(`fix-r14 found words: ${wheat14.length} wholewheat or multigrain strings and ${yolk14.length} yolk strings (true hits)`);
+console.log(`recorded: ${plates.length} plates (${seen.size} distinct), ${names.size} distinct names; ${reN} shown plates accepted again by the tune path`);
 console.log(`S1-S4 replay, tags stripped: ${replayN} plate and profile checks, ${shownN} plates shown (${Object.entries(perProfile).map(([k, v]) => k + ' ' + v).join(', ')})`);
 for (const [k, v] of Object.entries(perProfile)) if (v < 300) fail('recorded data read', `${k}: only ${v} plates shown, the replay is near empty for this profile`);
 console.log(`S8 scan: ${scanN} recorded names shown by showName, ${pathN} plates shown on the plate path`);

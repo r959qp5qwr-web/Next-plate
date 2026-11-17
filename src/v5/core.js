@@ -86,7 +86,8 @@ var MEATW=["chicken","mutton","meat","keema","bacon","ham","sausage","pepperoni"
 var FISHW=["fish","prawn","prawns","shrimp","tuna","salmon","rawas","surmai","pomfret","rohu","katla","bangda","sardine","mackerel","seafood","crab","anchovy","squid","macher","maach","machh","meen","bombil","chingri","chingdi","ilish","hilsa","kekda","mussel","clam","oyster","lobster","octopus","machli","machhli","macchi","machher","jhinga","jheenga","kolambi","chemmeen","nethili","bhetki","kingfish","catfish","shellfish","karimeen"];
 var NONVEG=MEATW.concat(FISHW);   /* regional names (safety invariants S2, 15 Nov) */
 var EGGW=["egg","eggs","omelette","omelet","anda","ande","muttai","akuri","mayonnaise","mayo","mutta","dimer","motte","guddu","omlet","anday",
-  "dim sheddo","dim sheddho","dim shorshe","dim poshto","dim dalna"];   /* the Bengali egg dishes the safety audit of 9dd1b13 found in the recorded replies (D1, fix-r13); "dim" alone, "dim sum" and "dimly" are not egg */
+  "dim sheddo","dim sheddho","dim shorshe","dim poshto","dim dalna",
+  "andey","andon","yolk"];   /* (fix-r14; safety audit of 7eaadcf, backlog head) egg forms the S8 piece list (CNTPIECE) knows: "Do andey", "Two yolks" */   /* the Bengali egg dishes the safety audit of 9dd1b13 found in the recorded replies (D1, fix-r13); "dim" alone, "dim sum" and "dimly" are not egg */
 var DAIRYW=["milk","curd","dahi","paneer","ghee","butter","cheese","chaas","lassi","raita","cream","khoya","yogurt","yoghurt","kheer","buttermilk","kadhi","chhena","labneh","feta","halloumi","tzatziki","whey","malai","kefir","skyr","cottage cheese","thayir","thair","tayir","mosaru","taak","chaach","chhaas","majjige","makhan","makkhan","khoa","mawa","doodh","doi","shrikhand","rabri","basundi","kulfi","rasmalai","payasam","makhani","dal makhani","rasgulla","gulab jamun","kalakand","ghi","panir","chhach","mishti doi","milkshake","custard","ras malai","rabdi","phirni","peda","sandesh"];
 var ONIONW=["onion","onions","garlic","shallot","leek","spring onion","kanda","pyaz","pyaaz","lasun","lehsun","lahsun","ulli","scallion","scallions",
   "pyaza","lasooni","piyaji"];   /* onion forms of listed words (safety audit of b4633dd, backlog head): "Bhindi do pyaza", "Lasooni palak", "Piyaji" */
@@ -98,7 +99,11 @@ var LEAVEW={dairy:DAIRYW,nut:["nut","nuts","peanut","peanuts","almond","almonds"
     "parathe","paranthe","rotiyaan","chapatiyan","puriyan","samose","theple","rotiyon","puriyon","bati","luchchi",
     /* a wrap is a wheat flatbread by default (safety audit of 9dd1b13, backlog head: "Paneer Tikka Wrap", "Soya Bhurji Wrap"); no recorded name
        holds a lettuce wrap, so "Lettuce wrap" reads as wheat too (fail closed, fix-r13) */
-    "wrap"],
+    "wrap",
+    /* (fix-r14; safety audit of 7eaadcf, backlog head) wheat words the grain lists (GRAINMATW, GRAINT) know, and the Hindi plurals the S8 piece
+       list (CNTPIECE) knows; one plural of roti is held out by the lexicon and stays out */
+    "wholewheat","wholemeal","durum","spelt","multigrain","rotiya","chapatiya","chapatiyaan","chapatiyon","puriya","puriyaan","parathon","samoson",
+    "bhaturon","kulchon","kachoriyan","kachoriyaan","kachoriyon","golgappe","golgappa","rotliyan","rotliyaan"],
   soya:["soya","soy","tofu","edamame","tempeh","miso","soybean","soy sauce","nutrela","soya chunks","meal maker","soyabean","soyabeans","chaap","bean curd","soymilk","soy milk"]};
 var SWEETS=["juice","mithai","gulab jamun","jalebi","halwa","kheer","sugar","cola","soft drink","laddu","ladoo","laddoo","barfi","ice cream","dessert","rasgulla","rosogolla","rasmalai","sandesh","payasam","shrikhand","peda","chikki","sheera","kesari","modak","malpua","basundi","rabri","syrup","sweetened","honey","jaggery","gur","tiramisu","cake","pastry","chocolate","date syrup","kulfi","falooda","phirni","mysore pak","kaju katli","custard","brownie","imarti","ghevar","halva","kalakand","burfi","jilebi","rasagola","roshogolla","ras malai","soan papdi","balushahi","gulabjamun","pedha","pudding","mishti doi","peda","rabdi",
   "sweet lassi","mango lassi","mango shake",   /* sweet drinks (safety audit of b4633dd, backlog head) */
@@ -519,11 +524,13 @@ function isGrainMaterial(t){var s=attaNorm(String(t||"").toLowerCase()),w=words(
 /* the declared grain is one item, matched by its whole name (case and punctuation aside), never by a part of it: "Sambar" is not "Sambar
    rice" (S10; safety audit M3) */
 function sameName(a,b){a=words(a).join(" ");b=words(b).join(" ");return !!a&&a===b;}
-function declaredGrain(g,items){g=g&&typeof g==="object"?g:{};var food=showName(rawName(g.food))||quoted(g.food,60),mo=quoted(g.made_of,40);
+/* (fix-r14) the grain is read whole: what it is made of and its name are the fields the model wrote, never cut to a display length first;
+   checkMeal has already dropped a plate whose grain fields are over their cap or not readable text. What travels with the grain is cleaned. */
+function declaredGrain(g,items){g=g&&typeof g==="object"?g:{};var rf=modelText(g.food,200)||"",mo=modelText(g.made_of,40)||"",food=showName(rf);
   if(!food||!isGrainMaterial(mo))return null;
-  var it=items.filter(function(i){return sameName(i.food,food)||!!i.rawFood&&sameName(i.rawFood,quoted(g.food,200));})[0];
+  var it=items.filter(function(i){return sameName(i.food,food)||!!i.rawFood&&sameName(i.rawFood,rf);})[0];
   if(!it||!(it.grams>=30)||!isGrain(it.rawFood||it.food))return null;
-  return {food:it.food,made_of:mo,grams:it.grams};}
+  return {food:it.food,made_of:clean(mo,40),grams:it.grams};}
 /* a one-tap change keeps the grain: it names no stand-in, leaves at least half the plate's carbs, and takes no grain off */
 function keepsGrain(txt,carbs,dc){return !STANDN.test(txt)&&!(carbs!=null&&dc!=null&&carbs+dc<carbs*0.5)&&!removesGrain(txt);}
 function wordRx(list){return new RegExp("\\b("+list.map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");}).join("|")+")\\b","i");}
@@ -546,14 +553,20 @@ function badWords(p){
    one. Each set has two kinds of word: a joining word, which ends the reading ("with" in "Cucumber with lemon juice"), and a word that
    describes the phrase ("fresh", "plain", "warm", a count), after which the next word out is read the same way, so "Watermelon fresh lime
    juice", "Mango brown rice cakes" and "Multigrain small bajra roti" keep their listed word (fix-r13; the advisor's review). */
-var NBSTOP=/[,;:.?!()\[\]]/;
-/* the token next to position i, before it (back) or after it: its text, where the reading goes on from, and whether a stop mark closes it */
-function nbTok(s,i,back){var r,t;if(back){var h=s.slice(0,i).replace(/\s+$/,"");if(!h)return null;var m=/\S+$/.exec(h);r=m[0];if(NBSTOP.test(r.charAt(r.length-1)))return null;
-    t=r.replace(/^[,;:.?!()\[\]]+/,"");return {t:t,at:m.index,edge:t.length<r.length};}
-  var k=s.slice(i),g=k.replace(/^\s+/,"");if(!g)return null;r=/^\S+/.exec(g)[0];if(NBSTOP.test(r.charAt(0)))return null;t=r.replace(/[,;:.?!()\[\]]+$/,"");
-  return {t:t,at:i+(k.length-g.length)+r.length,edge:t.length<r.length};}
+/* A bracket is not nothing (fix-r14; safety audit of 7eaadcf, found item: "Watermelon (lime juice)" read the bracket as the end of the name,
+   so the juice was a dressing). The reading goes through a bracket to the word beyond it, which must be in the set, as with no bracket:
+   "Watermelon (lime juice)" reads "watermelon" and keeps its juice; "Rajma (kidney beans) curry" reads "rajma" and "curry". */
+var NBSTOP=/[,;:.?!]/,NBBRK=/[()\[\]]/;
+/* the token next to position i, before it (back) or after it: its text, where the reading goes on from, and whether a stop mark closes it
+   (edge "brk" when the mark is a bracket: the reading goes on past it) */
+function nbTok(s,i,back){var r,t,c,x;if(back){var h=s.slice(0,i).replace(/\s+$/,"");if(!h)return null;var m=/\S+$/.exec(h);r=m[0].replace(/[()\[\]]+$/,"");
+    if(!r)return nbTok(s,m.index,true);c=r.charAt(r.length-1);if(NBSTOP.test(c))return null;
+    t=r.replace(/^[,;:.?!()\[\]]+/,"");x=r.slice(0,r.length-t.length);return {t:t,at:m.index,edge:x?(NBBRK.test(x)?"brk":true):false};}
+  var k=s.slice(i),g=k.replace(/^\s+/,"");if(!g)return null;var r0=/^\S+/.exec(g)[0],at=i+(k.length-g.length)+r0.length;r=r0.replace(/^[()\[\]]+/,"");
+  if(!r)return nbTok(s,at,false);c=r.charAt(0);if(NBSTOP.test(c))return null;t=r.replace(/[,;:.?!()\[\]]+$/,"");x=r.slice(t.length);
+  return {t:t,at:at,edge:x?(NBBRK.test(x)?"brk":true):false};}
 function nbSet(join,mod){return {join:new RegExp("^(?:"+join+")$"),mod:mod?new RegExp("^(?:"+mod+")$"):null};}
-function nbWalk(s,i,set,back){for(var n=0;n<8;n++){var r=nbTok(s,i,back);if(!r||set.join.test(r.t))return true;if(!set.mod||!set.mod.test(r.t))return false;if(r.edge)return true;i=r.at;}return false;}
+function nbWalk(s,i,set,back){for(var n=0;n<8;n++){var r=nbTok(s,i,back);if(!r||set.join.test(r.t))return true;if(!set.mod||!set.mod.test(r.t))return false;if(r.edge===true)return true;i=r.at;}return false;}
 function nbFits(s,i,j,pre,post){return nbWalk(s,i,pre,true)&&nbWalk(s,j,post,false);}
 /* a rice cake is the savoury round only with nothing, "plain", "puffed" or "brown" before it, and nothing, "and" or "with" after it:
    "Mango rice cakes", "Coconut rice cakes" and "Steamed rice cakes" keep their "cake" (fix-r13; safety audit of 9dd1b13, B1) */
@@ -722,7 +735,8 @@ var MEASOPEN=["glass(?:es)?","bowls?","katori\\w*","katoree\\w*","katora\\w*","k
      "Pieces chicken", "Kilo chicken", "Ml milk"; fix-r13); "Portion control salad" keeps its name (below) */
   "bowlfuls?","platefuls?","glassfuls?","cupfuls?","mugfuls?","servings?","portions?","helpings?","scoops?","pcs?","pieces?","ladles?","ladlefuls?",
   "karc?hhi\\w*","karchi","mutth?i\\w*","muthi","kilos?","litres?","liters?","ml"];
-var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASOPEN.indexOf(w)>=0;}).join("|")+")(?:\\s+(?:of|bhar))?\\s+(?!(?:cakes?|noodles|vermicelli|control)\\b)(?=[a-z])","i");
+/* the size before it is any of MEASSIZE (fix-r14; safety audit of 7eaadcf, backlog: "Full plate rice", "Heaped spoon ghee", "Level tsp ghee") */
+var MEASBARE=new RegExp("^(?:an?\\s+)?(?:"+MEASSIZE+"\\s+)?(?:"+MEASW.filter(function(w){return MEASOPEN.indexOf(w)>=0;}).join("|")+")(?:\\s+(?:of|bhar))?\\s+(?!(?:cakes?|noodles|vermicelli|control)\\b)(?=[a-z])","i");
 /* a measure word that ends a name, with no number before it, goes the same way ("Paneer portion" shows "Paneer", "Ghee teaspoon" "Ghee",
    "Salt pinch" "Salt"; fix-r12): only the words that never end a food's own name. A bowl, plate, cup, glass, mug, slice, piece, spoon or
    tumbler stays ("Kala chana chaat bowl", "Curd cup", "Coffee mug", "Cucumber slices"), and so do vati ("Dal vati") and katori, whose own
@@ -787,7 +801,12 @@ function countIn(b){return MEASBRACKET.test(b)||new RegExp("^(?:half|full|quarte
    "7 Up"); a name that is only a number is not shown */
 var MENUSHAPE=NAMESHAPE;
 function menuNameOK(t){return typeof t==="string"&&MENUSHAPE.test(t.replace(MENUKEEP,function(k){return k.replace(/\d+/g,"Num");}));}
-function rawName(t){return typeof t==="string"?quoted(t,200):"";}   /* the whole name, for the checks */
+/* THE RAW-FIELD RULE (fix-r14; safety audit of 7eaadcf, B1, M1, M2 and m3, one cause: the engine cut, blanked or joined a model field
+   before the check read it). Every safety check reads the whole field the model wrote, folded at intake (norm) and nothing else; cleaning,
+   cutting and blanking are for what is shown. A field over its cap, in a script the checks cannot read, or not text at all gives null, and
+   the caller drops the element it belongs to: it is never cut to fit. An absent field is "". */
+function modelText(t,cap){if(t==null)return "";if(typeof t!=="string")return null;t=norm(t).replace(EMO,"").replace(/\s+/g," ").trim();return t.length>cap||NONLATIN.test(t)?null:t;}
+function rawName(t){return modelText(t,200)||"";}   /* the whole name, for the checks (the dormant menu code; the live paths use modelText and drop on null) */
 var TASTEW=/^(?:smoky|tangy|crunchy|crisp|crispy|spicy|mild|fresh|savoury|savory|sour|zesty|earthy|peppery|herby|lemony|warm|warming|cooling|soft|hearty|homely|comforting|chewy|tender|juicy|bright|sharp|robust|rustic|fragrant|aromatic|light|smooth)$/;   /* taste notes come from this closed list only */
 /* each word list as the one tag it stands for */
 var TAGLISTS=function(){return {meat:MEATW,fish:FISHW,egg:EGGW,dairy:DAIRYW,wheat:LEAVEW.wheat,nuts:LEAVEW.nut,soya:LEAVEW.soya,onion_garlic:ONIONW,root_veg:ROOTW,sweet:SWEETS,salty_side:SALTY};};
@@ -865,9 +884,15 @@ function pruneCombos(n,swaps,al){var keys=Object.keys(al),dropped=0;
   return dropped;}
 function checkMeal(m,p){
   if(!m||typeof m!=="object")return {drop:"shape"};
-  var rawTitle=clean(m.title,70);
-  var items=(Array.isArray(m.items)?m.items:[]).slice(0,7).map(function(it){
-    var rf=rawName(it&&it.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
+  /* the raw-field rule (fix-r14): every field is read whole. More than seven items (safety audit of 7eaadcf, M2: an eighth item was neither
+     checked nor shown while its energy stayed in the figures), a title over 70 characters, a grain name over 200 or what it is made of over
+     40, or a field that is not readable text, drops the plate; nothing is cut to fit. The subtitle has no cap: 20 recorded subtitles run
+     past the old 120 (owner question), and none is shown. */
+  var mi=Array.isArray(m.items)?m.items:[];if(mi.length>7)return {drop:"shape"};
+  var gr=m.grain&&typeof m.grain==="object"?m.grain:{},rawTitle=modelText(m.title,70),rawSub=modelText(m.subtitle,1e6),rawGF=modelText(gr.food,200),rawGM=modelText(gr.made_of,40);
+  if(rawTitle==null||rawSub==null||rawGF==null||rawGM==null)return {drop:"shape"};
+  var items=mi.map(function(it){
+    var rf=modelText(it&&it.food,200);return {food:rf&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",grams:num(it&&it.grams,1,800),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other",raw:it&&it.contains};
   });
   /* every item is a model name: it has the name shape, grams and its own tags, or the whole plate is dropped, so the figures always match
      the items shown (S8, S10; safety round 5) */
@@ -880,7 +905,7 @@ function checkMeal(m,p){
   /* the model's own title and subtitle are read for the food rules but never shown: the engine writes both from the checked items */
   /* the names are read apart (" ; "), so no rule reads the last word of one name with the first of the next ("Jowar roti" then "Rice milk"
      is not "roti rice milk"; fix-r12) */
-  var all=rawTitle+" ; "+clean(m.subtitle,120)+" ; "+rawItems+" ; "+rawName(m.grain&&m.grain.food)+" ; "+clean(m.grain&&m.grain.made_of,40);   /* what the grain is made of counts (S1) */
+  var all=rawTitle+" ; "+rawSub+" ; "+rawItems+" ; "+rawGF+" ; "+rawGM;   /* what the grain is made of counts (S1), read whole (fix-r14) */
   if(crosses(all,p))return {drop:"diet"};
   if(supp(all))return {drop:"supplement"};
   var title=engineTitle(items),sub=engineSub(items);
@@ -891,15 +916,18 @@ function checkMeal(m,p){
   var est=4*n.protein+4*n.carbs+9*n.fats;
   if(!figsAgree(n))return {drop:"energy"};
   var low=p.medsUsual||0;if(low&&n.kcal<low)return {drop:"meds-low"};   /* on insulin or sugar tablets a plate under the meal's usual size is not offered (owner, 15 Nov, option survey: "Drop plates under usual (Recommended)"; S6) */
-  function swapList(list,kind){return (Array.isArray(list)?list:[]).slice(0,3).map(function(s){
-      var mo=quoted(s&&s.made_of,40),rf=rawName(s&&s.food);return {food:BANRX.test(rf)?"":showName(rf),rawFood:rf,made_of:isGrainMaterial(mo)?mo:"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
-    .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" ; "+clean(s.made_of,40),p)&&!supp(s.rawFood)&&!(low&&n.kcal+s.deltaKcal<low)&&
+  /* swaps (fix-r14; safety audit of 7eaadcf, B1 and m3): the name and what it is made of are read whole by every word check; the cleaned
+     made_of is only what travels with the swap. More than three in a list drops that list; a name over 200 characters or a made_of over 40
+     drops the swap. */
+  function swapList(list,kind){var L=Array.isArray(list)?list:[];if(L.length>3)return [];return L.map(function(s){
+      var mo=modelText(s&&s.made_of,40),rf=modelText(s&&s.food,200);return {food:rf&&mo!=null&&!BANRX.test(rf)?showName(rf):"",rawFood:rf||"",rawMade:mo||"",made_of:mo&&isGrainMaterial(mo)?clean(mo,40):"",raw:s&&s.contains,grams:num(s&&s.grams,1,800),deltaKcal:delta(s&&s.deltaKcal,-400,400),deltaProtein:delta(s&&s.deltaProtein,-40,40),deltaCarbs:delta(s&&s.deltaCarbs,-80,80),deltaFats:delta(s&&s.deltaFats,-40,40),deltaFiber:delta(s&&s.deltaFiber,-20,20)};})
+    .filter(function(s){return !!s.food&&!contentsBad(s.raw,s.food,p)&&!crosses(s.rawFood+" ; "+s.rawMade,p)&&!supp(s.rawFood+" ; "+s.rawMade)&&!(low&&n.kcal+s.deltaKcal<low)&&
       /* rule 3: with diabetes a base swap is a whole grain or millet, so no tap takes the grain off the plate */
-      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.made_of)&&isGrain(s.rawFood)&&s.grams>=30))&&
+      !(kind==="base"&&p.health==="diabetes"&&p.slot!=="snack"&&!(isGrainMaterial(s.rawMade)&&isGrain(s.rawFood)&&s.grams>=30))&&
       /* round 13: a protein swap takes the place of the first protein item. It may not take the place of the declared grain item, for any
          client at any meal: a protein swap and a grain swap would both land on that one item, and the plate logged would not be the plate
          shown (S10; final audit M1) */
-      !(kind==="protein"&&dg&&firstProt&&sameName(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;return s;});}
+      !(kind==="protein"&&dg&&firstProt&&sameName(firstProt.food,dg.food));}).map(function(s){s.contains=tagList(s.raw);delete s.raw;delete s.rawFood;delete s.rawMade;return s;});}
   var firstProt=items.filter(function(i){return i.group==="protein";})[0];
   var sw=m.swaps||{},swaps={protein:swapList(sw.protein,"protein"),base:swapList(sw.base,"base")};
   /* one-tap changes: the engine writes the label and the note from the change's structure (the food it adds, by name, with its grams; the
@@ -907,8 +935,8 @@ function checkMeal(m,p){
   var al={},am=m.alchemy||{};
   ALCH.forEach(function(k){var a=am[k];if(!a||typeof a!=="object")return;
     var x={suffix:ALCHLABEL[k].toLowerCase(),deltaKcal:delta(a.deltaKcal,-400,400),deltaProtein:delta(a.deltaProtein,-10,40),deltaCarbs:delta(a.deltaCarbs,-80,40),deltaFats:delta(a.deltaFats,-30,30),deltaFiber:delta(a.deltaFiber,-10,20),minutes:a.minutes==null?null:num(a.minutes,0,180)};
-    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=a.add_item==null||a.add_item===""?"":rawName(a.add_item),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
-    if((rawItem&&!item)||(item&&!ig))return;
+    var raw=String(a.titleSuffix||"")+". "+String(a.note||""),after=num(a.grain_grams_after,0,800),rawItem=modelText(a.add_item,200),item=rawItem&&!BANRX.test(rawItem)?showName(rawItem,{max:40}):"",ig=num(a.add_grams,1,500);
+    if(rawItem==null||(rawItem&&!item)||(item&&!ig))return;   /* an item over its cap or not readable text: the change is not offered (fix-r14) */
     if(contentsBad(a.contains,item||raw,p)||crosses(raw+" ; "+rawItem,p)||supp(raw+" ; "+rawItem))return;
     if(low&&n.kcal+x.deltaKcal<low)return;   /* S6: a change that takes the plate under the usual size on medicine */
     x.contains=tagList(a.contains);
@@ -950,7 +978,9 @@ function checkReply(r,p){
   var out={status:"ok",read:"",meals:[],dropped:{}};
   if(!r||typeof r!=="object"){out.status="error";return out;}
   if(r.status==="refer"||referred(r)){out.status="refer";out.read=SAFETY;return out;}   /* a referral always shows the fixed line, as Rescue, menu and log do (audit B3); refer_reason other than "none" is a referral (S7) */
-  (Array.isArray(r.meals)?r.meals:[]).slice(0,4).forEach(function(m,i){var c=checkMeal(m,p);if(c.meal){c.meal.src=i;out.meals.push(c.meal);}else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
+  /* more than four plates: the reply is not read (fix-r14, drop over the cap; 0 recorded replies hold more than 3) */
+  if(Array.isArray(r.meals)&&r.meals.length>4){out.status="empty";out.dropped.shape=r.meals.length;return out;}
+  (Array.isArray(r.meals)?r.meals:[]).forEach(function(m,i){var c=checkMeal(m,p);if(c.meal){c.meal.src=i;out.meals.push(c.meal);}else out.dropped[c.drop]=(out.dropped[c.drop]||0)+1;});
   if(!out.meals.length)out.status="empty";
   return out;   /* the model's read line is not shown (safety round 5) */
 }
@@ -985,7 +1015,11 @@ function checkRescue(r,p,c){
   /* usefulness brief (15 Nov): the Rescue dish is the client's own, so it is shown as they typed it, whatever their rules bar or the model's
      tags say; nothing the model writes about it is shown, and every move is the engine's, checked in full (S5, S6; no food named). A
      supplement is not a meal: it is not helped (S9). */
-  if(supp(typed+" "+clean(d.name,80)))return {status:"empty",reason:"diet",dropped:{dish:1}};
+  /* (fix-r14; safety audit of 7eaadcf, M1) the declared "supplement" tag refuses, as on every other path (S9), and the typed text and the
+     model's dish name are read apart, each whole, so a brand that counts only as a whole name ("Ensure", "Boost", "Tang") is read as one.
+     A dish name over 80 characters or not readable text is not helped. */
+  var dname=modelText(d.name,80);
+  if(dname==null||tagList(d.contains).indexOf("supplement")>=0||supp(typed)||supp(dname))return {status:"empty",reason:"diet",dropped:{dish:1}};
   var g=/(\d+(?:\.\d+)?)\s*(?:g|gm|grams?)\b/i.exec(String(d.portion||"")),por=g?"≈ "+Math.round(+g[1])+" g":"";   /* the weight, written by the engine */
   return {status:"ok",dish:{name:dn,portion:por,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,warning:"",breakdown:"",contains:tagList(d.contains)},hacks:[]};
 }
@@ -1076,13 +1110,13 @@ var SCH=(function(){
   /* safety round 5: no free sentence is asked for; what the screen shows is written by the engine from these fields */
   var alch=obj(withD({add_item:S,add_grams:I,minutes:I,grain_grams_after:I,contains:T}));
   var meal=obj({title:S,prepMinutes:I,
-    items:{type:"ARRAY",items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS},contains:T})},contains:T,
+    items:{type:"ARRAY",maxItems:7,items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS},contains:T})},contains:T,
     grain:obj({food:S,made_of:S,grams:I}),
     kcal:I,protein:I,carbs:I,fats:I,fiber:I,
-    swaps:obj({protein:{type:"ARRAY",items:obj(withD({food:S,grams:I,contains:T}))},base:{type:"ARRAY",items:obj(withD({food:S,grams:I,made_of:S,contains:T}))}}),
+    swaps:obj({protein:{type:"ARRAY",maxItems:3,items:obj(withD({food:S,grams:I,contains:T}))},base:{type:"ARRAY",maxItems:3,items:obj(withD({food:S,grams:I,made_of:S,contains:T}))}}),
     alchemy:obj({protein:alch,glucose:alch,express:alch,gut:alch})});
   return {
-    meals:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,meals:{type:"ARRAY",items:meal}},["status","refer_reason"],["status","refer_reason","meals"]),
+    meals:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,meals:{type:"ARRAY",maxItems:4,items:meal}},["status","refer_reason"],["status","refer_reason","meals"]),
     rescue:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,dish:obj({name:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,contains:T})},["status","refer_reason"],["status","refer_reason","dish"])
   };
 })();

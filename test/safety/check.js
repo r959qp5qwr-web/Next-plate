@@ -287,7 +287,108 @@ for (const [n, o] of FOUND) {
   for (const t of ['chest is paining', 'my chest is paining since morning', 'sine me dard ho raha hai', 'feeling shaky and sweaty', 'shaky and sweaty', 'dizzy and confused', 'left arm pain', 'pain in my left arm', 'gasping for breath'])
     for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true]) add('Found words (safety audit of 9dd1b13): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
   for (const t of ['glimepiride', 'metformin with dinner?', 'gliclazide 80', 'sweaty after the gym, light dinner', 'a shaky table at the dhaba'])
-    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`); }
+    add('Found words (safety audit of 9dd1b13): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`);
+  // ---------- found items of the safety audit of 7eaadcf (backlog; D1 "Fix found, then watch"; fix-r14) ----------
+  // S7: the 14 urgent phrasings it found, in each box, with and without medicines ticked; food text that shares a word stays unreferred
+  for (const t of L.urgentFound14 || []) for (const kind of ['meals', 'rescue', 'log']) for (const meds of [false, true])
+    add('Found words (safety audit of 7eaadcf): urgent phrasings are referred with the line to get help now (S7)', urgentOn(kind, t, meds), `${kind}, medicines ${meds ? 'yes' : 'no'}: "${t}" went to the model`);
+  add('Found words (safety audit of 7eaadcf): the lexicon holds the 14 urgent phrasings', (L.urgentFound14 || []).length === 14, `${(L.urgentFound14 || []).length} listed`);
+  for (const t of L.notUrgentFound14 || []) add('Found words (safety audit of 7eaadcf): no false hit (S7)', !urgentOn('meals', t, false), `"${t}" was read as urgent`);
+  // S8: a size word before a measure that opens a name goes with it, generated from the engine's size and opening-measure lists
+  for (const [n, want] of [['Full plate rice', 'Rice'], ['Full plate biryani', 'Biryani'], ['Full bowl dal', 'Dal'], ['Full glass buttermilk', 'Buttermilk'], ['Heaped spoon ghee', 'Ghee'], ['Level tsp ghee', 'Ghee'],
+    ['Full fat curd', 'Full fat curd'], ['Full cream milk', 'Full cream milk'], ['Big bowl salad', 'Salad']])
+    add('Found words (safety audit of 7eaadcf): a size before a measure that opens a name (S8)', safe(() => showName(n), '') === want, `"${n}" shows "${safe(() => showName(n), '')}", expected "${want}"`);
+  { const sizes = MEASSIZE.replace(/^\(\?:|\)$/g, '').split('|'), meas = MEASOPEN.map(w => w.replace(/\(\?:[^)]*\)\?|\\w\*|\?/g, '').replace(/c\?/g, 'c').replace(/h\?/g, 'h'));
+    for (const z of sizes) for (const m of meas) { const n = cap(z + ' ' + m + ' dal'), s = safe(() => showName(n), '');
+      add('Found words (safety audit of 7eaadcf): every size before every opening measure goes (S8, generated)', s === 'Dal', `"${n}" shows "${s}"`); } }
+  // S1, S2: every wheat and egg form of the S8 piece list (CNTPIECE) is in the food lists, so the two lists hold together. Each form is
+  // classed here; a form the engine adds that is not classed fails, so a new piece word is read for its food first.
+  { const expand = (src) => { const out = []; const alts = (s) => { const a = [], b = ''; let d = 0, cur = ''; for (const ch of s) { if (ch === '(') d++; if (ch === ')') d--; if (ch === '|' && !d) { a.push(cur); cur = ''; } else cur += ch; } a.push(cur); return a; };
+      const forms = (s) => { if (!s) return ['']; const g = /^\(\?:([^()]*)\)(\?)?/.exec(s); if (g) { const rest = forms(s.slice(g[0].length)), opts = alts(g[1]).concat(g[2] ? [''] : []); return opts.flatMap(o => rest.map(r => o + r)); }
+        const c = s.charAt(0), opt = s.charAt(1) === '?', rest = forms(s.slice(opt ? 2 : 1)); return (opt ? [c, ''] : [c]).flatMap(x => rest.map(r => x + r)); };
+      for (const alt of alts(src.replace(/^\(\?:/, '').replace(/\)$/, ''))) out.push(...forms(alt)); return [...new Set(out)]; };
+    const WHEAT = /^(?:rotis?|rotiya|rotiyaan|chapatiya|chapatiyan|chapatiyaan|puriya|puriyan|puriyaan|rotlis?|phulkas?|phulke|fulkas?|chapatis?|chapathis?|chapattis?|parathas?|paranthas?|puris?|pooris?|naans?|kulchas?|bhaturas?|theplas?|pavs?|buns?|breads?|toasts?|biscuits?|samosas?|kachoris?|momos?|parottas?|porottas?|khakhras?|parathe|parathon|paranthe|samose|samoson|bhature|bhaturon|kulche|kulchon|kachoriyan|kachoriyaan|kachoriyon|golgappe|golgappas?|luchis?|luchchis?|littis?|baatis?|batis?|theple|rotiyon|puriyon|chapatiyon|rotliyan|rotliyaan)$/;
+    const EGG = /^(?:eggs?|yolks?|anda|ande|anday|andey|andon)$/;
+    // not wheat or egg by default, each with its reason: rice, pulse, millet, sweet and fruit pieces; rotla, rotle and bhakri are millet
+    // flatbreads (bajra, jowar) the grain list reads; "rotti" names rice rotis in the south ("Kori rotti" is tracked); "whites" alone is no food word
+    const OTHER = /^(?:rotlas?|rotle|bhakris?|bhakriyan|bhakriyaan|rottis?|idlis?|idlies|idliyan|idliyaan|idliyon|dosas?|dose|doson|uttapams?|appams?|vadas?|wadas?|vade|wade|vadon|pakoras?|pakode|pakore|pakodon|pakodis?|pakodiyan|pakodiyaan|pakodiyon|cutlets?|kebabs?|tikkis?|tikkiyan|tikkiyaan|chillas?|cheelas?|chille|cheele|ladoos?|laddoos?|laddus?|dhoklas?|dhokle|idiyappams?|pathiris?|puttus?|kozhukattais?|modaks?|thalipeeths?|apples?|bananas?|oranges?|whites?)$/;
+    const HELD = new Set(HO.wheat.concat(HO.egg).map(x => x.toLowerCase()));   // a held-out name stays out of the engine, so its form is not required
+    const forms = expand(CNTPIECE); const wf = prof({ leave: ['wheat'] }), vg = prof({ diet: 'veg' });
+    add('Found words (safety audit of 7eaadcf): the piece list was read', forms.length > 150, `${forms.length} forms`);
+    for (const f of forms) { if (HELD.has(f)) continue;
+      const cls = WHEAT.test(f) ? 'wheat' : EGG.test(f) ? 'egg' : OTHER.test(f) ? 'other' : null;
+      add('Found words (safety audit of 7eaadcf): every form of the S8 piece list is classed as wheat, egg or other', !!cls, `"${f}" is in CNTPIECE and in no class of this test`);
+      if (cls === 'wheat') add('Found words (safety audit of 7eaadcf): every wheat form of the piece list is in the wheat list (S1)', crosses(cap(f), wf), `"${f}" was not read as wheat`);
+      if (cls === 'egg') add('Found words (safety audit of 7eaadcf): every egg form of the piece list is in the egg list (S2)', crosses(cap(f), vg), `"${f}" was not read as egg`); }
+    for (const [n, o] of [['Andey ki bhurji', { diet: 'veg' }], ['Do andey', { diet: 'veg' }], ['Wholewheat bhakri', { leave: ['wheat'] }], ['Spelt flatbread', { leave: ['wheat'] }], ['Durum pasta', { leave: ['wheat'] }],
+      ['Multigrain bhakri', { leave: ['wheat'] }], ['Wholemeal toast', { leave: ['wheat'] }], ['Kachoriyan', { leave: ['wheat'] }], ['Golgappe', { leave: ['wheat'] }], ['Two yolks', { diet: 'veg' }]])
+      add('Found words (safety audit of 7eaadcf): the audit\'s names are read (S1, S2)', crosses(n, prof(o)), `${JSON.stringify(o)}: "${n}" was not read`); } }
+
+// ---------- S13: the engine's own drop of a plate or dish whose figures disagree (safety audit of 7eaadcf, m4; fix-r14) ----------
+// The tests ran combinations on plates whose base agrees, so the drop could go with no test failing. A plate at 900 kcal with macros worth
+// about 500 is dropped by the engine itself, on the plate path, the tune path's kept plate and Rescue; one that agrees is offered.
+{ const bad = () => Object.assign(platePlain(), { kcal: 900, protein: 22, carbs: 70, fats: 14 }), good = () => platePlain();
+  const P = prof({}); add('S13 the engine drops a plate whose figures disagree', JSON.stringify(checkMeal(bad(), P)) === '{"drop":"energy"}', JSON.stringify(checkMeal(bad(), P)).slice(0, 120));
+  add('S13 control: a plate whose figures agree is offered', !!checkMeal(good(), P).meal, JSON.stringify(checkMeal(good(), P)).slice(0, 120));
+  const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }); add('S13 the plate path drops it', (pl.check(mealsReply(bad())).meals || []).length === 0 && (pl.check(mealsReply(good())).meals || []).length === 1, 'the disagreeing plate was offered, or the control was not');
+  const shown = (pl.check(mealsReply(good())).meals || [])[0], kept = Object.assign(J(shown), { kcal: 900 });
+  add('S13 the tune path refuses a kept plate whose figures disagree', !!plan('tune', { profile: BASE, slot: 'lunch', meal: shown }).check && !!plan('tune', { profile: BASE, slot: 'lunch', meal: kept }).error, 'the tune path took a kept plate at 900 kcal with macros worth about 500');
+  const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), dish = (k) => ({ status: 'ok', refer_reason: 'none', dish: { name: 'Veg thali', portion: 'about 450 g', kcal: k, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] } });
+  add('S13 Rescue drops a dish whose figures disagree', rp.check(dish(1100)).status !== 'ok' && rp.check(dish(580)).status === 'ok', 'Rescue helped a dish at 1100 kcal with macros worth about 580, or refused the control'); }
+
+// ---------- the caps on their own (fix-r14; drop over the cap): honest elements, nothing barred, so only the cap can drop them ----------
+{ const P = prof({}), pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } });
+  const withItems = (n) => { const m = platePlain(); while (m.items.length < n) m.items.push({ food: 'Cucumber slices', grams: 20, group: 'greens', contains: ['plain'] }); return m; };
+  add('S10 cap: a plate with eight honest items is dropped, never cut to seven', !checkMeal(withItems(8), P).meal && (pl.check(mealsReply(withItems(8))).meals || []).length === 0, 'an eight-item plate was offered');
+  add('S10 cap control: a plate with seven items is offered', !!checkMeal(withItems(7), P).meal, 'a seven-item plate was dropped');
+  const lp = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } }), logR = (n) => ({ status: 'ok', refer_reason: 'none', items: Array.from({ length: n }, () => ({ food: 'dal', grams: 50, group: 'protein' })), kcal: 400, protein: 20, carbs: 50, fats: 12, fiber: 8 });
+  add('log cap: nine items drop the reply, eight are read', lp.check(logR(9)).status !== 'ok' && lp.check(logR(8)).status === 'ok', 'a log reply with nine items was read, or one with eight was not');
+  const many = (n) => Object.assign(platePlain(), { swaps: { protein: Array.from({ length: n }, (_, i) => ({ food: i ? 'Moong dal' : 'Sprouted moong', grams: 200, contains: ['plain'], deltaKcal: 0, deltaProtein: 0, deltaCarbs: 0, deltaFats: 0, deltaFiber: 0 })), base: [] } });
+  add('swap cap: four in a list drop the list, three are offered', checkMeal(many(4), P).meal.swaps.protein.length === 0 && checkMeal(many(3), P).meal.swaps.protein.length === 3, 'a list of four swaps was cut, or three were not offered');
+  const tw = (a) => (pl.check(mealsReply(Object.assign(platePlain(), { taste: a }))).meals || [{}])[0].taste;
+  add('taste cap: four taste words give none, three are shown', JSON.stringify(tw(['tangy', 'smoky', 'spicy', 'mild'])) === '[]' && tw(['tangy', 'smoky', 'spicy']).length === 3, 'four taste words were cut to three, or three were not shown');
+  const r5 = (n) => ({ status: 'ok', refer_reason: 'none', meals: Array.from({ length: n }, () => platePlain()) });
+  add('plates cap: a reply with five plates is not read, four are', (pl.check(r5(5)).meals || []).length === 0 && (pl.check(r5(4)).meals || []).length === 4, 'a reply with five plates was read');
+  // the shape guards of the plate check, each on its own (found by the mutation run, fix-r14)
+  add('a plate whose subtitle is not readable text is dropped (raw-field rule)', !checkMeal(Object.assign(platePlain(), { subtitle: '\u0926\u0942\u0927 \u0914\u0930 \u0930\u094B\u091F\u0940' }), P).meal && !checkMeal(Object.assign(platePlain(), { subtitle: 42 }), P).meal, 'a Devanagari or number subtitle was not dropped');
+  add('a plate whose title, grain name or made_of is not text, or is over its cap, is dropped', ['title', 'grainFood', 'grainMade'].every(k => { const m = platePlain(); if (k === 'title') m.title = 7; else if (k === 'grainFood') m.grain.food = 'Jowar roti'.padEnd(201, 'x'); else m.grain.made_of = 'jowar'.padEnd(41, 'x'); return !checkMeal(m, P).meal; }), 'one was offered');
+  add('a plate with one item is dropped (the shape rule)', !checkMeal(Object.assign(platePlain(), { items: [platePlain().items[0]] }), P).meal, 'a one-item plate was offered');
+  add('a plate with a figure missing is dropped, fibre too (S13 reads kcal and macros; fibre has its own guard)', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(k => { const m = platePlain(); delete m[k]; return checkMeal(m, P).drop === 'numbers'; }), 'a plate with a missing figure was offered, or dropped for another reason than "numbers"');
+  const ch = (al) => (checkMeal(Object.assign(platePlain(), { alchemy: al }), P).meal || { alchemy: { x: 1 } }).alchemy;
+  const add1 = (o) => ({ protein: Object.assign({ add_item: 'Roasted chana', add_grams: 40, minutes: 20, grain_grams_after: 90, contains: ['plain'], deltaKcal: 150, deltaProtein: 8, deltaCarbs: 20, deltaFats: 4, deltaFiber: 3 }, o) });
+  add('a one-tap change: control, a food with its grams is offered', !!ch(add1({})).protein, 'the control change was dropped');
+  add('a one-tap change whose food cannot be shown (over 40 letters, or not a name) is not offered', !ch(add1({ add_item: 'Roasted chana with a little chaat masala and lime' })).protein && !ch(add1({ add_item: '!!!' })).protein, 'the change was offered without its food');
+  add('a one-tap change whose food has no grams is not offered', !ch(add1({ add_grams: undefined })).protein && !ch(add1({ add_grams: 'some' })).protein, 'the change was offered with no grams for its food');
+  add('a one-tap change that is not an object is skipped, with no error', safe(() => Object.keys(ch({ protein: null, glucose: 'x', express: 7 })).length, -1) === 0, 'it threw or was offered');
+  { const D = prof({ health: 'diabetes' }), m = Object.assign(platePlain(), { items: [{ food: 'Steamed rice', grams: 60, group: 'carbs', contains: ['grain'] }].concat(platePlain().items) }), c = checkMeal(m, D);
+    add('S5 the declared grain is the item it names, not the first grain on the plate', !!c.meal && c.meal.grain.food === 'Jowar roti' && c.meal.grain.grams === 90, JSON.stringify(c.meal ? c.meal.grain : c)); }
+  for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
+    add('a reply that is not an object gives an error, with no throw', [null, 'ok', 7].every(r => { const o = safe(() => k.check(r), { threw: 1 }); return !o.threw && o.status === 'error'; }), kind); }
+  add('taste notes: a health word on the closed list ("light") is not shown, and a word is shown once', JSON.stringify(tw(['light', 'tangy', 'smoky'])) === '["tangy","smoky"]' && JSON.stringify(tw(['tangy', 'tangy', 'smoky'])) === '["tangy","smoky"]', JSON.stringify(tw(['light', 'tangy', 'smoky'])) + ' ' + JSON.stringify(tw(['tangy', 'tangy', 'smoky'])));
+  { const hp = plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }), ids = Object.keys(hp.check(mealsReply(platePlain())).hooks || {}), id = ids[0];
+    const got = id ? (hp.check(mealsReply(Object.assign(platePlain(), { planned_around: [id, id] }))).meals || [{}])[0].planned : null;
+    add('a hook cited twice is named once', !id || JSON.stringify(got) === JSON.stringify([id]), JSON.stringify(got)); }
+  for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
+    const body = kind === 'meals' ? mealsReply(platePlain()) : kind === 'rescue' ? { dish: { name: 'Dal', portion: 'about 300 g', kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8, contains: ['plain'] } } : { items: [{ food: 'dal', grams: 200, group: 'protein' }], kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8 };
+    add('a reply with status "refer" is a referral whatever refer_reason says (S7)', k.check(Object.assign({}, body, { status: 'refer', refer_reason: 'none' })).status === 'refer', kind); }
+  { const lg = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: '2 roti and dal' } }), lr = (o, it) => Object.assign({ status: 'ok', refer_reason: 'none', items: it || [{ food: 'dal', grams: 200, group: 'protein' }], kcal: 350, protein: 18, carbs: 45, fats: 10, fiber: 8 }, o);
+    add('log: a reply with a figure missing is not read, fibre too', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(f => lg.check(lr({ [f]: undefined })).status !== 'ok') && lg.check(lr({})).status === 'ok', 'a log reply with a missing figure was read');
+    const items = lg.check(lr({}, [{ food: 'dal', group: 'protein' }, { food: '2 roti', grams: 140, group: 'carbs' }, { food: 'roti', grams: 140, group: 'carbs' }])).items || [];
+    add('log: an item with no grams, or not in the name shape, is not listed', JSON.stringify(items.map(i => i.food)) === '["roti"]', JSON.stringify(items));
+    for (const kind of ['meals', 'rescue', 'log', 'tune']) add('a request with no profile, no context or (log) no text is refused, with no error', [{}, { profile: BASE }, kind === 'log' ? { profile: BASE, ctx: { meal: 'lunch' } } : null].filter(Boolean).every(b => { const o = safe(() => plan(kind, b), { threw: 1 }); return !o.threw && o.error; }), kind); }
+  { const rp = plan('rescue', { profile: BASE, ctx: { meal: 'dinner', text: 'Veg thali' } }), d = (o) => ({ status: 'ok', refer_reason: 'none', dish: Object.assign({ name: 'Veg thali', portion: 'about 450 g', kcal: 580, protein: 20, carbs: 80, fats: 20, fiber: 8, contains: ['grain'] }, o) });
+    add('Rescue: a dish with a figure missing is not helped, fibre too', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(f => rp.check(d({ [f]: undefined })).status !== 'ok') && rp.check(d({})).status === 'ok', 'a dish with a missing figure was helped, or the control was not'); }
+  // the caps the second mutation set found unread (fix-r14): five hooks cited, a long log item, the grain found by its shown name
+  { const HB = Object.assign({}, BASE, { focus: 'protein', health: 'diabetes', meds: 'yes' }), hf = { today: { meals: [{ meal: 'breakfast', kind: 'skipped' }], kcal: 0 } };
+    const hp = plan('meals', { profile: HB, ctx: { meal: 'dinner', appetite: 2, hour: 22 }, file: hf }), ids = Object.keys(hp.check({ status: 'ok', refer_reason: 'none', meals: [] }).hooks || {});
+    const big = Object.assign(platePlain(), { kcal: 900, protein: 40, carbs: 130, fats: 24 }), cite = (n) => ((hp.check(mealsReply(Object.assign(J(big), { planned_around: ids.slice(0, n) }))).meals || [{}])[0] || {}).planned;
+    add('hooks cap: five cited hooks name none, four are named', ids.length >= 5 && JSON.stringify(cite(5)) === '[]' && (cite(4) || []).length === 4, `${ids.length} hooks offered: ${JSON.stringify(cite(5))} ${JSON.stringify(cite(4))}`); }
+  { const long = 'masala dal with tadka and jeera rice and cucumber salad and roti', lg2 = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: long + ' and ' + long } });
+    const lr2 = (f) => ({ status: 'ok', refer_reason: 'none', items: [{ food: f, grams: 300, group: 'other' }, { food: 'roti', grams: 60, group: 'carbs' }], kcal: 700, protein: 25, carbs: 100, fats: 22, fiber: 10 });
+    add('log item cap: an item name over 60 letters is not listed, even in the client\'s words', long.length > 60 && JSON.stringify((lg2.check(lr2(long)).items || []).map(i => i.food)) === '["roti"]', JSON.stringify(lg2.check(lr2(long)).items)); }
+  { const D = prof({ health: 'diabetes' }), m = Object.assign(platePlain(), { items: [platePlain().items[0], { food: 'Jowar roti (2 pieces)', grams: 90, group: 'carbs', contains: ['grain'] }, platePlain().items[2]] }), c = checkMeal(m, D);
+    add('S5 the declared grain is found by its shown name ("Jowar roti" for "Jowar roti (2 pieces)")', !!c.meal && c.meal.grain.food === 'Jowar roti', JSON.stringify(c)); }
+  add('a plate that is not an object is dropped, with no error', safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [null, 'Dal', 7, platePlain()] }).meals || []).length, -1) === 1 && safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [[], platePlain()] }).meals || []).length, -1) === 1, 'a null, text, number or list plate threw or was offered'); }
 
 // ---------- S7: referral ----------
 const refers = (kind, t) => { const pl = plan(kind, { profile: Object.assign({}, BASE, { diet: 'veg' }), ctx: { meal: 'lunch', text: t } }); return !!(pl && pl.reply && pl.reply.status === 'refer'); };
@@ -422,7 +523,11 @@ console.log(`round 5 schema walk: ${walked} string fields`);
   for (const m of app.matchAll(/addEventListener\("([a-z]+)",/g)) { let h = argAt(app, m.index + m[0].length).trim(); let body = h;
     if (/^[A-Za-z_$][\w$]*$/.test(h)) { const d = new RegExp('function ' + h + '\\(').exec(app); if (d) { const o = app.indexOf('{', d.index); body = app.slice(o, o + 1) + argAt(app, o + 1) + '}'; } }
     if (!WRITES.test(body)) continue; n++; if (/^act\(/.test(h)) wrapped++;
-    add('round 5 handler wrapper', /^act\(/.test(h), `a ${m[1]} handler that writes the log or composes is not wrapped in act(): ${h.slice(0, 120)}`); }
+    add('round 5 handler wrapper', /^act\(/.test(h), `a ${m[1]} handler that writes the log or composes is not wrapped in act(): ${h.slice(0, 120)}`);
+    // the two "I'll have this" buttons log a composed plate or dish: their act() guard runs the composed state's own check first, plateWhy for
+    // a plate and rescueWhy for a Rescue dish (safety audit of 7eaadcf, m1: either could go with no test failing; fix-r14)
+    if (/^act\(/.test(h) && /logEv\("(?:had|rescued)"/.test(body)) { const g = argAt(h, 4).trim(), want = /logEv\("had"/.test(body) ? 'plateWhy(' : 'rescueWhy(';
+      add('the log-time guard of each "I\'ll have this" runs the composed check (S5, S6, S13)', g !== 'null' && g.includes(want), `a handler that logs ${/logEv\("had"/.test(body) ? 'a plate' : 'a Rescue dish'} is guarded by ${g.slice(0, 80)}, not ${want}`); } }
   add('round 5 handler wrapper found handlers', n >= 10, `only ${n} handlers that write the log or compose were found; the guard is not reading the page`);
   console.log(`round 5 handlers that write the log or compose: ${n}, wrapped in act(): ${wrapped}`); }
 
@@ -699,6 +804,16 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
   // stand-ins for the page around it. A missing function is a FAIL, not a skip.
   { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null; return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
     const appP = (o) => Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
+    // the kept-plate rule at load and render (fix-r14, found by the mutation run): pruneKept takes off every kept plate whose base fails its
+    // own check (baseWhy: figures agree, S5, S6), and the whole reply when none is left; a stored entry that is not a reply is left alone
+    { const ctx = { STORE: { res: { a: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }, { items: [1] }, null, { ok: 1 }] }, b: { rules: 'R', meal: 'lunch', meals: [{ items: [1] }] },
+        c: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }] }, d: null, e: { rules: 'R', meal: 'lunch' }, f: { rules: 'R', meal: 'lunch', meals: [] } }, shown: { lunch: 'b' } },
+      rules: () => 'R', baseWhy: (m) => m.ok ? '' : 'refused', UI: { sel: 2, alc: {}, swp: 0, swb: 0 } };
+      const ok = run(['pruneKept'], ctx, '(pruneKept(), true)');
+      add('kept plates: pruneKept takes off each plate whose base fails its check, and the reply when none is left', ok === true && ctx.STORE.res.a && ctx.STORE.res.a.meals.length === 1 && !ctx.STORE.res.b && ctx.STORE.shown.lunch === null
+        && ctx.STORE.res.c.meals.length === 1 && 'd' in ctx.STORE.res && ctx.STORE.res.e && ctx.STORE.res.f, ok === null ? 'pruneKept not found or threw' : JSON.stringify(ctx.STORE));
+      const ctx2 = { STORE: { res: { c: { rules: 'R', meal: 'lunch', meals: [{ items: [1], ok: 1 }] } }, shown: {} }, rules: () => 'R', baseWhy: () => '', UI: { sel: 1 } };
+      add('kept plates: nothing taken off leaves the selection as it is', run(['pruneKept'], ctx2, '(pruneKept(), true)') === true && ctx2.UI.sel === 1, JSON.stringify(ctx2.UI)); }
     // m1: composedWhy keeps S5 (the grain stays with diabetes) and S6 (on medicines, the usual size) on every composed state
     { const mk = (P) => run(['has', 'profileOut', 'composedWhy'], { P, C: { meal: 'lunch' }, figsAgree, medsUsual }, '{composedWhy, u: medsUsual(profileOut(), "lunch")}');
       const fig = (p, c, f) => ({ protein: p, carbs: c, fats: f, kcal: 4 * p + 4 * c + 9 * f }), base = fig(25, 80, 20);
