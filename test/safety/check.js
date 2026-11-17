@@ -349,6 +349,21 @@ for (const [n, o] of FOUND) {
   add('taste cap: four taste words give none, three are shown', JSON.stringify(tw(['tangy', 'smoky', 'spicy', 'mild'])) === '[]' && tw(['tangy', 'smoky', 'spicy']).length === 3, 'four taste words were cut to three, or three were not shown');
   const r5 = (n) => ({ status: 'ok', refer_reason: 'none', meals: Array.from({ length: n }, () => platePlain()) });
   add('plates cap: a reply with five plates is not read, four are', (pl.check(r5(5)).meals || []).length === 0 && (pl.check(r5(4)).meals || []).length === 4, 'a reply with five plates was read');
+  // the shape guards of the plate check, each on its own (found by the mutation run, fix-r14)
+  add('a plate whose subtitle is not readable text is dropped (raw-field rule)', !checkMeal(Object.assign(platePlain(), { subtitle: '\u0926\u0942\u0927 \u0914\u0930 \u0930\u094B\u091F\u0940' }), P).meal && !checkMeal(Object.assign(platePlain(), { subtitle: 42 }), P).meal, 'a Devanagari or number subtitle was not dropped');
+  add('a plate whose title, grain name or made_of is not text, or is over its cap, is dropped', ['title', 'grainFood', 'grainMade'].every(k => { const m = platePlain(); if (k === 'title') m.title = 7; else if (k === 'grainFood') m.grain.food = 'Jowar roti'.padEnd(201, 'x'); else m.grain.made_of = 'jowar'.padEnd(41, 'x'); return !checkMeal(m, P).meal; }), 'one was offered');
+  add('a plate with one item is dropped (the shape rule)', !checkMeal(Object.assign(platePlain(), { items: [platePlain().items[0]] }), P).meal, 'a one-item plate was offered');
+  add('a plate with a figure missing is dropped, fibre too (S13 reads kcal and macros; fibre has its own guard)', ['kcal', 'protein', 'carbs', 'fats', 'fiber'].every(k => { const m = platePlain(); delete m[k]; return !checkMeal(m, P).meal; }), 'a plate with a missing figure was offered');
+  const ch = (al) => (checkMeal(Object.assign(platePlain(), { alchemy: al }), P).meal || { alchemy: { x: 1 } }).alchemy;
+  const add1 = (o) => ({ protein: Object.assign({ add_item: 'Roasted chana', add_grams: 40, minutes: 20, grain_grams_after: 90, contains: ['plain'], deltaKcal: 150, deltaProtein: 8, deltaCarbs: 20, deltaFats: 4, deltaFiber: 3 }, o) });
+  add('a one-tap change: control, a food with its grams is offered', !!ch(add1({})).protein, 'the control change was dropped');
+  add('a one-tap change whose food cannot be shown (over 40 letters, or not a name) is not offered', !ch(add1({ add_item: 'Roasted chana with a little chaat masala and lime' })).protein && !ch(add1({ add_item: '!!!' })).protein, 'the change was offered without its food');
+  add('a one-tap change whose food has no grams is not offered', !ch(add1({ add_grams: undefined })).protein && !ch(add1({ add_grams: 'some' })).protein, 'the change was offered with no grams for its food');
+  add('a one-tap change that is not an object is skipped, with no error', safe(() => Object.keys(ch({ protein: null, glucose: 'x', express: 7 })).length, -1) === 0, 'it threw or was offered');
+  { const D = prof({ health: 'diabetes' }), m = Object.assign(platePlain(), { items: [{ food: 'Steamed rice', grams: 60, group: 'carbs', contains: ['grain'] }].concat(platePlain().items) }), c = checkMeal(m, D);
+    add('S5 the declared grain is the item it names, not the first grain on the plate', !!c.meal && c.meal.grain.food === 'Jowar roti' && c.meal.grain.grams === 90, JSON.stringify(c.meal ? c.meal.grain : c)); }
+  for (const kind of ['meals', 'rescue', 'log']) { const k = plan(kind, { profile: BASE, ctx: { meal: 'lunch', text: 'dal and roti' } });
+    add('a reply that is not an object gives an error, with no throw', [null, 'ok', 7].every(r => { const o = safe(() => k.check(r), { threw: 1 }); return !o.threw && o.status === 'error'; }), kind); }
   add('a plate that is not an object is dropped, with no error', safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [null, 'Dal', 7, platePlain()] }).meals || []).length, -1) === 1 && safe(() => (pl.check({ status: 'ok', refer_reason: 'none', meals: [[], platePlain()] }).meals || []).length, -1) === 1, 'a null, text, number or list plate threw or was offered'); }
 
 // ---------- S7: referral ----------
