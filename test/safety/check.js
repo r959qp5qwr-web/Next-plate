@@ -126,7 +126,10 @@ const contentsReason = r => /^contents/.test(Object.keys(r || {}).join(' ')) || 
   const refersT = (t) => { const pl = plan('meals', { profile: BASE, ctx: { meal: 'lunch', text: t } }); return !!(pl.reply && pl.reply.status === 'refer'); };
   for (const [t, want] of [['kidney beans curry', false], ['Kidney bean salad for lunch', false], ['weak kidney beans ok?', true], ['kidney, beans ok for dinner?', true], ['kidney beans for my kidney', true],
     ['I have kidney stones, kidney beans ok', true], ['kidney beans with CKD', true], ['baby corn manchurian', false], ['delivered a baby corn soup', false], ['delivered a baby, corn soup ok?', true],
-    ['delivered my baby last week, baby corn ok?', true], ['tri-colour salad', false], ['third tri, colour salad?', true], ['third trimester tri-colour salad', true]])
+    ['delivered my baby last week, baby corn ok?', true], ['tri-colour salad', false], ['third tri, colour salad?', true], ['third trimester tri-colour salad', true],
+    // "prego" is the sauce only beside a sauce or pasta word (fix-r12): a pasta word elsewhere in the text does not cancel the referral
+    ['prego here, white sauce pasta ok?', true], ['I am prego, can I have pasta tonight', true], ["I'm prego and craving noodles", true], ['prego, pizza tonight?', true], ['I am prego. Prego sauce pasta ok?', true],
+    ['Pasta with Prego sauce', false], ['Prego pasta with salad', false], ['Prego sauce pasta', false], ['prego pasta sauce for dinner', false], ['Prego traditional sauce with penne', false]])
     add('S7 exclusions read only their own food (frame grid)', refersT(t) === want, `"${t}" ${want ? 'went to the model' : 'was referred'}`); }
 
 // ---------- held-out names, honest tags: the declared-contents check drops them, on every path ----------
@@ -475,6 +478,8 @@ for (const [raw, shown] of [['Whole wheat phulka (2 rotis)', 'Whole wheat phulka
   ['2 piece pav lightly toasted with 1 teaspoon butter', 'Pav lightly toasted with butter'], ['Paneer veg biryani cooked in 1 teaspoon oil', 'Paneer veg biryani cooked in oil'], ['Khichdi with 1 tsp of ghee', 'Khichdi with ghee'],
   ['Dal with 2 cups of rice', 'Dal with rice'], ['Three to four idlis', 'Idlis'], ['2 to 3 idlis', 'Idlis'], ['2-3 idlis', 'Idlis'], ['Rice with three to four idlis', 'Rice with idlis'], ['Paneer portion', 'Paneer'],
   ['Steamed methi muthiya', 'Steamed methi muthiya'], ['Gram flour chilla', 'Gram flour chilla'], ['Cucumber slices', 'Cucumber slices'], ['Kala chana chaat bowl', 'Kala chana chaat bowl'],
+  ['1 full fat curd', 'Full fat curd'], ['2 full cream milk', 'Full cream milk'], ['1 heaped tbsp ghee', 'Ghee'], ['Vati dal khaman', 'Vati dal khaman'], ['Dal vati', 'Dal vati'], ['Portion control salad', 'Portion control salad'],
+  ['Coffee mug', 'Coffee mug'], ['Salt pinch', 'Salt'], ['Ghee teaspoon', 'Ghee'],
   ['Mug cake', 'Mug cake'], ['Glass noodles', 'Glass noodles'], ['Moong (green gram)', 'Moong (green gram)'], ['Dal bati churma', 'Dal bati churma'], ['Litti chokha', 'Litti chokha'], ['Kadhi pakode', 'Kadhi pakode'], ['Teen dal tadka', 'Teen dal tadka']]) {
   const m = platePlain(); m.items[2] = { food: raw, grams: 100, group: 'greens', contains: ['plain'] }; const r = safe(() => plan('meals', { profile: BASE, ctx: { meal: 'lunch' } }).check(mealsReply(m)), {});
   const it = (((r.meals || [])[0] || {}).items || []).map(i => i.food);
@@ -781,6 +786,23 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
         add('S10 no declared grain: shown, logged and recomputed figures agree', ['kcal', 'protein', 'carbs', 'fats'].every(k => Math.max(0, Math.round(want[k])) === v.n[k]), `${s2}: shown ${JSON.stringify(v.n)}, recomputed ${JSON.stringify(want)}`);
         add('S10 no declared grain: no note names a grain change', !v.notes.some(x => / goes to \d+[\s ]g| is left out/.test(x)) && v.items.every(i => items.some(([f0, g0]) => f0 === i.food && g0 === i.grams) || !items.some(([f0]) => f0 === i.food)), `${s2}: notes ${JSON.stringify(v.notes)}, plate ${v.items.map(i => i.grams + ' g ' + i.food).join(', ')}`); } }
   add('S10 no declared grain: tap states checked', ngN >= 16, `only ${ngN} tap states on plates with no declared grain were checked`);
+  // safety audits of b4633dd m4 and 530a503 m1: with no declared grain, a change that says no grain is left (grain grams after 0) while a
+  // grain item stays listed is not offered, on the plate or in a tune; with no grain item on the plate, the same change stays (control), and
+  // so does a change that gives no grain grams (the recorded one-tap changes the bars count)
+  for (const [items, grain, want] of [[[['Rajma', 150, 'protein'], ['Jeera rice', 200, 'carbs'], ['Cucumber salad', 120, 'greens']], { food: 'Rice', made_of: 'rice', grams: 200 }, false],
+      [[['Rajma', 150, 'protein'], ['Jeera rice', 200, 'carbs'], ['Cucumber salad', 120, 'greens']], { food: '', made_of: '', grams: 0 }, false],
+      [[['Moong dal', 200, 'protein'], ['Jowar roti', 90, 'carbs'], ['Cucumber salad', 100, 'greens']], { food: 'Roti', made_of: 'jowar', grams: 90 }, false],
+      [[['Paneer bhurji', 150, 'protein'], ['Sauteed greens', 150, 'greens']], { food: '', made_of: '', grams: 0 }, true]]) {
+    const o = { diet: 'veg', goal: 'hold' };
+    const AL = { glucose: { titleSuffix: '+ beans', note: 'x', add_item: 'Sauteed beans', add_grams: 80, minutes: 20, grain_grams_after: 0, contains: PT, deltaKcal: -120, deltaProtein: 2, deltaCarbs: -30, deltaFats: 0, deltaFiber: 2 },
+      protein: { titleSuffix: '+ chana', note: 'x', add_item: 'Roasted chana', add_grams: 30, minutes: 20, contains: PT, deltaKcal: -60, deltaProtein: 4, deltaCarbs: -20, deltaFats: 2, deltaFiber: 2 } };
+    const raw = { title: 'x', prepMinutes: 25, items: items.map(([food, grams, group]) => ({ food, grams, group, contains: /rice|roti/i.test(food) ? ['grain'] : PT })), grain, contains: ['grain'],
+      kcal: 560, protein: 22, carbs: 80, fats: 16, fiber: 10, why: [], swaps: { protein: [], base: [] }, alchemy: AL, planned_around: [], for_you: '', taste: [] };
+    const st = `items ${items.map(i => '"' + i[0] + '"').join(', ')}, grain declared "${grain.food}"`, sh = shownPlate(o, 'lunch', raw); if (!sh) { add('S10 no declared grain, grain grams after 0: the plate is shown (control)', false, st); continue; }
+    const t = tuned(o, 'lunch', Object.assign(J(sh), { alchemy: undefined }), { protein: [], base: [] }, AL);
+    for (const [pth, al] of [['plate', sh.alchemy || {}], ['tune', (t && t.alchemy) || {}]]) {
+      add('S10 no declared grain: no change takes the grain to 0 g while a grain item stays listed', !!al.glucose === want, `${st} (${pth}): "no grain left" change ${al.glucose ? 'offered: ' + al.glucose.note : 'not offered'}, expected ${want ? 'offered' : 'not offered'}`);
+      add('S10 no declared grain: a change with no grain grams stays (control)', !!al.protein, `${st} (${pth}): offered ${Object.keys(al).join(', ')}`); } }
   console.log(`S10 grain-protein plate: ${states} app tap states checked; part-name plates: ${partN} grain swap taps; no declared grain: ${ngN} tap states`); }
 
 // ---------- B1 (Codex re-audit): urgent symptoms are referred before the model on every kind that carries text, with the line to get help now ----------

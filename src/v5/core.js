@@ -649,22 +649,28 @@ var MEASOF=new RegExp("(^|\\b(?:with|and|plus)\\s+|,\\s*)(?:an?\\s+)?(?:(?:small
    "Katora dal", "Chammach ghee", "Tsp ghee", "Spoon ghee", "Pinch salt", "Pinch of salt": safety audit of b4633dd;
    a pinch inside a name is left to the name rules);
    "Cup cake", "Mug cake" and "Glass noodles" keep their names */
-/* every word of the one list but those that also open a food's own name: a piece, a slice, gram ("Gram flour chilla") and "no" ("No onion
-   dal") (fix-r12; "Kg rice", "Gm dal", "Ladle sambar", "Serving dal" lose the unit word too) */
-var MEASNOTOPEN=["pieces?","nos?","slices?","g","grams?"];
-var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASNOTOPEN.indexOf(w)<0;}).join("|")+")(?:\\s+of)?\\s+(?!(?:cakes?|noodles|vermicelli)\\b)(?=[a-z])","i");
-/* a measure word that ends a name, with no number before it, goes the same way ("Paneer portion" shows "Paneer", "Ghee teaspoon" "Ghee";
-   fix-r12). A word that also names a food's form or the dish it is served in stays ("Cucumber slices", "Chicken breast pieces", "Kala chana
-   chaat bowl", "Curd cup", "Green gram"), and so does katori, whose own guard below drops the name. */
-var MEASFORM=["pcs?","pieces?","nos?","bowls?","cups?","glass(?:es)?","plates?","slices?","mugs?","g","gms?","grams?","katori\\w*","katoree\\w*","katora\\w*","katore\\w*"];
-var MEASEND=new RegExp("(\\b[a-z]+)\\s+(?:"+MEASW.filter(function(w){return MEASFORM.indexOf(w)<0;}).join("|")+")$","i");
+/* the words of the one list that open a name only as a measure ("Glass buttermilk", "Tsp ghee", "Pinch salt"); taken from the list by
+   name, so none can be a word the list does not hold. Others stay: "Vati dal khaman", "Portion control salad", "Gram flour chilla", "No
+   onion dal"; "Kg rice" and "Gm dal" are watched */
+var MEASOPEN=["glass(?:es)?","bowls?","katori\\w*","katoree\\w*","katora\\w*","katore\\w*","plates?","tumblers?","handfuls?","fistfuls?","pinch(?:es)?","cups?","mugs?",
+  "chammach\\w*","chamach\\w*","tsps?","tbsps?","teaspoons?","tablespoons?","spoons?","spoonfuls?"];
+var MEASBARE=new RegExp("^(?:an?\\s+)?(?:(?:small|medium|large|big)\\s+)?(?:"+MEASW.filter(function(w){return MEASOPEN.indexOf(w)>=0;}).join("|")+")(?:\\s+of)?\\s+(?!(?:cakes?|noodles|vermicelli)\\b)(?=[a-z])","i");
+/* a measure word that ends a name, with no number before it, goes the same way ("Paneer portion" shows "Paneer", "Ghee teaspoon" "Ghee",
+   "Salt pinch" "Salt"; fix-r12): only the words that never end a food's own name. A bowl, plate, cup, glass, mug, slice, piece, spoon or
+   tumbler stays ("Kala chana chaat bowl", "Curd cup", "Coffee mug", "Cucumber slices"), and so do vati ("Dal vati") and katori, whose own
+   guard below drops the name */
+var MEASENDW=["portions?","servings?","helpings?","tsps?","tbsps?","teaspoons?","teaspoonfuls?","tablespoons?","tablespoonfuls?","spoonfuls?","handfuls?","fistfuls?",
+  "pinch(?:es)?","scoops?","ladles?","ladlefuls?","bowlfuls?","cupfuls?","glassfuls?","platefuls?","mugfuls?","tumblerfuls?","chammach\\w*","chamach\\w*","chammuch",
+  "mutth?i\\w*","muthi","karc?hhi\\w*","karchi","kgs?","kilos?","kilograms?","litres?","liters?","ltrs?","ml"];
+var MEASEND=new RegExp("(\\b[a-z]+)\\s+(?:"+MEASW.filter(function(w){return MEASENDW.indexOf(w)>=0;}).join("|")+")$","i");
 var CNTDBL=new RegExp("\\bdouble\\s+"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?","gi");
 /* katori in every form ("katori", "katoris", "katoriyan", "katoree", and "katora", "katore": safety audit of b4633dd) is a household measure (S8) */
 var KATORI=/\b(?:katori|katoree|katora|katore)\w*/i;
 /* counts in digits. In a plate's names every number goes (the prompt asks for none; S8). */
 /* the digit count takes the measure after it from the one list, with a size before it and an "of" after it ("1 tsp of ghee" goes whole, so
    no "with of" is left), and a range ("2 to 3", "2-3", "2 or 3"; fix-r12) */
-var DIGMEAS="(?:(?:"+MEASSIZE+"\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|"+MEASSIZE+"\\b)";
+/* (a size with no measure after it goes only as small, medium or large, as before: "1 full fat curd" keeps "Full fat curd") */
+var DIGMEAS="(?:(?:"+MEASSIZE+"\\s+)?"+CNTMEAS+"\\b\\.?(?:\\s+of\\b)?|(?:small|medium|large)\\b)";
 var DIGNUM="\\d+(?:[.\\/\\u2044]\\d+)?";
 var DIGALL=new RegExp("\\b"+DIGNUM+"(?:\\s*(?:-|to|or)\\s*"+DIGNUM+")?\\s*(?:x\\s+)?"+DIGMEAS+"?","gi");
 /* THE MENU NUMBER RULE, kept in this one place (owner, 16 Nov, option survey: "Short keep-list (Recommended)"): "Keep a number only if it is
@@ -845,6 +851,10 @@ function checkMeal(m,p){
        gives none (it cannot be told). Grams after equal to the reply's grain grams, or 0 with no grain, change no grain and stay (S10; safety
        audit of ba4d8dc, M2) */
     if(!dg&&after!=null){var gg=num(m.grain&&m.grain.grams,0,1500)||0;if(gg>0?after!==gg:after>0)return;}
+    /* with no declared grain, a change that says no grain is left ("grain grams after" 0) while a grain item stays listed is not offered: the
+       plate would show the grain and the change's figures would have taken it off ("Rice" named for the item "Jeera rice", 200 g listed;
+       safety audits of b4633dd m4 and 530a503 m1) */
+    if(!dg&&after===0&&items.some(function(i){return i.grams>=30&&isGrain(i.food);}))return;
     if(dg&&after!=null&&Math.round(after)!==dg.grams)x.grainAfter=Math.round(after);   /* the grain grams after the change travel with it, so the serving list can show them (screen review B2) */
     if(item){x.item=item;x.itemGrams=ig;}
     x.note=changeNote(k,x,dg);
