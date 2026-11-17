@@ -1,5 +1,8 @@
-# names-diff: 3627 recorded plate-path names and 34 recorded Rescue cases from 55 files under eval/; 0 change between 40b84f0 and this build.
+# names-diff: 3627 recorded plate-path names and 34 recorded Rescue cases from 55 files under eval/; 4 change between 1c58b89 and this build.
 # The 234 menu-path names (104 with their typed menu) are not compared: menu reading was removed (owner, 17 Nov) and the menu code is dormant.
 # Names are counted once each; titles and subtitles are not model names here (the engine writes them from the items).
 # kind | as recorded | old shown -> new shown ("" = not shown)
-
+plate | "1 bowl makhana dry roasted with a pinch of salt and black pepper" | "" -> "Makhana dry roasted with salt and black pepper"
+plate | "1 katori paneer veg biryani cooked in 1 teaspoon oil" | "Paneer veg biryani cooked in teaspoon oil" -> "Paneer veg biryani cooked in oil"
+plate | "2 piece pav lightly toasted with 1 teaspoon butter" | "Pav lightly toasted with teaspoon butter" -> "Pav lightly toasted with butter"
+plate | "Paneer portion" | "Paneer portion" -> "Paneer"
