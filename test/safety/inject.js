@@ -7,8 +7,13 @@
 //     run time, so this file holds none of them);
 //   - a tag leaf: each tag the profile bars, "supplement" included;
 //   - an array: one element over its cap, carrying energy and a barred word.
+//   - a figure leaf (fix-r15; safety audit of c666d34, B1 and m5): a value past each end of the leaf's range, zero, null, "", a negative
+//     number, a word, a number written as a string, a fraction, a huge number and true, each end of the range itself, and the base's own
+//     value as the control.
 // A cell passes when the element it wrote into is dropped, or when the injected content is in nothing shown, counted or logged, as the
-// leaf's rule below says (docs/SAFETY-INVARIANTS.md). The test fails when a schema leaf has no rule (completeness), when a rule names no
+// leaf's rule below says (docs/SAFETY-INVARIANTS.md). A figure cell passes when a figure that is not an integer inside the leaf's range
+// drops its element, and when every figure the element is offered with is the figure written (shown or checked value === written value;
+// fix-r14's rule, "a number, bounded by the engine", accepted a figure cut to fit). The test fails when a schema leaf has no rule (completeness), when a rule names no
 // leaf, when the base reply does not offer the element a leaf belongs to (so no drop is vacuous), or when a control is not offered.
 // usage: node test/safety/inject.js [hosted/v6/index.min.html]
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -54,35 +59,51 @@ const key = p => p.join('.').replace(/\.\[\]/g, '[]');
 // el: the element a leaf belongs to. drop: a barred word or tag there drops it (S1-S4, S9 on plates, swaps and one-tap changes: "read for
 // the food rules"). hidden: the injected content shows nowhere, but the element may stay (S15: the Rescue dish is the client's own; the log
 // is the client's own record, not filtered by the food rules; an enum). suppDrop: only a supplement drops it (S15's one exception, S9).
-// cap: the engine's cap on that field (a cell writes past it). figure: a number, bounded by the engine (no word or tag can go there).
-const FIG = { k: 'figure' };
+// cap: the engine's cap on that field (a cell writes past it). figure (fix-r15): an integer from lo to hi, taken as written or its element
+// dropped; show reads the figure back from the checked output, so a cell can tell a figure cut to fit from one taken as written (no show:
+// the figure is read but not passed on, and only the drop is tested). The ranges are the engine's documented ones (docs/SAFETY-INVARIANTS.md,
+// the figure rule), written out here apart from the engine.
+const F = (el, lo, hi, show, item) => ({ k: 'figure', el, lo, hi, show, item });
+const plateOut = (out) => (out.meals || [])[0];
+const pf = (f) => (kind, out) => { const m = plateOut(out); return m ? m[f] : undefined; };
 const plateRules = (pre, el) => {
   const r = {};
-  r[pre + 'title'] = { k: 'drop', el: 'plate', cap: 70 }; r[pre + 'prepMinutes'] = FIG;
+  r[pre + 'title'] = { k: 'drop', el: 'plate', cap: 70 }; r[pre + 'prepMinutes'] = F('plate', 0, 180, pf('minutes'));
   r[pre + 'items'] = { k: 'array', el: 'plate', cap: 7, over: 'item' };
-  r[pre + 'items[].food'] = { k: 'drop', el: 'plate', cap: 200 }; r[pre + 'items[].grams'] = FIG; r[pre + 'items[].group'] = { k: 'hidden', el: 'plate' };
+  r[pre + 'items[].food'] = { k: 'drop', el: 'plate', cap: 200 }; r[pre + 'items[].grams'] = F('plate', 1, 800, (kind, out) => { const m = plateOut(out); return m ? m.items[0].grams : undefined; });
+  r[pre + 'items[].group'] = { k: 'hidden', el: 'plate' };
   r[pre + 'items[].contains'] = { k: 'tags', el: 'plate' }; r[pre + 'contains'] = { k: 'tags', el: 'plate' };
-  r[pre + 'grain.food'] = { k: 'drop', el: 'plate', cap: 200 }; r[pre + 'grain.made_of'] = { k: 'drop', el: 'plate', cap: 40 }; r[pre + 'grain.grams'] = FIG;
-  for (const f of ['kcal', 'protein', 'carbs', 'fats', 'fiber']) r[pre + f] = FIG;
+  r[pre + 'grain.food'] = { k: 'drop', el: 'plate', cap: 200 }; r[pre + 'grain.made_of'] = { k: 'drop', el: 'plate', cap: 40 }; r[pre + 'grain.grams'] = F('plate', 0, 1500);
+  for (const [f, lo, hi] of [['kcal', 40, 2500], ['protein', 0, 250], ['carbs', 0, 400], ['fats', 0, 200], ['fiber', 0, 80]]) r[pre + f] = F('plate', lo, hi, pf(f));
   return r; };
+// the target swap is found by its name here (a figure cell may write its grams); a change by its kind
+const swapShow = (k, f) => (kind, out) => { const pm = plateOf(kind, out), s = pm && (pm.swaps[k] || []).find(x => x.food === TNAME[k]); return s ? s[f] : undefined; };
+const chShow = (c, f) => (kind, out) => { const pm = plateOf(kind, out), x = pm && (pm.alchemy || {})[c]; return x ? x[f] : undefined; };
+const SWR = { grams: [1, 800], deltaKcal: [-400, 400], deltaProtein: [-40, 40], deltaCarbs: [-80, 80], deltaFats: [-40, 40], deltaFiber: [-20, 20] };
+const CHR = { minutes: [0, 180], grain_grams_after: [0, 800], deltaKcal: [-400, 400], deltaProtein: [-10, 40], deltaCarbs: [-80, 40], deltaFats: [-30, 30], deltaFiber: [-10, 20] };
 const tuneRules = (pre) => { const r = {};
   for (const k of ['protein', 'base']) { const p = pre + 'swaps.' + k; r[p] = { k: 'array', el: 'list:' + k, cap: 3, over: 'swap' };
-    r[p + '[].food'] = { k: 'drop', el: 'swap:' + k, cap: 200 }; r[p + '[].grams'] = FIG; r[p + '[].contains'] = { k: 'tags', el: 'swap:' + k };
-    for (const d of ['deltaKcal', 'deltaProtein', 'deltaCarbs', 'deltaFats', 'deltaFiber']) r[p + '[].' + d] = FIG; }
+    r[p + '[].food'] = { k: 'drop', el: 'swap:' + k, cap: 200 }; r[p + '[].contains'] = { k: 'tags', el: 'swap:' + k };
+    for (const d of Object.keys(SWR)) r[p + '[].' + d] = F('swap:' + k, SWR[d][0], SWR[d][1], swapShow(k, d)); }
   r[pre + 'swaps.base[].made_of'] = { k: 'drop', el: 'swap:base', cap: 40 };
   for (const c of ['protein', 'glucose', 'express', 'gut']) { const p = pre + 'alchemy.' + c;
     r[p + '.add_item'] = { k: 'drop', el: 'change:' + c, cap: 200 }; r[p + '.contains'] = { k: 'tags', el: 'change:' + c };
-    for (const d of ['add_grams', 'minutes', 'grain_grams_after', 'deltaKcal', 'deltaProtein', 'deltaCarbs', 'deltaFats', 'deltaFiber']) r[p + '.' + d] = FIG; }
+    for (const d of Object.keys(CHR)) r[p + '.' + d] = F('change:' + c, CHR[d][0], CHR[d][1], chShow(c, d === 'grain_grams_after' ? 'grainAfter' : d));
+    // add_grams: 0 to 500 with no food added (nothing shown); with a food added, 1 to 500, shown as the food's grams
+    r[p + '.add_grams'] = F('change:' + c, 0, 500, null, { lo: 1, hi: 500, show: chShow(c, 'itemGrams') }); }
   return r; };
+const dishShow = (f) => (kind, out) => out.status === 'ok' && out.dish ? out.dish[f] : undefined, logShow = (f) => (kind, out) => out.status === 'ok' ? out[f] : undefined;
 const RULES = {
   meals: Object.assign({ status: { k: 'hidden', el: 'reply' }, refer_reason: { k: 'hidden', el: 'reply' }, meals: { k: 'array', el: 'reply', cap: 4, over: 'plate' },
     'meals[].planned_around': { k: 'array', el: 'plate', cap: 4, over: 'string' }, 'meals[].planned_around[]': { k: 'hidden', el: 'plate' },
     'meals[].taste': { k: 'array', el: 'plate', cap: 3, over: 'string' }, 'meals[].taste[]': { k: 'hidden', el: 'plate', cap: 20 } }, plateRules('meals[].'), tuneRules('meals[].')),
   tune: tuneRules(''),
   rescue: { status: { k: 'hidden', el: 'dish' }, refer_reason: { k: 'hidden', el: 'dish' }, 'dish.name': { k: 'suppDrop', el: 'dish', cap: 80 }, 'dish.portion': { k: 'hidden', el: 'dish' },
-    'dish.contains': { k: 'suppTags', el: 'dish' }, 'dish.kcal': FIG, 'dish.protein': FIG, 'dish.carbs': FIG, 'dish.fats': FIG, 'dish.fiber': FIG },
+    'dish.contains': { k: 'suppTags', el: 'dish' }, 'dish.kcal': F('dish', 40, 4000, dishShow('kcal')), 'dish.protein': F('dish', 0, 300, dishShow('protein')), 'dish.carbs': F('dish', 0, 500, dishShow('carbs')),
+    'dish.fats': F('dish', 0, 300, dishShow('fats')), 'dish.fiber': F('dish', 0, 80, dishShow('fiber')) },
   log: { status: { k: 'hidden', el: 'log' }, refer_reason: { k: 'hidden', el: 'log' }, items: { k: 'array', el: 'log', cap: 8, over: 'logitem' }, 'items[].food': { k: 'hidden', el: 'log', cap: 60 },
-    'items[].grams': FIG, 'items[].group': { k: 'hidden', el: 'log' }, kcal: FIG, protein: FIG, carbs: FIG, fats: FIG, fiber: FIG } };
+    'items[].grams': F('log', 1, 1500, (kind, out) => { const it = (out.items || []).find(i => i.food === LOGITEM0); return it ? it.grams : undefined; }), 'items[].group': { k: 'hidden', el: 'log' },
+    kcal: F('log', 40, 4000, logShow('kcal')), protein: F('log', 0, 300, logShow('protein')), carbs: F('log', 0, 500, logShow('carbs')), fats: F('log', 0, 300, logShow('fats')), fiber: F('log', 0, 80, logShow('fiber')) } };
 // Owner questions: paths where docs/SAFETY-INVARIANTS.md is silent, held to the weaker rule ("hidden") and listed in the report
 const OWNERQ = { 'rescue:dish.portion': 'a supplement named only in the Rescue portion text: the text is never shown; is the dish refused?',
   'rescue:dish.name': 'a barred food in the model\'s Rescue dish name: S15 shows the typed dish whatever the rules bar; only a supplement refuses',
@@ -106,7 +127,8 @@ const basePlate = (schema) => { const m = project(J(srcPlate), schema); m.contai
   m.taste = ['tangy', 'smoky', 'spicy']; m.planned_around = ['plain_day']; return m; };
 const RESC = rec('eval/v6/results-window-72758ac.json', 'rescue-with-day'), RESCTEXT = 'Paneer butter masala with 2 butter naan';
 const LOG = rec('eval/v6/results-window-72758ac.json', 'log-thali'), LOGTEXT = 'dal, 2 roti, bhindi sabzi, small bowl rice, salad';
-const TYPEDW = { log: new Set(LOGTEXT.toLowerCase().match(/[a-z]+/g)) };
+const TYPEDW = { log: new Set(LOGTEXT.toLowerCase().match(/[a-z]+/g)) }, LOGITEM0 = LOG.reply.raw.items[0].food;
+const TNAME = {};   // the target swap's name in the base output, per kind and profile (set below)
 
 // ---------- the paths a reply takes, per kind and profile ----------
 const prof = o => Object.assign({}, BASE, o);
@@ -169,6 +191,25 @@ for (const kind of Object.keys(KIND)) for (const [pname, po, words, tags] of PRO
   const els = [...new Set(L.map(l => (R[key(l.path)] || {}).el).filter(Boolean))];
   for (const el of els) add('the base offers every element a leaf belongs to (no drop is vacuous)', offered(kind, el, bout), `${tag}: the base reply does not offer ${el}: ${JSON.stringify(bout).slice(0, 300)}`);
   const bEnergy = energy(bout);
+  { const pm = plateOf(kind, bout); for (const k of ['protein', 'base']) { const t = pm && (pm.swaps[k] || []).find(x => x.grams === MARK[k]); TNAME[k] = t ? t.food : null; } }
+  // the figure leaves (fix-r15): each injected value; an integer inside the range may stay (as written), anything else drops its element
+  const FIGV = (lo, hi, b) => [['one under the range', lo - 1], ['one over the range', hi + 1], ['zero', 0], ['null', null], ['an empty string', ''], ['a negative number', -5],
+    ['a word', 'x'], ['the base figure as a string', String(b)], ['a huge number', 1e9], ['a fraction', 1.5], ['true', true],
+    ['the bottom of the range', lo], ['the top of the range', hi]];   // inside the range: offered as written, or dropped by another rule
+  const offeredF = (el, out) => el.startsWith('swap:') ? (() => { const pm = plateOf(kind, out); return !!pm && (pm.swaps[el.split(':')[1]] || []).some(x => x.food === TNAME[el.split(':')[1]]); })() : offered(kind, el, out);
+  for (const l of L) { const kk = key(l.path), rule = R[kk]; if (!rule || rule.k !== 'figure') continue;
+    const id = `${kind} ${kk} (figure)`;
+    for (const mode of rule.item ? ['', 'item'] : ['']) {
+      const lo = mode ? rule.item.lo : rule.lo, hi = mode ? rule.item.hi : rule.hi, show = mode ? rule.item.show : rule.show;
+      const prep = (r) => { if (mode) setAt(r, l.path.slice(0, -1).concat('add_item'), 'Cucumber'); };
+      const b0 = J(base); prep(b0); const bv = mode ? 60 : getAt(b0, l.path); if (mode) setAt(b0, l.path, bv);
+      // control: the base's own figure is offered, and shown as written
+      { const out = K0.run(J(b0)), sv = show ? show(kind, out) : undefined;
+        add(`${id}: the base figure is offered as written (control)`, offeredF(rule.el, out) && (sv === undefined || sv === bv), `${tag}${mode ? ' (a food added)' : ''}: ${kk} = ${JSON.stringify(bv)}: ${offeredF(rule.el, out) ? 'shown as ' + JSON.stringify(sv) : 'the ' + rule.el + ' was not offered'}`); }
+      for (const [vn, v] of FIGV(lo, hi, bv)) { const r = J(b0); if (setAt(r, l.path, v) === false) { add(id, false, `${tag}: could not write ${vn}`); continue; } cellsN++;
+        let out; try { out = K0.run(r); } catch (e) { add(id, false, `${tag}: ${vn} threw ${e}`); continue; }
+        const ok = Number.isInteger(v) && v >= lo && v <= hi, on = offeredF(rule.el, out), sv = on && show ? show(kind, out) : undefined;
+        add(id, ok ? (!on || sv === undefined || sv === v) : !on, `${tag}${mode ? ' (a food added)' : ''}: ${vn} (${JSON.stringify(v)}): ${on ? 'the ' + rule.el + ' is offered' + (show ? ', its figure shown as ' + JSON.stringify(sv) : '') : 'dropped'}`); } } }
   for (const l of L) { const kk = key(l.path), rule = R[kk]; if (!rule || rule.k === 'figure') continue;
     const id = `${kind} ${kk} (${rule.k})`;
     const cell = (what, mutate, want) => { const r = J(base); if (mutate(r) === false) { add(id, false, `${tag}: could not write ${what}`); return; } cellsN++;

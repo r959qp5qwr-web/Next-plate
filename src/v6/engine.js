@@ -327,13 +327,16 @@ function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTAST
 /* The kept plate's title and subtitle are the engine's own, written from its items, and the plate check reads the items apart; they are not
    read again as one text (fix-r14: reading the engine's join of the names, "... and lemon juice squeeze", kept 5 shown recorded plates from
    the tune path, on 3aabd26 too). Nothing shown comes from them: the engine writes both again from the items. */
-function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";return m;}
+function keptPlate(meal){var m={};for(var k in meal)m[k]=meal[k];m.title="";m.subtitle="";
+  if(m&&!("prepMinutes" in m))m.prepMinutes=meal.minutes;   /* a shown plate carries its minutes as "minutes"; the plate check reads them as written (fix-r15) */
+  return m;}
 function checkTune(r,p,meal){
   var m=keptPlate(meal);m.prepMinutes=meal.minutes;m.swaps=r&&r.swaps;m.alchemy=r&&r.alchemy;m.why=[];
   var c=checkMeal(m,p);if(!c.meal)return {status:"empty"};
   return {status:"ok",swaps:c.meal.swaps,alchemy:c.meal.alchemy};
 }
-function given(v,lo,hi){if(typeof v!=="number"||!isFinite(v))return null;v=Math.round(v);return v<lo||v>hi?null:v;}
+/* the log takes its figures as written, by the figure rule (fix-r15): an integer in range, or the reply is not read */
+function given(v,lo,hi){return fig(v,lo,hi);}
 function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(!r||typeof r!=="object")return {status:"error"};
   if(r.status==="refer"||referred(r))return {status:"refer"};   /* refer_reason other than "none" is a referral (S7) */
@@ -343,12 +346,17 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
   /* (fix-r14) every item is read: more than eight drops the reply (0 recorded replies hold more than 5), as a figure out of range does */
   var ri=Array.isArray(r.items)?r.items:[];if(ri.length>8)return {status:"empty"};
-  if(ri.some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
-  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
+  /* (fix-r15) every item's grams as written: a null, zero, out-of-range or non-number weight is not read as 1 g, the reply is not read, as an
+     out-of-range one already was; an item with no grams written is not listed (below) */
+  if(ri.some(function(it){return it&&"grams" in it&&given(it.grams,1,1500)==null;}))return {status:"empty"};
+  /* (fix-r15; the figure rule) the kcal shown and counted is the kcal the model wrote. The log used to put its own figure from the macros in
+     place of a kcal more than a fifth off them; that figure was not the model's, so such a reply is now not read ("didn't read as a meal"):
+     0 of the 30 recorded log replies were more than a fifth off */
+  var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)return {status:"empty"};
   /* safety round 5: what the client said they ate is shown in their own words. The title is their typed text; an item is listed only when
      every word of its name is a word they typed (and it has the name shape); the model's assumption line is not shown. */
   var tw={};words(norm(typed)).forEach(function(w){tw[w]=1;});
-  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
+  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:it&&"grams" in it?given(it.grams,1,1500):null,group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
     .filter(function(i){return i.grams&&nameOK(i.food)&&words(i.food).every(function(w){return tw[w];});});
   var tt=quoted(typed,60);if(!tt||tt.length<typed.trim().length)tt="";   /* a long typed sentence is not used as the heading */
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};

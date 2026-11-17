@@ -221,6 +221,8 @@ for (const title of ['Give the rice to your family and eat the rajma', 'Let the 
 // and a large order still gets a portion move (no false hit)
 for (const kcal of [700, 900, 1200, 1600]) for (const carbs of [60, 100, 160]) { const fats = Math.round((kcal - 4 * 24 - 4 * carbs) / 9);   // figures that agree (A2)
   const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal, carbs, protein: 24, fats }, []);
+  // (fix-r15, the figure rule) 700 kcal with 160 g carbs leaves fats under 0: a figure out of range is not helped, where it was read as 0 g
+  if (fats < 0) { add('S5 rescue engine moves', r.status !== 'ok', `diabetes ${kcal} kcal ${carbs} g carbs: a dish with ${fats} g fats was helped`); continue; }
   add('S5 rescue engine moves', r.status === 'ok' && (r.hacks || []).every(h => h.kind !== 'portion' || -h.deltaCarbs <= carbs * 0.5) && (r.hacks || []).every(h => !/rice|roti|bread or rice/.test(h.title) || /last/.test(h.title)), `diabetes ${kcal} kcal ${carbs} g carbs: ${JSON.stringify((r.hacks || []).map(h => h.title + ' ' + h.deltaCarbs))}`); }
 { const r = rescueOut({ health: 'diabetes' }, 'Rajma chawal', { name: 'Rajma chawal', kcal: 1400, carbs: 100, protein: 24, fats: 101 }, []);
   add('S5 rescue no false hit', (r.hacks || []).some(h => h.kind === 'portion'), `diabetes: a 1400 kcal order got no portion move (${JSON.stringify(r.hacks)})`); }
@@ -697,6 +699,44 @@ for (const o of [{ health: 'diabetes', meds: 'yes', goal: 'lose' }, { health: 'd
   const pr = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(J(m))), {}), c = (pr.meals || [])[0];
   add('S6 engine: no swap under the usual size', !!c && !c.swaps.protein.some(s => s.food === 'Steamed moong'), `${JSON.stringify(o)} usual ${u}: plate ${pk} kcal, swaps ${c ? JSON.stringify(c.swaps.protein.map(s => [s.food, s.deltaKcal])) : 'plate dropped ' + JSON.stringify(pr.dropped)}`);
   add('S6 engine: a swap that stays at the usual size is offered (control)', !!c && c.swaps.protein.some(s => s.food === 'Boiled chickpeas'), `${JSON.stringify(o)}: ${c ? JSON.stringify(c.swaps.protein.map(s => s.food)) : 'plate dropped ' + JSON.stringify(pr.dropped)}`); }
+// ---------- the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a model figure is read as written, or its element is dropped ----------
+// B1: on insulin or sugar tablets a swap's or a change's kcal delta past -400 was cut to -400 before the S6 line read it, so a plate under the
+// usual size by the model's own figures was offered, and shown 40 to 50 kcal above what the model wrote. A plate 430 kcal over the usual
+// size, figures that agree: a base swap of -440 kcal and a one-tap change of -450 kcal are not offered (on the plate path and the tune path);
+// a swap of -390 and a change of -380 that keep the plate at the usual size are offered, each with the figure the model wrote.
+{ const b1Plate = (K) => { const carbs = Math.round((K - 4 * 40 - 9 * 30) / 4);
+    return { title: 'Moong dal with brown rice', prepMinutes: 25, contains: ['grain'], kcal: K, protein: 40, carbs, fats: 30, fiber: 14, grain: { food: 'Brown rice', made_of: 'brown rice', grams: 350 },
+      items: [{ food: 'Moong dal', grams: 200, group: 'protein', contains: PT }, { food: 'Brown rice', grams: 350, group: 'carbs', contains: ['grain'] }, { food: 'Cucumber salad', grams: 100, group: 'greens', contains: PT }],
+      swaps: { protein: [], base: [{ food: 'Brown rice', grams: 350, made_of: 'brown rice', contains: ['grain'], ...z }] }, alchemy: {}, planned_around: [], taste: [] }; };
+  const ch = (dk, dp, dc, df) => ({ add_item: '', add_grams: 0, minutes: 20, grain_grams_after: 350, contains: PT, deltaKcal: dk, deltaProtein: dp, deltaCarbs: dc, deltaFats: df, deltaFiber: 0 });
+  const both = (o, m) => { const pl = plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }), a = safe(() => pl.check(mealsReply(J(m))).meals[0], null);
+    const kept = safe(() => plan('meals', { profile: Object.assign({}, BASE, o), ctx: { meal: 'lunch', lite: false } }).check(mealsReply(Object.assign(J(m), { swaps: { protein: [], base: [] }, alchemy: {} }))).meals[0], null);
+    const tp = kept && plan('tune', { profile: Object.assign({}, BASE, o), slot: 'lunch', meal: kept }), t = safe(() => tp.check({ swaps: m.swaps, alchemy: m.alchemy }), null);
+    return [['plate path', a], ['tune path', t && t.status === 'ok' ? t : null]]; };
+  for (const o of [{ health: 'diabetes', meds: 'yes' }, { health: 'diabetes', meds: 'unsure' }]) { const u = medsUsual(prof(o), 'lunch'), m = b1Plate(u + 430);
+    m.swaps.base.push({ food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: -440, deltaProtein: -4, deltaCarbs: -80, deltaFats: -12, deltaFiber: 0 },
+      { food: 'Jowar roti', grams: 90, made_of: 'jowar', contains: ['grain'], deltaKcal: -390, deltaProtein: -4, deltaCarbs: -70, deltaFats: -10, deltaFiber: 0 });
+    m.alchemy = { gut: ch(-450, -10, -35, -30), express: ch(-380, -5, -50, -18) };
+    for (const [where, c] of both(o, m)) {
+      add('figure rule B1: a swap or change past -400 kcal is not offered on medicines', !!c && !c.swaps.base.some(s => s.food === 'Bajra roti') && !c.alchemy.gut, `${JSON.stringify(o)} ${where}, usual ${u}, plate ${u + 430}: ${c ? JSON.stringify([c.swaps.base.map(s => [s.food, s.deltaKcal]), Object.keys(c.alchemy).map(k => [k, c.alchemy[k].deltaKcal])]) : 'plate not offered'}`);
+      add('figure rule B1: a swap and a change that keep the usual size are offered with the figure written (control)', !!c && c.swaps.base.some(s => s.food === 'Jowar roti' && s.deltaKcal === -390) && !!c.alchemy.express && c.alchemy.express.deltaKcal === -380, `${JSON.stringify(o)} ${where}: ${c ? JSON.stringify([c.swaps.base.map(s => [s.food, s.deltaKcal]), Object.keys(c.alchemy)]) : 'plate not offered'}`); } }
+  // the same cut on the half-the-carbs rule (S5 as the app holds it): diabetes, lunch, a swap of -100 g carbs is not offered; -60 g is, as written
+  { const o = { health: 'diabetes', meds: 'no' }, m = b1Plate(1100);
+    m.swaps.base.push({ food: 'Bajra roti', grams: 80, made_of: 'bajra', contains: ['grain'], deltaKcal: -400, deltaProtein: -4, deltaCarbs: -100, deltaFats: 2, deltaFiber: 0 },
+      { food: 'Jowar roti', grams: 90, made_of: 'jowar', contains: ['grain'], deltaKcal: -260, deltaProtein: -4, deltaCarbs: -60, deltaFats: 0, deltaFiber: 0 });
+    for (const [where, c] of both(o, m)) add('figure rule B1: a carbs delta past its range is not offered, one inside it is, as written (S5)', !!c && !c.swaps.base.some(s => s.food === 'Bajra roti') && c.swaps.base.some(s => s.food === 'Jowar roti' && s.deltaCarbs === -60), `diabetes ${where}: ${c ? JSON.stringify(c.swaps.base.map(s => [s.food, s.deltaCarbs])) : 'plate not offered'}`); }
+  // m5: an item's grams 0, null, "", -5, 1.5, "200" or a word drop the plate (they showed "1 g"); add_grams 0, null, "", -5 with a named food
+  // drop the change (it showed "Add 1 g ..."); a protein delta of -22 drops the change (it showed -10); controls as written
+  for (const g of [0, null, '', -5, 1.5, '200', 'x', 801]) { const m = platePlain(); m.items[2].grams = g; add('figure rule m5: an item weight that is not a weight drops the plate', !plateOffered({}, m).ok, `grams ${JSON.stringify(g)}: the plate was offered`); }
+  { const m = platePlain(); m.items[2].grams = 1; add('figure rule m5: a 1 g item is offered as written (control)', plateOffered({}, m).ok, 'a 1 g item dropped the plate'); }
+  for (const g of [0, null, '', -5, 501, 'x']) { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('', PT, 90), { add_item: 'Paneer cubes', add_grams: g }) });
+    add('figure rule m5: an added food with no weight drops the change', !(t.alchemy || {}).protein, `add_grams ${JSON.stringify(g)}: ${JSON.stringify((t.alchemy || {}).protein && t.alchemy.protein.note)}`); }
+  { const t = tuneOut({}, 'lunch', { protein: Object.assign(NOTE('', PT, 90), { add_item: 'Paneer cubes', add_grams: 60 }) }); add('figure rule m5: an added food with its weight is offered as written (control)', !!(t.alchemy || {}).protein && t.alchemy.protein.itemGrams === 60 && /Add 60\s+g paneer cubes/.test(t.alchemy.protein.note), JSON.stringify(t.alchemy)); }
+  { const t = tuneOut({}, 'lunch', { gut: Object.assign(NOTE('', PT, 90), { deltaKcal: -100, deltaProtein: -22, deltaCarbs: 4, deltaFats: -3 }) }), t2 = tuneOut({}, 'lunch', { gut: Object.assign(NOTE('', PT, 90), { deltaKcal: -60, deltaProtein: -9, deltaCarbs: -4, deltaFats: -1 }) });
+    add('figure rule m5: a change protein delta past -10 is not offered; one inside is, as written', !(t.alchemy || {}).gut && !!(t2.alchemy || {}).gut && t2.alchemy.gut.deltaProtein === -9, JSON.stringify([t.alchemy, t2.alchemy])); }
+  // the log took a kcal more than a fifth off its macros and put its own figure in place; now that reply is not read (0 of 30 recorded)
+  { const lg = plan('log', { profile: BASE, ctx: { meal: 'lunch', text: 'dal and rice' } }), r = (k) => lg.check({ status: 'ok', refer_reason: 'none', items: [{ food: 'dal', grams: 200, group: 'protein' }], kcal: k, protein: 18, carbs: 60, fats: 10, fiber: 6 });
+    add('figure rule: the log shows the kcal written, or does not read the reply', r(900).status !== 'ok' && r(400).status === 'ok' && r(400).kcal === 400, JSON.stringify([r(900).status, r(900).kcal, r(400).kcal])); } }
 add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with whey protein', { name: 'Whey protein shake', contains: ['supplement'] }, []).status !== 'ok', 'a typed supplement was helped');
 
 // ---------- A2 (Codex re-audit C): figures agree within 15 % on the plate as planned and on every combination of swaps and one-tap changes ----------

@@ -77,7 +77,7 @@ function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
    untick, and kept plates against the current rules and body figures. It runs on every tap, at render and again just before anything is
    logged; a state that fails is not offered and not logged, and #said says why. ---------- */
 function composedWhy(n,base,o){o=o||{};var meal=o.meal||C.meal;
-  if(!figsAgree(n))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine */
+  if(!figsAgree(n)||["protein","carbs","fats","fiber"].some(function(k){return n[k]<0;}))return "These figures do not add up together, so this combination is not offered.";   /* figures agree (A2): the same 15 % as the engine; a figure under 0 is no plate (fix-r15) */
   if(has("diabetes")&&meal!=="snack"&&(n.carbs<base.carbs*0.5||o.grainGone))return "With diabetes the grain stays, at least half of it.";   /* S5 */
   var u=medsUsual(profileOut(),meal);if(u&&n.kcal<u&&(o.plate||n.kcal<base.kcal))return "On insulin or sugar tablets this meal stays at its usual size, about "+u+"\u00A0kcal.";   /* S6 */
   return "";}
@@ -196,7 +196,9 @@ function viewOf(m){
   /* a change to the grain works on the planned grain item only: when that item is not on the plate as planned (swapped away), the state is
      refused by plateWhy, so no note names an item that is not on the plate (S10; final audit M1) */
   var suffix=[],grainMiss=false;ALCH.forEach(function(k){var a=m.alchemy[k];if(!a||!UI.alc[k])return;apply(a);if(a.grainAfter!=null&&m.grain&&m.grain.food){var gf=false;for(var gi=0;gi<items.length;gi++)if(items[gi].food===m.grain.food&&!items[gi].tag){gf=true;if(a.grainAfter>0)items[gi]={food:items[gi].food,grams:a.grainAfter,group:items[gi].group,tag:"changed"};else items.splice(gi,1);break;}if(!gf)grainMiss=true;}suffix.push(a.suffix.replace(/^[(+]\s*|\)$/g,""));notes.push(a.note);if(k==="express"&&a.minutes!=null)minutes=a.minutes;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.max(0,Math.round(n[k]));});
+  /* the figures are the plate's plus what is on it, as the engine passed them: not floored at 0 (fix-r15, the figure rule); a combination that
+     would take one below 0 is refused by composedWhy */
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){n[k]=Math.round(n[k]);});
   /* a swap is named in the title and in what is logged: "..., with tofu bhurji in place of paneer tikka" (second screen review, R2-B2 025-1) */
   var parts=swapped.map(function(x){return x.to.toLowerCase()+" in place of "+x.from.toLowerCase().replace(/,.*$/,"");}).concat(suffix.map(function(x){return x.toLowerCase();}));
   return {title:m.title+(parts.length?", with "+parts.join(", "):""),suffix:parts.length?"with "+parts.join(", "):"",n:n,notes:notes,minutes:minutes,items:items,swapped:swapped,grainMiss:grainMiss};
@@ -696,7 +698,7 @@ function renderRescue0(){
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.max(k==="protein"||k==="fiber"?0:Math.round(d[k]*.4),Math.round(a[k]));});
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){a[k]=Math.round(a[k]);});   /* shown and logged as checked (rescueSum): no floor (fix-r15) */
   var r0=riseOf(d,null),r1=riseOf(a,hab),tg=PL?PL.target:null,f0=fitOf(d,tg),f1=fitOf(a,tg);
   var inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");
   hl.appendChild(el("span","dish",d.name));hl.appendChild(el("span","dish-s",[d.portion,d.warning].filter(Boolean).join(" · ")));ih.appendChild(hl);inst.appendChild(ih);
