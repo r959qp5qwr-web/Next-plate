@@ -828,10 +828,29 @@ add('m4 tune slot on medicines', !!safe(() => plan('tune', { profile: Object.ass
   const appPart = page.slice(0, page.indexOf(open)) + page.slice(page.indexOf('</script>', a));
   const ENTRY = [['"Read the menu"', /read the menu/i], ['"type the menu"', /type the menu/i], ['"menu photo"', /menu photo/i], ['"photo of the menu"', /photo of the menu/i], ['/api/menu', /\/api\/menu/],
     ['an entry id (mcam, mfile, mtype, mtext, mgo)', /["'#](?:mcam|mfile|mtype|mtext|mgo)["'\s,)\]]/]];
-  // the v5 screens (not a release target) keep their own Rescue camera, labelled "Photo of the menu", which posts to /api/rescue: that one
-  // pattern is not run there, and the report names it; every other pattern runs on all three pages
-  const V5 = /hosted\/v5/.test(process.argv[2] || ''); if (V5) console.log('menu entry scan, v5 screens: "photo of the menu" not run (the v5 Rescue camera posts a photo to /api/rescue; not a release target)');
+  // the v5 screens (not a release target) keep their own Rescue camera, labelled "Photo of the menu"; its photo now gets an error (no kind
+  // takes a photo, tested below), so that one pattern is not run there; every other pattern runs on all three pages
+  const V5 = /hosted\/v5/.test(process.argv[2] || ''); if (V5) console.log('menu entry scan, v5 screens: "photo of the menu" not run (the v5 Rescue camera is still drawn; the engine refuses its photo; not a release target)');
   for (const [what, rx] of ENTRY.filter(([w]) => !(V5 && w === '"photo of the menu"'))) { const m = rx.exec(appPart); add('menu refused (owner, 17 Nov): the page offers no menu entry', !m, m ? `${what} found: ${JSON.stringify(appPart.slice(Math.max(0, m.index - 40), m.index + 40))}` : ''); } }
+
+// ---------- no photo on any kind (owner, 17 Nov: "Just a picture scan, should not become the source of so much hassle for the app.") ----------
+// A request that carries an image, or says it does, is refused before any prompt is built, on every kind. Typed referral text still refers
+// first (S7). Text alone still builds its prompt, with no photo wording and no image allowed (control).
+{ const BP = Object.assign({}, BASE, { diet: 'veg' });
+  const PHOTO = [['an image', (b) => Object.assign(b, { image: 'AAAA' })], ['an image and ctx.photo', (b) => Object.assign(b, { image: '/9j/4AAQSkZJRg==', ctx: Object.assign({}, b.ctx, { photo: true }) })],
+    ['ctx.photo alone', (b) => Object.assign(b, { ctx: Object.assign({}, b.ctx, { photo: true }) })], ['an image in ctx', (b) => Object.assign(b, { ctx: Object.assign({}, b.ctx, { image: 'AAAA' }) })]];
+  const BODY = { rescue: () => ({ profile: BP, ctx: { meal: 'lunch', text: 'Veg thali' } }), log: () => ({ profile: BP, ctx: { meal: 'lunch', text: '2 rotis and dal' } }),
+    rescueEmpty: () => ({ profile: BP, ctx: { meal: 'lunch', text: '' } }), meals: () => ({ profile: BP, ctx: { meal: 'lunch' } }), tune: () => ({ profile: BP, slot: 'lunch', meal: Object.assign(baseMeal(), { minutes: 20 }) }) };
+  for (const kind of ['rescue', 'log', 'meals', 'tune']) for (const [what, put] of PHOTO) { const pl = safe(() => plan(kind, put(BODY[kind]())), 'threw');
+    add('photo refused (owner, 17 Nov): a request with a photo is an error and builds no prompt, on every kind', !!pl && typeof pl === 'object' && pl.error === 'bad_request' && Object.keys(pl).length === 1, `${kind}, ${what}: ${JSON.stringify(pl).slice(0, 120)}`); }
+  for (const kind of ['rescue', 'log']) { const pl = safe(() => plan(kind, Object.assign(BODY.rescueEmpty(), { image: 'AAAA' })), 'threw');
+    add('photo refused (owner, 17 Nov): a photo with no text is an error', !!pl && pl.error === 'bad_request' && Object.keys(pl).length === 1, `${kind}: ${JSON.stringify(pl).slice(0, 120)}`); }
+  // typed referral text still refers with a photo attached (S7 before the photo rule)
+  for (const kind of ['rescue', 'log']) for (const t of ['chest pain after lunch', 'I am pregnant', 'I have a kidney problem']) { const pl = safe(() => plan(kind, { profile: BP, ctx: { meal: 'lunch', text: t }, image: 'AAAA' }), {});
+    add('photo refused (owner, 17 Nov): typed referral text still refers when a photo is attached (S7)', !!(pl.reply && pl.reply.status === 'refer' && !pl.prompt), `${kind}, "${t}": ${JSON.stringify(pl).slice(0, 120)}`); }
+  // control: text alone builds the prompt, takes no image and mentions no photo
+  for (const kind of ['rescue', 'log']) { const pl = safe(() => plan(kind, BODY[kind]()), {});
+    add('photo refused (owner, 17 Nov): text alone still builds its prompt, with no photo (control)', typeof pl.prompt === 'string' && pl.prompt.length > 200 && typeof pl.check === 'function' && pl.image === false && !/photo/i.test(pl.prompt), `${kind}: ${pl.error || ('image ' + pl.image + ', photo in prompt ' + /photo/i.test(pl.prompt || ''))}`); } }
 
 // ---------- report ----------
 let fail = 0;

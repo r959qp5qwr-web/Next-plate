@@ -735,12 +735,12 @@ function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(ki
 function closeSheet(){var fd=UI.sheet==="food"&&answers()!==ANS0;UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
-function logOther(text,image){
+function logOther(text){
   if(UI.lbusy||UI.lock)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
-  var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:!!image}};if(image)body.image=image;
+  var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:false}};
   var sent=askedFor();
   api("/api/log",body,function(s,j){UI.lbusy=false;
-    if(askedFor()!==sent){if(!blocked())logOther(text,image);else renderSheet();return;}
+    if(askedFor()!==sent){if(!blocked())logOther(text);else renderSheet();return;}
     if(s===200&&j.status==="ok")UI.lres=j;else if(s===200&&j.status==="refer"){UI.lretry=false;UI.lerr=(j.urgent?URGENTLINE+" ":"")+SAFETY+" Next Plate does not count meals for this.";}   /* S7: a referral shows as one, the line to get help now first */
     else if(s===200){UI.lretry=false;UI.lerr="That didn't read as a meal. Name what you ate and how much.";}else{UI.lretry=RETRY(j.code);UI.lerr=errText(j.code,"log");lockOn(j.code);}
     if(UI.lerr)$("said").textContent=UI.lerr;

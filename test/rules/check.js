@@ -797,6 +797,8 @@ function clear(label, out, keep) { const hits = texts(out, keep || []).filter(([
 // menu path is unreachable); the engine refuses the kind before it reads anything (test/safety/check.js has the full refusal test)
 { const r = plan('menu', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'MAINS\nDal Tadka 240\nBREADS\nTandoori Roti 30' } });
   ok(r && r.error === 'bad_request' && Object.keys(r).length === 1 && !KINDS.includes('menu'), 'menu: refused before anything is read, no prompt or check (owner, 17 Nov)'); }
+{ const r = plan('rescue', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'veg biryani' }, image: 'AAAA' }), l = plan('log', { profile: Object.assign({}, P), ctx: { meal: 'lunch', text: 'dosa' }, image: 'AAAA' });
+  ok(r.error === 'bad_request' && !r.prompt && l.error === 'bad_request' && !l.prompt, 'photo: rescue and log with a photo are refused before any prompt (owner, 17 Nov)'); }
 // owner, 14 Nov, option survey: a meal's protein stays within 35 % of its energy (kept as set in the second screen review, R2-B3 043)
 ok(PARAM.mealProteinEnergyMax === 0.35, 'protein cap: a meal\'s protein carries at most 35 % of its energy (' + PARAM.mealProteinEnergyMax + ')');
 console.log(bad ? `${bad} rule check(s) failed` : 'every rule check holds');

@@ -66,6 +66,7 @@ test('a brand food is logged, in the client\'s own words', () => { const r = rou
 // menu reading removed (owner, 17 Nov): the menu probes (referral and urgent text on the menu kind, no menu portion move without body
 // figures) are replaced by this one; the menu path is unreachable, so the engine must refuse the kind before it reads anything
 test('menu is refused before anything is read (owner, 17 Nov)', () => ['I am pregnant', 'chest pain after lunch', 'MAINS\nRice 200'].every(t => { const r = route(base, t, 'menu'); return r.error === 'bad_request' && Object.keys(r).length === 1; }));
+test('a photo is refused on rescue and log before anything is read (owner, 17 Nov)', () => ['rescue', 'log'].every(k => { const r = route(base, 'Veg thali', k, { image: 'AAAA' }); return r.error === 'bad_request' && Object.keys(r).length === 1; }) && ['rescue', 'log'].every(k => typeof route(base, 'Veg thali', k).prompt === 'string'));
 test('the nut key is "nut", not "nuts"', () => a.readProfile({ ...base, leave: ['nuts'] }).leave.length === 0 && a.readProfile({ ...base, leave: ['nut'] }).leave[0] === 'nut');
 console.log(bad ? `${bad} of ${n} Codex probe(s) fail: a defect is back` : `all ${n} Codex probes hold`);
 process.exit(bad ? 1 : 0);

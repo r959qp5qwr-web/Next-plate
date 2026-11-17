@@ -259,7 +259,7 @@ function buildLogPrompt(p,c){
 "",
 profileText(p,null),
 "",
-"WHAT THEY ATE for "+lab("meal",c.meal).toLowerCase()+": \""+c.text+"\""+(c.photo?" (a photo of the plate is attached: describe only what you can see)":""),
+"WHAT THEY ATE for "+lab("meal",c.meal).toLowerCase()+": \""+c.text+"\"",
 "",
 "WHAT TO RETURN",
 "- status \"ok\"; items, each with food (the name as the person wrote it, plain letters), grams and group (protein, greens, carbs, fats or other), using typical Indian home or restaurant portions when they gave none; kcal, protein, carbs, fats, fiber for the whole meal. kcal must roughly equal 4 x protein + 4 x carbs + 9 x fats.",
@@ -746,11 +746,17 @@ function urgentTyped(t){t=String(t||"");return URGENTTXT.test(t)||URGENTSIGN.tes
    than a person's own usual size). 0 when the person is not on that medicine. */
 function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
   var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
+function carriesPhoto(b){if(!b||typeof b!=="object")return false;var x=b.ctx&&typeof b.ctx==="object"?b.ctx:{};
+  return [b.image,x.image].some(function(v){return v!=null&&v!==""&&v!==false;})||!!b.photo||!!x.photo;}
 plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
   if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
   var tx=body&&body.ctx&&typeof body.ctx.text==="string"?norm(body.ctx.text):"";if(referTyped(tx))return {reply:urgentTyped(tx)?{status:"refer",read:SAFETY,urgent:URGENTLINE,meals:[]}:{status:"refer",read:SAFETY,meals:[]}};   /* a kidney condition or pregnancy typed in any box is referred, not sent to the model (S7) */
+  /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
+     picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
+     refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
+  if(carriesPhoto(body))return {error:"bad_request"};
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";if(!p.slot&&medsUsual(p,"lunch"))return {error:"bad_request"};p.medsUsual=medsUsual(p,p.slot);   /* on medicines a tune names its meal (audit m4) */var cm=checkMeal(body&&body.meal,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
@@ -758,10 +764,10 @@ plan=function(kind,body){
   c.target=pl?pl.target:null;p.slot=c.meal;p.medsUsual=medsUsual(p,c.meal);
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks,pl,c.meal);}};}
-  if(kind==="rescue"){c.photo=!!(body&&body.image);
+  if(kind==="rescue"){
     var pr=buildRescuePrompt(p,c);if(pl&&file.today.kcal>0)pr=pr.replace("\nHARD RULES","- Logged so far today: "+pl.eaten.kcal+" kcal, "+pl.eaten.protein+" g protein. Left for the day: about "+pl.left.kcal+" kcal, "+pl.left.protein+" g protein.\n\nHARD RULES");
-    return {prompt:pr,schema:SCH.rescue,image:true,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok"){o.hacks=rescueMoves(o.dish,pl,p);pruneMoves(o.dish,o.hacks);}return o;}};}
-  if(kind==="log"){c.photo=!!(body&&body.image);if(!c.text&&!c.photo)return {error:"bad_request"};
-    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:true,weight:.25,check:function(d){return checkLog(d,c);}};}
+    return {prompt:pr,schema:SCH.rescue,image:false,weight:1,check:function(d){var o=checkRescue(d,p,c);if(o.status==="ok"){o.hacks=rescueMoves(o.dish,pl,p);pruneMoves(o.dish,o.hacks);}return o;}};}
+  if(kind==="log"){if(!c.text)return {error:"bad_request"};
+    return {prompt:buildLogPrompt(p,c),schema:SCH.log,image:false,weight:.25,check:function(d){return checkLog(d,c);}};}
   return {error:"bad_request"};
 };
