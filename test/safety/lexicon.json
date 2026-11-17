@@ -602,7 +602,10 @@
     "dim sheddho",
     "dim shorshe",
     "dim poshto",
-    "dim dalna"
+    "dim dalna",
+    "andey",
+    "andon",
+    "yolk"
    ],
    "dairy": [
     "dal makhani",
@@ -675,7 +678,29 @@
     "bati",
     "dal bati",
     "luchchi",
-    "wrap"
+    "wrap",
+    "wholewheat",
+    "wholemeal",
+    "durum",
+    "spelt",
+    "multigrain",
+    "rotiya",
+    "chapatiya",
+    "chapatiyaan",
+    "chapatiyon",
+    "puriya",
+    "puriyaan",
+    "parathon",
+    "samoson",
+    "bhaturon",
+    "kulchon",
+    "kachoriyan",
+    "kachoriyaan",
+    "kachoriyon",
+    "golgappe",
+    "golgappa",
+    "rotliyan",
+    "rotliyaan"
    ],
    "soya": [
     "soyabean",

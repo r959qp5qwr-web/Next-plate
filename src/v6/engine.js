@@ -272,12 +272,12 @@ referText(),
 function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
   if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
-  m.properties.planned_around={type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.taste={type:"ARRAY",items:{type:"STRING"}};
+  m.properties.planned_around={type:"ARRAY",minItems:1,maxItems:4,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.taste={type:"ARRAY",maxItems:3,items:{type:"STRING"}};
   m.required=m.required.concat(["planned_around","taste"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","taste"]);return s;
 }
 SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();
 SCH.log={type:"OBJECT",properties:{status:{type:"STRING",enum:["ok","refer"]},refer_reason:{type:"STRING",enum:REFERW},
-  items:{type:"ARRAY",items:{type:"OBJECT",properties:{food:{type:"STRING"},grams:{type:"INTEGER"},group:{type:"STRING",enum:GROUPS}},required:["food","grams","group"]}},
+  items:{type:"ARRAY",maxItems:8,items:{type:"OBJECT",properties:{food:{type:"STRING"},grams:{type:"INTEGER"},group:{type:"STRING",enum:GROUPS}},required:["food","grams","group"]}},
   kcal:{type:"INTEGER"},protein:{type:"INTEGER"},carbs:{type:"INTEGER"},fats:{type:"INTEGER"},fiber:{type:"INTEGER"}},required:["status","refer_reason"],
   propertyOrdering:["status","refer_reason","items","kcal","protein","carbs","fats","fiber"]};
 
@@ -305,7 +305,8 @@ function checkReply6(r,p,hooks,pl,meal){
   var out=checkReply(r,p),ids={},tags={},byId={};hooks.forEach(function(h){ids[h.id]=1;tags[h.id]=h.tag;byId[h.id]=h;});
   var raw=(r&&Array.isArray(r.meals))?r.meals:[];
   out.meals.forEach(function(m){var src=raw[m.src]||{};delete m.src;   /* the raw plate by its place in the reply: the title shown is the engine's */
-    m.planned=(Array.isArray(src.planned_around)?src.planned_around:[]).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;}).slice(0,4);   /* a hook that was not offered is dropped */
+    var pa=Array.isArray(src.planned_around)?src.planned_around:[];   /* more than four: no hook is named (fix-r14, drop over the cap) */
+    m.planned=(pa.length>4?[]:pa).filter(function(id,i,a){return ids[id]&&a.indexOf(id)===i;});   /* a hook that was not offered is dropped */
     m.forYou=reasonLine(m,m.planned.map(function(id){return byId[id];}),pl,p,lab("meal",meal||p.slot||"lunch").toLowerCase());   /* engine-written, never the model's sentence */
     m.taste=tasteWords(src.taste,p);
     m.why=m.why.filter(function(w){return !FIGTXT.test(w.effect)&&!/\d/.test(w.pair)&&!crosses(w.pair+" "+w.effect,p);});   /* pairing tips: no figures, nothing the person leaves out */
@@ -317,7 +318,9 @@ var NOTTASTE=/^(healthy|healthier|nutritious|wholesome|balanced|clean|light|lean
 /* a taste word that names a food the person left out, or meat on a vegetarian plate, is dropped (screen review B1) */
 var LEFTTASTE={dairy:/^(creamy|milky|buttery|cheesy|malai)$/,nut:/^(nutty|nutted)$/,wheat:/^(wheaty)$/,soya:/^(soy|soya)$/};
 function tasteWords(a,p){var lt=(p&&p.leave||[]).map(function(k){return LEFTTASTE[k];}).filter(Boolean);if(p&&p.diet&&p.diet!=="nonveg")lt.push(p.diet==="egg"?/^(meaty|fishy)$/:/^(meaty|eggy|fishy)$/);
-  var out=(Array.isArray(a)?a:[]).map(function(w){return clean(w,20).toLowerCase().replace(/[.!]+$/,"");})
+  /* (fix-r14) each word read whole; a word over 20 characters or not readable text is no taste word, and more than three gives none */
+  if(Array.isArray(a)&&a.length>3)return [];
+  var out=(Array.isArray(a)?a:[]).map(function(w){var x=modelText(w,20);return (x||"").toLowerCase().replace(/[.!]+$/,"");})
     .filter(function(w,i,all){return TASTEW.test(w)&&!NOTTASTE.test(w)&&!CLAIM.test(w)&&!supp(w)&&!lt.some(function(r){return r.test(w);})&&all.indexOf(w)===i;}).slice(0,3);
   return out.length>=2?out:[];
 }
@@ -334,12 +337,14 @@ function checkLog(r,c){var typed=c&&typeof c.text==="string"?c.text:"";
      goes to "didn't read as a meal". The ranges are the Rescue dish's, the existing bounds for a dish as eaten (correctness review, minor) */
   var n={kcal:given(r.kcal,40,4000),protein:given(r.protein,0,300),carbs:given(r.carbs,0,500),fats:given(r.fats,0,300),fiber:given(r.fiber,0,80)};
   if(n.kcal==null||n.protein==null||n.carbs==null||n.fats==null||n.fiber==null)return {status:"empty"};
-  if((Array.isArray(r.items)?r.items:[]).slice(0,8).some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
+  /* (fix-r14) every item is read: more than eight drops the reply (0 recorded replies hold more than 5), as a figure out of range does */
+  var ri=Array.isArray(r.items)?r.items:[];if(ri.length>8)return {status:"empty"};
+  if(ri.some(function(it){return it&&it.grams!=null&&given(it.grams,1,1500)==null;}))return {status:"empty"};
   var est=4*n.protein+4*n.carbs+9*n.fats;if(Math.abs(est-n.kcal)/n.kcal>0.2)n.kcal=Math.round(est/10)*10;      /* the log trusts the macros and recomputes energy rather than refusing a meal the person did eat */
   /* safety round 5: what the client said they ate is shown in their own words. The title is their typed text; an item is listed only when
      every word of its name is a word they typed (and it has the name shape); the model's assumption line is not shown. */
   var tw={};words(norm(typed)).forEach(function(w){tw[w]=1;});
-  var items=(Array.isArray(r.items)?r.items:[]).slice(0,8).map(function(it){var f=quoted(it&&it.food,60);return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
+  var items=ri.map(function(it){var f=modelText(it&&it.food,60)||"";return {food:f,grams:num(it&&it.grams,1,1500),group:GROUPS.indexOf(it&&it.group)>=0?it.group:"other"};})
     .filter(function(i){return i.grams&&nameOK(i.food)&&words(i.food).every(function(w){return tw[w];});});
   var tt=quoted(typed,60);if(!tt||tt.length<typed.trim().length)tt="";   /* a long typed sentence is not used as the heading */
   return {status:"ok",title:tt?tt.charAt(0).toUpperCase()+tt.slice(1):"Your meal",items:items,kcal:n.kcal,protein:n.protein,carbs:n.carbs,fats:n.fats,fiber:n.fiber,assumed:""};
@@ -751,11 +756,15 @@ function referDish(t){t=norm(String(t||""));return REFERKID.test(t)||REFERNLKID.
    figure is used. A negated mention ("no chest pain today") is still referred: the conservative reading. "Sugar-free" is not a symptom. */
 var URGENTLINE="If you feel unwell now, contact your doctor or emergency care.";
 var URGENTSIGN=/\b(?:shak(?:y|ey|ing)|shivering|trembl\w*|sweat(?:y|ing|s)?|pasina|paseena|dizz?y|dizziness|giddy|giddiness|chakk?ar|confus\w*|blurr?(?:ed|y)\s+vision|ghabrahat)\b/i;
-var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diabetic|hypo\w*)\b/i;
+/* (fix-r14; safety audit of 7eaadcf, backlog) a sugar medicine named with a sign is urgent too ("trembling after taking gliclazide"); a
+   medicine's name alone is still not a sign */
+var URGENTCTX=/\b(?:insulin|tablets?|medicines?|meds|sugar|glucose|diabetes|diabetic|hypo\w*|gliclazide|glimepiride|glipizide|glibenclamide|glyburide|metformin|sitagliptin|vildagliptin|teneligliptin|dapagliflozin|empagliflozin|pioglitazone|voglibose|acarbose)\b/i;
 var URGENTTXT=new RegExp("\\b(?:"+[
-  "(?:blood\\s+)?sugar\\s+(?:level\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+|bahut\\s+|bohot\\s+|bahot\\s+|bohut\\s+|bhot\\s+|bht\\s+|kaafi\\s+|kafi\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",
+  /* (fix-r14; safety audit of 7eaadcf, backlog) "my sugar's low", "sugar levels are low", "sugar is going down", "sugar has gone down",
+     "sugar seems low", "sugar became low", "shugar low", "suger low" */
+  "(?:blood\\s+)?(?:sugar|shugar|suger)(?:'s|s)?\\s+(?:levels?\\s+)?(?:is\\s+|was\\s+|went\\s+|has\\s+|got\\s+|getting\\s+|feels?\\s+|are\\s+|seems?\\s+|seemed\\s+|became\\s+|becomes?\\s+|going\\s+|gone\\s+|been\\s+|very\\s+|too\\s+|really\\s+|so\\s+|ekdum\\s+|bahut\\s+|bohot\\s+|bahot\\s+|bohut\\s+|bhot\\s+|bht\\s+|kaafi\\s+|kafi\\s+)*(?:low|down|dropp(?:ed|ing)|drop|fell|falling|crash\\w*|kam|gir\\w*|neeche)",
   "low\\s+(?:blood\\s+)?sugar(?![\\s-]*(?:free|desserts?|sweets?|biscuits?|cookies?|cakes?|chai|tea|coffee|version|recipes?|snacks?|juices?|drinks?)\\b)","hypo(?:glycaemi\\w*|glycemi\\w*|s)?",
-  "chest\\s+(?:is\\s+|feels?\\s+)?(?:pains?|paining|hurts?|hurting|tight\\w*|pressure|heavi\\w*|discomfort)","pain\\s+in\\s+(?:my\\s+|the\\s+)?(?:chest|left\\s+arm)","left\\s+arm\\s+(?:pain\\w*|hurts?|hurting)",
+  "chest\\s+(?:is\\s+|feels?\\s+)?(?:pains?|paining|hurts?|hurting|tight\\w*|pressure|heavi\\w*|heavy|discomfort)","tight(?:ness)?\\s+in\\s+(?:my\\s+|the\\s+)?chest","heavy\\s+chest","pain\\s+in\\s+(?:my\\s+|the\\s+)?(?:chest|left\\s+arm)","left\\s+arm\\s+(?:pain\\w*|hurts?|hurting)",
   "(?:seen[ae]|seeney|sine|chhati|chati|chest)\\s+(?:me|mein|mai)\\s+(?:dard|pain|jalan)","heart\\s+attack","gasp(?:ing|ed)?",
   "faint(?:ed|ing|ness)?","feel(?:ing)?\\s+faint","pass(?:ed|ing)\\s+out","black(?:ed|ing)\\s+out","behosh\\w*","collaps\\w*",
   "breathless\\w*","short(?:ness)?\\s+of\\s+breath","(?:can'?t|cannot|can\\s+not|unable\\s+to|difficult(?:y)?\\s+(?:to\\s+)?|trouble)\\s*breath\\w*","breathing\\s+(?:problem|difficult\\w*|trouble|issue)","saa?ns\\s+(?:nahi|phool\\w*|lene\\s+me\\w*|ki\\s+takleef)",

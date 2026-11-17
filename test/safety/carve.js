@@ -6,7 +6,8 @@
 // with a joiner (and, with, a comma, a hyphen, a slash, "&", "+"), for the profile that bars the listed word.
 // The rule (docs/SAFETY-INVARIANTS.md, S1 and S4): a cell may be shown only when the token next to the phrase is in that exemption's allowed
 // set below. The sets are this test's own copy, written apart from the engine, so a set widened in the engine fails here. A comma, a full
-// stop, a bracket, a question mark or the start or end of the name count as nothing; a hyphen, slash, "&" or "+" is a token no set holds.
+// stop, a question mark or the start or end of the name count as nothing; a hyphen, slash, "&" or "+" is a token no set holds; a bracket is
+// read through to the word beyond it, which must be in the set (fix-r14).
 // Control: a cell whose token is allowed and whose neighbour is not barred on its own (the same cell with the phrase replaced by a plain
 // food) must be shown, so the exemption still reads its own food.
 // Food exemptions run on the plate path (a plate item, tags stripped to "plain"), with a sample on the swap and one-tap path; the S7
@@ -72,8 +73,16 @@ function* cellsOf(phrase, tail, plain, pre) {
     const token = tok === null ? w : tok;
     if (side === 'before') yield { side, token, text: w + js + phrase + (tail || ''), plainText: w + js + plain };
     else yield { side, token, text: phrase + js + w, plainText: plain + js + w }; }
+  // a bracket is not nothing (fix-r14; safety audit of 7eaadcf, "Watermelon (lime juice)"): the reading goes through it to the word beyond,
+  // so a bracketed cell is shown only when that word is in the set ("Rajma (kidney beans) curry" reads "rajma" and "curry")
+  for (const w of VOCAB) { yield { side: 'before', token: w, brk: 1, text: w + ' (' + phrase + (tail || '') + ')', plainText: w + ' (' + plain + ')' };
+    yield { side: 'after', token: w, brk: 1, text: phrase + ' (' + w + ')', plainText: plain + ' (' + w + ')' }; }
+  for (const w of SAMPLE) { yield { side: 'before', token: w, brk: 1, text: w + '(' + phrase + (tail || '') + ')', plainText: w + '(' + plain + ')' };
+    yield { side: 'after', token: w, brk: 1, text: '(' + phrase + ') ' + w, plainText: '(' + plain + ') ' + w };
+    yield { side: 'before', token: w, brk: 1, text: w + ' [' + phrase + (tail || '') + ']', plainText: w + ' [' + plain + ']' }; }
   // two deep: a neighbour before one of the set's describing words ("Watermelon fresh lime juice"); the reading goes on to the neighbour
   const mods = pre && pre.mod ? MODW.filter(m => pre.mod.test(m)) : [];
+  for (const m of mods) for (const w of SAMPLE) yield { side: 'before', token: w, deep: m, brk: 1, text: w + ' (' + m + ' ' + phrase + (tail || '') + ')', plainText: w + ' (' + m + ' ' + plain + ')' };
   for (let k = 0; k < mods.length; k++) for (const w of (k === 0 ? VOCAB : SAMPLE)) yield { side: 'before', token: w, deep: mods[k], text: w + ' ' + mods[k] + ' ' + phrase + (tail || ''), plainText: w + ' ' + mods[k] + ' ' + plain }; }
 // the describing words of the sets, written out for the two-deep cells
 const MODW = ['fresh', 'tangy', 'teaspoon', 'tablespoon', 'tsp', 'spoonful', '2', 'a', 'one', 'half', 'plain', 'puffed', 'brown', 'two', 'steamed', 'sauteed', 'blanched', 'fried', 'stir', 'an', 'the', 'light', 'thin',
@@ -101,14 +110,16 @@ for (const [ph, o] of [['almond milk', { leave: ['nut'] }], ['cashew milk', { le
   cells++; const name = cap(c.text);
   add('a plant product keeps its own nut or soya word (S1, nut-free and soya-free)', shownPlate(o, name) !== true, `${JSON.stringify(o)}: "${name}" was shown`); }
 // the swap and one-tap path, on a sample of the plate cells and the audit's names
-const AUDIT = [['Watermelon fresh lime juice', D], ['Pineapple tangy lemon juice', D], ['Caramel puffed rice cakes', D], ['Mango brown rice cakes', D], ['Watermelon lime juice', D], ['Orange and lemon juice', DV], ['Carrot and amla juice', DV], ['Mango and lime juice', DV], ['Pineapple lemon juice', D], ['Mint lime juice', D], ['Ginger lemon juice', D],
+const AUDIT = [['Watermelon (lime juice)', D], ['Watermelon (fresh lime juice)', D], ['Watermelon(lime juice)', D], ['Mango (rice cakes)', D], ['Watermelon fresh lime juice', D], ['Pineapple tangy lemon juice', D], ['Caramel puffed rice cakes', D], ['Mango brown rice cakes', D], ['Watermelon lime juice', D], ['Orange and lemon juice', DV], ['Carrot and amla juice', DV], ['Mango and lime juice', DV], ['Pineapple lemon juice', D], ['Mint lime juice', D], ['Ginger lemon juice', D],
   ['Coconut rice cakes', DV], ['Mango rice cakes', DV], ['Banana rice cake', D], ['Date rice cakes', D], ['Caramel rice cakes', D]];
 for (const [n, o] of AUDIT) { const s = shownPlate(o, n), t = tuneShown(o, n);
-  add('the audit\'s names (B1) are dropped on the plate, the swap and the one-tap add', s !== true && !t.swap && !t.add, `${JSON.stringify(o)}: "${n}" plate ${s}, swap ${t.swap}, add ${t.add}`); }
+  add('the audit\'s names (B1 of 9dd1b13; the bracket of 7eaadcf) are dropped on the plate, the swap and the one-tap add', s !== true && !t.swap && !t.add, `${JSON.stringify(o)}: "${n}" plate ${s}, swap ${t.swap}, add ${t.add}`); }
 for (const [id, o, name, s] of tuneCells) { const t = tuneShown(o, name);
   add('the swap and the one-tap add read a cell as the plate does (sample)', t.swap === s && t.add === s, `${id}, ${JSON.stringify(o)}: "${name}" plate ${s}, swap ${t.swap}, add ${t.add}`); }
+// a bracket read through on typed text: the S7 food case stays food, the kidney case refers (fix-r14)
+add('a bracket is read through on typed text (S7)', refers('Rajma (kidney beans) curry') === false && refers('stage 3 (kidney beans)') === true, 'Rajma (kidney beans) curry ' + refers('Rajma (kidney beans) curry') + ', stage 3 (kidney beans) ' + refers('stage 3 (kidney beans)'));
 // the controls the recorded data needs: the dressings, the products and the millet rotis the live model wrote
-for (const [n, o] of [['Lemon juice', D], ['Fresh lime juice', D], ['Cucumber with lemon juice', D], ['Amla juice', D], ['Lemon juice and chaat masala', D], ['1 teaspoon lemon juice with chaat masala', D],
+for (const [n, o] of [['Lemon juice', D], ['Fresh lime juice', D], ['Cucumber with lemon juice', D], ['Cucumber (with lemon juice)', D], ['Phulka (without ghee)', NODAIRY], ['Amla juice', D], ['Lemon juice and chaat masala', D], ['1 teaspoon lemon juice with chaat masala', D],
   ['Rice cakes', D], ['Puffed rice cakes', D], ['Finger millet ragi roti', NOWHEAT], ['Dal with one small jowar roti', NOWHEAT], ['Stir fried sugar snap peas', D], ['Small phulka without ghee', NODAIRY], ['Thin coconut milk', NODAIRY], ['Plain soy yogurt', VEGAN], ['Warm jowar roti', NOWHEAT], ['Bajra roti', NOWHEAT], ['Phulka without ghee', NODAIRY], ['Egg-free cake', VEG]])
   add('controls from the recorded names are shown', shownPlate(o, n) === true, `${JSON.stringify(o)}: "${n}" was dropped`);
 
