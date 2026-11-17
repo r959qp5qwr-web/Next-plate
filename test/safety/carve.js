@@ -18,53 +18,9 @@ const page = fs.readFileSync(process.argv[2] || path.join(ROOT, 'hosted/v6/index
 const a = {}; vm.createContext(a); vm.runInContext(page.split('<script id="np-core">')[1].split('</script>')[0], a);
 const LX = JSON.parse(fs.readFileSync(path.join(__dirname, 'lexicon.json'), 'utf8')), K = LX.known;
 const J = x => JSON.parse(JSON.stringify(x)), cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-const set = w => new RegExp('^(?:' + w + ')$');
 
-// ---------- the exemptions and their allowed sets (this test's own copy) ----------
-// each phrase holds a listed word (bhakri, rotla and thalipeeth are not on the wheat list, so they are no exemption)
-const MILLETS = ['bajra roti', 'jowar roti', 'jowar rotis', 'makki ki roti', 'ragi roti', 'nachni chapati', 'rajgira paratha', 'kuttu puri', 'singhara puri', 'bajre ki roti', 'jowar atta roti', 'ragi flour roti'];
-const RICEBREADS = ['rice roti', 'chawal ki roti', 'akki roti', 'rice paratha'];
-const PLANTMILK = ['coconut milk', 'almond milk', 'oat milk', 'soy milk', 'soya milk', 'rice milk', 'cashew milk', 'soy curd', 'soya curd', 'coconut yogurt', 'coconut yoghurt', 'soy yogurt', 'soya yogurt'];
-const PLANTFAT = ['coconut cream', 'cashew cream', 'peanut butter', 'almond butter'];
-const NEGPRE = 'with|and|but|served|cooked|made|prepared|plain|warm|small|rotis?|phulkas?|chapatis?|parathas?|flatbread|curry|dal|sabzi|chutney|salad|raita|greens|ghugni|bhaja|paste|chana|milk|tea|coffee|dish|dry';
-const D = { health: 'diabetes' }, DV = { diet: 'veg', health: 'diabetes' }, VEGAN = { diet: 'vegan' }, NODAIRY = { leave: ['dairy'] }, NOWHEAT = { leave: ['wheat'] }, VEG = { diet: 'veg' };
-const FOOD = [
-  { id: 'lemon or lime juice (S4)', phrases: ['lemon juice', 'lime juice', 'nimbu juice', 'amla juice'], profiles: [D, DV],
-    pre: set('fresh|tangy|with|tsps?|tbsps?|teaspoons?|tablespoons?|spoons?|spoonfuls?'), post: set('and|with|squeeze|squeezed|dressing') },
-  { id: 'rice cakes (S4)', phrases: ['rice cakes', 'rice cake'], profiles: [D], pre: set('plain|puffed|brown'), post: set('and|with') },
-  { id: 'sugar snap peas (S4)', phrases: ['sugar snap'], tail: ' peas', profiles: [D], pre: set('with|fresh|steamed|sauteed|blanched|fried|stir'), post: set('peas?') },
-  { id: 'plant milk, curd, yogurt (S1, S2)', phrases: PLANTMILK, profiles: [VEGAN, NODAIRY], pre: set('with|in|of|on|plus|or|using|a|an|the|plain|light|thin|fresh|unsweetened'),
-    post: set('with|and|plain|strained|curry|rice|korma|gravy|masala|porridge|stew') },
-  { id: 'plant cream, nut butter (S1, S2)', phrases: PLANTFAT, profiles: [VEGAN, NODAIRY], pre: set('with|in|of|on|plus|or|using|a|an|the|plain|light|thin|fresh|unsweetened'), post: set('with|and|toast') },
-  { id: 'millet flatbread, not wheat (S1)', phrases: MILLETS, profiles: [NOWHEAT],
-    pre: set('with|on|alongside|a|an|the|one|two|\\d+|millet|warm|hot|small|soft|crisp|toasted|roasted|fresh|rustic|plain|cooked|ready|handmade|hand-patted|thin|downsize|reduce'),
-    post: set('and|with|without|alongside|crackers?|to|weight') },
-  { id: 'rice flatbread, not wheat (S1)', phrases: RICEBREADS, profiles: [NOWHEAT], pre: set('with|on|alongside|a|an|the|one|two|\\d+'), post: set('and|with|without|alongside|crackers?|to|weight') },
-  { id: 'rice and millet noodles, not wheat (S1)', phrases: ['rice noodles', 'ragi noodles', 'millet pasta', 'glass noodles', 'jowar vermicelli', 'rice sevai', 'konjac noodles', 'shirataki noodles', 'rice noodle'],
-    profiles: [NOWHEAT], pre: set('with|in|plain|thin|flat'), post: set('with|and|salad|soup|bowl|stir') },
-  { id: 'millet and rice bread, not wheat (S1)', phrases: ['jowar bread', 'bajra bread', 'ragi toast', 'millet bread', 'rice bread', 'gluten-free bread'], profiles: [NOWHEAT], pre: set('with|plain|soft'), post: set('with|and') },
-  { id: 'plant keema, not meat (S2)', phrases: ['soya keema', 'mushroom keema', 'paneer keema', 'kathal keema', 'jackfruit keema', 'tofu kheema', 'veg keema', 'nutrela keema'], profiles: [VEG],
-    pre: set('with'), post: set('matar|mutter|peas|masala|curry|with|and') },
-  { id: 'sol kadhi, not dairy (S1, S2)', phrases: ['sol kadhi'], profiles: [VEGAN, NODAIRY], pre: set('with'), post: set('with|and|rice') },
-  { id: 'butter beans, not dairy (S1, S2)', phrases: ['butter beans', 'butter bean'], profiles: [VEGAN, NODAIRY], pre: set('with|in|a|the'), post: set('with|and|curry|salad|sabzi|masala') },
-  { id: 'negation, one word (S1)', phrases: ['no ghee', 'without ghee', 'skip ghee', 'skip the ghee', 'hold the ghee', 'minus ghee', 'instead of ghee', 'swap out ghee', 'leave out ghee', 'without butter', 'no paneer', 'without curd'],
-    profiles: [NODAIRY], pre: set(NEGPRE), post: set('and|with|but') },
-  { id: 'negation, one word (S2, S4)', phrases: ['no sugar', 'without sugar', 'without jaggery', 'no egg', 'without eggs'], profiles: [DV], pre: set(NEGPRE), post: set('and|with|but') },
-  { id: '-free (S1)', phrases: ['ghee-free', 'butter-free'], profiles: [NODAIRY], pre: set(NEGPRE), post: set('and|with|but|cakes?|biscuits?|cookies?|bread|mayo|mayonnaise|omelettes?|chutney|version') },
-  { id: '-free (S2, S4)', phrases: ['sugar-free', 'egg-free'], profiles: [DV], pre: set(NEGPRE), post: set('and|with|but|cakes?|biscuits?|cookies?|bread|mayo|mayonnaise|omelettes?|chutney|version') }];
-// S7: an exemption that keeps typed text from being referred. "shown" = not referred.
-const TYPED = [
-  { id: 'kidney beans (S7)', phrases: ['kidney beans', 'kidney bean', 'kidney-beans', 'kidneybeans', 'kydney beans', 'kednee beans'], plain: 'rajma',
-    pre: set('red|white|rajma|with|of|in|a|the|some|had|have|eat|ate|cooked|boiled|soaked|sprouted|canned'), post: set('curry|salad|masala|rice|chawal|soup|sabzi|chaat|sundal|and|with|for|in|ok|today|tonight') },
-  { id: 'prego the sauce (S7)', phrases: ['prego sauce', 'prego pasta', 'prego tomato sauce'], plain: 'tomato sauce',
-    // a sauce or pasta word right before "prego" makes it the sauce too ("Pasta with Prego sauce", "Penne prego")
-    pre: set('with|in|of|and|or|a|the|some|use|using|buy|bought|add|sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles'), post: set('with|and|or|in|on|for|ok|today|tonight|traditional|italian|tomato|basil|garlic|mushroom|white|red|creamy|sauces?|pasta|spaghetti|penne|macaroni|fusilli|lasagn\\w*|marinara|alfredo|arrabbiata|pizza|ravioli|noodles') }];
-// S7 exemptions written as "the word right after must be one of these" (space or hyphen between): only the post side
-const NEXT = [
-  { id: 'baby corn and the like (S7)', head: 'delivered a baby', plain: 'we ate', refer: true, ok: set('corn|potato\\w*|spinach|carrots?|onions?|tomato\\w*|brinjals?|eggplants?|food|marrows?|lettuce|greens|leaf|leaves') },
-  { id: 'tri-colour (S7)', head: 'third tri', plain: 'third plate', refer: true, ok: set('colou?r(?:ed|s)?') },
-  { id: 'low sugar food (S7 urgent)', head: 'low sugar', plain: 'low salt', refer: true, ok: set('free|desserts?|sweets?|biscuits?|cookies?|cakes?|chai|tea|coffee|version|recipes?|snacks?|juices?|drinks?') },
-  { id: 'expecting guests (S7)', head: 'expecting', plain: 'having', refer: true, ok: set('guests?|company|visitors?|friends?|people|family|relatives|someone|somebody|some|my|our|his|her|their|the|to|that|this|it|food|delivery') }];
+// ---------- the exemptions and their allowed sets: this test's own copy, in test/safety/exempt.js ----------
+const { FOOD, TYPED, NEXT, D, DV, VEGAN, NODAIRY, NOWHEAT, VEG } = require('./exempt.js');
 
 // ---------- the neighbours ----------
 const words = s => String(s).toLowerCase().split(/[^a-z'-]+/).filter(w => /^[a-z][a-z'-]*[a-z]$/.test(w) || /^[a-z]$/.test(w));

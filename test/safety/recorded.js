@@ -62,7 +62,10 @@ const stripTags = (m) => { const x = J(m); x.contains = ['plain']; (x.items || [
   if (x.alchemy && typeof x.alchemy === 'object') Object.values(x.alchemy).forEach(c => { if (c && typeof c === 'object') c.contains = ['plain']; }); return x; };
 const offeredNames = (m) => [...(m.items || []).map(i => i.food), m.grain && m.grain.food, ...['protein', 'base'].flatMap(k => ((m.swaps || {})[k] || []).map(s => s.food)),
   ...Object.values(m.alchemy || {}).map(c => c.item)].filter(s => typeof s === 'string' && s);
-const barredHit = (s, cls) => honestName(s, cls) ? null : WORDS[cls].exec(s.replace(NEGW, ' '));
+// an exemption phrase (a lemon juice dressing, a plain rice cake, a plant milk, a millet roti, ...) is honest only where its neighbours are
+// in its set: test/safety/exempt.js, this test's own copy, not the engine's (fix-r13)
+const { honest } = require('./exempt.js');
+const barredHit = (s, cls) => honestName(s, cls) ? null : WORDS[cls].exec(honest(s, cls === 'salty' ? 'none' : cls).replace(NEGW, ' '));
 const perProfile = {};
 const seen = new Set(); let replayN = 0, shownN = 0;
 for (const { m, slot, at } of plates) {

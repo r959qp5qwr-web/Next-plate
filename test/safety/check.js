@@ -39,6 +39,26 @@ const RULES = [['S1', 'wheat', { leave: ['wheat'] }], ['S1', 'nut', { leave: ['n
   ['S3', 'salty', { health: 'bp' }], ['S3', 'salty', { health: 'diabetes', bp: true }], ['S4', 'sweet', { health: 'diabetes' }]];
 const AR = L.addedFromReports;
 for (const [id, cat, o] of RULES) for (const t of L[cat].concat(AR[cat] || [])) for (const f of forms(t)) add(id, crosses(f, prof(o)), `${JSON.stringify(o)}: "${f}"`);
+// ---------- the lexicon floor covers the engine's lists (fix-r13; safety audit of 9dd1b13, m1 and m2) ----------
+// The word-level tests read the lexicon's "known" lists, not the engine's: a word the engine lists and the lexicon lacks could be taken out
+// of the engine and no test would see it ("honey" or "sugar" out of SWEETS, "glassfuls?" out of MEASW passed every check). So every word of
+// every barred list, and every form each MEASW entry reads, is in the lexicon (singular or plural), or is held out below with its reason.
+// A new engine word fails here until the lexicon holds it; taking a lexicon word out of the engine fails the forms test above (lists) and
+// recorded.js's "the measure list holds the lexicon's measure words" (MEASW).
+{ const sing = w => w.replace(/ies$/, 'y').replace(/(ch|sh|x|ss)es$/, '$1').replace(/oes$/, 'o').replace(/([^s])s$/, '$1');
+  const lexOf = (...ks) => { const o = new Set(); for (const k of ks) for (const w of [].concat(L[k] || [], AR[k] || [])) { o.add(w.toLowerCase()); o.add(sing(w.toLowerCase())); } return o; };
+  const HELDOUT = { measure: { no: 'the negation word (S1); a measure only after a digit, which the detector reads on its own' } };
+  const LISTS = [['meat', () => MEATW.concat(FISHW), 'meat'], ['egg', () => EGGW, 'egg'], ['dairy', () => DAIRYW, 'dairy'], ['onion_garlic', () => ONIONW, 'jain'], ['root_veg', () => ROOTW, 'jain'],
+    ['wheat', () => LEAVEW.wheat, 'wheat'], ['nuts', () => LEAVEW.nut, 'nut'], ['soya', () => LEAVEW.soya, 'soya'], ['sweet', () => SWEETS, 'sweet'], ['salty_side', () => SALTY, 'salty'], ['supplement', () => SUPPW, 'supplement']];
+  for (const [tag, get, k] of LISTS) { const lex = lexOf(k), list = safe(get, []);
+    add('m1 the lexicon floor holds every word of the engine\'s barred lists', list.length > 0, `${tag}: the engine has no list`);
+    for (const w of list) add('m1 the lexicon floor holds every word of the engine\'s barred lists', lex.has(w) || lex.has(sing(w)) || !!(HELDOUT[tag] || {})[w], `${tag}: "${w}" is in the engine's list but not in lexicon.json known.${k} (add it, or hold it out here with a reason)`); }
+  // MEASW entries are expressions: each optional letter or group is read both ways; a stem with "\w*" is read as the stem
+  const expand = f => { f = f.replace(/\\w\*$/, ''); const m = /\(\?:([^()]*)\)\?|([a-z])\?/.exec(f); if (!m) return [f];
+    const head = f.slice(0, m.index), tail = f.slice(m.index + m[0].length), opt = m[1] !== undefined ? m[1] : m[2]; return [...expand(head + tail), ...expand(head + opt + tail)]; };
+  const floor = new Set((L.measure || []).map(w => w.toLowerCase())), mw = safe(() => MEASW, []);
+  add('m2 the lexicon floor holds every form of the engine\'s measure list (MEASW)', Array.isArray(mw) && mw.length > 30, 'np-core has no MEASW');
+  for (const f of mw) for (const w of expand(f)) add('m2 the lexicon floor holds every form of the engine\'s measure list (MEASW)', floor.has(w) || !!HELDOUT.measure[w], `MEASW "${f}" reads "${w}", which is not in lexicon.json known.measure`); }
 // none of these may be ruled out by the rule next to them (a false hit hides good food)
 for (const [cat, o] of [['notWheat', { leave: ['wheat'] }], ['notNut', { leave: ['nut'] }], ['notMeat', { diet: 'veg' }], ['notEgg', { diet: 'veg' }]])
   for (const t of L[cat]) add('S1-S2 no false hit', !crosses(t, prof(o)), `${JSON.stringify(o)}: "${t}" was ruled out`);
@@ -291,7 +311,7 @@ const SUPP = L.addedFromReports.supplement.concat(HO.supplement);
 for (const t of SUPP) {
   add('S9 plate (tag)', !plateOffered({}, withItem(cap(t), ['supplement'])).ok, `"${t}" tagged supplement was offered`);
   add('S9 one-tap (tag)', !Object.keys(tuneOut({}, 'lunch', { protein: NOTE('Add ' + t + ' after the meal.', ['supplement']) }).alchemy || {}).length, `one-tap "${t}" was offered`); }
-for (const t of L.addedFromReports.supplement.concat(['Protinex shake', 'Ensure plus', 'iron pills', 'a vitamin C tablet', 'Horlicks', 'spirulina'])) {
+for (const t of (L.supplement || []).concat(L.addedFromReports.supplement, ['Protinex shake', 'Ensure plus', 'iron pills', 'a vitamin C tablet', 'Horlicks', 'spirulina'])) {
   add('S9 word net (lying tag)', !plateOffered({}, withItem(cap(t), ['dairy'])).ok, `"${t}" tagged dairy (no supplement tag) was offered`);
   const r = rescueOut({}, 'Dal rice', { name: 'Dal rice' }, [{ title: 'Have ' + t + ' after the meal', kind: 'sequence', contains: ['dairy'], deltaKcal: 60, deltaProtein: 8, deltaCarbs: 6, deltaFats: 1, deltaFiber: 0 }, WALK]);
   add('S9 Rescue (word net)', !(r.hacks || []).some(h => h.title.includes(t)), `Rescue move with "${t}" was offered`); }
