@@ -689,3 +689,11 @@ on a meal's protein energy (rules: protein cap).
   the ids mcam, mfile, mtype, mtext or mgo, or the words "Read the menu", "type the menu", "photograph the menu", "menu photo" or "photo of
   the menu", and the A12 drill plants one. An order logged before the removal still shows on the plate as "ordered from the menu"
   (review state plate-ordered).
+
+## Watch list after Critic round 42 (on 530a503, PASS)
+Watched, not changed (coordinator, fix-r12), each cosmetic:
+- Builder held strip, finish only: the strip keeps the height of the longest note, so a one-line note leaves empty paper under it; "it."
+  stands alone on a line at 412; at 390 a 2-3 px sliver of the row behind shows between the slip and the button. D8 accepts the strip.
+- Rescue typing at 130 % text: a long dish name scrolls inside the one-line box, so its start leaves view while typing.
+Fixed in fix-r12: a common-dish chip that wraps at 130 % text kept its first letters on the pill's curve (now a 22 px radius; 4.5 px
+clear at 320 and 360, nothing moved).
