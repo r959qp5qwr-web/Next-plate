@@ -278,6 +278,23 @@ const STATES = [
   ['rescue-blocked', seed({ p: Object.assign({}, P, { health: 'preg' }) }), async (p, h) => { await h.settle(600); await p.click('#tab-rescue'); await h.settle(); }],
   ['builder-no-plate', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await p.click('#tab-build'); await h.settle(); }, (p, h) => h.failApi(p)],
   ['plate-no-body', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await h.inView(p, '#not-sized', 'the line that the portions are not sized'); await h.next(p, { text: 'Add your age, height and weight' }, 'Plate without body details'); }],
+  // fix-r18 (safety audit of 21a04a3, B1): a man on insulin who gave an age and left height and weight empty. The engine used to state his lunch
+  // at 430 kcal (and a body of 30 kg) while the phone's usual size is 600 and the phone drops every plate under it, so plates the server kept were
+  // dropped on the screen and he saw few or none. Now the engine states the phone's usual size: the plates that stay are all at least that
+  ['plate-meds-age-only', seed({ p: Object.assign({}, P, { meds: 'yes', sex: 'm', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await h.plate(p); await h.settle(600);
+    const r = await p.evaluate(() => { const st = JSON.parse(localStorage.getItem('np6')), q = st.p, res = Object.values((st.store || {}).res || {}), meals = [].concat(...res.map(x => x.meals || []));
+      const usual = medsUsual({ goal: q.goal, focus: q.focus, meds: q.meds, diet: q.diet, health: 'diabetes', region: 'n', leave: [], sex: q.sex, age: q.age, cm: q.cm, kg: q.kg, act: q.act }, 'lunch');
+      return { usual, kcals: meals.map(m => m.kcal), shown: +document.getElementById('h-k').textContent, kept: document.querySelectorAll('#plate-card').length, said: (document.getElementById('v-plate').innerText || '').slice(0, 200) }; });
+    if (r.usual !== 600) throw new Error('the usual size of a man\'s lunch with no height or weight is ' + r.usual + ', not the day split of the energy floor (600)');
+    if (r.kcals.length < 2 || r.kcals.some(k => k < r.usual) || !(r.shown >= r.usual)) throw new Error('the screen holds ' + r.kcals.length + ' plates (' + r.kcals.join(', ') + ' kcal), the one shown ' + r.shown + ' kcal; at least two plates, none under ' + r.usual + ' kcal, are expected'); }],
+  // fix-r18 (safety audit of 21a04a3, m5): unticking the last condition in My food left the health answer unset, and every request then answered
+  // bad_request ("Next Plate couldn't read that"). No condition ticked is "None of these"; the plates come back
+  ['sheet-health-untick-last', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no' }) }), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await h.settle(300);
+    const on = await p.evaluate(() => ({ none: document.querySelector('#health-none').getAttribute('aria-checked'), diab: document.querySelector('#health-diabetes').getAttribute('aria-checked') }));
+    if (on.none !== 'true' || on.diab === 'true') throw new Error('with the last condition unticked, "None of these" is ' + on.none + ' and Diabetes ' + on.diab);
+    await p.click('#sheet-done'); await h.settle(300); await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(600);
+    const t = await p.evaluate(() => ({ text: document.getElementById('v-plate').innerText, plates: Object.values((JSON.parse(localStorage.getItem('np6')).store || {}).res || {}).reduce((n, r) => n + (r.meals || []).length, 0), health: JSON.parse(localStorage.getItem('np6')).p.health }));
+    if (/couldn.t read that/.test(t.text) || t.plates < 1) throw new Error('after unticking the last condition the request is not read: ' + t.plates + ' plates, "' + t.text.replace(/\s+/g, ' ').slice(0, 120) + '"'); }],
   ['sheet-my-food', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); }],
   ['sheet-data-confirm', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#wipe'); await h.settle(); await h.inView(p, '#wipe-q', 'the remove-data question'); }],
   ['sheet-how-numbers', seed(), async (p, h) => { await h.plate(p); await p.click('#how'); await h.settle(); await h.next(p, { has: ['#day-head'], text: 'ask your coach' }, 'How the numbers are worked out'); }],
