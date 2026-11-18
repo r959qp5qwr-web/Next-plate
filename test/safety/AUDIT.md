@@ -1,53 +1,72 @@
-VERDICT: PASS
-BUILD: 98ae28418025419214b46e93f6a1d2b313e4db50431e2fa94d0895b628c99c88
+VERDICT: FAIL
+BUILD: be639c8e5a8ce17b5b217b59206bcae732831f631b7e2dc6d189fc928d9144b8
 
-Safety audit of cad3fb0 (branch claude/nice-hawking-307ljy), 18 Nov 2026, after fix-r15 and fix-r16. Whole tree (src/v5/core.js,
-src/v6/engine.js, src/v6/params.js, src/v6/app.js, src/v5/server.ts) and the three safety suites, judged against
-docs/SAFETY-INVARIANTS.md and the owner's decisions in its Tiers section, as written (two tiers; D1 "Fix found, then watch"; count words in
-unknown languages watched; "Refer, as now"; D3; D4 "Model is backup"; 17 Nov menu reading removed and photos refused; 17 Nov "Block" leaves
-the grading unchanged). The builder's summary, counts and mutation numbers were not taken on trust. The live model, the live site and
-Railway were not called. test/ux/review.js was not run (its states were read where a finding needed them). No file was changed but this
-one. The fingerprint was 98ae2841...c99c88 at the start, after the build and the safety run, and at the end.
+Safety audit of 21a04a3 (branch claude/nice-hawking-307ljy), 18 Nov 2026, after fix-r17 and the 18 Nov sample window. Whole tree
+(src/v5/core.js, src/v6/engine.js, src/v6/params.js, src/v6/app.js, src/v5/server.ts) and the safety suites, judged against
+docs/SAFETY-INVARIANTS.md and the owner's decisions as written (two tiers, "Block" 17 Nov leaves the grading unchanged; D1, D4; menu reading
+removed and photos refused, 17 Nov; D10 "My rule" listed, not graded). The builder's summary, counts and the window's report were not taken
+on trust: every claim below was run here or is marked "read". The live model, the live site and Railway were not called (the window's
+results are not in the tree, so its acceptances are the builder's record; see Not inspected). test/ux/review.js was not run. No file was
+changed but this one. The fingerprint was be639c8e...144b8 at the start, after the build and the safety run, and at the end.
 
 Checks run on this tree. `npm run -s build`: the three pages rebuild and the fingerprint does not move. `npm run -s safety`: pass, exit 0
-(check.js on the three pages, with 5,760 medicines-wording cells and 905 app strings; recorded.js 22,870 plate and profile checks, 15,433
-plates shown; carve.js 1,190,139 cells; inject.js 162 leaves, 11 profiles, 31,567 cells; 35 Codex probes). `npm run -s rules`: pass.
-`npm run -s words`: pass. `node eval/usefulness/bars.js`: four bars meet (plates 67 of 75; 2 requests with no plate, both sulfonylurea
-meds-low; reason line 67 of 67; swaps and one-tap 259, 100 % of the live ones). `node eval/atrisk/replay.js .`: 204 live, 187 now (contents
-10, diabetes-grain 3, meds-low 16; 8 menu calls left out), as on c666d34. From a scratch clone with OLDREF=c666d34: names-diff 0 of 3,627
-plate-path names change and 2 Rescue cases change (the weight line of "Paneer butter masala with 2 butter naan", "300 g" to none: the old
-m3's fix); grain grid 0 of 236; referral grid 0 of 1,187.
+(recorded.js 22,870 plate and profile checks, 15,433 plates shown; carve.js 1,190,139 cells; inject.js 162 leaves, 11 profiles, 31,567
+cells; the schema snapshot on the three pages: meals 102 schemas built, 102 entries, 102 accepted; tune 1/1/1; log 1/1/1; rescue 1/1/1; 35
+Codex probes). `npm run -s rules` and `npm run -s words`: pass. `node test/deploy/schemas-accepted.js`: PASS on hosted/v6/index.min.html and on
+the v5 page. `node eval/usefulness/bars.js` (scratch copy): four bars meet (plates 67 of 75; 2 requests with no plate, both sulfonylurea
+meds-low; reason line 67 of 67; swaps and one-tap 259, 100 % of the live ones). `node eval/atrisk/replay.js .` (scratch copy): 204 live, 187
+now (contents 10, diabetes-grain 3, meds-low 16; 8 menu calls left out), as on cad3fb0. From a scratch clone at 21a04a3 with OLDREF=cad3fb0:
+names-diff 0 of 3,627 plate-path names change and 0 of 34 Rescue cases; grain grid 0 of 236; referral grid 0 of 1,187.
 
-Were any tier-1 tests weakened? `git diff c666d34 cad3fb0` on test/safety and test/rules: check.js has 0 lines deleted and 223 added;
-inject.js replaced its one loose figure rule ("a number, bounded by the engine") with per-value cells (stronger); recorded.js 11 added;
-test/rules/check.js is unchanged; lexicon.json gained 54 lines (wheat words) and moved one comma; test/ux/review.js lost one comment
-line, with the fix-r16 change. No assertion was removed or relaxed.
+Were any tier-1 tests weakened? `git diff cad3fb0 21a04a3` on test/safety/check.js, inject.js, recorded.js, carve.js, codex.js, test/rules,
+test/ux/review.js, lexicon.json, src/v6/app.js, src/v6/params.js and src/v5/server.ts: empty. In src the diff is the schema lines of
+src/v5/core.js (the maxItems entries) and src/v6/engine.js (planned_around and taste), plus a comment. Nothing was removed or relaxed.
 
-How findings were reached. "Engine-run" = a model-shaped reply or typed text through `plan(kind)` and its `.check()` in Node, on np-core
-taken from hosted/v6/index.min.html, the code the server runs. App functions were taken from src/v6/app.js by name and run in Node, as
-check.js does. "Mutation" = one text change in np-core (on hosted/v6/index.html) or in app.js, on a scratch copy, then check.js, inject.js,
-recorded.js, codex.js and rules (engine) or check.js, codex.js and rules (app), stopping at the first suite that fails. "Recorded" = the
-55 JSON files under eval/, walked as objects. Each finding below says its tier, whether a recorded reply shows it, and whether the
-engine or app writes it alone or a model slip is needed.
+1 BLOCKER, 0 MAJOR, 9 MINOR (4 new), 2 COSMETIC, a BACKLOG, owner decision listed, owner questions, watch and deploy notes.
 
-0 BLOCKER, 0 MAJOR, 5 MINOR, 2 COSMETIC, a BACKLOG, 1 owner decision listed, owner questions, watch and deploy notes.
-
-The verdict rests on these readings (each is the owner's to change):
-- m2, first bullet: the app's call of `directive` with the client's profile has no test. This is a coverage gap with no counter-example
-  (the rubric's MINOR): the engine-side scan can fail (the `hookSaid` mutant is caught) and the app's call is correct today. No review
-  state renders Today's directive for an insulin profile at a late hour (read, not run). Read as "a test for a tier-1 property that
-  cannot fail", it is MAJOR and the verdict is FAIL. Weaker supporting leg: the wording rule is not in the Tiers list.
-- m1 (the Rescue weight line) is MINOR: S8 holds (grams), no S-rule says the weight describes the whole dish, and the last audit graded the
-  first form of it MINOR. Read as a tier-1 figures-agree breach, it is MAJOR.
-- m3 (a grain change with its carbs unchanged) conforms to S10 as written ("direction only, no tolerance figure"); it is MINOR as a
-  design residue. Read as an S10 breach (a note "goes to 400 g" beside figures that did not move), it is MAJOR.
-- The names in the BACKLOG are tier 2 by the Tiers section ("a wrong but non-empty tag on a name the lists do not know"). A tag left
-  off is an empty list and is dropped on a plate item, a swap and a one-tap change (engine-run); on a Rescue dish the tag is not required
-  (S15) and the word net alone reads the dish. "Chenna" has a live occurrence as a plate item name; see the BACKLOG.
+The verdict rests on this reading (the owner's to change):
+- B1 is graded BLOCKER on the written text of S6: "the prompt states the usual size as a minimum" and "with no height or weight, 'usual' is the
+  day split of the energy floor". For a client with an age but no height or weight, the prompt and the engine's drop line state a lower size
+  than that (340 kcal for a woman's lunch against 480). That is a breach of the text, written by the engine, with no model slip. What the phone
+  then does is the other half of the reading: it drops every stored plate under 480 at the next render (`pruneKept` in `refresh()`, run here:
+  a 350 plate is dropped, a 520 plate is kept) and it refuses every one-tap change and swap that lands under 480 on tap (run here), so no
+  plate under the usual size is shown or logged. The client instead sees plates asked for 340 and dropped, and chips that are offered and
+  then refused. Read as "only what the client sees or logs counts", B1 is a MINOR (no state under the usual size reaches the screen or the
+  log) and the verdict would be PASS with it carried. Either way the fix is three lines and the live site 6febc1a has the same input fault
+  (it also has no S6 floor at all, so this build is not worse than the live one).
+- inject.js: the brief expected its cells to fail when a drop is removed. They do for the log and for the cut-to-seven form of the item cap,
+  and not for plain removal of the five plate-path drops, because with the drop gone the extra element is read and checked and nothing
+  unchecked is shown. check.js has a named cell for each of the five and fails on each removal (below). This is not graded as a test that
+  cannot fail.
 
 ## BLOCKER
 
-None. The last audit's B1 (a swap or one-tap delta cut to -400 before the S6 check) is closed: see "Last audit's findings, checked again".
+- B1. S6, the medicines floor, with a partial body entry. Tier 1: a breach from the engine and the app logic alone; no model slip needed; no
+  recorded request holds it (no request body under eval/ has cm or kg at 0; 148 hold age 46, cm 158); not seen in a recorded reply.
+  Present on the live site 6febc1a (engine-run: the prompt there says "female, 30 kg" and "Target for this meal: about 340 kcal").
+  Counter-example (engine-run on np-core of hosted/v6/index.min.html): diabetes, insulin "yes", woman, activity low, age 45, height and weight
+  left empty (the phone sends `cm:0, kg:0`; the set-up says the body fields can be left empty and the line "then plates have no calorie or
+  protein target"). The prompt says "45 years, female, 30 kg", "Day target: about 860 kcal", and "every plate, with any swap or change, is at
+  least 340 kcal" for lunch. A consistent 350 kcal plate is returned as shown. The phone's own floor for the same client is 480
+  (`medsUsual(profileOut(), "lunch")` on the raw profile: the day split of the energy floor, as S6 says).
+  Cause: src/v5/core.js:1179 `readProfile` reads `cm:num(x.cm,120,215)||0` and `kg:num(x.kg,30,200)||0`, and `num()` (core.js:866) clamps, so
+  0 ("not given") becomes 120 cm and 30 kg before the `||0`. (`age` escapes only because src/v6/engine.js:180 sets an age under 18 to 0.)
+  `dayTargets6` then builds a target from a body nobody has. The phone's `planDay` gets the raw zeros, finds no target and shows "Add your
+  height and weight", so phone and server disagree.
+  Measured: 48 cells (age 0 or 45, height 0 or 160, weight 0 or 70, woman or man, breakfast, lunch, dinner): the 12 cells with all three or
+  none agree between engine and phone (0 differ); of the 36 partial cells the engine's lowest shown plate differs from the phone's usual size
+  in 16: lower in 10 (woman, age only: breakfast 230 against 320, lunch 340 against 480, dinner 240 against 340; man, age only: 290, 430, 300
+  against 410, 600, 420; age and height only: dinner 330 against 340, man 380, 560, 390 against 410, 600, 420) and higher in 6 (the engine
+  stricter, harmless). One-tap changes: a 520 kcal lunch with four changes of -70 (each lands on 450) is offered by the engine for the age-only
+  client and all four are refused on tap by `plateWhy` ("stays at its usual size, about 480 kcal"); with all three figures the engine offers
+  none (630 is under 680), as it should. Wider effect, no S-rule: any client with a partial entry, medicines or not, is told to the model as a
+  30 kg or 120 cm person and gets a target the set-up said would not exist.
+  Untested: check.js, review.js and the Rescue and Builder states use only `{cm:0,kg:0,age:0}` or full figures (check.js:253, 693, 1028;
+  review.js:131, 280, 492, 514, 539); no partial entry is tried.
+  Smallest fix: in `readProfile` treat 0, null and "" as not given (`cm:+x.cm>0?num(x.cm,120,215):0`, the same for kg and age), then a check.js
+  grid over age, height and weight each given or not, on the three meals and both sexes, that the engine's lowest shown plate equals
+  `medsUsual` on the raw profile (my 48-cell grid, `node` on np-core, is the model for it). Rescue and tune read the same profile and are fixed
+  by the same line.
 
 ## MAJOR
 
@@ -55,212 +74,154 @@ None.
 
 ## MINOR
 
-- m1. The Rescue weight line can show a weight that covers only part of the dish. Tier 1 in shape. Seen in recorded replies: 7 of the 27
-  distinct recorded Rescue dish portion strings. Written by the engine's reading of an honest reply, no slip needed. Not an S1-S15 breach
-  (S8 holds). `portionLine`, src/v5/core.js:1066, shows the one weight in the string unless it finds a second weight, a digit group, a
-  range, a count before the weight ("2 x 150 g") or "each", "per", "apiece" or "a piece" after it. It does not look for a count or a second
-  food that has no weight. The 7 recorded strings still show the curry's weight for an order that includes naans: "350g curry and 2 butter
-  naan", "350g curry with two butter naans", "300g curry and 2 butter naan", "300g curry with 2 butter naans", "2 butter naan and 350 g
-  curry", "2 butter naan and ≈ 350 g curry", "350g paneer gravy with two standard butter naans" (each shows "≈ 350 g" or "≈ 300 g"; the dish
-  figures count the naans). Engine-run, shapes not in the recorded set: "60 g x 2", "60 g × 3", "150g x2", "60 g/piece", "3 rotis of 40 g",
-  "two 150 g pieces" and "3 pieces, 40 g" show one piece's weight. The weight has no range: "5000 g", "99999 g", "1200g" and "7 g" are
-  shown for a 500 kcal dish (the figure rule gives every other figure a range; the portion has none). Smallest fix: no weight line when the
-  string holds any other number or number word beside the one weight (a count of pieces, "and 2 ..."), and none outside the 1 to 1,500 g the
-  log already uses for an item. Tests to add beside the m3 cases of check.js: the 7 recorded strings, the after-count shapes above, "5000 g".
-- m2. Two app mutants survive every safety check, rules and Codex probe. A coverage gap, no counter-example found; tier not applicable;
-  not a recorded shape; app wiring, no model slip.
-  - a_directive_profile: src/v6/app.js:346 `directive(profileOut(),pl,hk,meal,done)` changed to `directive({},pl,hk,meal,done)` passes
-    check.js, codex.js and rules. The engine-side scan (check.js, 5,760 cells) calls `directive` with the right profile itself, so it does
-    not see the app's argument. With `{}` the hook rule `hookSaid` has no condition to read and Today's directive says "it's late, so keep
-    it light" to a medicines client after 21:30 again (engine-run: 26 of 96 quarter hours at dinner on the not-sure profile say it with
-    `{}`, 0 with the profile). Review states (read, not run): none renders the directive for an insulin profile at a late hour (the only
-    states that read `#directive` are 'plate-last-meal' and 'plate-day-done', at the current hour on the default profile). Smallest fix: a
-    check that runs the app's Today card for an insulin profile at 22:30 and reads the directive, or a static guard on the call as for
-    `act()`.
-  - a_room120: `room>=120` to `room>=60` in `nextOffer` (src/v6/app.js:236) passes. The "My rule" test uses 40 kcal of room. The review
-    states for the snack rule (test/ux/review.js:244-263: little left, medicines with and without a skipped meal, room left) were read, not
-    run, and I did not check whether one sits between 60 and 120 kcal. This is the owner's rule (D10); the gap is that the 120 line is
-    not tested at 119, 120 or 121 in the safety suite. Fix: cells at 119 and 120.
-- m3. A one-tap change that moves the declared grain with its carbs unchanged is offered. S10, tier 1 in shape. No recorded occurrence: of
-  432 distinct changes with grain_grams_after, 64 move the plate grain, and none has a carbs delta of 0. Written by the engine from the
-  model's own figures, which disagree with each other (a model slip is needed, in an honest shape). Residue of the last audit's m2, which
-  fix-r15 closed by direction only, as S10 now says. Engine-run: "Brown rice" 350 g, a change to 400 g with deltaCarbs 0 and deltaKcal -50
-  is offered as "Brown rice goes to 400 g. About 50 kcal less." The test 'm2 ... by direction only' lists "grain up, carbs unchanged" as a
-  control that must be offered. Smallest fix: a strict direction (src/v5/core.js:988 `after>dg.grams?x.deltaCarbs<=0:x.deltaCarbs>=0`);
-  cost 0 of 64 recorded. It would also drop an honest change that rounds its carbs to 0 for a very small grain move, so the owner may
-  prefer to keep the rule as it is.
-- m4. A request with long typed text holds the server for seconds. Availability, not an S-rule. Pre-existing (the net read the raw text
-  before). Written by the engine alone, no model involved, not in a recorded reply. `plan()` runs the referral nets on the whole raw text
-  before `readCtx` cuts it to 240 characters (src/v6/engine.js:818). The kidney-bean and prego exemptions walk the neighbours of every match
-  with `nbFits` (src/v5/core.js:578, called from engine.js:762 and :767), and the cost grows with the square of the count: doubling the text
-  to 340 KB took 48 s. Engine-run: 170 KB of "red kidney beans " takes 12 s; 120 KB of "prego pasta " takes 4 s; plain food text of 1 MB
-  takes under 100 ms. The app's boxes stop at 240, 160 and 200 characters, so only a hand-made request reaches it; the server has no body
-  limit of its own (Bun's default) and an open server (no ACCESS_CODE) answers it. Smallest fix: answer `bad_request` for typed text over
-  2,000 characters before the nets run.
-- m5. In My food, unticking the last condition leaves the profile with no health value, and every request then answers `bad_request`. App
-  logic, pre-existing, fails closed, no safety effect; no invariant covers it; not in a recorded reply; app-written, no model involved.
-  src/v6/app.js:282 sets `P.health=healthOf(P.conds)` and `healthOf` returns null for no conditions (app.js:13, run in Node);
-  `profileOut()` sends `health:null` (app.js:59) and `plan()` answers `bad_request` (engine-run for null, undefined and ""). The phone
-  shows "Next Plate couldn't read that. Close it and open your link from WhatsApp again." with no retry (ERRS and NORETRY, app.js:125 and
-  :131) until the client taps "None"; after a reload the set-up asks again (app.js:24 needs a health value). Reached by reading the
-  handler and running `healthOf`, not by a tap on a phone. Smallest fix: `P.health=healthOf(P.conds)||"none"`.
+New this round:
+- m6. The pre-Deploy check can pass while a kind builds nothing, and takes any value but "pending" as an acceptance. Coverage, no client
+  counter-example; process control, not a model slip. test/deploy/schemas-accepted.js:14 reads only `got` from `enumerate()` and drops its
+  `problems`; test/deploy/schemas-accepted.js:22 tests `accepted_by === 'pending'` and nothing else. Scratch copy: with `plan("tune")` made to
+  return an error, `npm run safety`'s snapshot test fails (3 problems) and schemas-accepted.js prints "tune: 0 schemas the page can build" and
+  PASS; with every pending entry set to `accepted_by: true`, `{}` or `null`, it passes (3 of 3). It is right whenever the snapshot is edited
+  only by `--update` and `--accept`. Smallest fix: fail on a kind with 0 schemas built, and require `accepted_by` to hold commit, date and how.
+- m7. Nothing in the tree lets a reader check the 18 Nov acceptances. `how` on 101 meals entries and the tune entry says "the live model
+  answered the example request"; the window's per-schema results (HTTP status and reply status for each of the 102 requests, the 18
+  scenarios, the 36 at-risk requests) are only in the handoff row. `eval/v6/window-schemas.js` writes results only with `--out`, and the
+  fingerprint hashes the snapshot, not the results. I could not check them. Smallest fix: keep the `--out` file under eval/ for each window.
+- m8. The enumeration has gaps the header already admits, measured here. Of 3,000 context shapes I generated (random day logs, hooks, goals,
+  focus, medicine answers, hours), 576 distinct hook lists came out and all 3,000 built a schema in no snapshot entry; the entries hold hook
+  lists of length 1, 2, 3, 4, 5 and 9 (54, 20, 6, 4, 2 and 16 entries), none of length 6, 7 or 8. The schema is the same apart from the
+  enum list, and the nine-hook cases (the longest) are accepted, so the risk is small, but a PASS of schemas-accepted.js does not say "the live
+  model takes any plate request". The snapshot also does not cover the rest of the request: src/v5/server.ts:63 sends `maxOutputTokens`,
+  `temperature`, the model list and the thinking level, and no check reads them. Smallest fix: add lengths 6 to 8 to the grid and window; say in
+  the pre-Deploy check's output that server.ts is not covered.
+- m9. inject.js does not fail on plain removal of the plate-path drops (see the reading above). `swaps`, `plates`, `planned_around` and `taste`
+  have no inject cell that can see a removal either. check.js does (cells "S10 cap", "swap cap", "plates cap", "hooks cap", "taste cap"), 5 of 5
+  removals caught here. Coverage only. If the owner wants inject.js to see it, give each cap cell an honest over-cap element with no barred word.
+
+Carried from the cad3fb0 audit (src/v6/app.js, the lines they rest on and their tests are unchanged in this diff; not re-run this round except
+where the Probed list says so):
+- m1. The Rescue weight line can show a weight that covers only part of the dish (7 of 27 recorded portion strings; `portionLine`,
+  src/v5/core.js:1066). Tier 1 in shape, engine-written, S8 holds. Smallest fix: no weight line when another number or number word sits
+  beside the one weight, and none outside 1 to 1,500 g.
+- m2. Two app mutants survive every check: `directive({},...)` for `directive(profileOut(),...)` (src/v6/app.js:346) and `room>=60` for
+  `room>=120` in `nextOffer` (app.js:236). Coverage gap, no counter-example. Not re-run (app.js unchanged).
+- m3. A one-tap change that moves the declared grain with its carbs unchanged is offered (S10 as written, direction only). No recorded case.
+  Smallest fix: src/v5/core.js:988, a strict direction; or keep.
+- m4. Long typed text holds the server for seconds (170 KB of "red kidney beans " takes 12 s); availability only; the server has no body
+  limit. Smallest fix: `bad_request` for typed text over 2,000 characters before the nets run (src/v6/engine.js:818).
+- m5. Unticking the last condition in My food leaves `health:null`, and every request then answers `bad_request` until "None" is tapped
+  (src/v6/app.js:282, `healthOf`). Fails closed. Smallest fix: `P.health=healthOf(P.conds)||"none"`.
 
 ## COSMETIC
 
-- c1. The medicines prompt still carries hooks that ask for less. Written by the engine; no slip; not a recorded shape of the screen (the
-  prompt is not shown). For a client on insulin at 22:30 the prompt holds both "[late_now] ... Keep it light and easy to digest, with a
-  smaller grain portion" and "[goal_lose] ... lose weight gently" beside "every plate ... is at least 480 kcal (never below ...)"
-  (engine-run). Nothing is shown from them and S6 holds (a plate under the usual size is dropped), but the model gets two instructions
-  that disagree. Fix: leave `late_now`, `late_dinner` and `lighter_now` out of the prompt when `p.medsUsual` is set, as `hookSaid` leaves
-  them out of the screen.
-- c2. This file replaces the audit of c666d34.
+- c1. The medicines prompt still carries hooks that ask for less ("[late_now] Keep it light ...") beside "at least ... kcal". Nothing is shown from
+  them. Fix: leave `late_now`, `late_dinner` and `lighter_now` out of the prompt when `p.medsUsual` is set.
+- c2. This file replaces the audit of cad3fb0. src/v5/server.ts lines 14 and 20 still mention menu photos (unreachable, below).
 
 ## Owner decision, listed and not graded
 
-- fix-r16, "My rule" (owner, 17-18 Nov; UX-CRITERIA D10): under 120 kcal left for the snack the card offers the next main meal ("Plan
-  dinner", "Little is left for a snack today."), for a client on medicines too, unless that client skipped a meal today, when the snack
-  stays offered (the low-sugar safeguard). Checked as built: `nextOffer` (src/v6/app.js:234-238) reads `onMeds()` (an unanswered question
-  counts as "not sure") and a "skipped" entry of the day's meals; check.js "My rule" holds both sides, and mutants that remove the
-  exception, widen it to every medicines client or to every client are caught. The 120 line itself is m2's second bullet.
+- D10 "My rule" (owner, 17-18 Nov): under 120 kcal left for the snack the card offers the next main meal, for a client on medicines too,
+  unless that client skipped a meal today. As built in src/v6/app.js `nextOffer`; unchanged in this diff.
 
 ## BACKLOG (tier 2, the watch list; none fails the audit)
 
-Each needs a wrong but non-empty tag on a name the lists do not know, a phrasing the code does not list, a reading of meaning, or a reply
-shape the schema forbids. Searched: every string under eval/ (55 JSON files), as a whole word in plate-path names (`food`, `add_item`,
-`name`, item strings) and in typed texts.
-- The log reads `"grams" in it` on each item and throws on an item that is not an object. Tier 2 (a reply shape the schema forbids). No
-  recorded occurrence: all 30 recorded log replies hold object items. Engine; a regression from fix-r15 that fails closed. src/v6/engine.js:353
-  and :361: for `items: ["roti","dal"]` or `[5]` the check throws "Cannot use 'in' operator" (the old test `it&&it.grams!=null` returned a
-  reply). The server has no guard around `pl.check(r.data)` (src/v5/server.ts:112), so the request answers 500 and the phone shows its
-  error. Nothing is shown or logged. Found by a fuzz of 12,000 mutated replies through meals, tune, Rescue and log (48,000 checks, 3
-  profiles); these are the only throws. Fix: `it&&typeof it==="object"&&"grams" in it` in both places, and a try/catch around the check in
-  the server that answers `{status:"error"}`. How a model would have to answer: items as a list of strings.
-- S1-S4, names of my own shown with a "plain" tag. 509 names by their profile, 858 runs (8 profiles, plate item), 160 shown; read by hand,
-  about 120 are foods the profile bars, the rest were my list errors (a ragi roti for a wheat-free client). The genuine ones: dairy-free:
-  Chenna curry, Quark, Burrata salad, Perugu annam, Khir, Alfredo, Cheddar omelette, Gouda sandwich, Pizza, Thandai, Sheer khurma,
-  Mozzarella, Mattha; wheat-free: Dumplings, Gujiya, Tabbouleh, Godhi dosa, Cornflakes with barley; nut-free: Macadamia, Nutella,
-  Marzipan, Praline, Satay sauce, Verkadalai and Nilakadalai (peanut), Charoli, Trail mix, Dry fruit laddu; soya-free: Textured vegetable
-  protein, TVP, Bhatmas, Bhatt ki dal, Natto, Teriyaki, Hoisin, Shoyu, Tamari; vegan: Aatu kari, Nandu, Eral (Tamil meat, crab, prawn),
-  Gelatin dessert, Caesar dressing, Worcestershire, Belacan, Bone broth, Yakhni, Casein; Jain: Bateta nu shaak, Piyaz, Vengayam, Ullipaya,
-  Poondu, Velluli, Zimikand, Gajjar, Muli, Chives, Pav bhaji, Vada pav, Pani puri; high BP: Aachar, Appala, Lonche, Urugai, Oorukai,
-  Ganthia, Salted peanuts, Salted butter, Dried fish, Karuvadu, Sukha bombil, Sutki, Fryums, Vadam, Sandige, Happala, Kasundi, Idli podi,
-  Gunpowder, Mor milagai, Sambar podi, Tomato ketchup; diabetes: Cookie, Muffin, Cupcake, Donut, Eclair, Candy, Toffee, Marshmallow,
-  Cheesecake, Pepsi, Fanta, Frooti, Maaza, Rooh Afza, Sherbet, Aam panna, Nimbu pani, Jaljeera, Sweet curd, Sakkarai pongal, Pongal sweet,
-  Seviyan, Aamras, Mango pulp, Motichoor, Pitha, Bobbatlu, Holige, Ariselu, Poornam, Adhirasam, Unniyappam, Date paste, Agave, Jam toast,
-  Energy drink, Soda. On the swap and the one-tap add: 90 runs, 10 shown (Chenna curry, Mozzarella sticks, Cheddar cubes, Verkadalai
-  sundal, Sweet curd, each on the swap and the add). How a model would have to answer: the dish named in one of these words with "plain"
-  or another wrong tag. Recorded: "chenna" is a live plate item name ("Fresh chenna", "Fresh homemade chenna", "Fresh cow milk chenna",
-  "Low-fat fresh chenna paneer": 6 distinct names in 5 records, none with a contains list, older shapes), so it is the first to add to
-  the dairy list; "pizza" is recorded 8 times, "alfredo" once ("pasta alfredo"). Every other word above: 0 recorded plate-path names. Names
-  the lexicon holds out on purpose or tracks already (Mor kuzhambu, Ricotta, Dim kosha, Payesh, Sharbat) are not counted as new.
-- S7, new phrasings (D4: tier 2, model is backup). 157 phrasings of my own on meals, Rescue and log: 109 refer on all three kinds. Not
-  referred, pregnancy: "EDD 12 March", "newly delivered", "just delivered", "I had a baby last month", "baby coming in 2 months", "8th
-  month", "9 months gone", "delivery in a week", "labour pains", "labor started", "navmas", "saatva mahina", "prenatal vitamins"; kidney:
-  "vrikka", "mootrapindam", "potassium restricted diet", "PD patient". Postpartum is an open owner question. Food controls that refer
-  (the conservative side): "pregnant pause", "faint praise", "chicken kidney", "mutton kidney fry", "pasta without prego".
-- S8, counts. Listed numbers pass; unlisted ones keep their count: "Pandrah roti" (15), "Bees chawal" (20), "Sawa roti", "Paun roti",
-  "Pona roti", and the south and east words already on the watch list ("Moonu dosa", "Rendu dosa", "Onnu idli", "Naalu idli", "Anju appam",
-  "Irandu idli", "Moondru dosai", "Naangu idli", "Pathu vada", "Dui roti", "Tin ruti", "Duto ruti", "Ondu bowl rice", "Oru plate meals").
-  100 forms tried; every digit, bracket and English or listed Hindi count was taken off. 0 recorded.
-- S1 negation: 46 negation names tried (dairy, wheat, nut, vegan): most fail closed or show the negated word alone, as designed; "Tadka with
-  no butter or ghee" and "Veg pulao made without any dairy" are shown (a negation reading, tier 2).
-- Urgent signs beyond the net, for the owner's scope question (not graded): "unconscious", "seizure", "stroke symptoms", "slurred
-  speech", "vomiting blood", "overdose", "took too much insulin", "sugar 45" (no figure is used by design), "I am shaking", "vision going
-  dark", "anaphylaxis", "throat swelling", "wheezing badly", "difficulty in breathing" all go to the model.
+Each needs a wrong but non-empty tag on a name the lists do not know, a phrasing the code does not list, or a reading of meaning. Searched:
+every string value under eval/ (75,763 in the JSON files there), as a whole word, and again on the plate-path fields
+(`food`, `add_item`, `name`, `title`, `items`, `dish`, `made_of`, `label`).
+- S1-S4, S9, names of my own with a "plain" tag (544 names in 10 classes; 120 shown). With the correct tag, or with an empty list, all 544
+  are dropped (tier 1 holds). Shown with "plain": dairy-free: Raitha, Neer mor, Mozzarella, Malpua, Kalari kutchi, Dudh; nut-free: Pallilu podi,
+  Nutty granola, Chestnut, Dry fruits, Shenga chutney pudi, Verkadalai podi, Nilakadalai chutney, Til laddu, Satay, Praline, Nutella;
+  wheat-free: Godhumai dosai, Gothambu puttu, Godhi payasa, Cake, Cookies, Namak pare, Manchurian, Gujiya, Imarti, Jalebi, Ghewar; soya-free:
+  Bhatmas dal, Textured protein, Tamari, Natto, Teriyaki, Hoisin; vegetarian: Mamsam, Seekh kebab, Calamari, Liver fry, Bheja, Gizzard,
+  Poultry, Basa fry, Bone broth (as "Boondi with bone broth"), Yakhni pulao, Kebab, Chapli, Shami, Sukka, Aatu kari, Kari dosai, Nandu, Eral
+  thokku, Pabda, Tengra, Mourala (Fillet, Kofta and Dum biryani are not barred by themselves); egg: Baida roti, Kaya toast, Albumen, Dim kosha;
+  Jain: Pav bhaji, Bateta nu shaak, Kand, Ullipaya, Vengayam, Velluli, Poondu, Urulaikizhangu, French fries, Hash browns, Chives, Nuggets; high
+  BP: Papdi, Fryums, Khichiya, Karuvadu, Gongura pachadi, Chutney powder, Podi, Salted nuts, Thattai, Sandige, Vadam, Happala, Dry fish, Salted
+  cashew, Ajinomoto, Instant noodles, Maggi, Cup noodles, Cheese slices, Processed cheese, Bacon, Salami, Canned soup, Tomato ketchup, Pav
+  bhaji masala, Sambar powder, Pani puri water, Gunpowder, Idli podi, Salted butter, Salted lassi, Namak para, Gathiya, Bhakarwadi, Kachori,
+  Samosa; diabetes (sweets): 0 of 73 shown; supplements: Chyawanprash, Mass gainer, Meal replacement shake, Calcium chewable, Greens powder,
+  Nutrition drink, Pea protein, Amla powder shot, Giloy juice, Triphala churna. A model would have to answer with the dish in one of these
+  words and the tag "plain" or another wrong one. Recorded occurrences on the plate path: "Pabda fish in light broth" (carries the word
+  "fish", so it is caught), "Tofu sukka", "Malai Kofta" (caught by "malai"), "Jain pav bhaji" and "Jain Pav Bhaji Plate" (the model's own Jain
+  version of the dish; a Jain client's list leaves the dish name alone), "Curd Papdi Chaat Bowl" and "Dahi Papdi-Style Bowl" (caught by
+  "curd" and "dahi" for dairy-free, not for high BP), "Flaxseed chutney powder" and "Flax Seed Podi", "Samosa" (20 plate-path strings).
+  "Gobi Manchurian Dry" is a menu line (the dormant menu path), not a plate. Nothing else listed has a recorded plate-path name. If a live
+  sample shows one, it becomes tier 1; the first to add are "papdi" and "samosa" to the high-BP list and "cake" and "cookies" to the wheat list.
+- S7, new phrasings (D4: tier 2). 71 phrasings of my own on meals, Rescue and log, with a plain and an insulin profile; the three kinds agree. With the plain profile 41 refer
+  and 30 go to the model; with the insulin profile 42 refer and 29 go. Not referred on any kind or profile: "expecting my first", "I just had a miscarriage", "my baby is 3 months", "transplant recipient",
+  "potassium restricted", "phosphorus binders", "uric acid high" (none has a recorded occurrence: "expecting", "miscarriage", "baby is",
+  "transplant" appear in 0 strings under eval/). For the insulin profile "I feel shaky" refers; for the plain profile it goes to the model, as
+  designed (`medsSign`). Urgent signs beyond the net, for the owner's scope question: "my sugar is 50", "I took too much insulin", "seizure",
+  "stroke", "bleeding", "severe stomach pain", "suicidal", "want to hurt myself", "overdose", "allergic reaction swelling", "anaphylaxis",
+  "vomiting since morning", "fever 103", "jaundice", "dengue" all go to the model.
+- Carried: the log's `"grams" in it` throw on an item that is not an object (src/v6/engine.js:353 and :361; the server has no guard around
+  `pl.check`, src/v5/server.ts:112, so the request answers 500); the S8 count words ("Pandrah roti", "Bees chawal", "Moonu dosa"...); the
+  S1 negation names ("Tadka with no butter or ghee"); the S7 spellings of the cad3fb0 audit (EDD, newly delivered, labour pains, vrikka...).
 
 ## Owner questions (named, not graded)
 
-- Urgent-symptom scope: the insulin-profile default (one low-sugar sign typed by a client on insulin, tablets or not sure is referred with
-  the line to get help now; the coordinator's default, not clinically reviewed). Checked as built: the phone and the server give one answer
-  (360 comparisons, 0 differ), "hypo" and "sugar low" refer for everyone, a medicine's name alone does not. The BACKLOG list above shows
-  what the net does not read.
-- "Lime juice" and "Fresh lime juice" as a drink for a diabetic client; carbohydrate floors; potassium; transplant; postpartum; the
-  grain floor's source; S6's upper limit; the rise band's source; whether wheat-free means gluten-free (rye, barley, malt: "Cornflakes with
-  barley" is shown to a wheat-free client with a plain tag).
-- Observation for the S6 owner question: over the 10,800 medicines cells the lowest usual size the prompt stated was 60 kcal (a snack for a
-  small body or none given).
+- Urgent-symptom scope, including the insulin-profile default (the coordinator's default, not clinically reviewed).
+- "Lime juice" and "Fresh lime juice" as a drink for a diabetic client; carbohydrate floors; potassium; transplant; postpartum; the grain
+  floor's source; S6's upper limit (10 percent); the rise band's source; whether wheat-free means gluten-free; the wording of the low-sugar
+  card for medicines clients.
+- New: what a partial body entry should mean. S6 says no height or weight gives the floor split; the set-up promises no target. B1's fix
+  makes both true; the owner may also want the set-up to ask for the missing figure.
 
 ## Watch notes and deploy notes (not findings)
 
-- A phone that already holds a lock (the daily limit or a refused code) sends nothing and reads nothing typed, so a referral typed there is
-  not shown (not fixed; src/v6/app.js `rescue`, `logOther`, `askBlock`).
-- A plate kept on a phone from an earlier build, the same day, keeps that build's clamped swap and change figures; the rules stamp holds
-  rules, not the build. The day ends it (STORE resets at 4 am). Worth knowing on the day of the deploy.
-- src/v5/server.ts header still mentions menu photos (`PHOTOS`); unreachable, as every kind refuses a photo before a prompt is built.
-  `maxItems` in the schemas is configured and not validated against the live model. `null` for `prepMinutes`, `minutes` or
-  `grain_grams_after` now drops the element (a figure the model writes is read as written): if the live model sends null for an unused
-  field, plates or changes would drop; the recorded replies hold none (the bars do not move).
+- The server.ts header comment (lines 14 and 20) mentions menu photos; unreachable (below).
+- A phone that already holds a lock (the daily limit or a refused code) shows no typed referral; `api()` runs the nets first, but a locked
+  phone sends and reads nothing.
+- A plate kept on a phone from an earlier build keeps that build's clamped figures until 4 am.
+- The pre-Deploy schema check covers the enumerated schemas only (m8). The service stays on 6febc1a until a "Deploy." ask.
 
-## Last audit's findings, checked again on this build
+## Fix-r17 checks, as the brief lists them
 
-| Last audit (c666d34) | Result on cad3fb0 |
-|---|---|
-| B1 (S6): delta cut to -400 before the S6 check | Closed. Engine-run, insulin "yes", usual 680, plate at 1,110: a base swap with -399 or -400 is offered, -401, -440, -450, -500, 1e9, "-400" (a string) and null are not; a one-tap change of -300 with consistent macros is offered, -301 is not, because it takes the plate under 680. Mutations: swap and change kcal and carbs deltas back to a cut (4), plate kcal, item grams, swap grams, Rescue kcal back to `num` (4): all 8 caught (check.js or inject.js). |
-| m1 Today's directive said "keep it light" | Closed in the engine: 27,648 directives (6 profiles x 6 day states x 4 meals x 96 quarter hours x 2) read with a wider word list than the suite's: diabetes and medicines profiles say none of light, lighter, late, skip, less, smaller, easy; the no-condition profile still does. The app's call is m2. Mutation of `hookSaid` out of `directive` caught. |
-| m2 grain grams against carbs | Closed for the recorded case and the opposite directions; residue m3 above. |
-| m3 Rescue weight read the first figure | Closed for two weights, digit groups, ranges, "2 x", "each", "per"; residue m1 above. |
-| m4 offline typed referral | Closed. `api()` runs `typedReferral` before sending (src/v6/app.js:155); the callback is called at once and each caller that sends typed text (makePlates, rescue, logOther) sets nothing after the call; tune carries no text. 8 profiles x 15 texts x 3 kinds, phone against server: 0 differ; the same string 6 times in a row gives the same answer (no `g` flag state). Mutations: the call out, the profile left out: caught. |
-| m5 other figures clamped | Closed. 27 plate and figure cases written by hand (subtitle 1,000 and 1,001; title 70 and 71; kcal as a string, 2,501; item grams 0, null, "100", 801, -5; prepMinutes 181, null, "20"; grain grams null and 1,501; 7 and 8 items): each as designed. |
-| m6 12 app mutants survived | Closed: of the 31 app mutants run, 29 are caught, including the old survivors (S6 plate flag, rules stamp without leave-outs, conditions or body figures, bp from health, both wait guards, `blocked()`, the medicine default, both render clears, the one-tap and swap tap checks). 2 survive (m2). |
-| m7 24 wheat dishes missing from the wheat list | Closed: 29 names (the old audit's and the forms beside them) are all dropped for a wheat-free client; mutations taking "roll" or "chappathi" out of the wheat list are caught. |
-| m8 unanswered medicine question | Closed: `onMeds()` is `has("diabetes")&&P.meds!=="no"` (src/v6/app.js:48); mutation to the old form caught. |
-| m9 subtitle cap | Closed: 1,000 shown, 1,001 dropped, a barred word at character 995 caught; mutation caught. |
-| Last audit's owner question (insulin profile) | Built as the coordinator's default; see Owner questions. |
+(a) Schemas and the caps.
+- Bytes. Built from the 18 recorded scenario bodies of eval/v6 that give a schema (13 meals, 4 log, 1 Rescue) on np-core of
+  hosted/v6/index.min.html and of three older pages (ad03d71, 50090ef, 6febc1a): the meals schema is byte-identical to ad03d71's (13 of 13) and differs from 50090ef's and 6febc1a's; the
+  log schema is byte-identical to 50090ef's (4 of 4); the Rescue schema to ad03d71's and 50090ef's. The snapshot holds the same: meals 102
+  entries (101 with the 18 Nov record, 1 with ad03d71's), tune 1, log 1, Rescue 1; every entry's hash matches its text.
+- Caps with no schema limit, on the minified and the full page: 8, 9 and 50 items drop the plate (7 shown); 4, 5 and 40 protein swaps, 4 and
+  40 base swaps drop the list (3 shown); 5 and 6 plates give "empty" (4 shown); 5 and 30 cited hooks name none (4 named, run with a
+  genuine hook list of nine); 4 and 9 taste words show none (3 shown); on tune, 4 and 40 swaps drop the list. Arrays of 2 million elements in
+  contains, swaps, items, plates, taste and hooks, a 2 million character title and a 500,000 character food name: each reply within 0.5 s.
+- Removal mutants on a scratch copy of hosted/v6/index.html (one change each): items cap, swap-list cap, plate cap, hook cap, taste cap,
+  log item cap. check.js fails the first five on its named cell; inject.js fails the log mutant (11 cells) and the cut-to-seven form of the
+  item cap (11 cells); inject.js passes the five plate-path removals (m9) and a cut form of the swap list (no breach, nothing unchecked).
+(b) The snapshot test and the pre-Deploy check, on a scratch copy: `maxItems:7` back on plate items: 102 failures; `maxItems:3` on taste:
+  102; a field added to the Rescue dish: 1; a snapshot entry's text changed with its hash kept: fails ("does not hold the schema its hash
+  names"); text and hash both rewritten without the page: fails (the page's schema is in no entry); `--update` after the maxItems change: the
+  snapshot test passes (deliberate) and schemas-accepted.js fails with 102 pending (51 with `--app-only`). The gaps are m6.
+(c) eval/v6/run.js and eval/v6/window-schemas.js against a local stub on a scratch copy: no file in the tree is created or changed by a
+  default run (18 scenarios; and 3 entries made pending); `--out <dir>` writes only there; `--write` writes eval/v6/results-<label>.json,
+  by reading. Neither file is in the fingerprint (only the eval .json records and bodies.js are).
+(d) Menu and photos. 31 kinds ("menu", "Menu", " menu", "menu/", "", null, 0, "constructor", "__proto__", a zero-width space, a Cyrillic
+  "e" and others) by 6 bodies (186 calls, with an image field, a menu field, menu text): 0 reach a prompt, a schema, a check or a reply.
+  `KINDS` is meals, rescue, log, tune. Photos: 7 shapes on each of the 4 kinds (28): 0 reach a prompt. The page outside np-core holds none
+  of "Read the menu", "type the menu", "menu photo", "photo of the menu", "api/menu" (min and full page); the server posts only to the
+  page's `KINDS`. The dormant menu functions are still defined in np-core (`checkMenu`, `buildMenuPrompt`, `menuSchema`) and unreachable.
 
 ## Probed
 
-- Menu path (dormant): `KINDS` is ["meals","rescue","log","tune"]; `plan()` gives `{error}` and nothing else for 23 kinds ("menu", "Menu",
-  "MENU", " menu", "menu ", "menus", "menu/", "", null, undefined, 0, ["menu"], {}, "constructor", "__proto__", "toString",
-  "hasOwnProperty", "valueOf", "meals ", "Meals", a line break, a zero-width space, a Cyrillic "e") by 7 bodies: 161 calls, 0 reach a prompt
-  or a reply. Photos: meals, rescue, log and tune with 15 shapes (`image`, `photo`, `ctx.image`, `ctx.photo`, "yes", [], {}, 0,
-  1, `photos`, `images`, `file.photo`, `camera`, `ctx.img`, `mime`): the first nine are refused on all four kinds; the other six keys
-  build a text prompt with `image` false on meals, rescue and log (tune answers `bad_request` for these bodies, which carry no plate), and
-  the server reads only `body.image`, which `plan()` has refused first. The page outside np-core offers no menu entry (check.js).
-- S6: base swaps (10 deltas) and one-tap changes (11 shapes plus 4 consistent kcal deltas) on a medicines plate at the usual size plus 300
-  or 430; a medicines profile over goals lose, hold and build, 5 body figures including none, 4 meals, 4 amounts eaten (0 to 9,000 kcal),
-  3 appetites and 5 hours (00:30, 03:54, 04:00, 12:00, 23:54), meds "yes", "not sure" and unanswered: 10,800 cells, every prompt states
-  the usual size as the floor and a plate 10 kcal under it is dropped; 0 problems.
-- S5: 87 declared grains (millets, rices, idli, dosa, adai, rotis, pulse and nut flours, stand-ins, tubers) for a diabetic lunch, dinner
-  and breakfast: stand-ins and pulse dishes drop; refined wheat and corn products stay as grains (the grain floor's source is an owner
-  question).
-- S1-S4: 858 plate runs (509 names) and 90 swap and add runs of my own names (BACKLOG); 46 negation names; the 4 example asks against 7
-  profiles (the example ask "A light dinner after a heavy lunch" is off for insulin, not sure and unanswered, on for no medicine). Tag
-  left off: a plate item with contains [], missing, null, a string or an unknown tag, and a plate with contains [] or missing, are dropped;
-  a swap or a one-tap change with contains [] or missing is dropped; a Rescue dish with contains [] or missing is helped (S15).
-- S7: 157 refer phrasings on three kinds and 35 food controls on meals; phone against server 360 comparisons; the 424 typed strings I could
-  extract from the recorded replies read with a medicines profile: 0 more referrals than with none (recorded.js reads 14,209).
-- S8: 100 count and measure forms through `showName` (BACKLOG). The swap index 0 is never applied by the app (`swapIn` skips it) and is
-  labelled by the item on the plate, so a first swap that is not the original (9 of 788 recorded first entries carry deltas, all v5 shapes)
-  changes nothing.
-- Figures: 27 plate figure cases, 17 log cases (kcal 20 % rule, items 0, null, missing, 1,501, 9 items), 51 hand-made Rescue weight strings
-  and the 27 distinct recorded Rescue portions (m1), a fuzz of 12,000 mutated replies run through meals, tune, Rescue and log, 48,000
-  checks.
-- Mutations, 68, each on a scratch page: 37 engine (33 caught) and 31 app (29 caught); the suite that caught each first: check.js 53,
-  inject.js 8, codex.js 1, rules 0 (rules never caught one the others missed). The 6 survivors: 4 are equivalent (the plate-range test on
-  a single swap and on a single change, because `pruneCombos` tests every swap and change alone and combined and the app never applies
-  swap index 0; the kept plate's minutes default, because `checkTune` sets them next; the log item clamp, because the refusal above it
-  already rejects any weight `given` rejects), 2 are m2.
-- Read in full or in the parts named (long lines were cut at 300 to 900 characters by the viewer, so the longest lines were not read to the
-  end): the diff c666d34..cad3fb0 for src/v5/core.js, src/v6/engine.js and src/v6/app.js; src/v5/core.js 96-330 (word lists, grain test);
-  src/v6/engine.js 96-160 (hooks, directive), 286-305 (hookSaid, reasonLine), 332-360 (kept plate, tune, log), 594-602 (Rescue moves),
-  760-836 (urgent nets, `typedReferral`, `medsUsual`, `plan`); src/v6/app.js 150-220 (`api`, `makePlates`, tune, `viewOf`, `swapAt`),
-  452-489 (swap and one-tap handlers), 655-700 and 736-760 (Rescue, log), and every click handler by grep; src/v5/server.ts 40-131;
-  src/v6/params.js in full; test/safety/check.js 183-200, 718-760, 846-875 and 945-1075 and the sections each mutant named;
-  test/safety/inject.js 1-60.
-- Figures: src/v6/params.js against handoff-next-plate.md ("Targets engine"): activity 1.3 / 1.4 / 1.55 / 1.725, deficits 300 and 500
-  within 30 %, floors 1200 f / 1500 m, protein 1.0 / 1.2 / 1.4 g per kg with caps 1.6 and 1.5 for diabetes, fibre 15 (diabetes 20) per
-  1000 kcal, split 27 / 40 / 5 / 28; on insulin or sugar tablets no deficit (the plates hold the weight). They agree; no diff since
-  c666d34. No clinical figure is judged.
+- S6: B1 (48 cells, plus 1,728 and 2,916 cells below); a 2,916-cell grid (3 meals, medicine answers yes, not sure, unanswered, appetite 1,
+  5, 10, eaten 0, 900, 2,600 kcal, hours 00:30, 03:54, 04:06, 23:54, goals lose, hold, build, 3 bodies: the usual size, a small body, a large
+  body) comparing the lowest plate the engine shows with the phone's `medsUsual`: 0 differ. A first 1,728-cell run printed 696 flags: 432
+  were the zero-body cells (no stated floor to read), the other 264 were my regular expression reading the "Target for this meal" line,
+  which can be above the usual size when the appetite is high; the rerun above compares the shown plate itself.
+- Phone leg: `pruneKept`, `plateWhy`, `composedWhy`, `viewOf` taken from src/v6/app.js and run in np-core's context, with age-only and
+  all-three profiles; a 350 and a 520 kcal lunch plate; four one-tap changes of -70.
+- S7: 71 typed phrasings by 3 kinds by 2 profiles (426 requests), phone against server not repeated (unchanged code).
+- S1-S4, S9: 544 names of my own in 10 classes, each with "plain", with the correct tag and with an empty list (1,632 plate checks).
+- S12: `dayOf` across 4 am in 3 time zones (Asia/Kolkata, America/New_York, Pacific/Auckland), 2 dates in each, every quarter hour: 600 cells, 0 wrong.
+- Figures: src/v6/params.js is unchanged; no clinical figure was judged or invented.
+- Counts for part (a) to (d) are in their own section.
 
 ## Not inspected
 
-- The live model, the Railway service and the server's security items (no access code is checked here beyond the order in server.ts).
-- The screens: test/ux/review.js was not run; app states were run as functions in Node, not in a browser. A swap or change tapped on a
-  phone, the sync callback of `api()` on a page in a browser, and the focus and scroll behaviour were read, not run.
-- S11, S12 and S14 were not re-probed this round (no diff to their code; held by check.js, which passes and whose mutants in this area
-  were caught).
-- src/v5/core.js 1-96 and 330-855 beyond what the checks and probes exercise (the negation and count code), and 1070-1204 beyond the diff;
-  src/v6/engine.js 1-96, 160-286 and 360-760 (menu code, dormant); src/v6/app.js 1-150, 220-450, 490-650 and 770-816 beyond the diff and
-  the handlers; the v5 screens' own markup; src/v6/plate.js; the Builder beyond check.js's S14 states; carve.js's grid was run, not
-  re-derived.
-- The lexicon's own entries were not re-read word by word; the lexicon floor check and the held-out guard were run.
+- The live model, the Railway service, the server's access-code handling beyond reading src/v5/server.ts, and the window's results: the
+  18 Nov acceptances rest on the handoff row and the `how` text (m7).
+- test/ux/review.js was not run and no screen was opened; app functions were run in Node. No app mutants were run this round (app.js is
+  unchanged); the engine mutants are the six listed above.
+- The carried minors m1 to m5 and the backlog items of the last audit were not re-run.
+- src/v5/core.js beyond the lines the probes touched, src/v6/engine.js 1-96 and 160-286 and the dormant menu code, src/v6/app.js outside
+  lines 54-110, 150-232 and 240-260 and the handlers named, src/v6/plate.js, the v5 screens' markup, the lexicon's entries word by word.
+- Whether the live model answers a plate request whose hook list is one of the other shapes found in m8.
