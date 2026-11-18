@@ -282,6 +282,42 @@ for (const [pname, po] of PROFILES) for (const b of BRAND.concat(SUPP.map(cap1))
   const pl = a.plan('rescue', { profile: prof(po), ctx: { meal: 'dinner', text: b } }); const r = J(RESC.reply.raw); r.dish.name = nm; r.dish.contains = ['dairy']; cellsN++;
   add('rescue: a typed supplement with a named dish is refused (S9)', pl.check && pl.check(r).status !== 'ok', `${pname}: typed "${b}", dish "${nm}" was helped`); }
 
+// ---------- the cap is the rule (fix-r18; safety audit of 21a04a3, m9) ----------
+// The cells above write a barred word into the element over a cap, so removing a drop (the plain removal of "more than seven items drops the plate")
+// was caught by the word check, which dropped the same element for another reason, and the cell passed. Here the element over the cap is honest: no
+// barred word, no energy. The rule says the owner of the array is dropped, never cut to fit and never shown with the extra element: a plate with
+// eight items is not offered; a swap list of four is not offered; five plates are an empty reply; five cited hooks name none; four taste words show
+// none; nine log items are no reply. A control fills the array to its cap and shows it is offered, so a cell fails for the removal and not for the shape.
+const CAPS = [];
+const honestItem = () => ({ food: 'Cucumber', grams: 50, group: 'greens', contains: ['plain'] });
+for (const [pname, po] of PROFILES) {
+  const M = KIND.meals(po), T = KIND.tune(po), G = KIND.log(po); if (!M || !T || !G) { add('the cap is the rule: the base reply is accepted', false, `${pname}: no check`); continue; }
+  const m = (mut) => { const r = M.base(); mut(r.meals[0], r); return M.run(r); }, plate = (o) => (o.meals || [])[0];
+  const row = (what, over, ctl, gone, kept) => { cellsN += 2;
+    add(`the cap is the rule: ${what} (over the cap, an honest element: dropped, never cut, never shown)`, gone(over), `${pname}: ${JSON.stringify(over).slice(0, 160)}`);
+    add(`the cap is the rule: ${what} (control: filled to the cap, offered)`, kept(ctl), `${pname}: ${JSON.stringify(ctl).slice(0, 160)}`); };
+  row('seven items on a plate', m(p => { while (p.items.length < 8) p.items.push(honestItem()); }), m(p => { while (p.items.length < 7) p.items.push(honestItem()); }),
+    o => (o.meals || []).length === 0, o => plate(o) && plate(o).items.length === 7);
+  row('three swaps in a list', m(p => { p.swaps.protein.push(J(p.swaps.protein[1])); }), m(p => { }),
+    o => plate(o) && plate(o).swaps.protein.length === 0, o => plate(o) && plate(o).swaps.protein.length === 3);
+  { const tb = () => { const b = T.base(); return b; }, tr = (mut) => { const r = tb(); mut(r); return T.run(r); };
+    row('three swaps in a list (tune)', tr(r => { r.swaps.protein.push(J(r.swaps.protein[1])); }), tr(r => { }),
+      o => o.status === 'ok' && o.swaps.protein.length === 0, o => o.status === 'ok' && o.swaps.protein.length === 3); }
+  { const mk = (n) => { const r = M.base(); const x = r.meals[0]; r.meals = Array.from({ length: n }, () => J(x)); return M.run(r); };
+    row('four plates in a reply', mk(5), mk(4), o => (o.meals || []).length === 0 && o.status === 'empty', o => (o.meals || []).length === 4); }
+  row('four taste words', m(p => { p.taste = ['tangy', 'smoky', 'spicy', 'sweet']; }), m(p => { p.taste = ['tangy', 'smoky', 'spicy']; }),
+    o => plate(o) && plate(o).taste.length === 0, o => plate(o) && plate(o).taste.length === 3);
+  { const items = (n) => { const r = G.base(); const x = r.items[0]; r.items = Array.from({ length: n }, () => J(x)); return G.run(r); };
+    row('eight items in a log reply', items(9), items(8), o => o.status !== 'ok', o => o.status === 'ok'); }
+  // hooks cited: a plan whose request offers many hooks (a goal, a focus, blood pressure, an active day, a late dinner, a day so far)
+  { const body = { profile: prof(Object.assign({}, po, { goal: 'lose', focus: 'iron' })), ctx: { meal: 'dinner', mode: 'active', hour: 22.4, dayNo: 100 },
+      file: { today: { kcal: 1250, protein: 10, lastHoursAgo: 9, lastKcal: 800, meals: [{ meal: 'breakfast', kind: 'skipped' }, { meal: 'lunch', kind: 'rescued', title: 'Thali', kcal: 800, protein: 10 }] }, patterns: [{ id: 'late_dinner', n: 4, of: 6 }], days: 6 } };
+    const pl = a.plan('meals', body), ids = pl.schema.properties.meals.items.properties.planned_around.items.enum.slice(); 
+    const plan = (n) => { const r = { status: 'ok', refer_reason: 'none', meals: [basePlate(pl.schema.properties.meals.items)] }; r.meals[0].planned_around = ids.slice(0, n); return (pl.check(r).meals || [])[0]; };
+    add('the cap is the rule: the request offers at least five hooks', ids.length >= 5, `${pname}: ${ids.length} hooks`);
+    row('four hooks cited', plan(5) || {}, plan(4) || {}, p => p.planned && p.planned.length === 0, p => p.planned && p.planned.length === 4); }
+}
+
 let fail = 0; const byLeaf = {};
 for (const [id, r] of Object.entries(res)) { console.log(`${r.bad.length ? 'FAIL' : 'ok  '} ${id}: ${r.n} cells, ${r.bad.length} counter-examples`);
   r.bad.slice(0, +(process.env.SHOWN || 3)).forEach(b => console.log('       ' + b)); if (r.bad.length > +(process.env.SHOWN || 3)) console.log(`       ... ${r.bad.length - +(process.env.SHOWN || 3)} more`); fail += r.bad.length; }
