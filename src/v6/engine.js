@@ -160,28 +160,38 @@ function directive(p,pl,hooks,meal,done){
   return s+(pick?tail[pick.id]:"")+".";
 }
 
-/* ---------- request validation for the food file (the phone sends numbers and short words, never prompt text) ---------- */
+/* ---------- request validation for the food file (the phone sends numbers and short words, never prompt text) ----------
+   fix-r18, the intake rule: a figure the phone can hold is read as sent, and one past the bound the phone can hold makes the request a bad_request
+   (readFile gives null); nothing is clamped. The bounds are what the phone can store: a logged meal up to 4,000 kcal and 300 g protein (the log's
+   own ranges), the day the sum of four meals, a pattern list up to 16 (one late dinner, four skipped meals, eight repeated foods at most). A
+   missing figure is 0, as it was; a list longer than the phone makes is refused, not cut. */
+var FILEB={kcal:16000,protein:1200,carbs:2000,fats:1200,fiber:320,mealKcal:4000,mealProtein:300,patterns:16,meals:4,recent:10};
 function readFile(x,par){
-  var f={today:{kcal:0,protein:0,carbs:0,fats:0,fiber:0,meals:[],lastHoursAgo:null,lastKcal:0},patterns:[],slotProtein:{},days:0,recent:[]};
+  var f={today:{kcal:0,protein:0,carbs:0,fats:0,fiber:0,meals:[],lastHoursAgo:null,lastKcal:0},patterns:[],slotProtein:{},days:0,recent:[]},bad=false;
   if(!x||typeof x!=="object")return f;var t=x.today||{};
-  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){f.today[k]=num(t[k],0,k==="kcal"?9000:900)||0;});
-  f.today.lastHoursAgo=t.lastHoursAgo==null?null:Math.max(0,Math.min(48,+t.lastHoursAgo||0));f.today.lastKcal=num(t.lastKcal,0,4000)||0;
-  (Array.isArray(t.meals)?t.meals:[]).slice(0,4).forEach(function(m){if(!m||!okOpt("meal",m.meal)||["had","other","skipped","rescued","ordered"].indexOf(m.kind)<0)return;
-    f.today.meals.push({meal:m.meal,kind:m.kind,title:plainText(m.title,70),kcal:num(m.kcal,0,4000)||0,protein:num(m.protein,0,300)||0});});
-  (Array.isArray(x.patterns)?x.patterns:[]).slice(0,8).forEach(function(q){if(!q)return;
-    if(q.id==="late_dinner")f.patterns.push({id:q.id,n:num(q.n,0,7)||0,of:num(q.of,0,7)||0});
-    else if(q.id==="skips_meal"&&okOpt("meal",q.meal))f.patterns.push({id:q.id,meal:q.meal,n:num(q.n,0,7)||0,of:num(q.of,0,7)||0});
-    else if(q.id==="repeat"){var w=mainWord(q.food);if(w&&/^[bsm]$/.test(q.slot))f.patterns.push({id:q.id,slot:q.slot,food:w,n:num(q.n,0,21)||0});}});
-  var sp=x.slotProtein||{};SLOTS.forEach(function(m){var v=num(sp[m],0,200);if(v!=null)f.slotProtein[m]=v;});
-  f.days=num(x.days,0,7)||0;
-  f.recent=(Array.isArray(x.recent)?x.recent:[]).slice(0,10).map(function(t){return plainText(t,60);}).filter(Boolean);
-  return f;
+  function g(v,hi){var r=intakeNum(v,[null,""],0,hi,true);if(r.bad)bad=true;return r.v==null?0:r.v;}
+  ["kcal","protein","carbs","fats","fiber"].forEach(function(k){f.today[k]=g(t[k],FILEB[k]);});
+  var lh=t.lastHoursAgo;if(lh==null||lh==="")f.today.lastHoursAgo=null;else if(typeof lh==="number"&&isFinite(lh)&&lh>=0&&lh<=48)f.today.lastHoursAgo=lh;else bad=true;
+  f.today.lastKcal=g(t.lastKcal,FILEB.mealKcal);
+  var ms=Array.isArray(t.meals)?t.meals:[];if(ms.length>FILEB.meals)bad=true;
+  ms.slice(0,FILEB.meals).forEach(function(m){if(!m||!okOpt("meal",m.meal)||["had","other","skipped","rescued","ordered"].indexOf(m.kind)<0)return;
+    f.today.meals.push({meal:m.meal,kind:m.kind,title:plainText(m.title,70),kcal:g(m.kcal,FILEB.mealKcal),protein:g(m.protein,FILEB.mealProtein)});});
+  var ps=Array.isArray(x.patterns)?x.patterns:[];if(ps.length>FILEB.patterns)bad=true;
+  ps.slice(0,FILEB.patterns).forEach(function(q){if(!q)return;
+    if(q.id==="late_dinner")f.patterns.push({id:q.id,n:g(q.n,7),of:g(q.of,7)});
+    else if(q.id==="skips_meal"&&okOpt("meal",q.meal))f.patterns.push({id:q.id,meal:q.meal,n:g(q.n,7),of:g(q.of,7)});
+    else if(q.id==="repeat"){var w=mainWord(q.food);if(w&&/^[bsm]$/.test(q.slot))f.patterns.push({id:q.id,slot:q.slot,food:w,n:g(q.n,21)});}});
+  var sp=x.slotProtein&&typeof x.slotProtein==="object"?x.slotProtein:{};SLOTS.forEach(function(m){var r=intakeNum(sp[m],[null,""],0,FILEB.mealProtein,true);if(r.bad)bad=true;else if(r.v!=null)f.slotProtein[m]=r.v;});
+  f.days=g(x.days,7);
+  var rc=Array.isArray(x.recent)?x.recent:[];if(rc.length>FILEB.recent)bad=true;
+  f.recent=rc.slice(0,FILEB.recent).map(function(t){return plainText(t,60);}).filter(Boolean);
+  return bad?null:f;
 }
-readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";if(p.age&&p.age<18)p.age=0;return p;};})(readProfile);
+readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";return p;};})(readProfile);   /* the old line "an age under 18 reads as 0" is the set-up's bound now (BODYB): 16 and 17 cannot be entered, and a request that sends one is refused */
 readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;/* the hour (fix-r18; safety audit of 21a04a3, B1 as a class): null, "" or missing is "not given" and stays not given. The page sends hour:null on every
      tab that is not the meal of the clock, and +null is 0, which read as midnight and added the "late dinner" hook to a dinner planned at lunch time.
      0 is midnight, a given hour. A number from 0 up to but not 24 is read as sent; anything else is refused, never moved. */
-  var hx=(x||{}).hour;if(hx==null||hx==="")c.hour=null;else if(typeof hx==="number"&&isFinite(hx)&&hx>=0&&hx<24)c.hour=hx;else return null;var dn=num((x||{}).dayNo,1,366);c.dayNo=dn;if(kind==="menu")c.text=menuText(x.text);return c;};})(readCtx);
+  var hx=(x||{}).hour;if(hx==null||hx==="")c.hour=null;else if(typeof hx==="number"&&isFinite(hx)&&hx>=0&&hx<24)c.hour=hx;else return null;var dg=intakeNum((x||{}).dayNo,[null,""],1,366);if(dg.bad)return null;c.dayNo=dg.v;if(kind==="menu")c.text=menuText(x.text);return c;};})(readCtx);
 
 /* ---------- prompts ---------- */
 function briefText(p,c,file,pl,hooks,noVariety){
@@ -823,10 +833,13 @@ plan=function(kind,body){
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
   if(carriesPhoto(body))return {error:"bad_request"};
+  /* a body figure the set-up cannot store is refused (fix-r18); after the referrals above, so a typed urgent sign or a kidney condition still refers (S7) */
+  if(profileRefused(body&&body.profile))return {error:"bad_request"};
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";if(!p.slot&&medsUsual(p,"lunch"))return {error:"bad_request"};p.medsUsual=medsUsual(p,p.slot);   /* on medicines a tune names its meal (audit m4) */var cm=checkMeal(body&&body.meal&&typeof body.meal==="object"?keptPlate(body.meal):null,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
-  var file=readFile(body&&body.file),pl=planDay(p,file,c.meal,c.appetite||5);
+  var file=readFile(body&&body.file);if(!file)return {error:"bad_request"};
+  var pl=planDay(p,file,c.meal,c.appetite||5);
   c.target=pl?pl.target:null;p.slot=c.meal;p.medsUsual=medsUsual(p,c.meal);
   if(kind==="meals"){var hooks=hooksFor(p,file,c,pl),lite=!!(body.ctx&&body.ctx.lite);
     return {prompt:buildPlatesPrompt(p,c,file,pl,hooks,lite),schema:platesSchema(hooks.map(function(h){return h.id;}),lite),image:false,weight:1,check:function(d){return checkReply6(d,p,hooks,pl,c.meal);}};}

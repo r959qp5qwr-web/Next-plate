@@ -862,8 +862,31 @@ function containsText(){return "- contains: every dish, item, swap and change ca
 function nameText(){return "- Every name (item, swap, a food a change adds, dish, side) is plain letters, spaces and hyphens only: no digits, commas, brackets or other marks, and no counts or measures in words (\"Paneer tikka\", not \"Paneer tikka, charred\"; \"Idli\", not \"Two idli\" or \"Plate of idli\"). A name in any other shape is not shown.";}
 function referText(){return "- refer_reason: \"none\", unless what they wrote says they are pregnant or breastfeeding (\"pregnancy\"), have a kidney condition (\"kidney\"), or describes something urgent for a doctor (\"other_urgent\"), in any language or spelling. Any value but \"none\" sends them to their coach or doctor.";}
 function voiceText(){return "- Plain, calm English in every field. Never use any of these words: "+BANW.join(", ")+".";}
-/* num() reads the phone's own fields (the profile, the context, the food file), never a figure the model wrote */
+/* num() clamps. It is no longer used for any field the phone sends (fix-r18, below); the two engine lines that still call it read a Rescue
+   dish's grain grams, a figure the model wrote and the figure rule already covers */
 function num(v,lo,hi){v=Math.round(+v);return isFinite(v)?Math.max(lo,Math.min(hi,v)):null;}
+/* ---------- request intake (fix-r18; safety audit of 21a04a3, B1) ----------
+   The rule, for every field the phone sends: "not given" stays not given on both sides; a value the set-up can store is read as sent, the same
+   on the phone and in the engine; a value the set-up cannot store is refused (the request is a bad_request) and is never moved into a range.
+   num() broke the first part: it clamps before a caller's "||0" can see the zero, so a client with an age and no height or weight (the phone
+   sends cm 0, kg 0) was told to the model as 120 cm and 30 kg. What "not given" is differs by field and is set where the field is read:
+   the body figures take 0, null and ""; the hour, the day number and the appetite take null and "" (0 is a given hour; an appetite of 0 is not
+   storable); a food-file figure takes null and "" (0 is a given amount).
+   intakeNum(v, none, lo, hi, round) -> {v:null} not given | {v:n} a whole number from lo to hi | {bad:true} refused. round: a figure the phone
+   computes (the day's sums) may carry a fraction and is rounded, as it always was; a field the person types is never rounded. */
+function intakeNum(v,none,lo,hi,round){
+  if(v===undefined||none.indexOf(v)>=0)return {v:null};
+  var n=typeof v==="number"?v:(typeof v==="string"&&/^[0-9]{1,5}$/.test(v)?+v:NaN);
+  if(!isFinite(n))return {bad:true};
+  if(round)n=Math.round(n);
+  return n===Math.round(n)&&n>=lo&&n<=hi?{v:n}:{bad:true};
+}
+/* the set-up's bounds for the three body figures: the phone's input handler and its load read these same numbers (bodyRead in src/v6/app.js).
+   The age starts at 18: the engine has never planned for a younger client (its old line read an age under 18 as not given), and the set-up
+   now says so instead of showing a target the engine would not use. */
+var BODYB={age:[18,95],cm:[120,215],kg:[30,200]};
+function bodyIn(v,k){var g=intakeNum(v,[0,null,""],BODYB[k][0],BODYB[k][1]);return g.bad?null:(g.v||0);}   /* 0 not given; null refused */
+function profileRefused(x){return !!x&&typeof x==="object"&&["age","cm","kg"].some(function(k){return bodyIn(x[k],k)===null;});}
 /* the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a figure the model writes is taken as written or its element is dropped.
    An integer in the field's range is the figure; anything else (past either end of the range, a zero where zero is no amount, null, a
    string, a fraction, a word) is null, and the caller drops the element the figure belongs to. Nothing is cut or rounded to fit, so a figure
@@ -1175,8 +1198,8 @@ function plainText(v,max){return typeof v==="string"?norm(v).replace(/[\r\n"\\]+
 function readProfile(x){
   if(!x||typeof x!=="object")return null;
   if(!okOpt("diet",x.diet)||!okOpt("health",x.health)||!okOpt("region",x.region))return null;
-  var p={diet:x.diet,health:x.health,region:x.region,leave:Array.isArray(x.leave)?x.leave.filter(function(k){return okOpt("leave",k);}).slice(0,4):[],
-    bp:x.health==="bp"||x.bp===true,sex:okOpt("sex",x.sex)?x.sex:"",act:okOpt("act",x.act)?x.act:"",age:num(x.age,16,95)||0,cm:num(x.cm,120,215)||0,kg:num(x.kg,30,200)||0};
+  var p={diet:x.diet,health:x.health,region:x.region,leave:Array.isArray(x.leave)?x.leave.filter(function(k,i,a){return okOpt("leave",k)&&a.indexOf(k)===i;}).slice(0,4):[],
+    bp:x.health==="bp"||x.bp===true,sex:okOpt("sex",x.sex)?x.sex:"",act:okOpt("act",x.act)?x.act:"",age:bodyIn(x.age,"age")||0,cm:bodyIn(x.cm,"cm")||0,kg:bodyIn(x.kg,"kg")||0};   /* a figure plan() refuses reads as not given here (profileRefused) */
   return p;
 }
 function readCtx(x,kind){
@@ -1185,7 +1208,7 @@ function readCtx(x,kind){
   if(kind==="rescue"){if(!c.text)return null;return c;}   /* no photo is read (owner, 17 Nov): the dish is named in words */
   var md=optNow("mode",x.mode);c.mode=okOpt("mode",md)?md:"desk";   /* older values are read as today's options (owner, 14 Nov) */
   c.mood=okOpt("mood",x.mood)?x.mood:"best";var cu=optNow("cuisine",x.cuisine);c.cuisine=okOpt("cuisine",cu)?cu:"home";
-  c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";c.appetite=num(x.appetite,1,10)||5;
+  c.prep=okOpt("prep",x.prep)?x.prep:"home";c.oil=okOpt("oil",x.oil)?x.oil:"min";var ap=intakeNum(x.appetite,[null,""],1,10);if(ap.bad)return null;c.appetite=ap.v==null?5:ap.v;   /* null or missing is not given (5); 0 and 11 are not on the slider and are refused */
   c.had=Array.isArray(x.had)?x.had.slice(0,4).map(function(t){return plainText(t,80);}).filter(Boolean):[];
   /* a share outside its bounds is not clamped into them: the ratio is used as sent, or not at all (B2) */
   var q=ratioOK(x.ratio);if(q)c.ratio=q;

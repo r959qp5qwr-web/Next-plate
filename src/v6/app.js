@@ -11,6 +11,10 @@ var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",r
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
+/* What the phone keeps from its own store (fix-r18; safety audit of 21a04a3, B1 as a class): a body figure the set-up cannot hold (an older build, an
+   edited store) reads as not given, so the engine never refuses a request for it; an appetite is kept only when the slider can hold it (1 to 10). */
+function bodyStored(v,k){return bodyIn(Math.round(+v)||0,k)||0;}
+function appKept(av){var o={};av=av&&typeof av==="object"?av:{};Object.keys(av).forEach(function(m){if(lab("meal",m)&&intakeNum(av[m],[],1,10).v!=null)o[m]=av[m];});return o;}
 var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=false,REMADE={},REMADEWHY={};
 (function load(){try{
   var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
@@ -18,14 +22,14 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   if(!raw)return;var rp=raw.p||{};
   ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
   if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
-  ["age","cm","kg"].forEach(function(k){if(+rp[k]>0)P[k]=Math.round(+rp[k]);});
+  ["age","cm","kg"].forEach(function(k){P[k]=bodyStored(rp[k],k);});
   /* health is tick-all-that-apply (owner decision, 14 Nov): conds holds the ticks; health is derived, a kidney condition or pregnancy first */
   P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
   var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
   C.ratio=ratioOK(rc.ratio);   /* a saved share out of the engine's bounds (an older build could save one) is dropped at load (B2) */   /* the chosen share is kept on the phone (R2-B5 076-3) */
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
-  if(raw.app&&raw.app.day===DAY)APP=raw.app.v||{};
+  if(raw.app&&raw.app.day===DAY)APP=appKept(raw.app.v);
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
   /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
   Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
@@ -116,7 +120,8 @@ function ctxKey(){var a=appetite();return [ansSig(),C.meal,P.goal,P.focus,C.mode
 function curKey(){return STORE.shown[C.meal]||ctxKey();}
 function curRes(){return STORE.res[curKey()]||null;}
 function lastForMeal(){var best=null;Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r.meal===C.meal&&r.meals&&r.meals.length&&(!best||r.at>best.at))best=r;});return best;}
-function fileOut(){return {today:FILE.today,patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days,recent:FILE.recent};}
+/* a title travels cut at 70 characters, which is where the engine cuts it, so the engine reads the title the phone sends (fix-r18) */
+function fileOut(){var t=FILE.today;return {today:Object.assign({},t,{meals:t.meals.map(function(m){return Object.assign({},m,{title:String(m.title||"").slice(0,70)});})}),patterns:FILE.patterns,slotProtein:FILE.slotProtein,days:FILE.days,recent:FILE.recent};}
 function dayNo(){return Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);}
 function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(),hour:C.meal===CLOCK?Math.round(hr*100)/100:null,mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,appetite:appetite(),text:text||""};if(C.ratio)c.ratio=C.ratio;return c;}
 
@@ -276,31 +281,43 @@ function foodQs(host,after){
     x.addEventListener("click",function(){var i=P.leave.indexOf(o[0]);if(i>=0)P.leave.splice(i,1);else P.leave.push(o[0]);after();});lw.appendChild(x);});b.appendChild(lw);
   var c=q(host,"Home food",true);choiceRow(c,"region",function(v){return P.region===v;},function(v){P.region=v;after();},4);
 }
+/* A tick in "Anything on the health side?" (fix-r18; safety audit of 21a04a3, m5): unticking the last condition left health unset, and every request
+   then answered bad_request until "None" was tapped. No condition ticked is "None of these". */
+function setCond(v){
+  if(v==="none"){P.conds=[];P.health="none";}else{var i=P.conds.indexOf(v);if(i>=0)P.conds.splice(i,1);else P.conds.push(v);P.health=healthOf(P.conds)||"none";}
+  if(!has("diabetes"))P.meds="";
+}
 function healthQs(host,after){
   var a=q(host,"Anything on the health side? Tick all that apply.");
   tiles(a,"health",function(v){return v==="none"?P.health==="none":has(v);},function(v){
-    if(v==="none"){P.conds=[];P.health="none";}else{var i=P.conds.indexOf(v);if(i>=0)P.conds.splice(i,1);else P.conds.push(v);P.health=healthOf(P.conds);}
-    if(!has("diabetes"))P.meds="";after();},true);
+    setCond(v);after();},true);
   var refer=has("kidney")||has("preg");   /* a referral asks nothing more on this step (second screen review, R2-B1 007-1) */
   if(refer){var rf=el("div","note refer");rf.id="setup-refer";rf.setAttribute("role","note");rf.appendChild(ic("shield"));rf.appendChild(el("p",null,"With "+(has("kidney")&&has("preg")?"a kidney condition and a pregnancy":has("kidney")?"a kidney condition":"a pregnancy or while breastfeeding")+", your meals are best planned with your coach and doctor, so Next Plate suggests none."+(UI.sheet?"":" The last step is not needed.")));host.appendChild(rf);return;}
   if(has("diabetes")){var m=q(host,"Do you take insulin, or sugar tablets such as glimepiride or gliclazide?",true);m.appendChild(el("p","fine","These can cause low sugar when you eat less, so the plates stay steadier for you."));choiceRow(m,"meds",function(v){return P.meds===v;},function(v){P.meds=v;after();},3);}
   var b=q(host,"Want more of a nutrient?",true),lw=el("div","lows");lw.setAttribute("role","radiogroup");
   OPT.focus.forEach(function(o){var x=btn("choice",o[0]==="none"?"Nothing":o[1],null,"focus-"+o[0]);x.setAttribute("role","radio");x.setAttribute("aria-checked",P.focus===o[0]?"true":"false");x.addEventListener("click",function(){P.focus=o[0];after();});lw.appendChild(x);});b.appendChild(lw);
 }
+/* What a body field holds once the person has typed in it: a whole number inside the bounds the engine reads (BODYB in np-core), or 0, not given.
+   Height also reads feet (5.4 = 5 ft 4 in) and inches. "said" is the line shown when the text was read another way (screen review B1). */
+function bodyRead(k,text){
+  var raw=+text,v=Math.round(raw),said="",b=BODYB[k];
+  if(k==="cm"&&raw>=4&&raw<8){var ft=Math.floor(raw),inch=parseInt(String(text).split(".")[1]||"0",10);v=inch<12?Math.round(ft*30.48+inch*2.54):0;if(v)said="Read as "+ft+"\u00A0ft "+inch+"\u00A0in: "+v+"\u00A0cm.";}
+  else if(k==="cm"&&raw>=48&&raw<=84){v=Math.round(raw*2.54);said="Read as "+Math.round(raw)+"\u00A0inches: "+v+"\u00A0cm.";}
+  var good=v>=b[0]&&v<=b[1];
+  return {v:good?v:0,good:good,said:good?said:""};
+}
 function bodyQs(host,after){
   var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. You can leave them empty; then plates have no calorie or protein target."));
   choiceRow(a,"sex",function(v){return P.sex===v;},function(v){P.sex=v;after();},2);
   var f=el("div","fields");
-  [["age","Age (years)","years",16,95],["cm","Height (cm)","cm or ft",120,215],["kg","Weight (kg)","kg",30,200]].forEach(function(x){
-    var l=el("label");l.appendChild(el("span","cap",x[1]));var i=el("input");i.type="number";i.inputMode="numeric";i.min=String(x[3]);i.max=String(x[4]);i.id="body-"+x[0];i.placeholder=x[2];if(P[x[0]])i.value=String(P[x[0]]);
+  [["age","Age (years)","years"],["cm","Height (cm)","cm or ft"],["kg","Weight (kg)","kg"]].forEach(function(x){
+    var l=el("label");l.appendChild(el("span","cap",x[1]));var i=el("input");i.type="number";i.inputMode="numeric";i.min=String(BODYB[x[0]][0]);i.max=String(BODYB[x[0]][1]);i.id="body-"+x[0];i.placeholder=x[2];if(P[x[0]])i.value=String(P[x[0]]);
     if(x[0]==="cm")i.inputMode="decimal";
     /* height also reads feet (5.4 = 5 ft 4 in) and inches; a value out of range stays, with a line saying what to type (screen review B1) */
-    i.addEventListener("change",function(){var raw=+i.value,v=Math.round(raw),said="";
-      if(x[0]==="cm"&&raw>=4&&raw<8){var ft=Math.floor(raw),inch=parseInt(String(i.value).split(".")[1]||"0",10);v=inch<12?Math.round(ft*30.48+inch*2.54):0;if(v)said="Read as "+ft+"\u00A0ft "+inch+"\u00A0in: "+v+"\u00A0cm.";}
-      else if(x[0]==="cm"&&raw>=48&&raw<=84){v=Math.round(raw*2.54);said="Read as "+Math.round(raw)+"\u00A0inches: "+v+"\u00A0cm.";}
-      var good=v>=x[3]&&v<=x[4];P[x[0]]=good?v:0;if(good&&said)i.value=String(v);
-      msg.textContent=!i.value?"":!good?(x[0]==="cm"?"Type your height in cm, for example 162, or in feet, for example 5.4.":x[1].replace(/ \(.*/,"")+" between "+x[3]+" and "+x[4]+" "+x[2]+", please."):said;
-      msg.className=good?"fine":"fine err";after(true);});
+    i.addEventListener("change",function(){var r=bodyRead(x[0],i.value),b=BODYB[x[0]];
+      P[x[0]]=r.v;if(r.good&&r.said)i.value=String(r.v);
+      msg.textContent=!i.value?"":!r.good?(x[0]==="cm"?"Type your height in cm, for example 162, or in feet, for example 5.4.":x[1].replace(/ \(.*/,"")+" between "+b[0]+" and "+b[1]+" "+x[2]+", please."):r.said;
+      msg.className=r.good?"fine":"fine err";after(true);});
     var msg=el("p","fine");msg.setAttribute("aria-live","polite");msg.id="body-"+x[0]+"-msg";l.appendChild(i);l.appendChild(msg);f.appendChild(l);});
   a.appendChild(f);
   var b=el("div","qs act");b.appendChild(el("p","cap","Activity"));tiles(b,"act",function(v){return P.act===v;},function(v){P.act=v;after();});a.appendChild(b);
