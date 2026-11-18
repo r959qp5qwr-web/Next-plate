@@ -13,3 +13,7 @@ demo/reel/film5/audio/**/*.wav
 test/ux/out/
 .claude/.ux-gate-tries
 test/ux/PASSED
+
+# the window records under test/safety/schemas are kept (the pre-Deploy check reads their schemas.log)
+!test/safety/schemas/window-*/
+!test/safety/schemas/window-*/*.log

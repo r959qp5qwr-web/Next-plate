@@ -1,0 +1,208 @@
+meals  0062144c71b9 ok                       27566 ms  hooks low_protein_meal
+meals  025286b2fc59 ok                       24793 ms  hooks long_gap
+meals  03fc2a8d2fe9 ok                       6287 ms  hooks protein_gap,skipped_breakfast
+meals  0675ab1d27c4 ok                       7517 ms  hooks goal_lose,focus_iron,skipped_breakfast,ate_out,had_dinner,long_gap,easy_snack,repeat_rajma,low_protein_meal
+meals  095774d878b7 ok                       24530 ms  hooks mode_active
+meals  0a168b0c5450 ok                       6147 ms  hooks easy_snack
+meals  0d32db5b5d62 ok                       23041 ms  hooks repeat_paneer
+meals  0e27e7056a59 ok                       8263 ms  hooks goal_lose,diabetes_grain
+meals  15aa65b06099 ok                       6449 ms  hooks late_now
+meals  16302736169c ok                       8835 ms  hooks diabetes_grain
+meals  1a94577eb3c7 ok                       7676 ms  hooks mode_active
+meals  1aaffd0ab790 ok                       25549 ms  hooks goal_build,focus_pro,protein_gap,skipped_breakfast,ate_out,had_dinner,long_gap,easy_lunch,repeat_rajma
+meals  1adc29dc41fd ok                       8168 ms  hooks lighter_now,ate_out,long_gap,bp_salt
+meals  1b47b4f45960 ok                       23952 ms  hooks goal_build
+meals  24b6231a53cb ok                       6915 ms  hooks had_lunch
+meals  25632306f208 ok                       27152 ms  hooks protein_gap,had_breakfast
+meals  2581e1b64181 ok                       25578 ms  hooks protein_gap,had_lunch
+meals  25ae52d6ea44 ok                       25815 ms  hooks protein_gap,ate_out
+meals  2f0463ca43b3 ok                       27347 ms  hooks plain_day
+meals  31600379fd13 ok                       30123 ms  hooks steady_carbs,diabetes_grain
+meals  3b71ffd161cc ok                       9976 ms  hooks goal_lose,steady_carbs,diabetes_grain
+meals  3c20db44a8e6 ok                       14396 ms  hooks goal_lose
+meals  3c9ba34b04fc ok                       11668 ms  hooks low_protein_meal
+meals  3fa2d2776228 ok                       8420 ms  hooks lighter_now,had_breakfast,long_gap
+meals  3faa450a7cad ok                       15692 ms  hooks focus_fib
+meals  4c4d20c5658c ok                       8229 ms  hooks goal_build
+meals  4e54f2391a32 ok                       11343 ms  hooks lighter_now,had_snack
+meals  52957193bbde ok                       23109 ms  hooks goal_lose,lighter_now,had_breakfast,ate_out,long_gap
+meals  550c03c62146 ok                       24993 ms  hooks easy_dinner
+meals  55a7b42941b8 ok                       22763 ms  hooks goal_lose,focus_iron,skipped_breakfast,ate_out,had_dinner,long_gap,easy_snack,repeat_rajma,low_protein_meal
+meals  5b47328ab1ca ok                       27167 ms  hooks goal_build,focus_pro,protein_gap,skipped_breakfast,ate_out,had_snack,long_gap,easy_dinner,repeat_rajma
+meals  5c18ac739db2 ok                       8110 ms  hooks late_dinner
+meals  5d67bc016d4c ok                       8563 ms  hooks steady_carbs,diabetes_grain
+meals  5d8dae23862a ok                       8682 ms  hooks lighter_now,ate_out
+meals  5e1afb88bc49 ok                       8533 ms  hooks focus_b12
+meals  5e7e9d748400 ok                       8045 ms  hooks goal_build,focus_pro,protein_gap,skipped_breakfast,ate_out,had_dinner,long_gap,easy_lunch,repeat_rajma
+meals  5ee31506a731 ok                       34210 ms  hooks focus_iron
+meals  5fba3f06cca9 ok                       25566 ms  hooks protein_gap,skipped_breakfast
+meals  64d816e1ea53 ok                       24391 ms  hooks focus_cal
+meals  664540379b5c ok                       24631 ms  hooks bp_salt
+meals  668747e000ca ok                       24804 ms  hooks goal_lose,focus_iron,protein_gap,skipped_breakfast,ate_out,had_snack,long_gap,easy_dinner,repeat_rajma
+meals  6b05579437b4 ok                       24396 ms  hooks easy_breakfast
+meals  6c3e2922f381 ok                       29097 ms  hooks lighter_now,ate_out
+meals  6d3bc2ebfae7 ok                       30370 ms  hooks had_breakfast
+meals  6e8cef9adf51 ok                       26748 ms  hooks lighter_now,ate_out,long_gap,bp_salt
+meals  6f110e0e97e7 ok                       27110 ms  hooks diabetes_grain
+meals  7626e536973c ok                       28106 ms  hooks goal_build,focus_pro,skipped_breakfast,ate_out,had_dinner,long_gap,easy_snack,repeat_rajma,low_protein_meal
+meals  7df7a2e49d4e ok                       23989 ms  hooks skipped_lunch
+meals  7f5672b8d129 ok                       7700 ms  hooks goal_build,mode_active
+meals  85278f0a50ab ok                       23426 ms  hooks ate_out
+meals  889924a68005 ok                       26352 ms  hooks goal_build,focus_pro,protein_gap,skipped_lunch,ate_out,had_dinner,long_gap,easy_breakfast,repeat_rajma
+meals  8afdd5412395 ok                       11455 ms  hooks protein_gap,had_lunch
+meals  93342c085389 ok                       29429 ms  hooks easy_lunch
+meals  960d053d296e ok                       25469 ms  hooks lighter_now,had_breakfast,long_gap
+meals  984be585ebbe ok                       10030 ms  hooks ate_out
+meals  9adf4ce17cbd ok                       14577 ms  hooks skipped_snack
+meals  9e59faaada72 ok                       24867 ms  hooks focus_pro
+meals  a3c3e8024a1c ok                       8441 ms  hooks goal_build,focus_pro,protein_gap,skipped_breakfast,ate_out,had_snack,long_gap,easy_dinner,repeat_rajma
+meals  a665d108664d ok                       8738 ms  hooks had_breakfast
+meals  a8ffcf86a895 ok                       8031 ms  hooks goal_build,focus_pro,skipped_breakfast,ate_out,had_dinner,long_gap,easy_snack,repeat_rajma,low_protein_meal
+meals  ad96389d4ba3 ok                       8037 ms  hooks goal_lose,focus_iron,protein_gap,skipped_breakfast,ate_out,had_snack,long_gap,easy_dinner,repeat_rajma
+meals  adfdfe333868 ok                       8148 ms  hooks skipped_lunch
+meals  b3d2dda2ddf5 ok                       13062 ms  hooks focus_iron
+meals  b6d20c153443 ok                       7390 ms  hooks repeat_paneer
+meals  b70332fbfa5a ok                       8830 ms  hooks easy_lunch
+meals  b824394b7c9c ok                       8456 ms  hooks goal_lose,focus_iron,protein_gap,skipped_breakfast,ate_out,had_dinner,long_gap,easy_lunch,repeat_rajma
+meals  ba505fa09913 ok                       22438 ms  hooks had_snack
+meals  bb830181800c ok                       26638 ms  hooks goal_lose,diabetes_grain
+meals  bef7a72e5b45 ok                       23521 ms  hooks late_dinner
+meals  bf6b5ef16953 ok                       22111 ms  hooks goal_lose
+meals  c010f0752bf8 ok                       21122 ms  hooks lighter_now,had_lunch,long_gap
+meals  c59f3e3d3575 ok                       8201 ms  hooks goal_lose,lighter_now,had_breakfast,ate_out,long_gap
+meals  c71273734f6e ok                       40927 ms  hooks lighter_now,had_snack
+meals  d0df49fb70f6 ok                       22157 ms  hooks had_lunch
+meals  d4fbb4a244aa ok                       8440 ms  hooks focus_pro
+meals  d7ddbe3d59cd ok                       23740 ms  hooks late_now
+meals  d9157814e66e ok                       27414 ms  hooks protein_gap,skipped_lunch
+meals  dc253ea2a48f ok                       8608 ms  hooks easy_dinner
+meals  dcfc0ff3a63d ok                       8549 ms  hooks bp_salt
+meals  dd9674192276 ok                       24316 ms  hooks goal_lose,focus_iron,protein_gap,skipped_lunch,ate_out,had_dinner,long_gap,easy_breakfast,repeat_rajma
+meals  e5121600f029 ok                       14884 ms  hooks repeat_rajma
+meals  e5381fe633ca ok                       26081 ms  hooks focus_b12
+meals  e582e027820b ok                       9491 ms  hooks protein_gap,had_breakfast,had_lunch,had_snack
+meals  e745c0a48a8a ok                       26815 ms  hooks protein_gap,had_breakfast,had_lunch,had_snack
+meals  e83552acb819 ok                       11253 ms  hooks protein_gap,skipped_lunch
+meals  e98491f65b1f ok                       8642 ms  hooks lighter_now,had_lunch,long_gap
+meals  e9ac26c64652 ok                       27324 ms  hooks goal_build,mode_active
+meals  ebd90e3f003f ok                       9663 ms  hooks focus_cal
+meals  ec10940b81db ok                       7820 ms  hooks easy_breakfast
+meals  edbe18d580a4 ok                       25306 ms  hooks repeat_rajma
+meals  ee9e7532e4c6 ok                       8113 ms  hooks goal_lose,focus_iron,protein_gap,skipped_lunch,ate_out,had_dinner,long_gap,easy_breakfast,repeat_rajma
+meals  ef5bc8863d7a ok                       9462 ms  hooks protein_gap,had_breakfast
+meals  eff598c65661 ok                       13031 ms  hooks had_snack
+meals  f05ec6ae997a ok                       25410 ms  hooks easy_snack
+meals  f1da61fea498 ok                       8006 ms  hooks protein_gap,ate_out
+meals  f2b16a9628d8 ok                       29726 ms  hooks skipped_snack
+meals  f33ba5a36d59 ok                       35355 ms  hooks goal_lose,focus_iron,protein_gap,skipped_breakfast,ate_out,had_dinner,long_gap,easy_lunch,repeat_rajma
+meals  f3bbe45cba89 ok                       26370 ms  hooks goal_lose,steady_carbs,diabetes_grain
+meals  f67cb8bcfac9 ok                       10107 ms  hooks goal_build,focus_pro,protein_gap,skipped_lunch,ate_out,had_dinner,long_gap,easy_breakfast,repeat_rajma
+meals  fa61aca59222 ok                       7898 ms  hooks long_gap
+meals  fa83573a3f2a ok                       23955 ms  hooks focus_fib
+tune   c0ecb2228612 ok                       10730 ms
+
+102 schemas tried; 102 answered
+node test/safety/schemas.js --accept meals 0062144c71b90329 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 025286b2fc59932e --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 03fc2a8d2fe997e6 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 0675ab1d27c470f1 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 095774d878b75e26 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 0a168b0c5450001d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 0d32db5b5d625014 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 0e27e7056a591e66 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 15aa65b060998175 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 16302736169c9917 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 1a94577eb3c706e4 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 1aaffd0ab7903575 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 1adc29dc41fde52d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 1b47b4f4596051b4 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 24b6231a53cb7b7f --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 25632306f208eab3 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 2581e1b6418120b3 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 25ae52d6ea4426e5 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 2f0463ca43b3fbf8 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 31600379fd13e7cc --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 3b71ffd161cc60b2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 3c20db44a8e60693 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 3c9ba34b04fc0700 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 3fa2d27762285e1a --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 3faa450a7cad8d7d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 4c4d20c5658cafbd --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 4e54f2391a324c51 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 52957193bbdeaa60 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 550c03c6214631db --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 55a7b42941b8249e --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5b47328ab1cafdde --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5c18ac739db211fe --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5d67bc016d4c331c --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5d8dae23862a15ed --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5e1afb88bc49f6ac --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5e7e9d7484000927 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5ee31506a731d968 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 5fba3f06cca9f080 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 64d816e1ea53e21d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 664540379b5c67bd --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 668747e000cab687 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 6b05579437b4d069 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 6c3e2922f381828f --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 6d3bc2ebfae7daac --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 6e8cef9adf51090f --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 6f110e0e97e7370b --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 7626e536973c02e9 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 7df7a2e49d4e76b2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 7f5672b8d129d5a2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 85278f0a50abcd1c --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 889924a680057168 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 8afdd54123953591 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 93342c085389e52a --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 960d053d296e43a6 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 984be585ebbe0718 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 9adf4ce17cbd85a0 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals 9e59faaada720ea7 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals a3c3e8024a1ce9e4 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals a665d108664dbe72 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals a8ffcf86a895a9fd --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ad96389d4ba35da2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals adfdfe3338685b3d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals b3d2dda2ddf5f67f --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals b6d20c153443ef30 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals b70332fbfa5afb49 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals b824394b7c9c08e8 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ba505fa09913a49a --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals bb830181800c235d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals bef7a72e5b455474 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals bf6b5ef1695331b2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals c010f0752bf8cb4b --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals c59f3e3d3575d0a7 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals c71273734f6ea813 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals d0df49fb70f69870 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals d4fbb4a244aacc51 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals d7ddbe3d59cda3e2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals d9157814e66e91aa --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals dc253ea2a48fd51e --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals dcfc0ff3a63dd763 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals dd9674192276901c --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e5121600f029e9e6 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e5381fe633cab5d2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e582e027820b0532 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e745c0a48a8a3928 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e83552acb8193639 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e98491f65b1f328d --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals e9ac26c64652d618 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ebd90e3f003f2c3c --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ec10940b81db8509 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals edbe18d580a43ccf --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ee9e7532e4c6e422 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals ef5bc8863d7a6e7e --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals eff598c65661e64b --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f05ec6ae997a5387 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f1da61fea4988e04 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f2b16a9628d84ed1 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f33ba5a36d59f2eb --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f3bbe45cba8958d6 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals f67cb8bcfac942dc --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals fa61aca592220375 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept meals fa83573a3f2ac524 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+node test/safety/schemas.js --accept tune c0ecb2228612e8b2 --commit <candidate> --date <yyyy-mm-dd> --how "<this window>"
+results written to /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/window2/out-schemas
+exit:0

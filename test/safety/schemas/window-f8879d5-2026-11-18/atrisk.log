@@ -1,0 +1,47 @@
+ok       jain-n-breakfast                               r0 Jain Moong Sprouts Kadhi with steamed brown rice / Jain Paneer Bhurji with Tomato and Capsicum with phulka / Chana Dal and Capsicum Chilla with plain curd with mint and cumin
+ok       jain-n-lunch                                   r0 Jain Rajma Curry with steamed brown rice / Paneer Shimla Mirch with whole wheat roti / Chana Dal Ghiya with jowar roti
+ok       jain-n-dinner                                  r0 Yellow moong dal with phulka / Paneer bhurji with plain paratha / Besan kadhi with moong dal khichdi
+ok       vegan-n-breakfast                              r0 Boiled lobia with whole wheat toast / Tofu bhurji with whole wheat roti / Moong dal cheela with mint chutney
+ok       vegan-n-lunch                                  r0 Masoor Dal Tadka with phulka / Soya Chunks and Green Pea Curry with steamed brown rice / Warm Kala Chana Salad with jowar roti
+ok       vegan-n-dinner                                 r0 Boiled Kala Chana with whole wheat roti / Tofu Matar Bhurji with phulka / Soya Chunks Curry with steamed brown rice
+ok       veg-nodairy-w-breakfast                        r0 Lobia Usal with jowar bhakri / Moong Dal Chilla with mint coriander chutney / Sprouted Matki Curry with ragi roti
+ok       veg-nodairy-w-lunch                            r0 Cooked yellow moong dal with jowar bhakri / Sprouted matki usal with bajra roti / Cooked kala chana masala with steamed brown rice
+ok       veg-nodairy-w-dinner                           r0 Moong sprouts usal with jowar bhakri / Tofu matar semi dry with whole wheat phulka / Besan pithla with bajra bhakri
+ok       veg-nowheat-n-breakfast                        r0 Sprouted Moong Kadhi with steamed brown rice / Low Fat Paneer Bhurji with jowar roti / Yellow Moong Dal Cheela with fresh set curd
+ok       veg-nowheat-n-lunch                            r0 Rajma Masala with steamed brown rice / Paneer Bhurji with jowar roti / Curd with yellow moong dal khichdi
+ok       veg-nowheat-n-dinner                           r0 Yellow Moong Dal with jowar roti / Paneer and Matar Bhurji with bajra roti / Kala Chana Curry with brown rice
+ok       egg-nonut-s-breakfast                          r0 Lobia Sundal with brown rice sevai / Egg Dosa with vegetable sambar / Moong Dal Pesarattu with red rice poha upma
+ok       egg-nonut-s-lunch                              r0 Paneer Pepper Fry with cooked brown rice / Boiled Egg Thokku with cooked foxtail millet / Kala Chana Kuzhambu with cooked red rice
+ok       egg-nonut-s-dinner                             r0 Soya Chunks Curry with cooked foxtail millet / Egg Pepper Roast with cooked brown rice / Kala Chana Sundal with steamed idli
+ok       veg-nosoya-e-breakfast                         r0 Yellow moong dal chilla with grated paneer filling / Fresh chhena curry with whole wheat roti / Steamed sprouted black chickpeas with plain curd
+ok       veg-nosoya-e-lunch                             r0 Kala chana ghugni with steamed brown rice / Chhena tarkari with whole wheat roti / Odia dalma with toor dal and vegetables with steamed usna rice
+ok       veg-nosoya-e-dinner                            r0 Chana Dal Kadhi with steamed brown rice / Chhena Torkari with whole wheat roti / Bengali White Pea Ghugni with foxtail millet roti
+ok       veg-s-breakfast                                r0 Sundal with steamed red rice / Pesarattu with fresh curd / Steamed Moong Sprouts with foxtail millet upma
+ok       veg-s-lunch                                    r0 Lobia sundal with brown rice / Mixed lentil adai with buttermilk / Paneer and green peas kurma with whole wheat roti
+ok       veg-s-dinner                                   r0 Moong dal with cooked brown rice / Paneer and white chickpea sundal with cooked red rice / South style spiced tofu with cooked foxtail millet
+ok       veg-e-breakfast                                r0 Chholar Dal with whole wheat roti / Fresh Chhena Curry with steamed brown rice / Chana Sattu Cheela with plain curd
+ok       veg-e-lunch                                    r0 Lobia curry with steamed brown rice / Chhena tarkari with whole wheat roti / Plain curd with moong dal khichdi
+ok       veg-e-dinner                                   r0 Palak Moong Dal with whole wheat roti / Chhena Tarkari with steamed brown rice / Soya Chunk Dalma with whole wheat roti
+ok       jain-w-diabetes-breakfast                      r0 Sprouted Moong Kadhi with jowar roti / Jain Paneer Bhurji with bajra khakhra / Moong Dal Cheela with whole wheat methi roti
+ok       jain-w-diabetes-lunch                          r0 Jain rajma curry with jowar roti / Jain paneer bhurji with bajra roti / Moong usal with whole wheat roti
+ok       jain-w-diabetes-dinner                         r0 Yellow Moong Dal with jowar roti / Low Fat Paneer Methi with bajra roti / Kala Chana Usal with steamed brown rice
+ok       veg-s-diabetes-meds-breakfast                  r0 Sundal with cooked red rice / Vegetable Sambar with foxtail millet pongal / Pesarattu with cooked rolled oats
+ok       veg-s-diabetes-meds-lunch                      r0 Rajma sundal with brown rice / Paneer spinach kootu with cooked foxtail millet / Soya chunks and vegetable sambar with whole wheat roti
+ok       veg-s-diabetes-meds-dinner                     r0 Yellow Moong Dal with cooked foxtail millet / Paneer and Green Peas Kootu with cooked brown rice / Kala Chana Sundal with whole wheat phulka
+ok       vegan-e-bp-breakfast                           r0 Boiled Lobia Masala with steamed red rice / Yellow Moong Dal Cheela with tofu bhurji stuffing / Soya Chunks Tarkari with whole wheat roti
+ok       vegan-e-bp-lunch                               r0 Masoor Dal with brown rice / Odia Dalma with red rice / Bengali Ghugni with whole wheat roti
+ok       vegan-e-bp-dinner                              r0 Kala chana ghugni with whole wheat roti / Soya chunks tarkari with steamed brown rice / Odia dalma with vegetables with cooked foxtail millet
+ok       nonveg-e-bp-breakfast                          r0 Lobia ghugni with whole wheat roti / Dim kosha with brown rice / Chhena tarkari with atta roti
+ok       nonveg-e-bp-lunch                              r0 Rui Macher Patla Jhol with siddha chawal / Dim Kosha with atta roti
+ok       nonveg-e-bp-dinner                             r0 Soya Chunks Curry with steamed brown rice / Steamed Mustard Fish with whole wheat roti / Egg Curry with steamed brown rice
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-jain-n-north-indian-veg                   r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-vegan-s-south-tiffin-diabetes             r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-veg-nodairy-n-indo-chinese-nonveg-build   r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-veg-nowheat-n-pizza-after-heavy-lunch     r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-egg-nonut-cafe-egg-no-nuts                r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-veg-bp-wedding-buffet-sulfonylurea        r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-jain-diabetes-canteen-board-nonveg-bp     r0 
+http-404:fetch SyntaxError: Unexpected token 'N', "Not found" is not valid JSON menu-veg-diabetes-meds-north-indian-veg        r0 
+
+44 calls, 36 ok
+exit:0

@@ -1,0 +1,40 @@
+OK   plain-day-lunch              got=ok 43480ms 
+       Tadka moong dal with whole wheat phulka [648 kcal, 24 g] {} / Paneer bhurji with tawa roti [655 kcal, 26 g] {} / Kala chana curry with steamed brown rice [638 kcal, 23 g] {}
+OK   variety-after-paneer         got=ok 8672ms 
+       Soya Chunks Curry with phulka [642 kcal, 34 g] {} / Kala Chana Curry with steamed brown rice [635 kcal, 24 g] {} / Palak Tofu with jowar roti [651 kcal, 30 g] {}
+OK   lose-diabetes-dinner         got=ok 7822ms +tune 7603ms 
+       Paneer bhurji with phulka [384 kcal, 24 g] {goal_lose,diabetes_grain} / Soya chunk curry with jowar roti [372 kcal, 25 g] {goal_lose,diabetes_grain} / Yellow moong dal with steamed brown rice [376 kcal, 23 g] {goal_lose,diabetes_grain}
+OK   diabetes-on-sulfonylurea     got=ok 9637ms 
+       Soya Chunks Curry with whole wheat phulka [738 kcal, 38 g] {goal_lose,steady_carbs,diabetes_grain} / Stirred Paneer Tikka with steamed brown rice [744 kcal, 33 g] {goal_lose,steady_carbs,diabetes_grain} / Kala Chana Gravy with jowar roti [725 kcal, 28 g] {goal_lose,steady_carbs,diabetes_grain}
+OK   protein-gap-dinner           got=ok 8854ms +tune 7786ms 
+       Paneer bhurji with phulka [578 kcal, 30 g] {protein_gap,had_breakfast,had_lunch,had_snack} / Soya chunks curry with missi roti [558 kcal, 34 g] {protein_gap,had_breakfast,had_lunch,had_snack} / Kala chana masala with phulka [566 kcal, 29 g] {protein_gap,had_breakfast,had_lunch,had_snack}
+OK   heavy-lunch-lighter-dinner   got=ok 7346ms 
+       Steamed Sprouted Moong with lemon juice and green chilli [235 kcal, 21 g] {lighter_now,ate_out,long_gap,goal_lose} / Boiled Soya Chunks with chopped onion and garlic [215 kcal, 22 g] {lighter_now,ate_out,long_gap} / Low Fat Paneer with fresh fenugreek leaves [210 kcal, 21 g] {lighter_now,ate_out,had_breakfast}
+OK   skipped-breakfast-lunch      got=ok 5844ms 
+       Paneer Bhurji with whole wheat roti [815 kcal, 33 g] {protein_gap,skipped_breakfast} / Kala Chana Masala with brown basmati rice [820 kcal, 31 g] {protein_gap,skipped_breakfast} / Soya Chunk Curry with jowar roti [805 kcal, 38 g] {protein_gap,skipped_breakfast}
+OK   late-dinner-now              got=ok 7328ms 
+       Lobia Masala with phulka [455 kcal, 22 g] {late_now} / Paneer and Methi Bhurji with phulka [465 kcal, 21 g] {late_now} / Curd with moong dal khichdi [445 kcal, 20 g] {late_now}
+OK   repeat-rajma-dinner          got=ok 11045ms 
+       Besan kadhi with curd with steamed brown rice [456 kcal, 20 g] {repeat_rajma} / Low fat paneer with capsicum with missi roti [462 kcal, 22 g] {repeat_rajma} / Yellow moong dal khichdi with roasted urad papad [458 kcal, 21 g] {repeat_rajma}
+OK   often-skips-breakfast        got=ok 8714ms 
+       Moong dal chilla with mint coriander chutney [440 kcal, 22 g] {easy_breakfast} / Paneer bhurji with whole wheat roti [455 kcal, 21 g] {easy_breakfast} / Steamed sprouted moong with roasted cumin seed powder [430 kcal, 20 g] {easy_breakfast}
+OK   iron-focus-lunch             got=ok 8808ms 
+       Soya Matar Curry with whole wheat phulka [655 kcal, 33 g] {focus_iron} / Paneer Bhurji with missi roti [648 kcal, 28 g] {focus_iron} / Kala Chana Masala with vegetable dalia [635 kcal, 24 g] {focus_iron}
+OK   active-day-build             got=ok 7733ms +tune 6981ms 
+       Soya Chunks Curry with whole wheat roti [585 kcal, 37 g] {goal_build,mode_active} / Egg Bhurji with plain whole wheat paratha [570 kcal, 34 g] {goal_build,mode_active} / Paneer Tikka with steamed rice [605 kcal, 33 g] {goal_build,mode_active}
+OK   bp-after-eating-out          got=ok 9241ms 
+       Lobia Masala with phulka [328 kcal, 14 g] {lighter_now,ate_out,long_gap,bp_salt} / Tawa Chicken with phulka [334 kcal, 28 g] {lighter_now,ate_out,long_gap,bp_salt} / Egg Bhurji with jowar roti [325 kcal, 16 g] {lighter_now,ate_out,long_gap,bp_salt}
+OK   log-paratha                  got=ok 4388ms 
+       2 aloo paratha with curd: 547 kcal, 13 g protein
+OK   log-thali                    got=ok 3550ms 
+       Dal, 2 roti, bhindi sabzi, small bowl rice, salad: 537 kcal, 17 g protein
+OK   log-out                      got=ok 4990ms 
+       Butter chicken with 2 naan and a gulab jamun: 1038 kcal, 39 g protein
+OK   log-not-food                 got=refer 3891ms 
+       
+OK   rescue-with-day              got=ok 2274ms 
+       
+results written to /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/window2/out-v6/results-w2.json
+
+18/18 passed; median 7822 ms
+exit:0
