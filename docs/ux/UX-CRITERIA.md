@@ -689,6 +689,15 @@ on a meal's protein energy (rules: protein cap).
   the ids mcam, mfile, mtype, mtext or mgo, or the words "Read the menu", "type the menu", "photograph the menu", "menu photo" or "photo of
   the menu", and the A12 drill plants one. An order logged before the removal still shows on the plate as "ordered from the menu"
   (review state plate-ordered).
+- D10 "My rule" (owner, 17-18 Nov, option survey: "My rule"). Option text, word for word: "My rule restores your 14 Nov rule for everyone." The
+  14 Nov rule stands for everyone: under 120 kcal left for the snack after a logged meal, the card offers the next main meal still open
+  ("Plan dinner") with "Little is left for a snack today." A client on insulin or sugar tablets who skipped a meal today still has the snack
+  offered (the low-sugar safeguard, unchanged since 14 Nov). A client on medicines with no skipped meal is told "Little is left for a snack
+  today." like anyone else: that is this decision, not a finding. fix-r15 had made the snack never passed over on medicines; fix-r16 undoes
+  that. Kept apart from it: the example ask "A light dinner after a heavy lunch" stays off for medicines clients (a separate rule; the
+  coordinator told the owner it stays and can be reversed with one word). Guards: review.js plate-logged (a normal client),
+  plate-logged-meds (medicines, no skipped meal: "Plan dinner" and the line), plate-skipped-meds (medicines, skipped meal: "Plan snack");
+  check.js "My rule" holds both sides on every medicine answer. The grading rules ("Block", `docs/SAFETY-INVARIANTS.md` Tiers) are unchanged.
 
 ## Watch list after Critic round 42 (on 530a503, PASS)
 Watched, not changed (coordinator, fix-r12), each cosmetic:
