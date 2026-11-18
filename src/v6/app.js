@@ -227,13 +227,13 @@ function nextOpen(){var i=SLOTS.indexOf(C.meal),j;for(j=i+1;j<4;j++)if(!slotOf(S
 /* the meal to plan next: when under 120 kcal is left for the snack, the next main meal still open comes first (owner, 14 Nov, option survey).
    What is left for the snack is the day's kcal left after the meals eaten, less what the main meals still open after it usually take; the
    snack's own target is small by design, so it is not the test (second screen review, R2-B2 021-1). After a skipped meal on insulin or sugar
-   tablets the snack is never passed over. */
+   tablets the snack is not passed over (the low-sugar safeguard). */
 function planFor(meal){return planDay(profileOut(),FILE,meal,APP[meal]!=null?APP[meal]:suggestAppetite(FILE,meal).v);}
 function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kcal;for(var j=SLOTS.indexOf("snack")+1;j<4;j++)if(!slotOf(SLOTS[j]))r-=planFor(SLOTS[j]).usual.kcal;return r;}
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
-  /* on insulin or sugar tablets the snack is never passed over: its usual size is the floor too (fix-r15, m1 as a class; it was passed over
-     unless a meal was skipped, R2-B2 021-1) */
-  var room=snackRoom();if(room==null||room>=120||onMeds())return {meal:nx,low:false};
+  /* "My rule" (owner, 17 Nov, option survey; docs/ux/UX-CRITERIA.md D10): the 14 Nov rule restored for everyone. Under 120 kcal left, the snack is
+     passed over, with a client on medicines too, except one who skipped a meal today: the snack stays offered then (the low-sugar safeguard) */
+  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
