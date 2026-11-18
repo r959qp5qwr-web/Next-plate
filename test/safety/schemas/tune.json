@@ -94,7 +94,11 @@
     "eval/v6 active-day-build tune"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   }
  ]
 }

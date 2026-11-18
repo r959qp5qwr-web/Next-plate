@@ -52,7 +52,11 @@
     "grid: snack, lowest-protein meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "025286b2fc59932ef0791f653b2d748b255eb2e7813b651fe045c7bb15fcd4f7",
@@ -104,7 +108,11 @@
     "grid: snack, long gap (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "03fc2a8d2fe997e6f5f1943f4f8622a3169ff1be9abab837e03e18c068d395e7",
@@ -161,7 +169,11 @@
     "eval/v6 skipped-breakfast-lunch"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "0675ab1d27c470f1f75dbd4ec483c187aa2b09306ac69f1cc93f83038a0fae33",
@@ -261,7 +273,11 @@
     "grid: snack, every hook"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "095774d878b75e26a54fdbe9c9829fcdb591eb9a2376a4406e3ddff09602e20d",
@@ -305,7 +321,11 @@
     "grid: snack, mode active (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "0a168b0c5450001d34f8f63152e1c847a5af8990ded43a5ef27a55cd0016a2a1",
@@ -358,7 +378,11 @@
     "grid: snack, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "0d32db5b5d625014d74331ba107acfa19fc1b0f722597aa22e8979e6ad718e2b",
@@ -412,7 +436,11 @@
     "grid: snack, repeat paneer (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "0e27e7056a591e669c4568e80479f86dae0afb88c7030b423caa1e54b74c2020",
@@ -461,7 +489,11 @@
     "eval/atrisk jain-w-diabetes-lunch"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "15aa65b06099817529e9f6a84e8131e8fb400123aa96c4e93e27214c84fab23f",
@@ -507,7 +539,11 @@
     "grid: dinner, late hour"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "16302736169c9917f62108dcc651eb7af1a698b0c379955adbcd3d842eadcdc2",
@@ -553,7 +589,11 @@
     "grid: snack, diabetes, medicine no"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "1a94577eb3c706e42d7f51cf30deab50d6b7c200562eb963dae53a68b90b9bbc",
@@ -598,7 +638,11 @@
     "grid: snack, mode active"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "1aaffd0ab790357587f054050c719c9dce862701749e74392c7e780d9f15f86e",
@@ -699,7 +743,11 @@
     "grid: lunch, every hook, diabetes medicine (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "1adc29dc41fde52d8fccb055443b238d8e1a5e550e349c8d37954e7e27781a57",
@@ -763,7 +811,11 @@
     "eval/v6 bp-after-eating-out"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "1b47b4f4596051b45235cf09b026415673ec19f402889ac902d56ff09e130f5d",
@@ -807,7 +859,11 @@
     "grid: snack, build (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "24b6231a53cb7b7f63024d58f719a3ec62075f0de9e0ea6f73844c1a9a8c2bbc",
@@ -865,7 +921,11 @@
     "grid: snack, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "25632306f208eab3c302d86b3edd0c4e316c8bacfc4474bea9eae0a18475cd19",
@@ -924,7 +984,11 @@
     "grid: dinner, light day so far (protein gap) (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "2581e1b6418120b3a765b1e7c02ec504b11d582407c8c883bf2251c98ea2556c",
@@ -984,7 +1048,11 @@
     "grid: dinner, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "25ae52d6ea4426e54da155f3061518059eddbc4eabf0f08136b868ab80e4a38a",
@@ -1043,7 +1111,11 @@
     "grid: dinner, another meal ordered (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "2f0463ca43b3fbf82ca015065a5f81e591eb3e6d0cc653aee217b0c762434e7b",
@@ -1089,7 +1161,11 @@
     "eval/atrisk jain-n-breakfast (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "31600379fd13e7cc3b729206c80f7c0b12be415cdd08425bab9d25c88e0948dc",
@@ -1135,7 +1211,11 @@
     "grid: snack, diabetes, medicine yes (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "3b71ffd161cc60b2f058b2d526bffbaabd14475eb33d1b35fa1185718dc3ca13",
@@ -1185,7 +1265,11 @@
     "eval/atrisk veg-s-diabetes-meds-lunch"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "3c20db44a8e606936834239cd83d54d0ffb23c48f09e3231f570b71b8f3074b3",
@@ -1230,7 +1314,11 @@
     "grid: snack, lose"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "3c9ba34b04fc07009795fd43df05343cc31a7e9affc9d8d82773ea39466d45df",
@@ -1283,7 +1371,11 @@
     "grid: snack, lowest-protein meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "3fa2d27762285e1abe7036e5ffe498377570ae4fa468c9069b9d81df23c51651",
@@ -1346,7 +1438,11 @@
     "grid: dinner, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "3faa450a7cad8d7d75ab77a01130ed7bcd06ad8b04907031c605fddf0d56b7fc",
@@ -1391,7 +1487,11 @@
     "grid: snack, focus fib"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "4c4d20c5658cafbde4c0cb32fc9aa2dcc770dde24a78dd2c8037db56055c1279",
@@ -1436,7 +1536,11 @@
     "grid: snack, build"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "4e54f2391a324c51f5bf07735af2c285045f6f60f46c8711253bc1b4b077c502",
@@ -1495,7 +1599,11 @@
     "grid: lunch, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "52957193bbdeaa60a8673c3a2944989219899d2624bfff608c0d5932298195ae",
@@ -1569,7 +1677,11 @@
     "eval/v6 heavy-lunch-lighter-dinner (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "550c03c6214631db1a5a9a35500b6ed067d405189d6a81a574aeea2c28ad67f3",
@@ -1621,7 +1733,11 @@
     "grid: dinner, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "55a7b42941b8249ea2d1fc943350058170454d7ec37288cfa3e85857a349df45",
@@ -1720,7 +1836,11 @@
     "grid: snack, every hook (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5b47328ab1cafdde582098b8915c7d14d0549456dde1bc6d443fa5c14308e922",
@@ -1821,7 +1941,11 @@
     "grid: dinner, every hook, diabetes medicine (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5c18ac739db211feb4ef5eead58dd11d89daea07263b44035be1995c0dceb89c",
@@ -1873,7 +1997,11 @@
     "grid: dinner, late dinners"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5d67bc016d4c331c1c1ccbf71631ca5590677ffb0809ca7463a5b86b4e679816",
@@ -1920,7 +2048,11 @@
     "grid: snack, diabetes, medicine yes"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5d8dae23862a15ed7d4fdb63d829b0a847f10318b75804566bee49a68916a8aa",
@@ -1980,7 +2112,11 @@
     "grid: lunch, another meal ordered"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5e1afb88bc49f6ac740cd02b4a4efc796aaada611201c666b90a72547fe0f746",
@@ -2025,7 +2161,11 @@
     "grid: snack, focus b12"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5e7e9d748400092748680190c5efc95971605d0ccb3d43e5ff611d098cd427de",
@@ -2127,7 +2267,11 @@
     "grid: lunch, every hook, diabetes medicine"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5ee31506a731d968658f391ff45fa500810245ec124d60eff9eda86eb4350341",
@@ -2173,7 +2317,11 @@
     "grid: lunch, focus iron (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "5fba3f06cca9f080ec83bee7da2877a4b78bebf6f43aaa63fcbd4afd02bad68f",
@@ -2229,7 +2377,11 @@
     "eval/v6 skipped-breakfast-lunch (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "64d816e1ea53e21d81944e63e3d76651e2a4aeef7af4498213a3343a0eec606c",
@@ -2273,7 +2425,11 @@
     "grid: snack, focus cal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "664540379b5c67bdec959f82e7383fdcd0e64f850db56f6cea84191c2fca88da",
@@ -2319,7 +2475,11 @@
     "eval/atrisk vegan-e-bp-dinner (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "668747e000cab6870132432021052e8c22c7e508e42f76778c566b490150b441",
@@ -2418,7 +2578,11 @@
     "grid: dinner, every hook (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "6b05579437b4d069d1804caabdb77157595c8111edbf2d1caae48ead96012bc0",
@@ -2473,7 +2637,11 @@
     "grid: breakfast, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "6c3e2922f381828f810bc3fa189e030cf55eef4e5e263e8ac5933cdcc13ce3c3",
@@ -2532,7 +2700,11 @@
     "grid: lunch, another meal ordered (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "6d3bc2ebfae7daac803ddc9770e99f8af4b1ebba3aa9c32b38e6316413f31006",
@@ -2591,7 +2763,11 @@
     "grid: snack, light day so far (protein gap) (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "6e8cef9adf51090f96f055bcab2106ad4c52b31724dc71e5847bdd98bf6072c1",
@@ -2654,7 +2830,11 @@
     "eval/v6 bp-after-eating-out (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "6f110e0e97e7370b1fc9df4b1c4a7be581ece111c67e1c108b3c108d0ac6160f",
@@ -2699,7 +2879,11 @@
     "grid: snack, diabetes, medicine no (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "7626e536973c02e9e6ebaf17974ebbfe7b1377483105ac4cb0bbaf3f3c3798ca",
@@ -2800,7 +2984,11 @@
     "grid: snack, every hook, diabetes medicine (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "7df7a2e49d4e76b28066c24417ad7ab0384b2f6502280c3d8a930f6ebcd5020f",
@@ -2857,7 +3045,11 @@
     "grid: snack, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "7f5672b8d129d5a2cef9c7a0b8eb259ba975639264c53eced4043939d8fe501d",
@@ -2903,7 +3095,11 @@
     "eval/v6 active-day-build"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "85278f0a50abcd1c4de874ae779dd2da43ee189bc455b955734a77ba64dae468",
@@ -2962,7 +3158,11 @@
     "grid: snack, another meal rescued (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "889924a680057168d750b03299787b47a51404754e6555e3caa72c465f5e167b",
@@ -3063,7 +3263,11 @@
     "grid: breakfast, every hook, diabetes medicine (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "8afdd54123953591525e854668dad36330e91e33c6d0086eeb73b2387d7ac7f5",
@@ -3124,7 +3328,11 @@
     "grid: dinner, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "8da719c012ab985413f272312d26b113b5b9ac0db312d2f73a3de7fe772acb4b",
@@ -3227,7 +3435,11 @@
     "grid: lunch, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "960d053d296e43a68c58a164597c40d730ad14392926d3101c8adc152f44ed35",
@@ -3289,7 +3501,11 @@
     "grid: dinner, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "984be585ebbe07182974b41e7427c8ea413295fa4ba42a6ca25a4347d09d86e2",
@@ -3349,7 +3565,11 @@
     "grid: snack, another meal rescued"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "9adf4ce17cbd85a011cd31dc728972929e354cad4e6b96caeaf91ab537344fd8",
@@ -3408,7 +3628,11 @@
     "grid: lunch, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "9e59faaada720ea7cf17b7bba645e3efb795f699552b596610169301ca4a016a",
@@ -3452,7 +3676,11 @@
     "grid: snack, focus pro (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "a3c3e8024a1ce9e42d232c4a27be565c7133643c35411fc530406dbecd825055",
@@ -3554,7 +3782,11 @@
     "grid: dinner, every hook, diabetes medicine"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "a665d108664dbe72db281071add34b0bc8bff65d13948ee067d583c16e136789",
@@ -3614,7 +3846,11 @@
     "grid: snack, light day so far (protein gap)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "a8ffcf86a895a9fdbbec20f60f3874ca082dbc72962e6a7d04a9b0bb79770343",
@@ -3716,7 +3952,11 @@
     "grid: snack, every hook, diabetes medicine"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ad96389d4ba35da2c96c1f5a3c3077423f0a750870db1c6e9d0c00066fee41ec",
@@ -3816,7 +4056,11 @@
     "grid: dinner, every hook"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "adfdfe3338685b3d1f62c0bd7d4ef6c9a7c8ac353d810c177126bdac0db39589",
@@ -3874,7 +4118,11 @@
     "grid: snack, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "b3d2dda2ddf5f67f9cf4814b0f9caaad138f7becedf1628688fee7f2101500e0",
@@ -3921,7 +4169,11 @@
     "grid: lunch, focus iron"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "b6d20c153443ef30776a9d5e8ef36c0d180e8c48570926b37c2a3b78831c4f20",
@@ -3976,7 +4228,11 @@
     "grid: snack, repeat paneer"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "b70332fbfa5afb495f95c7afaf65a611d762e8c3b6ad8ddaacab0bd29eee79af",
@@ -4029,7 +4285,11 @@
     "grid: lunch, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "b824394b7c9c08e895aca3f4bb827991846b397840ea3b883e3c6236b8df5fc9",
@@ -4129,7 +4389,11 @@
     "grid: lunch, every hook"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ba505fa09913a49a1a26d8bb3c1630ed353214529aa9f8b0d187c237574e1cbc",
@@ -4186,7 +4450,11 @@
     "grid: breakfast, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "bb830181800c235daf75c5cbb2b4a10303f7b8f1610d4d57a55129c1000dd434",
@@ -4234,7 +4502,11 @@
     "eval/atrisk jain-w-diabetes-lunch (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "bef7a72e5b4554745fc856e73743db52d6b2547134ae512274663ee5c5e3092d",
@@ -4285,7 +4557,11 @@
     "grid: dinner, late dinners (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "bf6b5ef1695331b2fb45ce7315e520db585358c1d8376b176f377a5bbbb21585",
@@ -4329,7 +4605,11 @@
     "grid: snack, lose (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "c010f0752bf8cb4b99ec59057a7b994dae9f19b91c2794c4a833a204e42a2818",
@@ -4389,7 +4669,11 @@
     "grid: breakfast, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "c59f3e3d3575d0a720b8ad9d42558e719b4ee6809bbda542339920953d33fbb1",
@@ -4464,7 +4748,11 @@
     "eval/v6 heavy-lunch-lighter-dinner"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "c71273734f6ea813c6fcc2f6c59260db40040929db3e461af51c556f9d1e33e8",
@@ -4522,7 +4810,11 @@
     "grid: lunch, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "d0df49fb70f698704abebecb2f5208ab530b9c78e32d7767c8961a53ef1da5d9",
@@ -4579,7 +4871,11 @@
     "grid: snack, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "d4fbb4a244aacc51e4f41c4a04102e1053716f5b4d6b16f4387f163e0594b5eb",
@@ -4624,7 +4920,11 @@
     "grid: snack, focus pro"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "d7ddbe3d59cda3e2e7bbe48ad262ddaf221cfae6819067535483d4ed637fe58d",
@@ -4669,7 +4969,11 @@
     "grid: dinner, late hour (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "d9157814e66e91aa1e3b5927137c9eb3bde6944f712b2032c07e3b8c82d4bfa3",
@@ -4727,7 +5031,11 @@
     "grid: dinner, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "dc253ea2a48fd51e35f5aa3096ca1ba7138087ffd05343cbe666fdeccf0a3a81",
@@ -4780,7 +5088,11 @@
     "grid: dinner, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "dcfc0ff3a63dd7637bbecaff30c5d59600c08d2ef4656687e15837b8b253a932",
@@ -4827,7 +5139,11 @@
     "eval/atrisk vegan-e-bp-dinner"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "dd9674192276901cd79dbd8801f34ac04579344a485e24bed6fc47acd1892e41",
@@ -4926,7 +5242,11 @@
     "grid: breakfast, every hook (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e5121600f029e9e6f7df8b99c4bbd5b5d97664827a669ff6758e83f11b21d44f",
@@ -4983,7 +5303,11 @@
     "grid: lunch, repeat rajma"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e5381fe633cab5d237a1b7f287b6b72a2c2a68110d3ee25cd4bc445bae27ca78",
@@ -5027,7 +5351,11 @@
     "grid: snack, focus b12 (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e582e027820b05326625e7da73a36637d5aaf90bd98aa8998f3b1fb75d6203d8",
@@ -5108,7 +5436,11 @@
     "eval/v6 protein-gap-dinner"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e745c0a48a8a392844e34dce67577b1139bfbb940b2efd293a148ba58ba0ebbb",
@@ -5188,7 +5520,11 @@
     "eval/v6 protein-gap-dinner (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e83552acb81936390dfbd868678e33fb0deefe932c8a092369560a26f0541877",
@@ -5247,7 +5583,11 @@
     "grid: dinner, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e98491f65b1f328d70d7177e9eca74c0518723320db0ea5b453f203af69d5387",
@@ -5308,7 +5648,11 @@
     "grid: breakfast, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "e9ac26c64652d618bc782c573d370e887eccf6df9f9b8d438293e90e2034ab6a",
@@ -5353,7 +5697,11 @@
     "eval/v6 active-day-build (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ebd90e3f003f2c3c7c3c372fe4652b8b6a3f43746430c74d0504de549f0f5343",
@@ -5398,7 +5746,11 @@
     "grid: snack, focus cal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ec10940b81db850977a2d84b0e70ccfb8ec92dabe6d853ae9eb299b7567b6dda",
@@ -5454,7 +5806,11 @@
     "grid: breakfast, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "edbe18d580a43ccf1a868bf9cc110c6aa63c14785d547d584270145dda633c26",
@@ -5510,7 +5866,11 @@
     "grid: lunch, repeat rajma (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ee9e7532e4c6e4220fc8a85f75a9ab44d3894249273e0ef3c1ad8250e6d6f28e",
@@ -5610,7 +5970,11 @@
     "grid: breakfast, every hook"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "ef5bc8863d7a6e7e529b57f97beafeb4d8f6e3fdcff9c7f226e37dc7b9305d96",
@@ -5670,7 +6034,11 @@
     "grid: dinner, light day so far (protein gap)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "eff598c65661e64b7231c70541f735df8528cb28307c5b37cf9e1df50b772740",
@@ -5728,7 +6096,11 @@
     "grid: breakfast, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f05ec6ae997a5387820a351161fa41b785edcabd07222c6de40977f540297e3b",
@@ -5780,7 +6152,11 @@
     "grid: snack, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f1da61fea4988e041114b1f5aeb8208334290797e2c0edd20a28e6f30544cac0",
@@ -5840,7 +6216,11 @@
     "grid: dinner, another meal ordered"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f2b16a9628d84ed12cd0597cd3b00d72cc0e5f8ea66961336432090fcc2314b3",
@@ -5898,7 +6278,11 @@
     "grid: lunch, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f33ba5a36d59f2eb4d0bb0e91585534d2740533b2368593e766319e729e1fc0a",
@@ -5997,7 +6381,11 @@
     "grid: lunch, every hook (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f3bbe45cba8958d6586b832f33673acbd310bfa4d7b3ba2e9649006b399e2c2c",
@@ -6046,7 +6434,11 @@
     "eval/atrisk veg-s-diabetes-meds-lunch (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "f67cb8bcfac942dcf1fcade0a2f7a0af95fc08817163ec07f79aba3c85e024ac",
@@ -6148,7 +6540,11 @@
     "grid: breakfast, every hook, diabetes medicine"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "fa61aca592220375294f107fdf61071daa2f054fbd2b9d8f71775217ea55b0d7",
@@ -6201,7 +6597,11 @@
     "grid: snack, long gap"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   },
   {
    "sha256": "fa83573a3f2ac524c9fe15ad19d8ed34e07b3a94e1abab96e7c78c90a812b4a9",
@@ -6245,7 +6645,11 @@
     "grid: snack, focus fib (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "f8879d552eed543d679e4d2822c543f6e0e16351",
+    "date": "2026-11-18",
+    "how": "sample window on f8879d5 (owner Window, 18 Nov): the live model answered the example request"
+   }
   }
  ]
 }
