@@ -1,0 +1,64 @@
+{
+ "kind": "rescue",
+ "about": "Canonical schemas (JSON.stringify as built; sha256 of that text) the page can send for this kind, and whether the live model has answered in them. See test/safety/schemas.js and docs/SAFETY-INVARIANTS.md (intake).",
+ "entries": [
+  {
+   "sha256": "613f642cc4e1b237959faa14e4afddf41b2e164dad55ea2be7c9059ad5b15294",
+   "bytes": 842,
+   "schema": "{\"type\":\"OBJECT\",\"properties\":{\"status\":{\"type\":\"STRING\",\"enum\":[\"ok\",\"refer\"]},\"refer_reason\":{\"type\":\"STRING\",\"enum\":[\"none\",\"pregnancy\",\"kidney\",\"other_urgent\"]},\"dish\":{\"type\":\"OBJECT\",\"properties\":{\"name\":{\"type\":\"STRING\"},\"portion\":{\"type\":\"STRING\"},\"kcal\":{\"type\":\"INTEGER\"},\"protein\":{\"type\":\"INTEGER\"},\"carbs\":{\"type\":\"INTEGER\"},\"fats\":{\"type\":\"INTEGER\"},\"fiber\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}}},\"required\":[\"name\",\"portion\",\"kcal\",\"protein\",\"carbs\",\"fats\",\"fiber\",\"contains\"],\"propertyOrdering\":[\"name\",\"portion\",\"kcal\",\"protein\",\"carbs\",\"fats\",\"fiber\",\"contains\"]}},\"required\":[\"status\",\"refer_reason\"],\"propertyOrdering\":[\"status\",\"refer_reason\",\"dish\"]}",
+   "app_sends": true,
+   "example_body": {
+    "profile": {
+     "goal": "lose",
+     "focus": "none",
+     "diet": "veg",
+     "health": "none",
+     "region": "n",
+     "leave": [],
+     "sex": "f",
+     "age": 46,
+     "cm": 158,
+     "kg": 68,
+     "act": "low"
+    },
+    "ctx": {
+     "lite": true,
+     "meal": "dinner",
+     "time": "1:10 pm",
+     "mode": "desk",
+     "mood": "best",
+     "cuisine": "indian",
+     "prep": "home",
+     "oil": "min",
+     "appetite": 5,
+     "text": "Paneer butter masala with 2 butter naan"
+    },
+    "file": {
+     "today": {
+      "kcal": 1000,
+      "protein": 35,
+      "meals": [
+       {
+        "meal": "lunch",
+        "kind": "had",
+        "title": "Dal, sabzi and phulka",
+        "kcal": 520,
+        "protein": 18
+       }
+      ]
+     }
+    }
+   },
+   "shapes": 1,
+   "labels": [
+    "eval/v6 rescue-with-day"
+   ],
+   "window": false,
+   "accepted_by": {
+    "commit": "50090ef",
+    "date": "2026-11-18",
+    "how": "live-engine check after the Deploy"
+   }
+  }
+ ]
+}

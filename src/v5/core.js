@@ -1145,6 +1145,10 @@ referText(),
 }
 
 /* ---------- JSON schemas for Gemini (responseSchema, OpenAPI subset) ---------- */
+/* The meals and tune schemas carry no maxItems (fix-r17). 50090ef added item limits to them (plates 4, items 7, planned_around 4, taste 3, swap
+   lists 3); on 18 Nov the live model answered every meals request with 400 "constraint that has too many states for serving". The count of
+   plates, items, swaps and hooks is held by the engine, which drops what is over the cap (checkMeal, checkTune); the schema does not carry it.
+   Any change to a schema the page builds needs live acceptance recorded in test/safety/schemas/ (docs/SAFETY-INVARIANTS.md, intake). */
 var SCH=(function(){
   var I={type:"INTEGER"},S={type:"STRING"},T={type:"ARRAY",items:{type:"STRING",enum:TAGS}};
   function obj(props,req,order){return {type:"OBJECT",properties:props,required:req||Object.keys(props),propertyOrdering:order||Object.keys(props)};}
@@ -1154,13 +1158,13 @@ var SCH=(function(){
   /* safety round 5: no free sentence is asked for; what the screen shows is written by the engine from these fields */
   var alch=obj(withD({add_item:S,add_grams:I,minutes:I,grain_grams_after:I,contains:T}));
   var meal=obj({title:S,prepMinutes:I,
-    items:{type:"ARRAY",maxItems:7,items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS},contains:T})},contains:T,
+    items:{type:"ARRAY",items:obj({food:S,grams:I,group:{type:"STRING",enum:GROUPS},contains:T})},contains:T,
     grain:obj({food:S,made_of:S,grams:I}),
     kcal:I,protein:I,carbs:I,fats:I,fiber:I,
-    swaps:obj({protein:{type:"ARRAY",maxItems:3,items:obj(withD({food:S,grams:I,contains:T}))},base:{type:"ARRAY",maxItems:3,items:obj(withD({food:S,grams:I,made_of:S,contains:T}))}}),
+    swaps:obj({protein:{type:"ARRAY",items:obj(withD({food:S,grams:I,contains:T}))},base:{type:"ARRAY",items:obj(withD({food:S,grams:I,made_of:S,contains:T}))}}),
     alchemy:obj({protein:alch,glucose:alch,express:alch,gut:alch})});
   return {
-    meals:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,meals:{type:"ARRAY",maxItems:4,items:meal}},["status","refer_reason"],["status","refer_reason","meals"]),
+    meals:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,meals:{type:"ARRAY",items:meal}},["status","refer_reason"],["status","refer_reason","meals"]),
     rescue:obj({status:{type:"STRING",enum:["ok","refer"]},refer_reason:R,dish:obj({name:S,portion:S,kcal:I,protein:I,carbs:I,fats:I,fiber:I,contains:T})},["status","refer_reason"],["status","refer_reason","dish"])
   };
 })();

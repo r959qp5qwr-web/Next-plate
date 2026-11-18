@@ -1,0 +1,52 @@
+{
+ "kind": "log",
+ "about": "Canonical schemas (JSON.stringify as built; sha256 of that text) the page can send for this kind, and whether the live model has answered in them. See test/safety/schemas.js and docs/SAFETY-INVARIANTS.md (intake).",
+ "entries": [
+  {
+   "sha256": "72693cf296f1e352648b4e05ba06cd9056abe64978ea4d8e3f1640abe8be972d",
+   "bytes": 675,
+   "schema": "{\"type\":\"OBJECT\",\"properties\":{\"status\":{\"type\":\"STRING\",\"enum\":[\"ok\",\"refer\"]},\"refer_reason\":{\"type\":\"STRING\",\"enum\":[\"none\",\"pregnancy\",\"kidney\",\"other_urgent\"]},\"items\":{\"type\":\"ARRAY\",\"maxItems\":8,\"items\":{\"type\":\"OBJECT\",\"properties\":{\"food\":{\"type\":\"STRING\"},\"grams\":{\"type\":\"INTEGER\"},\"group\":{\"type\":\"STRING\",\"enum\":[\"protein\",\"greens\",\"carbs\",\"fats\",\"other\"]}},\"required\":[\"food\",\"grams\",\"group\"]}},\"kcal\":{\"type\":\"INTEGER\"},\"protein\":{\"type\":\"INTEGER\"},\"carbs\":{\"type\":\"INTEGER\"},\"fats\":{\"type\":\"INTEGER\"},\"fiber\":{\"type\":\"INTEGER\"}},\"required\":[\"status\",\"refer_reason\"],\"propertyOrdering\":[\"status\",\"refer_reason\",\"items\",\"kcal\",\"protein\",\"carbs\",\"fats\",\"fiber\"]}",
+   "app_sends": true,
+   "example_body": {
+    "profile": {
+     "goal": "hold",
+     "focus": "none",
+     "diet": "veg",
+     "health": "none",
+     "region": "n",
+     "leave": [],
+     "sex": "f",
+     "age": 46,
+     "cm": 158,
+     "kg": 68,
+     "act": "low"
+    },
+    "ctx": {
+     "lite": true,
+     "meal": "breakfast",
+     "time": "1:10 pm",
+     "mode": "desk",
+     "mood": "best",
+     "cuisine": "indian",
+     "prep": "home",
+     "oil": "min",
+     "appetite": 5,
+     "text": "2 aloo paratha with curd"
+    },
+    "file": {}
+   },
+   "shapes": 4,
+   "labels": [
+    "eval/v6 log-paratha",
+    "eval/v6 log-thali",
+    "eval/v6 log-out"
+   ],
+   "window": false,
+   "accepted_by": {
+    "commit": "50090ef",
+    "date": "2026-11-18",
+    "how": "live-engine check after the Deploy"
+   }
+  }
+ ]
+}

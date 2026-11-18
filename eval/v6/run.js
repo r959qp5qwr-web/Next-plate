@@ -1,16 +1,22 @@
 // v6 engine check: does Gemini plan around the person's day, and only cite reasons it was given?
-//   node eval/v6/run.js <base-url> <code> [label]     (results in eval/v6/results-<label>.json)
+//   node eval/v6/run.js <base-url> <code> [label] [--write | --out <dir>]
+// The requests are built by eval/v6/bodies.js, the one definition of what the app sends (the plate request, then for a scenario with "tune"
+// the follow-up the app sends for the first plate served). By default nothing is written into the repository: the results are printed and
+// kept in memory (fix-r17: the results file is hashed by test/ux/manifest.sh, so a run from the repository moved the fingerprint). With
+// --write the results go to eval/v6/results-<label>.json next to this script; with --out <dir> they go to that folder. The code may be
+// given in the environment instead (NP_KEY), which keeps it out of the process list.
 const fs = require('fs'), path = require('path');
-const [,, BASE, CODE = '', LABEL = 'run'] = process.argv;
+const argv = process.argv.slice(2), flag = (n) => argv.indexOf(n), takeVal = (n) => { const i = flag(n); if (i < 0) return null; const v = argv[i + 1]; argv.splice(i, 2); return v; };
+const OUTDIR = takeVal('--out'), WRITE = flag('--write') >= 0; if (WRITE) argv.splice(flag('--write'), 1);
+const [BASE, CODE0 = '', LABEL = 'run'] = argv, CODE = CODE0 || process.env.NP_KEY || '';
 const sc = JSON.parse(fs.readFileSync(path.join(__dirname, 'scenarios.json'), 'utf8')).filter(c => !process.env.ONLY || process.env.ONLY.split(',').includes(c.id));
-const baseP = { goal: 'hold', focus: 'none', diet: 'veg', health: 'none', region: 'n', leave: [], sex: 'f', age: 46, cm: 158, kg: 68, act: 'low' };
-const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'desk', mood: 'best', cuisine: 'indian', prep: 'home', oil: 'min', appetite: 5 };
+const { baseP, baseC, body, tuneBody } = require('./bodies.js');   // the bodies the app sends (fix-r17)
 (async () => {
   const out = [];
   for (const s of sc) {
-    const p = Object.assign({}, baseP, s.p), c = Object.assign({}, baseC, s.c), t0 = Date.now();
+    const rq = body(s), p = rq.profile, c = rq.ctx, t0 = Date.now();
     let status = 0, j = {};
-    try { const r = await fetch(BASE + '/api/' + s.kind, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: CODE, profile: p, ctx: c, file: s.file || {} }) }); status = r.status; j = await r.json(); }
+    try { const r = await fetch(BASE + '/api/' + s.kind, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ key: CODE }, rq)) }); status = r.status; j = await r.json(); }
     catch (e) { j = { code: 'fetch ' + e }; }
     const ms = Date.now() - t0, got = status === 200 ? j.status : 'http-' + status + ':' + (j.code || ''), issues = [];
     if (s.kind === 'meals' && got === 'ok') {
@@ -29,7 +35,7 @@ const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'desk', mood: 
     }
     if (s.kind === 'meals' && got === 'ok' && s.tune && j.meals[0]) {     // the follow-up call: swaps and one-tap changes for the plate on screen
       const m = j.meals[0], t1 = Date.now();
-      let tj = {}; try { const r = await fetch(BASE + '/api/tune', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: CODE, profile: p, slot: c.meal, meal: { title: m.title, subtitle: m.subtitle, cuisine: m.cuisine, prepMinutes: m.minutes, minutes: m.minutes, items: m.items, grain: m.grain, contains: m.contains, kcal: m.kcal, protein: m.protein, carbs: m.carbs, fats: m.fats, fiber: m.fiber, why: [] } }) }); tj = await r.json(); } catch (e) { tj = { code: String(e) }; }
+      let tj = {}; try { const r = await fetch(BASE + '/api/tune', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(Object.assign({ key: CODE }, tuneBody(p, c.meal, m))) }); tj = await r.json(); } catch (e) { tj = { code: String(e) }; }
       j.tune = tj; j.tuneMs = Date.now() - t1;
       if (tj.status !== 'ok') issues.push('tune failed: ' + (tj.status || tj.code));
       else { if (Object.keys(tj.alchemy).length < 4) issues.push('one-tap changes ' + Object.keys(tj.alchemy).length + '/4'); if (tj.swaps.protein.length < 2) issues.push('protein swaps ' + tj.swaps.protein.length); }
@@ -41,7 +47,8 @@ const baseC = { lite: true, meal: 'lunch', time: '1:10 pm', mode: 'desk', mood: 
     console.log(`${ok ? 'OK  ' : 'FAIL'} ${s.id.padEnd(28)} got=${got} ${ms}ms${j.tuneMs ? ' +tune ' + j.tuneMs + 'ms' : ''} ${issues.join(' | ')}\n       ${brief}`);
     await new Promise(r => setTimeout(r, Number(process.env.GAP || 500)));
   }
-  fs.writeFileSync(path.join(__dirname, `results-${LABEL}.json`), JSON.stringify(out, null, 1));
+  if (WRITE || OUTDIR) { const dir = OUTDIR ? path.resolve(OUTDIR) : __dirname; fs.mkdirSync(dir, { recursive: true }); const f = path.join(dir, `results-${LABEL}.json`); fs.writeFileSync(f, JSON.stringify(out, null, 1)); console.log('results written to ' + f); }
+  else console.log('results not written (no --write and no --out)');
   const n = out.length, pass = out.filter(x => x.ok).length;
   console.log(`\n${pass}/${n} passed; median ${out.map(x => x.ms).sort((a, b) => a - b)[n >> 1]} ms`);
 })();
