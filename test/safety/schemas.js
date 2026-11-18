@@ -1,6 +1,6 @@
 // The schema snapshot (fix-r17). Gates read the page; none of them can see whether the live model accepts a response schema. On 18 Nov the
-// model answered every meals request with 400 "constraint that has too many states for serving" after 50090ef added item limits to two
-// schemas; the gates had passed and four reports had said "maxItems configured, not live-validated". This test makes that blind spot a
+// model answered every meals request with 400 "constraint that has too many states for serving" after fix-r14's item limits on two
+// schemas went live in 50090ef; the gates had passed and four reports had said "maxItems configured, not live-validated". This test makes that blind spot a
 // failing check: the schema the model is asked to answer in is part of what the build is judged on, and a change to it needs a deliberate
 // step and a live acceptance on record.
 //
@@ -165,7 +165,7 @@ if (require.main === module) {
     const { rows, bad } = check(loadPage(page));
     for (const r of rows) console.log(`schema snapshot ${r.kind}: ${r.built} schemas built, ${r.entries} entries, ${r.accepted} of those accepted live, ${r.miss} not in the snapshot`);
     bad.slice(0, 8).forEach(b => console.log('FAIL ' + b)); if (bad.length > 8) console.log(`FAIL ... and ${bad.length - 8} more`);
-    console.log(bad.length ? `schema snapshot: ${bad.length} failures (${page})` : `schema snapshot: every schema the page builds is in the snapshot (${page})`);
+    console.log(bad.length ? `schema snapshot: ${bad.length} failures (${page})` : `schema snapshot: every enumerated schema the page builds is in the snapshot (${page})`);
     process.exit(bad.length ? 1 : 0);
   }
 }

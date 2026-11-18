@@ -1145,8 +1145,8 @@ referText(),
 }
 
 /* ---------- JSON schemas for Gemini (responseSchema, OpenAPI subset) ---------- */
-/* The meals and tune schemas carry no maxItems (fix-r17). 50090ef added item limits to them (plates 4, items 7, planned_around 4, taste 3, swap
-   lists 3); on 18 Nov the live model answered every meals request with 400 "constraint that has too many states for serving". The count of
+/* The meals and tune schemas carry no maxItems (fix-r17). fix-r14 added item limits to them (plates 4, items 7, planned_around 4, taste 3, swap
+   lists 3), first live in 50090ef; on 18 Nov the live model answered every meals request with 400 "constraint that has too many states for serving". The count of
    plates, items, swaps and hooks is held by the engine, which drops what is over the cap (checkMeal, checkTune); the schema does not carry it.
    Any change to a schema the page builds needs live acceptance recorded in test/safety/schemas/ (docs/SAFETY-INVARIANTS.md, intake). */
 var SCH=(function(){
