@@ -274,7 +274,7 @@ referText(),
 function platesSchema(ids,lite){
   var s=JSON.parse(JSON.stringify(SCH.meals)),m=s.properties.meals.items;
   if(lite){delete m.properties.swaps;delete m.properties.alchemy;m.required=m.required.filter(function(k){return k!=="swaps"&&k!=="alchemy";});m.propertyOrdering=m.propertyOrdering.filter(function(k){return k!=="swaps"&&k!=="alchemy";});}
-  m.properties.planned_around={type:"ARRAY",minItems:1,maxItems:4,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.taste={type:"ARRAY",maxItems:3,items:{type:"STRING"}};
+  m.properties.planned_around={type:"ARRAY",minItems:1,items:{type:"STRING",enum:ids.length?ids:["plain_day"]}};m.properties.taste={type:"ARRAY",items:{type:"STRING"}};
   m.required=m.required.concat(["planned_around","taste"]);m.propertyOrdering=m.propertyOrdering.concat(["planned_around","taste"]);return s;
 }
 SCH.tune=(function(){var m=SCH.meals.properties.meals.items.properties;return {type:"OBJECT",properties:{swaps:m.swaps,alchemy:m.alchemy},required:["swaps","alchemy"],propertyOrdering:["swaps","alchemy"]};})();

@@ -1,0 +1,100 @@
+{
+ "kind": "tune",
+ "about": "Canonical schemas (JSON.stringify as built; sha256 of that text) the page can send for this kind, and whether the live model has answered in them. See test/safety/schemas.js and docs/SAFETY-INVARIANTS.md (intake).",
+ "entries": [
+  {
+   "sha256": "c0ecb2228612e8b2cf486c18f99798d032d9c3ce00a28e755084da9b5afbae77",
+   "bytes": 5019,
+   "schema": "{\"type\":\"OBJECT\",\"properties\":{\"swaps\":{\"type\":\"OBJECT\",\"properties\":{\"protein\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"OBJECT\",\"properties\":{\"food\":{\"type\":\"STRING\"},\"grams\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"food\",\"grams\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"food\",\"grams\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]}},\"base\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"OBJECT\",\"properties\":{\"food\":{\"type\":\"STRING\"},\"grams\":{\"type\":\"INTEGER\"},\"made_of\":{\"type\":\"STRING\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"food\",\"grams\",\"made_of\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"food\",\"grams\",\"made_of\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]}}},\"required\":[\"protein\",\"base\"],\"propertyOrdering\":[\"protein\",\"base\"]},\"alchemy\":{\"type\":\"OBJECT\",\"properties\":{\"protein\":{\"type\":\"OBJECT\",\"properties\":{\"add_item\":{\"type\":\"STRING\"},\"add_grams\":{\"type\":\"INTEGER\"},\"minutes\":{\"type\":\"INTEGER\"},\"grain_grams_after\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]},\"glucose\":{\"type\":\"OBJECT\",\"properties\":{\"add_item\":{\"type\":\"STRING\"},\"add_grams\":{\"type\":\"INTEGER\"},\"minutes\":{\"type\":\"INTEGER\"},\"grain_grams_after\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]},\"express\":{\"type\":\"OBJECT\",\"properties\":{\"add_item\":{\"type\":\"STRING\"},\"add_grams\":{\"type\":\"INTEGER\"},\"minutes\":{\"type\":\"INTEGER\"},\"grain_grams_after\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]},\"gut\":{\"type\":\"OBJECT\",\"properties\":{\"add_item\":{\"type\":\"STRING\"},\"add_grams\":{\"type\":\"INTEGER\"},\"minutes\":{\"type\":\"INTEGER\"},\"grain_grams_after\":{\"type\":\"INTEGER\"},\"contains\":{\"type\":\"ARRAY\",\"items\":{\"type\":\"STRING\",\"enum\":[\"meat\",\"fish\",\"egg\",\"dairy\",\"wheat\",\"nuts\",\"soya\",\"onion_garlic\",\"root_veg\",\"sweet\",\"salty_side\",\"grain\",\"supplement\",\"plain\"]}},\"deltaKcal\":{\"type\":\"INTEGER\"},\"deltaProtein\":{\"type\":\"INTEGER\"},\"deltaCarbs\":{\"type\":\"INTEGER\"},\"deltaFats\":{\"type\":\"INTEGER\"},\"deltaFiber\":{\"type\":\"INTEGER\"}},\"required\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"],\"propertyOrdering\":[\"add_item\",\"add_grams\",\"minutes\",\"grain_grams_after\",\"contains\",\"deltaKcal\",\"deltaProtein\",\"deltaCarbs\",\"deltaFats\",\"deltaFiber\"]}},\"required\":[\"protein\",\"glucose\",\"express\",\"gut\"],\"propertyOrdering\":[\"protein\",\"glucose\",\"express\",\"gut\"]}},\"required\":[\"swaps\",\"alchemy\"],\"propertyOrdering\":[\"swaps\",\"alchemy\"]}",
+   "app_sends": true,
+   "example_body": {
+    "profile": {
+     "goal": "lose",
+     "focus": "none",
+     "diet": "veg",
+     "health": "diabetes",
+     "region": "n",
+     "leave": [],
+     "sex": "f",
+     "age": 46,
+     "cm": 158,
+     "kg": 68,
+     "act": "low",
+     "meds": "no"
+    },
+    "slot": "dinner",
+    "meal": {
+     "title": "Gujarati toor dal with bajra rotla",
+     "subtitle": "Gujarati toor dal, bajra rotla, jain baingan bharta, steamed brown rice, cacumber and tomato kachumber",
+     "cuisine": "",
+     "prepMinutes": 30,
+     "minutes": 30,
+     "items": [
+      {
+       "food": "Gujarati toor dal",
+       "grams": 240,
+       "group": "protein",
+       "contains": [
+        "plain"
+       ]
+      },
+      {
+       "food": "Bajra rotla",
+       "grams": 80,
+       "group": "carbs",
+       "contains": [
+        "grain"
+       ]
+      },
+      {
+       "food": "Jain baingan bharta",
+       "grams": 150,
+       "group": "greens",
+       "contains": [
+        "plain"
+       ]
+      },
+      {
+       "food": "Steamed brown rice",
+       "grams": 100,
+       "group": "carbs",
+       "contains": [
+        "grain"
+       ]
+      },
+      {
+       "food": "Cacumber and tomato kachumber",
+       "grams": 100,
+       "group": "greens",
+       "contains": [
+        "plain"
+       ]
+      }
+     ],
+     "grain": {
+      "food": "Bajra rotla",
+      "made_of": "bajra",
+      "grams": 80
+     },
+     "contains": [
+      "grain"
+     ],
+     "kcal": 648,
+     "protein": 22,
+     "carbs": 108,
+     "fats": 14,
+     "fiber": 18,
+     "why": []
+    }
+   },
+   "shapes": 3,
+   "labels": [
+    "eval/v6 lose-diabetes-dinner tune",
+    "eval/v6 protein-gap-dinner tune",
+    "eval/v6 active-day-build tune"
+   ],
+   "window": false,
+   "accepted_by": "pending"
+  }
+ ]
+}
