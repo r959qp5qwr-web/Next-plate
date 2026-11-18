@@ -59,6 +59,23 @@ const shown = (plan, kcal) => { const r = safe(() => plan.check({ status: 'ok', 
   add('B1 tune: the usual size is the phone\'s', /under (\d+) kcal, the usual size/.exec(tp.prompt || '') && +/under (\d+) kcal, the usual size/.exec(tp.prompt || '')[1] === phoneUsual, 'prompt: ' + ((/no swap or change takes the plate under[^.]*/.exec(tp.prompt || '') || [''])[0]));
 }
 
+// ---------- the hour (fix-r18): null is not given, 0 is midnight ----------
+// The page sends hour:null on every tab that is not the meal of the clock; +null is 0, which the engine read as midnight, so a dinner planned at
+// lunch time carried the "late dinner" hook the phone's own hooks do not have.
+const hookIds = (prompt) => [...(prompt || '').matchAll(/^- \[([a-z_0-9]+)\] /gm)].map(m => m[1]);
+{ const { fn } = mkPhone({ meds: 'yes', sex: 'f', age: 45, cm: 160, kg: 70, act: 'low' });
+  const prof = J(fn.profileOut()), file = { today: { kcal: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: [], lastHoursAgo: null, lastKcal: 0 }, patterns: [], slotProtein: {}, days: 0, recent: [] };
+  const ask = (hour, extra) => { const c = Object.assign({}, BASEC, { meal: 'dinner' }, extra || {}); if (hour === undefined) delete c.hour; else c.hour = hour; return A.plan('meals', J({ profile: prof, ctx: c, file })); };
+  const phoneHooks = (hour) => A.hooksFor(A.readProfile(prof), A.readFile(file), { meal: 'dinner', hour, mode: 'desk' }, null).map(h => h.id);
+  for (const h of [null, undefined, '']) { const pl = ask(h);
+    add('hour: null, "" or missing is not given: no late hook at dinner', pl.prompt && !hookIds(pl.prompt).includes('late_now') && JSON.stringify(hookIds(pl.prompt)) === JSON.stringify(phoneHooks(null)), `hour ${JSON.stringify(h)}: ${hookIds(pl && pl.prompt)} against ${phoneHooks(null)}`); }
+  for (const h of [0, 0.5, 3.9, 21, 23.99]) { const pl = ask(h);
+    add('hour: a given hour at dinner (midnight included) reads as the phone reads it', pl.prompt && JSON.stringify(hookIds(pl.prompt)) === JSON.stringify(phoneHooks(h)), `hour ${h}: ${hookIds(pl && pl.prompt)} against ${phoneHooks(h)}`); }
+  add('hour: midnight is a given hour (late dinner)', hookIds(ask(0).prompt).includes('late_now'), 'hour 0 gave no late hook');
+  for (const h of [24, -1, 25.5, 'x', true, [], {}]) { const pl = safe(() => ask(h), { error: 'threw' });
+    add('hour: a value the page cannot send is refused, never moved', pl.error === 'bad_request' && Object.keys(pl).length === 1, `hour ${JSON.stringify(h)}: ${JSON.stringify(pl).slice(0, 100)}`); }
+}
+
 // ---------- report ----------
 let fail = 0;
 for (const [id, r] of Object.entries(res)) { console.log(`${r.bad.length ? 'FAIL' : 'ok  '} ${id}: ${r.n} checks, ${r.bad.length} counter-examples`); r.bad.slice(0, 6).forEach(b => console.log('       ' + b)); if (r.bad.length > 6) console.log(`       ... ${r.bad.length - 6} more`); fail += r.bad.length; }

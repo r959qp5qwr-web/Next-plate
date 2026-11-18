@@ -178,7 +178,10 @@ function readFile(x,par){
   return f;
 }
 readProfile=(function(base){return function(x){var p=base(x);if(!p)return p;p.goal=okOpt("goal",x.goal)?x.goal:"hold";p.focus=okOpt("focus",x.focus)?x.focus:"none";p.meds=okOpt("meds",x.meds)?x.meds:"unsure";if(p.age&&p.age<18)p.age=0;return p;};})(readProfile);
-readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;var h=+((x||{}).hour);c.hour=isFinite(h)&&h>=0&&h<24?h:null;var dn=num((x||{}).dayNo,1,366);c.dayNo=dn;if(kind==="menu")c.text=menuText(x.text);return c;};})(readCtx);
+readCtx=(function(base){return function(x,kind){var c=base(x,kind==="log"?"rescue":kind);if(!c)return c;/* the hour (fix-r18; safety audit of 21a04a3, B1 as a class): null, "" or missing is "not given" and stays not given. The page sends hour:null on every
+     tab that is not the meal of the clock, and +null is 0, which read as midnight and added the "late dinner" hook to a dinner planned at lunch time.
+     0 is midnight, a given hour. A number from 0 up to but not 24 is read as sent; anything else is refused, never moved. */
+  var hx=(x||{}).hour;if(hx==null||hx==="")c.hour=null;else if(typeof hx==="number"&&isFinite(hx)&&hx>=0&&hx<24)c.hour=hx;else return null;var dn=num((x||{}).dayNo,1,366);c.dayNo=dn;if(kind==="menu")c.text=menuText(x.text);return c;};})(readCtx);
 
 /* ---------- prompts ---------- */
 function briefText(p,c,file,pl,hooks,noVariety){
