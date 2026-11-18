@@ -249,9 +249,14 @@ const STATES = [
     const r = await p.evaluate(() => ({ card: (document.querySelector('#v-plate .logged .note') || {}).textContent || '', said: document.getElementById('said').textContent }));
     const now = /If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor\./;
     if (!now.test(r.card) || !now.test(r.said)) throw new Error('the low-sugar warning does not say what to do now (card: ' + now.test(r.card) + ', spoken: ' + now.test(r.said) + ')');
-    // second screen review, R2-B2 021-1: after a skipped meal on medicines the snack is never passed over, and nothing says little is left
+    // "My rule" (owner, 17 Nov; D10): after a skipped meal on medicines the snack is still offered (the low-sugar safeguard), and nothing says little is left
     const n = await p.evaluate(() => ({ low: !!document.getElementById('snack-low'), go: ((document.getElementById('slot-next') || {}).textContent || '').trim() }));
     if (n.low || n.go !== 'Plan snack') throw new Error('after a skipped meal on medicines the card offers "' + n.go + '"' + (n.low ? ' and says little is left for a snack' : '')); }],
+  // "My rule" (owner, 17 Nov; D10): the 14 Nov rule holds for a client on medicines too, when no meal was skipped today: "Plan dinner" and the line
+  // (a smaller body: on medicines the day's figure is the maintenance figure, so the larger default body has room left for the snack)
+  ['plate-logged-meds', seed({ p: Object.assign({}, P, { meds: 'yes', age: 65, cm: 150, kg: 50 }) }), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900);
+    const r = await p.evaluate(() => ({ go: ((document.getElementById('slot-next') || {}).textContent || '').trim(), low: !!document.getElementById('snack-low') && /Little is left for a snack today\./.test(document.getElementById('snack-low').textContent), warn: /skipped meal can drop your sugar/.test(document.getElementById('v-plate').textContent) }));
+    if (r.go !== 'Plan dinner' || !r.low || r.warn) throw new Error('on medicines with no meal skipped and little left for the snack, the card offers "' + r.go + '"' + (r.low ? '' : ' and does not say little is left')); }],
   // R2-B2 021-1: "Little is left for a snack" follows the day's kcal left, not the snack's own small target; a day with room offers the snack
   ['plate-logged-room', seed({ p: Object.assign({}, P, { goal: 'hold' }) }), async (p, h) => { await h.plate(p); await p.click('#have'); await h.settle(900);
     const n = await p.evaluate(() => ({ low: !!document.getElementById('snack-low'), go: ((document.getElementById('slot-next') || {}).textContent || '').trim(), day: (window.__np6.plan() || {}).day }));
