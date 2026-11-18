@@ -1,101 +1,111 @@
 VERDICT: PASS
-BUILD: ff99eb165235ceeee9857cc621da2d135a41f7a7056864ef06dac09fdd60b465
+BUILD: 98ae28418025419214b46e93f6a1d2b313e4db50431e2fa94d0895b628c99c88
 
-Critic round 42.
-- Tree: branch claude/nice-hawking-307ljy at 530a503 (fix-r10 and fix-r11 merged). Diff judged: b4633dd..530a503 (src/v6/app.js,
-  engine.js, extra.css, legible.css, the changed lines of src/v5/core.js, test/ux/review.js, docs/film, docs/FEATURE-menu.md,
-  hosted/v6/README.md, docs/ux/UX-CRITERIA.md D8 and D9).
-- Fingerprint ff99eb16...b465 at the start and after all measuring and writing. During the round two commits landed: 1c58b89
-  (test/safety/AUDIT.md, the safety audit of 530a503) and 160ae2f (my in-progress CRITIC.md committed as WIP by someone else). Neither file
-  is in the fingerprint; at the end git status shows only test/ux/CRITIC.md modified.
-- This PASS is the UX verdict only. The safety audit of the same fingerprint reads FAIL (B1: "rice curd" read as a plant curd, so a
-  dairy word drops off a model-written name; M1: a digit count before a measure word inside a name leaves the measure word, "Dal with
-  teaspoon ghee"). I read those two sections. Both sit in shared-core code this diff did not change (PLANT and DIGMEAS in src/v5/core.js),
-  and neither shows a household measure in place of grams (grams and kcal stay on every figure; katori is guarded), so I do not count them
-  as an owner rule 2 breach here. They stay blocking in the safety gate, which is the auditor's, not this file's.
-- Round 41's findings are closed: finding 1 (a stepper moving under a held thumb) is fixed and measured at every width (below); finding 2
-  (one page error) did not recur in any of my seven parts.
+Critic round 43 on cad3fb0 (branch claude/nice-hawking-307ljy). UX verdict only. The safety audit of the same fingerprint (test/safety/AUDIT.md,
+PASS) is the auditor's; I did not re-judge it.
+- Fingerprint 98ae2841...9c88 at the start and again after all measuring and after writing this file (manifest.sh does not read CRITIC.md).
+  git status at the end: only test/ux/CRITIC.md modified. Diff judged: 530a503..cad3fb0.
+- Findings: none blocking, no owner-rule breach found. Five watch items (cosmetic), two owner questions (below).
 
 ## Measured (run by me on this tree)
-- Screen review, one width per part, each with its own --out in my scratchpad (node test/ux/review.js --widths <w> --out <path>), on the
-  review's default page hosted/v6/index.html; NP_STILL_LOG=1 from 360 on (a log switch, not a bypass). Every part: 3 runs (light, dark,
-  360 px at 130 %), 134 states, 402 checks, "No violations.", exit 0. report.json in every part: 402 entries, none with err (every state
-  reached), none with viol. No page error in any part, so no part needed a re-run. Parts: 320, 360, 375, 390, 393, 412, 430 (2,814 checks;
-  the 360 px 130 % run repeats in each part). EB Garamond rendered in every screen I opened.
-- builder-still (the test for round 41 finding 1: tap every stepper to its bound, then three taps at one point on every other button):
-  at 360, 375, 390, 393, 412, 430 light and dark and 360 px at 130 %: 348 taps and 56 three-tap runs each, 0 moved, 0 off, 0 unseen,
-  0 slot changes. At 320 the state passed in the part run without the log.
-- Drill: node test/ux/review.js --drill --out <scratchpad>: exit 0, "every planted fault was caught" (it plants the new menu-entry rule).
-- npm run rules: exit 0 on all three built pages (index.html, index.min.html, v5), "every rule check holds", including "menu: refused
-  before anything is read" and "photo: rescue and log with a photo are refused before any prompt".
-- npm run words: exit 0, "no banned words outside the 42 listed exceptions". Re-run after this file was written: the first re-run failed
-  on one banned word I had written in this file, which I replaced; the re-runs after the final write exit 0.
-- npm run films: exit 0. Four films, picture from 0 s, no decode errors, no 7 s freeze, -16.7 to -16.8 dB. No file under demo/ and not
-  docs/film/WHATSAPP-post.md changed since b4633dd.
-- test/ux/allow.json is []. test/words/allow.json unchanged since c909a03.
-- Probes (my scratchpad, read only, on hosted/v6/index.min.html, the served page, with the mock engine started as review.js starts it):
-  - probe/shots.js: the refused note for the top row (Protein +) and the bottom row (Fats and seeds -) at 320, 360, 390 light and dark and
-    360 px at 130 %; Rescue with an 85-character dish typed and focused. No page errors, no sideways scroll, input 17 px (22.1 at 130 %).
-  - probe/chips.js: every common-dish chip for a vegetarian and a non-vegetarian profile at 320 and 360, at 100 % and 130 %: lines per
-    chip and the pill's geometry. No page errors.
+- Screen review, one width per part, each as its own background command with its own --out in my scratchpad (node test/ux/review.js
+  --widths <w> --out <path>), default page hosted/v6/index.html. Parts and exits: 320 exit 0; 360 exit 0; 375 exit 0; 390 exit 0; 393 exit 0;
+  412 exit 0; 430 exit 0. Every part: 3 runs (light, dark, 360 px at 130 %), 138 states, 414 checks, "No violations." report.json in every part:
+  414 entries, none with err (every state reached), none with viol. No page error, so no part needed a re-run. (The state count rose from 134 to
+  138 with the new offline and refused-code states and plate-logged-meds.) For 320 I read report.json before deleting its folder: the same counts.
+- The served page: the review's default page is index.html, so I also ran the changed states on hosted/v6/index.min.html (--page, --only
+  plate-ask-offline-urgent, rescue-offline-pregnancy, sheet-log-refused-kidney, plate-logged, plate-logged-meds, plate-skipped-meds,
+  rescue-entry, rescue-result, builder-still, plate-hero; 320): 10 states, 30 checks, no violations. I grepped index.min.html for the changes
+  (onMeds reading "not sure", typedReferral in api(), "Little is left", the 22 px chip radius): all present. My probes below also serve the
+  min page.
+- Builder again, because the full parts' screens were not enough for the strip: review.js --only builder,builder-adjusted,builder-still at 412
+  and at 360 (own --out): both "No violations", 3 states, 9 checks.
+- Drill: node test/ux/review.js --drill --out <scratchpad>: exit 0, "every planted fault was caught".
+- npm run rules: exit 0 on all three built pages, "every rule check holds". npm run words: exit 0, "no banned words outside the 42 listed
+  exceptions" (re-run after this file was written). npm run films: four films, picture from 0 s, no decode errors, no 7 s freeze, -16.7 to
+  -16.8 dB; exit 0.
+- test/ux/allow.json is []. test/words/allow.json is not in the diff; the entries I read are the rule itself, quoted records or web addresses.
+- Probes (my scratchpad, read only; index.min.html served with the mock engine as review.js starts it), because the review's scroll frames skip
+  the lower part of some cards:
+  - logged card for a normal client and a medicines client, skipped-meal card for a medicines client, the typed chest-pain ask and the typed
+    "feeling shaky" ask for a medicines client with the network cut, "feeling shaky" for a non-medicines client (goes to the model, the engine's
+    rule), at 320 light, 320 dark and 360 at 130 %;
+  - the same skipped-meal, logged and shaky cases with the medicines answer left unanswered (diabetes, no meds field), 320 light: the warning
+    shows after a skipped meal, "Little is left for a snack today." and "Plan dinner" after lunch, and the shaky ask gets the get-help card;
+  - the Builder refused note for the top row (Protein +) and the bottom row (Fats and seeds -) at 320, 360, 390 light and dark and 360 at 130 %
+    (notes at 17 px, 22.1 px at 130 %; note and slot above the button, rows clear), and the Rescue box with a long dish typed (no sideways scroll);
+  - the Builder card height before and after one step at 320, 360, 375 and 390 (433 to 485 px; see watch item 1).
+  No page errors in any probe.
 
 ## Rendered (opened by me)
-- Rescue, every state in the brief: idle (entry 1-2), typing (probe), waiting, answered (result 1-4), error, urgent, refer; also limit,
-  no code, offline, plate-ordered. Widths: 320 light and dark, 360 dark and 130 %, 375 light, 390 light and dark, 393 dark, 412 light.
-  One entry: the lede ("850 kcal and 66 g protein are left today. Name the dish you will have for lunch to see how to fit it in."), the box
-  "Name the dish you chose", "What you type goes to Google Gemini.", the common dishes. No menu or photo wording on any screen. The answer
-  leads, then "Another dish" and the entry tools. Errors say what happened and keep the typed dish; Try again only where it helps; the
-  limit and the refused code say what to do and turn the send controls off. Urgent shows the get-help line first. Dark mode keeps the
-  paper. The order logged before the removal shows "Lunch · ordered from the menu" as D9 says.
-- Your data in My food (320 light, 360 at 130 %): "Google Gemini plans for you. It gets your answers, your meals from the last few days and
-  what you type." and "... counts a meal you typed or rescues a dish." This matches what the page now sends (no image; ctx.photo false).
-- Builder held strip, opened: review screens 320 light (builder 2, adjusted 2, still 1, 2, 3, 5), 375 dark (still 2), 390 light (still 1,
-  with a seam crop), 412 light (still 2), 430 dark (still 1), 360 at 130 % (the review's refused shot); probe screens 320 light top,
-  320 dark bottom, 360 dark top, 360 at 130 % top, 390 light bottom, 390 dark top. Not opened: the other probe images (320 dark top,
-  320 light bottom, 360 light, 360 dark bottom, 360 at 130 % bottom, 390 light top, 390 dark bottom) and every Builder screen at 393. In
-  each one opened, the refused note or the "Changed." slip sits whole in the held strip on the button, on the page's paper in both schemes,
-  the tapped row in view. The strip covers the lower rows until scrolled, which D8 accepts. At the end of the page the strip sits in its
-  own place and every row is clear of it (390 light bottom).
-- Code read: the photo refusal comes after the profile and typed referrals in plan() (S7 holds); "menu" is refused first; the client sends
-  no image on any path; no safety line was removed from app.js; units stay grams and kcal; no new hard-coded width.
-- Each part's screen folder was viewed, then deleted.
+Opened at 320 light and dark, 360 light and 130 %, 375 light and dark, 390 light and dark, 393 light and dark, 412 light, 430 light and dark.
+The review writes about 480 images per width; I opened the changed states at every width and sampled the rest.
+- Offline typed chest pain on the Plate ask (plate-ask-offline-urgent; 320 light, 375 dark, 412 light, 360 at 130 %, probe 320 light and dark): the
+  card quotes the ask, then the get-help line "If you feel unwell now, contact your doctor or emergency care." at heading weight, then "Your coach
+  and doctor should plan this with you.", then "Back to my plates" (full-width outlined button). No Try again, no error note. Plain words; it fits
+  at 320 and at 130 %; dark keeps the paper.
+- Offline typed pregnancy on Rescue (rescue-offline-pregnancy; 320 light, 360 at 130 %, 390 dark, 430 dark): the same card shape, "Your coach and
+  doctor should plan this with you." as its heading (no get-help line, right for pregnancy), the dish box and common dishes below, still usable.
+- Code refused, typed kidney text in the log sheet (sheet-log-refused-kidney; 320 light, 360 at 130 %, 375 dark): the slip reads "Your coach and
+  doctor should plan this with you. Next Plate does not count meals for this." with the shield mark, not "code was not accepted". The box, the
+  words and "Count it" (an outline button, as round 39 decided) stay.
+- Typed low-sugar sign on a medicines client (probe): the same card with the get-help line first.
+- Snack passed over (plate-logged, plate-logged-meds; 320 light and dark, 360 at 130 %, 390 dark, 430 light): the dish, "≈ 560 kcal · 38 g protein",
+  "Little is left for a snack today." in italic, "Reopen lunch" and "Plan dinner" (primary). Identical for the normal client and the medicines client
+  with no skipped meal, as D10 says. Medicines client who skipped lunch (plate-skipped-meds; 360 light, probe 320): the warning slip, "The rest of
+  the day adjusts. No meal is asked to make up for it in one sitting.", then "Reopen lunch" and "Plan snack" (the review's text check; the
+  button itself I read from the probe's card text, the image cuts it at the ask bar). The medicines client's Plate shows three example asks, not
+  "A light dinner after a heavy lunch".
+- Rescue (320 light and dark, 360 at 130 %, 390 dark, 412 light, 430 light and dark): entry (lede with kcal and protein left, "Name the dish you
+  chose", "What you type goes to Google Gemini.", four common dishes), wait, answered (dish, "≈ 650 g", kcal left, four nutrient bars with their
+  names and colours, "Sugar rise: Sharp", moves with tick boxes, "I had this, for lunch"), busy and error (Try again, typed dish kept), limit
+  (names 5:30 am, no Try again, send dimmed), no code (send and chips dimmed), blocked, refer, urgent, offline, empty ("couldn't work out that
+  dish", Try again), had-its-meal (the logged card), health-changed, two-moves-grain (the refusal toast "With diabetes the grain stays, at least
+  half of it."), after-midnight. A portion line with no whole weight was not seen on any screen (every Rescue sample dish shows "≈ N g"). The
+  chips with the 22 px radius: at 130 % "Paneer butter masala with butter naan" wraps to two lines at 360 and "naan" sits clear of the curve; at
+  100 % every chip is a one-line pill at 320, 360, 390, 412 and 430 (I did not open a 130 % chip at 320). No menu or photo wording on any
+  screen. Dark mode keeps the paper in all of them.
+- Builder held strip (320 light and dark, 360 dark and at 130 %, 375 light, 390 light, 393 light and dark, 412 light, 430 dark, plus the probe's
+  refused-note images at 320 dark, 360 at 130 %, 390 light): the slip, or the refused note "Protein can't go higher: this part stays between 5% and
+  70% of the plate.", sits in the strip directly above "Plan lunch with this plate" on the page's paper in both schemes; the strip covers the lower
+  rows until scrolled (D8 accepts it); at the end of the page it sits in its own place. The review's builder-still state passed at every width.
+- Your data in My food (360 at 130 %): "Google Gemini plans for you. It gets your answers, your meals from the last few days and what you type." and
+  the remove-my-data control and its confirmation read plainly and fit. Not opened at 320.
+- Code read: src/v6/app.js diff in full; src/v6/engine.js diff in full (the directive no longer says "light" or "late" to medicines clients through
+  hookSaid; appAskOK drops asks for lighter, smaller or skipped meals for medicines clients; typedReferral shared by the phone and the server;
+  the referral nets widened, none narrowed; the log reads figures as written); src/v5/core.js diff scanned: the removed lines are refactors of
+  the checks (the supplement list, katori and measure guards, grain checks are replaced by stricter forms, not dropped), and the added lines hold
+  no user-facing text. No safety line was removed, units stay grams and kcal, no banned word added (the word check agrees), no new hard-coded
+  width. NORETRY dropped bad_image with its reason given. UX-CRITERIA.md D8 to D10 and the watch list read; lines 484 to 571 (rounds 28 to 32, menu
+  grain questions, now dormant under D9) skimmed. The film hold lines are on docs/film/WHATSAPP-post.md and BRIEF-features.md; the films are
+  unchanged and still pass the film gate.
 
-## Findings, most serious first (none blocking)
-1. COSMETIC, watch item (not a regression; .sit CSS unchanged since b4633dd). Rescue, common dishes, at 130 % text only: a chip that wraps
-   to two lines keeps the full pill radius (999 px, so 31 px on a 62 px chip) with 11 px left padding and no top or bottom padding, so the
-   first letter of each line sits on the pill's curve. Seen on "Paneer butter masala with butter naan" (360 and 320 at 130 %) and, for a
-   non-vegetarian, also "Pahadi mutton rara with butter rotis" and "Peri-peri half chicken with spicy rice" (320 at 130 %). From the
-   letter boxes, my estimate is within about 1 px of the inner curve ("P" about 0.8 px inside it, the "n" serif about 0.3 px past it),
-   under A3's 2 px, and every word stays readable. No chip wraps at 100 % text at 320 or 360 for either profile.
-   Evidence: 360-light-big rescue-entry-2 and rescue-error-1 from the 360 part (viewed, deleted after);
-   /tmp/claude-0/-workspace/c6908978-4848-528a-96a3-1587c1886f9d/scratchpad/chips-out/chips-nonveg-320-130.png.
-   Smallest correction: a radius of about 22 px on #app .sits .sit, or 4 px top and bottom padding with 16 px at the sides.
-2. COSMETIC, watch item. Builder held strip, finish only: the strip keeps the height of the longest note, so a one-line note leaves a band
-   of empty paper above the button (430 dark, 320 and 360 light); at 412 px the "Changed." slip leaves "it." alone on its line; at 390 px
-   the gap between the slip and the button shows a 2-3 px sliver of the row behind (390 light seam crop: a swatch edge; 390 dark probe: a
-   fragment of "10%"). D8 accepts the strip. Correction if wanted: text-wrap:pretty on the slip; the slot's paper filled down to the
-   button's top edge.
-3. COSMETIC, watch item. Rescue typing (probe, 320 and 360 at 130 %): a long dish name scrolls inside the one-line box, so the start of
-   what was typed is out of sight. Unchanged since b4633dd. Correction if wanted: a two-line box.
-4. WATCH ITEM, records. docs/ux/UX-CRITERIA.md Part A still lists the menu states (line 15) and A13 still names "photos off" and "a photo
-   that did not come through"; app.js:127 keeps photos_off and bad_image in NORETRY. D9 supersedes them and nothing a user sees is
-   affected. Correction: mark them "removed 17 Nov (D9)" when the file is next edited.
-5. WATCH ITEM. The v5 page (hosted/v5/index.min.html, rollback only) still has a photo input; the engine now refuses any photo with
-   bad_request, so on a rollback that button would answer "Next Plate couldn't read that. Close it and open your link from WhatsApp
-   again." The handoff states v5 is not a release target. Correction before any rollback: take the v5 photo input off.
-6. OWNER QUESTION (not a finding, per the brief). Both films show menu reading (30 s film 23-28 s; 51 s film 6.0-12.4 s). The hold is
-   recorded at the top of docs/film/BRIEF.md and docs/film/SCRIPT-features.md ("Status: held (17 Nov) ... Not to be shared until it is
-   re-cut around "Name the dish""), and in the handoff (row "30 s film | approved, held (17 Nov)" and the owner question on a re-cut). Not
-   marked: docs/film/WHATSAPP-post.md (its "30-second film below" goes with the held film) and docs/film/BRIEF-features.md (Read the menu
-   as the film's lead feature). One "held (17 Nov)" line at the top of each would keep the post from being sent alone.
-- Open owner questions carried as the brief says, not judged here: size words with no number; Hindi counts before nuts and fruit;
-  postpartum phrasing.
+## Findings
+No blocking findings.
 
-Not inspected:
-- The owner's own phone and clients' phones (Android text scaling on a device, iOS Safari, a keyboard over the Rescue box); the review
-  and my probes simulate 130 % text in Chromium.
-- Every one of the 134 states at every width one by one: I opened the changed surfaces (Rescue, Your data, Builder) at the widths listed
-  above and relied on the measured checks for the other states and widths; Builder at 393 and the probe images listed above as not opened.
-- The seven review parts ran on hosted/v6/index.html; only my probes and the rule check ran on the served index.min.html.
-- Live Gemini text on Rescue (the review and my probes use the mock engine); the live site and Railway (not called).
-- The films by ear and frame by frame (no film changed; the film check passed); the safety audit's findings beyond B1 and M1.
+Watch items (cosmetic, each listed):
+1. Builder, any width, light and dark: once a share is changed or refused, the white plate card grows about 52 px of empty paper under the last
+   stepper row (card 433 to 485 px at 320 to 390 by probe; the card's bottom padding goes from 12 to 64 px, src/v6/legible.css:324, "the held button
+   never sits on the last stepper row", R2-B5 074-2). The note now sits in the held strip, so the room is not needed for it, and the card looks
+   unfinished (390 light builder-adjusted, 375 light builder-still, probe build-bottom-390-light). B2. Smallest correction: reduce the padding to
+   what the strip needs, or keep it as the owner's 14 Nov held-button decision. Not a tap or legibility problem.
+2. Builder held strip, finish (carried from round 42): the strip keeps the height of the longest note, so a one-line note leaves empty paper under
+   the slip (430 dark); "it." or "use it." stands alone on a line at 320 to 412. D8 accepts the strip.
+3. "Your data" in My food, src/v6/app.js (third paragraph): "... counts a meal you typed or rescues a dish." "Rescues" is the tab's internal
+   name; its heading reads "Eating out". B7. Smallest correction: "or works out a dish you are eating out".
+4. Review tooling, not the app: some review frames do not overlap (plate-ask-offline-urgent and plate-skipped-meds frame 1 and frame 2 skip the
+   bottom of the card and its button). I saw those parts by probe. The checks read the DOM, so A13 and B6 are not weakened, but a reader of the
+   screens alone does not see the button. Smallest correction: overlap the scroll frames by one ask-bar height.
+5. Rescue typing at 130 % with a long dish name scrolls inside the one-line box (carried from round 42; the owner's open watch item).
+
+Owner questions (not findings):
+- A. A client on medicines who types a low-sugar sign now gets the get-help line and the referral card. The skipped-meal card tells the same client
+  to "have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water". The typed-sign card does not say that. This is a
+  clinical wording decision for the owner and the safety audit, not a UX defect.
+- B. The two films still show the menu scan and carry hold lines (re-cut open). Size words with no number; Hindi counts before nuts and fruit;
+  postpartum phrasing; the Builder strip finish; Rescue long-text scroll: as listed in the brief.
+
+Not inspected: the owner's own phone; Android text scaling on a handset beyond the 130 % simulation; live Gemini text variety; clients'
+comprehension of the referral and get-help wording; every image of every state at every width (I opened the changed states at each width and
+sampled the rest, so "Your data" at 320, a 130 % chip at 320, and a Rescue portion with no weight were not seen); dark mode on a phone's own
+dark setting beyond the browser's colour-scheme; audio by ear (measured with the film gate only); the live site (not called).
