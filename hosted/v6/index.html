@@ -3542,6 +3542,10 @@ var C={meal:CLOCK,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",r
 var APP={};                                   /* appetite the person set by hand today, per meal; otherwise it is suggested from the day */
 var CONDS=["kidney","preg","diabetes","bp"];
 function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)return CONDS[i];return null;}
+/* What the phone keeps from its own store (fix-r18; safety audit of 21a04a3, B1 as a class): a body figure the set-up cannot hold (an older build, an
+   edited store) reads as not given, so the engine never refuses a request for it; an appetite is kept only when the slider can hold it (1 to 10). */
+function bodyStored(v,k){return bodyIn(Math.round(+v)||0,k)||0;}
+function appKept(av){var o={};av=av&&typeof av==="object"?av:{};Object.keys(av).forEach(function(m){if(lab("meal",m)&&intakeNum(av[m],[],1,10).v!=null)o[m]=av[m];});return o;}
 var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=false,REMADE={},REMADEWHY={};
 (function load(){try{
   var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
@@ -3549,14 +3553,14 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
   if(!raw)return;var rp=raw.p||{};
   ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
   if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
-  ["age","cm","kg"].forEach(function(k){P[k]=bodyIn(Math.round(+rp[k])||0,k)||0;});   /* a stored figure the set-up cannot hold (an older build, an edited store) reads as not given, so a request is never refused for it (fix-r18) */
+  ["age","cm","kg"].forEach(function(k){P[k]=bodyStored(rp[k],k);});
   /* health is tick-all-that-apply (owner decision, 14 Nov): conds holds the ticks; health is derived, a kidney condition or pregnancy first */
   P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
   P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
   var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
   C.ratio=ratioOK(rc.ratio);   /* a saved share out of the engine's bounds (an older build could save one) is dropped at load (B2) */   /* the chosen share is kept on the phone (R2-B5 076-3) */
   if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
-  if(raw.app&&raw.app.day===DAY){var av=raw.app.v||{};Object.keys(av).forEach(function(m){if(lab("meal",m)&&intakeNum(av[m],[],1,10).v!=null)APP[m]=av[m];});}   /* only an appetite the slider can hold (1 to 10, a whole number) is kept (fix-r18) */
+  if(raw.app&&raw.app.day===DAY)APP=appKept(raw.app.v);
   if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
   /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
   Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
