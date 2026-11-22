@@ -57,6 +57,12 @@ var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a s
 /* what the targets still need, in words, and where to type it (screen review B2) */
 function bodyMissing(){var m=[[!P.age,"age","body-age"],[!P.cm,"height","body-cm"],[!P.kg,"weight","body-kg"],[!P.sex,"sex","sex-f"],[!P.act,"activity","act-low"]].filter(function(x){return x[0];});
   var w=m.map(function(x){return x[1];});return {text:w.length>1?w.slice(0,-1).join(", ")+" and "+w[w.length-1]:w[0]||"details",at:m.length?m[0][2]:"body-age"};}
+/* The body step takes all three of age, height and weight, or none (owner, 22 Nov, option survey "Ask for the missing figure"). One or two given is a body the
+   engine refuses (body_partial) and the phone never sends: the step cannot be finished, one line says what is missing, and a phone that holds a partial body
+   (the 6febc1a page and the fix-r18 page could store one) asks for the rest before it plans. All three empty stays allowed: plates without a target, at the usual sizes. */
+function bodyNeed(){var m=[[!P.age,"age","body-age"],[!P.cm,"height","body-cm"],[!P.kg,"weight","body-kg"]].filter(function(x){return x[0];});
+  if(m.length===0||m.length===3)return null;var w=m.map(function(x){return x[1];});
+  return {line:"Add your "+(w.length>1?w[0]+" and "+w[1]:w[0])+" too, or leave all three empty.",at:m[0][2]};}
 function blocked(){return P.done&&(has("kidney")||has("preg"));}
 function clockText(){var h=now.getHours(),m=now.getMinutes();return ((h%12)||12)+":"+(m<10?"0":"")+m+(h<12?" am":" pm");}
 function mealName(k){return lab("meal",k);}
@@ -133,7 +139,7 @@ var ERRS={not_set_up:"Meal planning isn't switched on for this link. Send your c
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a bad request. "photos_off" stays: the
    server still answers it to a request whose image is an empty string, which plan() lets through. "bad_image" went (fix-r12; Critic round
    42, watch item 4): the server reads it only for a non-empty image, and plan() refuses every such request first (owner, 17 Nov) */
-var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_request"];
+var NORETRY=["limit_day","limit_ip","bad_key","not_set_up","photos_off","bad_request","body_partial"];
 function RETRY(code){return NORETRY.indexOf(code)<0;}
 /* a limit, the link or meal planning switched off stops every request until it changes: Plate, Rescue and the log sheet all turn
    their send controls off and keep what was typed (second screen review, R2-B6 083, R2-B7 104 and 106, R2-B4 057, R2-B5 068) */
@@ -151,13 +157,22 @@ function errText(code,where){
     if(where==="plate")return "You have used today's new plates. They open again at "+resetAt()+".";
     return "You have used today's requests for Next Plate. They open again at "+resetAt()+"."+tail;}
   if(code==="bad_key"&&KEYCODE)return REFUSED;
+  if(code==="body_partial"){var nd=bodyNeed();return nd?nd.line:"Add the missing figure, or leave all three empty.";}
   return ERRS[code]||"Couldn't reach Next Plate just now. Check your signal.";}
+/* A request with one or two of age, height and weight is held. Plates, Rescue and the swaps read the body (the day's target and the usual size on medicines), so they
+   are held and the body step opens once; the log counts what the person ate and reads no body figure, so it goes with the three left out (the profile's other
+   answers, which its referral net reads, stay). The engine would answer a partial body with body_partial; the phone never lets it get that far. */
+function bodyHold(path,body){var p=body&&body.profile;if(!p)return false;var n=(p.age>0)+(p.cm>0)+(p.kg>0);if(n===0||n===3)return false;
+  if(/\/log$/.test(path)){body.profile=Object.assign({},p,{age:0,cm:0,kg:0});return false;}
+  if(P.done&&!UI.sheet&&!UI.bodyOpened){UI.bodyOpened=true;var nd=bodyNeed();openSheet("food",nd?nd.at:"body-age");}
+  return true;}
 function api(path,body,cb){
   /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
      anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
      gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
   var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
   if(tr){cb(200,tr);return;}
+  if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
@@ -306,8 +321,9 @@ function bodyRead(k,text){
   var good=v>=b[0]&&v<=b[1];
   return {v:good?v:0,good:good,said:good?said:""};
 }
+var bodyGate=function(){};
 function bodyQs(host,after){
-  var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. You can leave them empty; then plates have no calorie or protein target."));
+  var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. Give all three, or leave all three empty; then plates have no calorie or protein target."));
   choiceRow(a,"sex",function(v){return P.sex===v;},function(v){P.sex=v;after();},2);
   var f=el("div","fields");
   [["age","Age (years)","years"],["cm","Height (cm)","cm or ft"],["kg","Weight (kg)","kg"]].forEach(function(x){
@@ -315,11 +331,16 @@ function bodyQs(host,after){
     if(x[0]==="cm")i.inputMode="decimal";
     /* height also reads feet (5.4 = 5 ft 4 in) and inches; a value out of range stays, with a line saying what to type (screen review B1) */
     i.addEventListener("change",function(){var r=bodyRead(x[0],i.value),b=BODYB[x[0]];
-      P[x[0]]=r.v;if(r.good&&r.said)i.value=String(r.v);
+      P[x[0]]=r.v;if(r.good&&r.said)i.value=String(r.v);gate();
       msg.textContent=!i.value?"":!r.good?(x[0]==="cm"?"Type your height in cm, for example 162, or in feet, for example 5.4.":x[1].replace(/ \(.*/,"")+" between "+b[0]+" and "+b[1]+" "+x[2]+", please."):r.said;
       msg.className=r.good?"fine":"fine err";after(true);});
     var msg=el("p","fine");msg.setAttribute("aria-live","polite");msg.id="body-"+x[0]+"-msg";l.appendChild(i);l.appendChild(msg);f.appendChild(l);});
   a.appendChild(f);
+  /* one plain line says which figure is missing; the step cannot be finished while one or two are filled (the button is off), and it updates as the person types */
+  var nd=el("p","fine err");nd.id="body-need";nd.setAttribute("aria-live","polite");a.appendChild(nd);
+  function gate(){var n=bodyNeed();nd.textContent=n?n.line:"";nd.hidden=!n;var g=UI.sheet==="food"?$("sheet-done"):$("setup-next");
+    if(g){g.disabled=!!n;g.style.opacity=g.disabled?".5":"";}}
+  bodyGate=gate;gate();
   var b=el("div","qs act");b.appendChild(el("p","cap","Activity"));tiles(b,"act",function(v){return P.act===v;},function(v){P.act=v;after();});a.appendChild(b);
 }
 function renderSetup(){
@@ -335,19 +356,25 @@ function renderSetup(){
   if(UI.step){var bk=btn("btn","Back",null,"setup-back");bk.addEventListener("click",function(){UI.step--;render();});row.appendChild(bk);}
   /* a kidney condition or pregnancy is referred: the body step is not asked for nothing (screen review B1) */
   var refer=UI.step===1&&(has("kidney")||has("preg"));
-  var ok=UI.step===0?!!P.diet&&!!P.goal&&!!P.region:UI.step===1?!!P.health&&(refer||!has("diabetes")||!!P.meds):true;
+  var ok=UI.step===0?!!P.diet&&!!P.goal&&!!P.region:UI.step===1?!!P.health&&(refer||!has("diabetes")||!!P.meds):!bodyNeed();
   if(!ok&&UI.step===0){var miss=[!P.goal&&"a goal",!P.diet&&"what you eat",!P.region&&"your home food"].filter(Boolean);
     v.appendChild(el("p","fine","Choose "+(miss.length>1?miss.slice(0,-1).join(", ")+" and "+miss[miss.length-1]:miss[0])+" to go on."));}
   if(!ok&&UI.step===1&&has("diabetes")&&!P.meds)v.appendChild(el("p","fine","Answer the medicine question to go on."));
   var go=btn("btn primary",refer?"Done":UI.step<2?"Next":"Show my plate",null,"setup-next");if(!ok){go.disabled=true;go.style.opacity=".5";}
-  go.addEventListener("click",function(){if(!ok)return;if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
-  row.appendChild(go);v.appendChild(row);
+  go.addEventListener("click",function(){if(!ok||UI.step===2&&bodyNeed())return;if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
+  row.appendChild(go);v.appendChild(row);if(UI.step===2)bodyGate();
   v.appendChild(el("p","fine disc","Meals are planned by AI (Google Gemini) from your choices and your day. Numbers are estimates. General food guidance, not medical advice."));
 }
 /* a phone that never opened the coach's link (no code in the address, none kept) is told so before set-up, on the card the plate shows
    for a missing code (owner, 14 Nov, option survey); a phone that opened the link once keeps its code and goes on as before */
 function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card err"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
   add(c,i,el("h2",null,ERRS.bad_key),el("p",null,LOSTIT));v.appendChild(c);}
+/* a phone that holds a partial body (set-up finished before this rule) shows this where the plates, Builder and Rescue would be, and the body step opens once */
+function bodyCard(){var nd=bodyNeed(),c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="body-card";
+  add(c,i,el("h2",null,nd.line),el("p",null,"Your plates, swaps and Rescue are sized from all three. Leaving all three empty plans plates at the usual sizes."));
+  var b=btn("btn primary","Add them now",null,"add-body-missing");b.addEventListener("click",function(){openSheet("food",nd.at);});c.appendChild(b);
+  if(!UI.bodyOpened&&!UI.sheet){UI.bodyOpened=true;setTimeout(function(){var n2=bodyNeed();if(n2&&!UI.sheet)openSheet("food",n2.at);},0);}
+  return c;}
 function blockedCard(){
   var c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("shield"));
   add(c,i,el("h2",null,"Plan your meals with your coach and doctor"),el("p",null,"You said "+(has("kidney")&&has("preg")?"you have a kidney condition and are pregnant or breastfeeding.":has("preg")?"you are pregnant or breastfeeding.":"you have a kidney condition.")+" For this, your meals are best planned with your coach and doctor, so Next Plate suggests none for now."));
@@ -535,6 +562,7 @@ function composer(host){
 function renderPlate(){
   var v=$("v-plate");v.textContent="";
   if(blocked()){v.appendChild(blockedCard());return;}
+  if(P.done&&bodyNeed()){v.appendChild(bodyCard());return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
   if(s&&!asked){v.appendChild(loggedCard(s));}
@@ -622,6 +650,7 @@ function renderBuild(){
   var v=$("v-build");v.textContent="";
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}
+  if(P.done&&bodyNeed()){v.appendChild(bodyCard());return;}
   if(!UI.ratio){UI.ratio=C.ratio||MODEPLATE[C.mode];
     /* a saved share marks the preset it matches, or none (Critic round 36) */
     if(C.ratio){var same=function(a){return a&&["protein","greens","carbs","fats"].every(function(k){return a[k]===C.ratio[k];});};UI.preset=same(MODEPLATE[C.mode])?"mode":same(PRESETS.balanced)?"balanced":same(PRESETS.steady)?"steady":"";}}
@@ -703,6 +732,7 @@ function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}   /* as Builder: the card's one button clears the tab bar (R2-B8 120-1) */
+  if(P.done&&bodyNeed()){v.appendChild(bodyCard());return;}
   var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),busy=UI.rbusy,wait=busy||!!UI.lock;   /* at a limit or without the link nothing is sent */
   /* what Rescue gives, first and at body size (screen review B4, B5) */
   if(!(UI.rres||UI.rerr||busy)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
@@ -810,7 +840,7 @@ function renderSheet(){
     var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");},closeSheet));
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
-  sheetHead(c,"My food","Done",function(){save();closeSheet();render();});
+  sheetHead(c,"My food","Done",function(){if(bodyNeed())return;save();closeSheet();render();});
   function again(soft){if(!soft)renderSheet();}
   goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
   var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));
@@ -823,7 +853,7 @@ function renderSheet(){
     kp.addEventListener("click",function(){UI.wipe=false;renderSheet();});
     rm.addEventListener("click",function(){try{localStorage.removeItem("np6");localStorage.removeItem("np5");sessionStorage.clear();sessionStorage.setItem("np-removed","1");if(KEYCODE)localStorage.setItem("np6",JSON.stringify({k:KEYCODE}));}catch(e){}location.replace(location.pathname);});
     add(kr,kp,rm);cf.appendChild(kr);dq.appendChild(cf);}
-  c.appendChild(dq);sh.appendChild(c);if(UI.wipe)setTimeout(function(){var q=$("wipe-q");if(q)q.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});},40);
+  c.appendChild(dq);sh.appendChild(c);bodyGate();if(UI.wipe)setTimeout(function(){var q=$("wipe-q");if(q)q.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});},40);
 }
 $("sheet").addEventListener("click",function(e){if(e.target===$("sheet"))closeSheet();});
 $("myfood").addEventListener("click",function(){openSheet("food");});

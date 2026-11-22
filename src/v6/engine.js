@@ -835,6 +835,7 @@ plan=function(kind,body){
   if(carriesPhoto(body))return {error:"bad_request"};
   /* a body figure the set-up cannot store is refused (fix-r18); after the referrals above, so a typed urgent sign or a kidney condition still refers (S7) */
   if(profileRefused(body&&body.profile))return {error:"bad_request"};
+  if(profilePartial(body&&body.profile))return {error:"body_partial"};   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";if(!p.slot&&medsUsual(p,"lunch"))return {error:"bad_request"};p.medsUsual=medsUsual(p,p.slot);   /* on medicines a tune names its meal (audit m4) */var cm=checkMeal(body&&body.meal&&typeof body.meal==="object"?keptPlate(body.meal):null,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};

@@ -887,6 +887,9 @@ function intakeNum(v,none,lo,hi,round){
 var BODYB={age:[18,95],cm:[120,215],kg:[30,200]};
 function bodyIn(v,k){var g=intakeNum(v,[0,null,""],BODYB[k][0],BODYB[k][1]);return g.bad?null:(g.v||0);}   /* 0 not given; null refused */
 function profileRefused(x){return !!x&&typeof x==="object"&&["age","cm","kg"].some(function(k){return bodyIn(x[k],k)===null;});}
+/* a partial body entry (fix-r20; owner, 22 Nov, "Ask for the missing figure"): one or two of age, height and weight given is not a state the set-up lets a client finish, so it is
+   unstorable and refused, like a figure outside its bounds. All three given, or none, is read. The refusal has its own code (body_partial) so the phone can say what is missing */
+function profilePartial(x){if(!x||typeof x!=="object")return false;var n=["age","cm","kg"].filter(function(k){return bodyIn(x[k],k)>0;}).length;return n>0&&n<3;}
 /* the figure rule (fix-r15; safety audit of c666d34, B1 and m5): a figure the model writes is taken as written or its element is dropped.
    An integer in the field's range is the figure; anything else (past either end of the range, a zero where zero is no amount, null, a
    string, a fraction, a word) is null, and the caller drops the element the figure belongs to. Nothing is cut or rounded to fit, so a figure
