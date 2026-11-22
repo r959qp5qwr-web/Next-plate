@@ -40,6 +40,8 @@
    "toast",
    "rusk",
    "khakhra",
+   "khakra",
+   "khakhara",
    "mathri",
    "samosa",
    "kachori",
@@ -320,7 +322,10 @@
    "wafer",
    "papadam",
    "soy sauce",
-   "mixture"
+   "mixture",
+   "khakhra",
+   "khakra",
+   "khakhara"
   ],
   "sweet": [
    "jalebi",
@@ -1213,7 +1218,6 @@
    "Sandige",
    "Sundakkai vathal",
    "Mor milagai",
-   "Khakra",
    "Kachri",
    "Fryums",
    "Nippattu",

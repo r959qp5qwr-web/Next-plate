@@ -993,7 +993,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     // m4: the phone runs the nets plan() runs, before anything is sent. api() is taken from app.js with a fetch that counts: typed referral,
     // pregnancy, kidney and urgent text, and one low-sugar sign on an insulin profile, are answered on the phone with no request, as plan()
     // answers them; food text is sent
-    { let fetched = 0; const mk = () => run(['api'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, bodyHold: () => false, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
+    { let fetched = 0; const mk = () => run(['api', 'bodyHold', 'bodyNeed'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
       const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
       const phone = (t, prof) => { let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
       const want = [['chest pain since morning, what can I eat', plain, true], ['I am pregnant, what can I order', plain, false], ['kidney problem, had dal and rice', plain, false], ['feeling shaky, what should I eat', ins, true], ['sugar low, what now', plain, true]];
@@ -1325,6 +1325,19 @@ add('m4 tune slot on medicines', !!safe(() => plan('tune', { profile: Object.ass
   // takes a photo, tested below), so that one pattern is not run there; every other pattern runs on all three pages
   const V5 = /hosted\/v5/.test(process.argv[2] || ''); if (V5) console.log('menu entry scan, v5 screens: "photo of the menu" not run (the v5 Rescue camera is still drawn; the engine refuses its photo; not a release target)');
   for (const [what, rx] of ENTRY.filter(([w]) => !(V5 && w === '"photo of the menu"'))) { const m = rx.exec(appPart); add('menu refused (owner, 17 Nov): the page offers no menu entry', !m, m ? `${what} found: ${JSON.stringify(appPart.slice(Math.max(0, m.index - 40), m.index + 40))}` : ''); } }
+
+// ---------- S3: khakhra is a salty side for high BP, like papad (owner, 22 Nov, "Salty side (Recommended)"); it still counts as wheat ----------
+// The word net bars every spelling for a high BP client, a plate or a swap or a one-tap food named so is dropped even with the tag "plain", and it is still wheat for a client who leaves wheat out.
+// The two recorded live plate names that hold it are in it too.
+for (const f of ['Khakhra', 'khakra', 'Khakhara', 'khakhras', 'Khakras', 'Masala khakhra', 'Methi Khakhra', 'Whole wheat khakhra pieces', 'Crushed roasted whole wheat khakhra', 'Khakhra with pickle', 'Jeera khakra and tea']) {
+  add('S3 khakhra: every spelling is barred for high BP', crosses(f, prof({ health: 'bp' })), `"${f}" was not barred for high BP`);
+  add('S3 khakhra: with diabetes and BP ticked it is barred too', crosses(f, prof({ health: 'diabetes', bp: true })), `"${f}" was not barred with diabetes and BP`);
+  add('S3 khakhra: it still counts as wheat', crosses(f, prof({ leave: ['wheat'] })), `"${f}" was not barred for a client who leaves wheat out`);
+  add('S3 khakhra: a client with no BP and no wheat rule keeps it', !crosses(f, prof({})), `"${f}" was barred for a client with neither rule`); }
+for (const name of ['Whole wheat khakhra pieces', 'Crushed roasted whole wheat khakhra', 'Khakhra']) {
+  const m = (() => { const x = platePlain(); x.items[2] = { food: name, grams: 40, group: 'carbs', contains: PT }; x.title = name + ' plate'; return x; })();
+  add('S3 khakhra: a plate with a khakhra item and the tag "plain" is dropped for high BP', !plateOffered({ health: 'bp' }, m).ok, `${name}: shown`);
+  add('S3 khakhra: the same plate is shown to a client with no BP (control)', plateOffered({}, m).ok, `${name}: not shown to a client with no BP`); }
 
 // ---------- no photo on any kind (owner, 17 Nov: "Just a picture scan, should not become the source of so much hassle for the app.") ----------
 // A request that carries an image, or says it does, is refused before any prompt is built, on every kind. Typed referral text still refers

@@ -102,6 +102,18 @@ for (const [name, evs] of [['the most patterns', bestEv], ['ten heavy days, four
   for (const o of [{ age: 0, cm: 0, kg: 0, health: 'none', meds: '' }, { health: 'bp', meds: '' }, { health: 'kidney', meds: '' }]) askAll('heavy: ' + name + ' ' + JSON.stringify(o), storeOf(Object.assign({}, PROFILE_OK, o), { ev: evs }), [13.25, 21.5], MEALS); }
 add('the largest Rescue dish with every move is a figure the phone can log (at least 4,000 kcal)', maxRescue.a.kcal >= 4000 && maxRescue.moves > 0, JSON.stringify(maxRescue));
 
+// ---------- 1b. the most 6febc1a could write into a logged meal (fix-r21; safety audit of 7935ec0, m2) ----------
+// Built from that page's own writers, not from this build's range: its log kept kcal 1-5000, protein 0-300, carbs 0-600, fats 0-300, fiber 0-100 and put the macro sum
+// (4p + 4c + 9f, up to 6,300 kcal) in place of a kcal more than a fifth off it; a Rescue dish (kcal 40-4000, protein 0-300, carbs 0-500, fats 0-300, fiber 0-80) with the four
+// moves its model could write (each up to +300 kcal, +40 protein, +60 carbs, +30 fats, +20 fiber) is 5,200 kcal, 460 g protein, 740 g carbs, 420 g fats and 160 g fiber; a composed
+// plate (2,500 kcal and 250 g protein after its swaps and changes: +400 kcal, +40 protein, +80 carbs, +40 fats, +20 fiber, then +400, +40, +40, +30, +20) is 3,300 kcal.
+const W6 = { log: { kcal: 6300, protein: 300, carbs: 600, fats: 300, fiber: 100 }, log5000: { kcal: 5000, protein: 200, carbs: 400, fats: 100, fiber: 40 }, rescue: { kcal: 5200, protein: 460, carbs: 740, fats: 420, fiber: 160 }, plate: { kcal: 3300, protein: 330, carbs: 520, fats: 270, fiber: 120 } };
+{ const at = (k) => NOW0 + (-13.5 + k * 3) * 36e5, mealsOf = (o) => MEALS.map((m, k) => ev(o[k % o.length][0], at(k), m, Object.assign({ title: longTitle(80) }, W6[o[k % o.length][1]])));
+  for (const [name, evs] of [['four meals logged at 6,300 kcal', mealsOf([['other', 'log']])], ['a 5,000 kcal log', [ev('other', at(0), 'breakfast', Object.assign({ title: 'Thali' }, W6.log5000))]], ['a 6,300 kcal log', [ev('other', at(0), 'breakfast', Object.assign({ title: 'Thali' }, W6.log))]],
+    ['a Rescue dish with four moves', mealsOf([['rescued', 'rescue']])], ['a composed plate at 3,300 kcal', mealsOf([['had', 'plate']])], ['the largest meal of each writer in one day', mealsOf([['other', 'log'], ['rescued', 'rescue'], ['had', 'plate'], ['other', 'log']])]])
+    askAll('6febc1a writers: ' + name, storeOf(PROFILE_OK, { ev: evs }), [21.75, 22.75, 23.75], MEALS);
+  add('the 6febc1a writers\' largest day is a figure the phone can hold (the sum of four meals)', MEALS.length * W6.log.kcal === 25200 && MEALS.length * W6.rescue.protein === 1840 && MEALS.length * W6.rescue.carbs === 2960 && MEALS.length * W6.rescue.fats === 1680 && MEALS.length * W6.rescue.fiber === 640, 'the table of ranges in src/v6/engine.js FILEB'); }
+
 // ---------- 2. the store as 6febc1a leaves it ----------
 // its bounds for the three body figures were 16-95, 120-215 and 30-200, and its load kept any figure above 0; the profile fields are the set-up's own
 const ages = [16, 17, 18, 40, 95, 0, 15, 96, 120, -1, 45.5, '45', 'x', null], cms = [0, 119, 120, 158, 215, 216, 1000, 4.5, '158', null], kgs = [0, 29, 30, 72, 200, 201, 5000, 65.5, '70', null];
