@@ -105,6 +105,13 @@ const ADV_HELD = ["wife says insulin before dinner", "Husband said take insulin 
   "Insulin ke baad meetha nahi khata", "Insulin free from govt hospital", "I'll need insulin 4 units for dinner", "Wife cooks and insulin at 8", "Insulin 12 units, I may need to reduce it", "may need to reduce insulin", "I may need to reduce insulin after dinner", "insulin10units", "Metformin500"];
 const ADV_NOT = ["My mother takes insulin", "insulin for my father", "my brother is on insulin", "wife is on insulin", "my wife takes glimepiride daily", "father uses insulin pen", "she takes insulin", "he is on gliclazide", "my kids dad takes insulin", "I don't think of insulin", "insulin resistance"];
 for (const t of ADV_HELD) HELD.push([t, 'adversarial']); for (const t of ADV_NOT) if (t !== "I don't think of insulin") NOT.push([t, 'adversarial']);
+// round 4 (coordinator, on b00fe75): someone else is the user only when no first person shares the medicine in this clause or the clause before or after it; "me and my X", "I and my X", "main aur meri X"
+// are one first-person subject; a cook, an asker or a helper next to it is not a user
+const R4_HELD = ["Me and my mother both on metformin", "I and my father take insulin", "My mother takes insulin, me too", "My husband is on metformin. So am I.", "Main aur meri mummy insulin lete hain",
+  "My mother takes insulin and so do I", "Mom is on insulin, same here", "papa insulin lete hain, mujhe bhi", "mother takes insulin, I take it too", "we and my parents are on insulin", "my father is on insulin, main bhi"];
+const R4_NOT = ["My husband takes metformin, I don't", "My mother takes insulin, what should I cook for her?", "For my father who takes insulin, what should he eat?", "Papa ko insulin lagta hai, main kya banau", "Meri saas insulin leti hai", "My mom is on Lantus",
+  "my mother takes insulin and I help her", "My mother takes insulin. I cook for her."];
+for (const t of R4_HELD) HELD.push([t, 'round 4 literal']); for (const t of R4_NOT) NOT.push([t, 'round 4 literal']);
 for (const t of OVER) HELD.push([t, 'known over-hold']);
 for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
 const HELD_BEFORE = 1183, NOT_BEFORE = 1138;

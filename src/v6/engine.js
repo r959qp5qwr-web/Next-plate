@@ -875,10 +875,10 @@ var MEDTHIRDOK=/^(?:takes|uses|gets|injects|has|must|also|too|always|both|someti
 function medsThirdBefore(before){var seg=before.split(/\s+(?:and|or|but|so|because|while|when|aur|ya|jab)\s+/).pop().split(/\s+/).filter(Boolean).slice(-5),i,k=0;
   for(i=seg.length-1;i>=0&&k<=4;i--,k++){if(MEDTHIRD.test(seg[i]))return true;if(!MEDALLOW.test(seg[i])&&!MEDTHIRDOK.test(seg[i]))return false;}
   return false;}
-function medsClause(c,all){
+function medsClause(c,all,near){
   /* "never skip", "don't forget" and "don't stop" say the person takes it; "no problem" is not a negation */
   c=c.replace(/\b(?:never|dont|don'?t|do\s+not|didn'?t|doesn'?t|not)\s+(?:ever\s+)?(?:skip|miss|forget|forgot|stop)\w*/g," take ").replace(/\bno\s+(?:problems?|issues?|trouble|worr(?:y|ies)|doubt)\b/g," ");
-  var first=MEDFIRST.test(c),re=new RegExp(MEDRX.source,"gi"),m;
+  var first=MEDFIRST.test(c)||!!near,re=new RegExp(MEDRX.source,"gi"),m;
   while((m=re.exec(c))){var before=c.slice(0,m.index),after=c.slice(m.index+m[0].length);
     if((MEDPOSTX.test(after)&&!/\b(?:units?|mg|doses?|shots?|injections?|pen)\b/.test(all))||medsNegAfter(after))continue;                                       /* (b) "insulin resistance", "insulin free"; Hinglish "insulin nahi leta" */
     var mp=/\b(?:my|mera|meri|mere|our|hamara|hamari|hamare)((?:\s+[\w'-]+){0,2})\s*$/.exec(before),mine=!!mp&&!MEDTHIRD.test(mp[1]);   /* "my <medicine>": the client's own */
@@ -887,8 +887,16 @@ function medsClause(c,all){
     if(!mine&&!first&&(medsThirdBefore(before)||MEDTHIRDVERB.test(after)||MEDTHIRDAFTER.test(after)))continue;   /* (c) someone else is the user, nobody here says "I" */
     return true;}
   return false;}
+/* a first person who shares the medicine with someone else, in the clause before or after: "me too", "so am I", "same here", "mujhe bhi", "I take it too"; a cook, an asker or a helper ("what should I cook for her?", "I don't") does not count */
+var MEDSHARE=/\b(?:i|me|we|main|mai|hum|mujhe)\b/;
+var MEDSHAREUSE=/\b(?:take|takes|taking|took|on|use|using|inject\w*|have|having|need|too|also|bhi|dono|both|lete|leta|leti|lagta|lagti|lagata|lagati)\b|\bso\s+(?:am|do|did|have|can)\s+i\b|\bsame\s+here\b/;
+function medsShares(n){n=n||"";return !MEDNEGW.test(n)&&(/\bsame\s+here\b/.test(n)||(MEDSHARE.test(n)&&MEDSHAREUSE.test(n)));}
 function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t)return false;t=t.slice(0,20000);   /* a long paste is read as far as 20,000 characters, not skipped */
-  return t.split(/[.;!?\n,\u0964]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/).some(function(c){return medsClause(c,t);});}
+  /* "me and my mother", "I and my father", "main aur meri mummy" are one first-person subject: the "and" does not split the clause (fix-r21 round 4) */
+  t=t.replace(/\b(i|me|we|main|mai|hum)\s+(?:and|aur)\s+(?=(?:my|mera|meri|mere|our)\b)/g,"$1 ~ ");
+  var cl=t.split(/[.;!?\n,\u0964]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/),i;
+  for(i=0;i<cl.length;i++)if(medsClause(cl[i],t,medsShares(cl[i-1])||medsShares(cl[i+1])))return true;
+  return false;}
 function medsOnSetup(p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure");}
 function medsTypedHold(t,p){return !!p&&!medsOnSetup(p)&&typedMeds(t);}
 /* the phone's check on a request body (src/v6/app.js api()): plates and Rescue carry the typed text, the profile is read as plan() reads it */
