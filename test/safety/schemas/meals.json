@@ -3379,7 +3379,11 @@
     "eval/atrisk jain-n-breakfast"
    ],
    "window": true,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "93342c085389e52a1064817fdec9e603a7264697d2dd3e2d9403350bb8ce5f73",
@@ -6701,7 +6705,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, long gap"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "02c3c121d83bc107181e30a4c69d9c1a38e01041ba0c361b161a8174ac11b618",
@@ -6781,7 +6789,11 @@
     "grid: hook list of 7 (10) goal_build,focus_b12,skipped_snack,skipped_dinner,long_gap,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "030081a9c3c7384f09c11bcc25c612de46ee80d938333e08d824dad8a0d961ac",
@@ -6866,7 +6878,11 @@
     "grid: hook list of 6 (9) skipped_lunch,long_gap,easy_snack,repeat_dal,low_protein_meal,mode_active (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "0914c8cc4ea567096b66bb5834ebfd3740cfc1877cb321a3b477c72ffd205e5d",
@@ -6960,7 +6976,11 @@
     "grid: hook list of 8 (7) goal_lose,protein_gap,ate_out,skipped_snack,late_dinner,easy_dinner,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "0a9fd63d90a1cb0f987441547ffda180374a11741efcc5bfe82f0cf7aa2e7abc",
@@ -7020,7 +7040,11 @@
     "grid: lunch, body no body figures, lose, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "1440c8b866299747bba46f353846773460b29c5e95a4aa9b0c352d6e01f8e69a",
@@ -7076,7 +7100,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "1503fdc938b6e852644b6035447d5b78966552ac561f056d021630e0621857fe",
@@ -7137,7 +7165,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "18da2b489915b967b9aa2b9d48123e23547a1deb8970ecab957cb3a6d4f97213",
@@ -7190,7 +7222,11 @@
     "grid: lunch, body no body figures, lose, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "195de65b6a2b9f25ba80bb0bf988019e398bb5843a8f5dd3f2b3da6b1ddc5c18",
@@ -7284,7 +7320,11 @@
     "grid: hook list of 8 (4) goal_lose,focus_fib,protein_gap,had_lunch,ate_out,easy_breakfast,repeat_rajma,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "1a595dbb80cc7ab2b049de6a6eb4f1474fec54c3b3dd9e18a4fa6979f833db9e",
@@ -7339,7 +7379,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, long gap (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "1f224ed3ef7df1db4ccf741b086a6ebdd7133fe4f22ff07aa7ab57c59a93b5a3",
@@ -7424,7 +7468,11 @@
     "grid: hook list of 6 (5) focus_cal,had_breakfast,ate_out,long_gap,late_dinner,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "1feb03e140386737aeb0a0645a31a141b68ac13d282c06add5c364f396de0837",
@@ -7486,7 +7534,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "20d26b71e3dc8dabec044203cf64226e27efcb187b140b207f2c4d8df29cb4dc",
@@ -7577,7 +7629,11 @@
     "grid: hook list of 6 (10) focus_iron,had_lunch,easy_breakfast,repeat_dal,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "2333b9304f054400723e4a848393a2ce3f65305b54c455da97cc94c2023739ed",
@@ -7670,7 +7726,11 @@
     "grid: hook list of 8 (10) goal_build,focus_b12,lighter_now,had_snack,easy_lunch,low_protein_meal,mode_active,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "251366f282e8704cf7cf98a85c7cbf6eb53fc38bcdee336a8730ff032c03f8bc",
@@ -7725,7 +7785,11 @@
     "grid: snack, body no body figures, lose, repeat rajma (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "282f1e69725fcddd18e3164262e048b8c7303a9f7a371c7f983ab2ba338d89af",
@@ -7788,7 +7852,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal rescued"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "298d6fbd2af168b2b49c34879d781a0accd7c3adc894f51b47e78498ce6bba19",
@@ -7879,7 +7947,11 @@
     "grid: hook list of 7 (2) goal_lose,focus_pro,lighter_now,ate_out,long_gap,easy_snack,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "2d1f6da6e8f16774db481bc1f35aca7fbf876785ba0be8e91f55940df0405a1c",
@@ -7941,7 +8013,11 @@
     "grid: dinner, body no body figures, lose, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "2dcb65c23c43c6e825d55992cf938228970864999a4b8d3e4cbb70779b18fbb0",
@@ -8033,7 +8109,11 @@
     "grid: hook list of 8 (10) goal_build,focus_b12,lighter_now,had_snack,easy_lunch,low_protein_meal,mode_active,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "2ec02ef3802659120287415d380138bbabe3ea61257c5064d972854a22e66956",
@@ -8114,7 +8194,11 @@
     "grid: hook list of 7 (3) goal_build,focus_pro,protein_gap,skipped_dinner,repeat_paneer,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "316ff93cb2fb2ca2ecf03307a7f5569ec51a3c9077569c1872c90ba738aba401",
@@ -8209,7 +8293,11 @@
     "grid: hook list of 8 (6) goal_build,focus_fib,protein_gap,skipped_breakfast,ate_out,ate_out,repeat_idli,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "386dcc9f5c76aaa7ef351f0de5117d07dfcbfc9e24498e25b63d17bd99b4f5a5",
@@ -8272,7 +8360,11 @@
     "grid: breakfast, body no body figures, diabetes, medicine yes, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "39e03b4e9b0fb535f9f65d634a64a639e3549b501b616992015dad97a9cabb9e",
@@ -8359,7 +8451,11 @@
     "grid: hook list of 7 (6) goal_lose,focus_iron,ate_out,ate_out,easy_snack,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "3b27ee67d6a96fbd07e43f44071ece03ddca008e8d2b74fbaecfad68b6bac0ca",
@@ -8450,7 +8546,11 @@
     "grid: hook list of 7 (5) focus_cal,protein_gap,ate_out,long_gap,easy_lunch,repeat_poha,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "3be933785980776d8596b74810fd957fc66a2661727d80aed5d195a8dd0595d3",
@@ -8509,7 +8609,11 @@
     "grid: lunch, body no body figures, lose, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "3c254474b94737e38a2e3af27a593447d9679109b6a8c1b92dd37b5b23c0abf9",
@@ -8605,7 +8709,11 @@
     "grid: hook list of 8 (2) goal_build,focus_fib,protein_gap,had_lunch,had_snack,late_dinner,easy_dinner,repeat_paneer"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "3d553af364970ed2aec331c808205ea5664730cb21c87f8a3fa578e1b8d1a57e",
@@ -8693,7 +8801,11 @@
     "grid: hook list of 7 (4) goal_lose,focus_b12,had_lunch,late_dinner,easy_dinner,repeat_idli,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "3f7f987e74d0db6f4279648ec1299cce8d5661afd42060be88b8c2d9fc40818a",
@@ -8779,7 +8891,11 @@
     "grid: hook list of 6 (5) focus_cal,had_breakfast,ate_out,long_gap,late_dinner,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "451c1d07f228c34df1387f0f38ac21d87ba9fc4c0c16114caecca26b5f3dbee7",
@@ -8834,7 +8950,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, lowest-protein meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "468cb5ec647e82fc8f6c5d724a933af92d9bbf2cf96c1b0186d3e7aa2ff48981",
@@ -8915,7 +9035,11 @@
     "grid: hook list of 7 (8) goal_lose,lighter_now,ate_out,easy_breakfast,low_protein_meal,mode_active,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "46ec6bc861bd38a30406101a79ebc5bb2e30559c8fda14bde64f49b0fd155d17",
@@ -8972,7 +9096,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, repeat paneer (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "482cf943886322fe9e0162241e8adbbb3bc8ca70609eceef1043cd8ac314d9c1",
@@ -9031,7 +9159,11 @@
     "grid: dinner, body no body figures, lose, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "48429fc4f04a056068bca586cb4830a47cd536acdd2fee582916ab27b671f7fc",
@@ -9123,7 +9255,11 @@
     "grid: hook list of 7 (2) goal_lose,focus_pro,lighter_now,ate_out,long_gap,easy_snack,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "496090d2c46c28a3c570dcfb9a30eb96f0b3a87a52c6b37ac907fa69edfe658d",
@@ -9180,7 +9316,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, repeat rajma (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "49d096a4d87347b33d15064d4e2ce719ade9671bc72c2b7bde1fbf691f51d91d",
@@ -9275,7 +9415,11 @@
     "grid: hook list of 8 (8) focus_b12,ate_out,skipped_lunch,easy_snack,repeat_paneer,low_protein_meal,mode_active,diabetes_grain (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "4b7e6aa611bfd3dc277b60e2447d7f4eed5a99d76c675f885f353610c0224167",
@@ -9331,7 +9475,11 @@
     "grid: snack, body no body figures, lose, repeat rajma"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5070354ceded493ad269708f8d445fc4bb89b5deabdbd0f5db72d37c435925e0",
@@ -9423,7 +9571,11 @@
     "grid: hook list of 7 (1) focus_cal,ate_out,skipped_lunch,long_gap,repeat_paneer,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "51983d55fc4d6a3a6328cc8b6ee3c11e45c469b9c5e67edb64a558169b1697c3",
@@ -9484,7 +9636,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "53b0341b8ad00818a9ca5c57693c57a4bc27b882fd71a46e0cd6f3c09df08d44",
@@ -9546,7 +9702,11 @@
     "grid: dinner, body no body figures, lose, light day so far (protein gap)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "53d3a743ba49abe800050e3427e156473d2f67f755e4958ff253875096db811d",
@@ -9629,7 +9789,11 @@
     "grid: hook list of 6 (8) goal_build,focus_fib,long_gap,easy_snack,low_protein_meal,diabetes_grain (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "55b4c90b29d97e520c131dcc749cfebb7287b0ba51d8e9583e35fc7953c4f90b",
@@ -9710,7 +9874,11 @@
     "grid: hook list of 7 (7) goal_build,focus_pro,protein_gap,ate_out,easy_breakfast,low_protein_meal,diabetes_grain (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "56e17fccfb67ad310abefd4640d52d8c4078ff69c1db82ea03ffdbb8a54ff175",
@@ -9765,7 +9933,11 @@
     "grid: breakfast, body no body figures, diabetes, medicine yes, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "583412cea5812b0aab4e7d3336717b20de2f8ebee1f7262af81d14afe87de6ef",
@@ -9856,7 +10028,11 @@
     "grid: hook list of 6 (4) goal_build,protein_gap,had_breakfast,had_lunch,late_dinner,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5953f9d715d55afe31516b6581edf443867490f7348da0c0bfda90fb49b76bfd",
@@ -9920,7 +10096,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5ca18d57b8001c495156be9860f79dd793b48eca9f3c526cb3d5a1463ba8fbdd",
@@ -10009,7 +10189,11 @@
     "grid: hook list of 7 (9) goal_lose,focus_cal,lighter_now,ate_out,had_snack,late_dinner,easy_dinner"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5d0a8bd799f93b7e976a9d5a6f8f6f56c1a6ac8258242ab3af8535edf0b1bc0a",
@@ -10071,7 +10255,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal rescued (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5f41a2550782fc329e489eaed4856824260a8d3ee383d469bb642c481387f488",
@@ -10158,7 +10346,11 @@
     "grid: hook list of 6 (2) goal_build,protein_gap,had_lunch,ate_out,repeat_idli,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "5fd15f23dafd18acfbc8f0cf1b0b5ba601f4590b36c6384ce83210997be68948",
@@ -10250,7 +10442,11 @@
     "grid: hook list of 7 (5) focus_cal,protein_gap,ate_out,long_gap,easy_lunch,repeat_poha,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "63be1a5743d38ef591ea28761c90855c550c144955f58766ead16a7d522cf7f3",
@@ -10344,7 +10540,11 @@
     "grid: hook list of 8 (1) focus_pro,lighter_now,had_breakfast,ate_out,long_gap,late_dinner,repeat_idli,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "682ea22ddc52b8e3d47ed7aa9f1e263c657ed8968ad690d1baa5f37aa76d91c7",
@@ -10423,7 +10623,11 @@
     "grid: hook list of 6 (7) goal_build,focus_b12,protein_gap,had_dinner,long_gap,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6b202ea60cbaefab13c3756e0b1c03205e6f092e36c239e52ae4827316efb70b",
@@ -10477,7 +10681,11 @@
     "grid: snack, body no body figures, lose, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6cc23ff5c26dcfdc09ea4653cffa4c1bf14a43971cae69dcbd8433141132a47b",
@@ -10557,7 +10765,11 @@
     "grid: hook list of 7 (8) goal_lose,lighter_now,ate_out,easy_breakfast,low_protein_meal,mode_active,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6da60573bc602382ae725267428c2441f20c6784efeb66b28ee340c1412b3bf1",
@@ -10610,7 +10822,11 @@
     "grid: breakfast, body no body figures, lose, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6e21e1f14ab9a74d0a9b5a9dc375d776ccc3cb692285031fc455d01b7cd6e393",
@@ -10669,7 +10885,11 @@
     "grid: breakfast, body no body figures, hold, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6f2dfca3d57e7e9bdbf703e0947ba9fe867b68713bdbf2db903c549df2e80df1",
@@ -10761,7 +10981,11 @@
     "grid: hook list of 6 (4) goal_build,protein_gap,had_breakfast,had_lunch,late_dinner,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "6f7103d179a4f81439061b7de87413dbecb325c5666986d7da7058b8b8f3025c",
@@ -10815,7 +11039,11 @@
     "grid: snack, body no body figures, lose, long gap"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "729a9155e02c4d04a5238672511735bd31640de47a10f626e3530a6519c5d61a",
@@ -10871,7 +11099,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, lowest-protein meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "73c091f8da7c0444a0c11ac6dc5a9878863020bad6792e744608a3f1fd07fab4",
@@ -10963,7 +11195,11 @@
     "grid: hook list of 6 (1) focus_cal,ate_out,had_dinner,easy_breakfast,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "74831c6d35aad27aeaafb3bbd72a7c56ccbea4eec292429cfb53f4e6af3efa28",
@@ -11023,7 +11259,11 @@
     "grid: breakfast, body no body figures, lose, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "755817f61fcfb9fdbc9c4eee98bdea58535d50e1f9775cc4aa0fcc97bce87bfc",
@@ -11084,7 +11324,11 @@
     "grid: breakfast, body no body figures, lose, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "766325c83c44b6cc67c987e26c982b83ba820cc89d3d8bbc5df1688faa3809e8",
@@ -11145,7 +11389,11 @@
     "grid: lunch, body no body figures, lose, another meal rescued"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "778bf7cef5e929d34a65c0864112a56fac51bdee85e185913467d2e624b67281",
@@ -11238,7 +11486,11 @@
     "grid: hook list of 7 (1) focus_cal,ate_out,skipped_lunch,long_gap,repeat_paneer,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "7a661e11bf881a573847e604e8b1d014e90b9f77b9de0c53d62df16280c5a1c0",
@@ -11299,7 +11551,11 @@
     "grid: dinner, body no body figures, hold, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "7ab1e86e4b9923876485bf9b71ed4c6b8dfd5d302913c04a91b0c8c28c82f5a9",
@@ -11394,7 +11650,11 @@
     "grid: hook list of 8 (4) goal_lose,focus_fib,protein_gap,had_lunch,ate_out,easy_breakfast,repeat_rajma,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "7ba99c70a9dd204fcbef2f8699734602fe83815597415cd6669980f93e10af1b",
@@ -11450,7 +11710,11 @@
     "grid: breakfast, body no body figures, diabetes, medicine yes, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "7c0274e2284d523b5ca0d058df6f6d0c684e8b2165a5cf466fdfc7c39ae32137",
@@ -11532,7 +11796,11 @@
     "grid: hook list of 7 (7) goal_build,focus_pro,protein_gap,ate_out,easy_breakfast,low_protein_meal,diabetes_grain"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "7db777b366c40295596c3ddc2d297d3bb19ff5416ee082185db61515ed52400a",
@@ -11585,7 +11853,11 @@
     "grid: dinner, body no body figures, lose, late dinners"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "809c53ded7835e86fc44e59c3d119029d2a92f3b66cc82e3431467b01e74f45d",
@@ -11671,7 +11943,11 @@
     "grid: hook list of 6 (2) goal_build,protein_gap,had_lunch,ate_out,repeat_idli,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "80a3d556e4fa7fda529cf7fd742fb7b4fbdaa3bad93e01d49a8a25f9fbfb04bf",
@@ -11762,7 +12038,11 @@
     "grid: hook list of 8 (9) focus_b12,protein_gap,skipped_breakfast,ate_out,long_gap,easy_dinner,repeat_dal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "8183679a92abc3fd02a6b33b17e0ba12e6742da5e3877380c029580bc597caa2",
@@ -11843,7 +12123,11 @@
     "grid: hook list of 7 (10) goal_build,focus_b12,skipped_snack,skipped_dinner,long_gap,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "837719c6c512f2db5d44aa068259b9c7892ee95101070a7e74eef3bae4589edb",
@@ -11904,7 +12188,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal skipped (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "8551705ec47c6417041a19e4397f9c26987df4efe0511f598c1e10f57a64e13f",
@@ -11959,7 +12247,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, late dinners"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "85cbae90e9b1822078a6e22762bdcca85d038ad9039a5f8d240a2aebe5c2a8cc",
@@ -12012,7 +12304,11 @@
     "grid: dinner, body no body figures, lose, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "85d289bda45eed485ac2152f2fbf55f1f1b144513a08d02349368d8a3da5785d",
@@ -12065,7 +12361,11 @@
     "grid: snack, body no body figures, lose, lowest-protein meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "85d88b20213848bfa96addfa41c946ab2c9ae9739ded8f6a6839df79477367d7",
@@ -12121,7 +12421,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "8c2eb9ebdee9aa1e083e90adf964e16ff029a097c5dd96fff3b2ec2491d58e27",
@@ -12175,7 +12479,11 @@
     "grid: dinner, body no body figures, lose, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "8c942d65a729fcfbeaef83391c5b9debd9a6b8cca6bac32d44d2baebfe13ad72",
@@ -12237,7 +12545,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal had"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "929e5fb75c5bd1bd1667b0630584e45af62dcd7ad8ee8d968835dce92e74c339",
@@ -12291,7 +12603,11 @@
     "grid: lunch, body no body figures, lose, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "931972bc46dabca008c9984a0edfe6284af6d8bd377973b54f25c3a78eccc287",
@@ -12349,7 +12665,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, repeat rajma"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "947bdc00ff399c84242fdcee0a3e00fe5baecff8601909bd0b9dde29833ea42f",
@@ -12442,7 +12762,11 @@
     "grid: hook list of 8 (1) focus_pro,lighter_now,had_breakfast,ate_out,long_gap,late_dinner,repeat_idli,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "95dbd80f7cd1fccbaf68b063c94feeec864e57a0f2eb67838e64dab2a9a00c90",
@@ -12497,7 +12821,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "963f8e1cd50ed489aef3dfdc99ec7f1fdce72432e3726f23034f88a34bc8465b",
@@ -12560,7 +12888,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, light day so far (protein gap) (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "96ceaed806b4e5b6b4dd1c7c95eda62c3e8d3635cb10bf108534758197e31231",
@@ -12613,7 +12945,11 @@
     "grid: snack, body no body figures, lose, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "987f7c52f4e0f6f7548fcbc88b60662fd1aca4877ee3f01ebd8a5d970693db95",
@@ -12693,7 +13029,11 @@
     "grid: hook list of 7 (3) goal_build,focus_pro,protein_gap,skipped_dinner,repeat_paneer,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "9e794d91719981f8f0653d7037f48522b88a5600aa6f7c6330ab7df4b539645b",
@@ -12747,7 +13087,11 @@
     "grid: snack, body no body figures, lose, lowest-protein meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "a13072b3686f7d70027e8596f5de51d62d1ff8fe82642e65a493aff67b3a0b34",
@@ -12803,7 +13147,11 @@
     "grid: snack, body no body figures, lose, repeat paneer"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "a1b2af62aad650d03d2ad3da19054b18c3de1c2ee3b1756299a620c16665f5e2",
@@ -12899,7 +13247,11 @@
     "grid: hook list of 8 (6) goal_build,focus_fib,protein_gap,skipped_breakfast,ate_out,ate_out,repeat_idli,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "a3b9a07869bd07245860ec6667491dca89b4b893c70c1b251c7dd93746ee6f77",
@@ -12964,7 +13316,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "a3d2145bc48b204c3c91c22c7515956c370ef97d9bdda3ed03bea69a3d6f11ce",
@@ -13019,7 +13375,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "a8d75eca09200f4fff3b9dc4c946e36ea9bc50ab9e4a3b301133ab1a57deade5",
@@ -13078,7 +13438,11 @@
     "grid: lunch, body no body figures, lose, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ab4166f50614a083f5799e5e21f4ebb406f5269961a60add0f3f9b92c4250938",
@@ -13179,7 +13543,11 @@
     "grid: hook list of 8 (3) focus_fib,protein_gap,skipped_lunch,had_snack,skipped_dinner,low_protein_meal,mode_active,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ada1e5542ffc02b7312804304bb5814e3c836087829dfaea92806cc6b3ce0ceb",
@@ -13262,7 +13630,11 @@
     "grid: hook list of 8 (5) goal_build,focus_pro,protein_gap,had_dinner,long_gap,easy_breakfast,mode_active,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "af5b54064bee1e3f54d7cc05cc0f6fbec226d853ce41d6606ae2bd3476703a14",
@@ -13324,7 +13696,11 @@
     "grid: dinner, body no body figures, hold, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b049c1c05b18b161edd235356f3cd2b1a07f97040397631b17b04f4b6898876a",
@@ -13417,7 +13793,11 @@
     "grid: hook list of 8 (7) goal_lose,protein_gap,ate_out,skipped_snack,late_dinner,easy_dinner,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b10cb7300aae2f578deaf42ff2564af48732c23242ba8d81afa236b3ec1feddb",
@@ -13480,7 +13860,11 @@
     "grid: dinner, body no body figures, lose, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b1a3ef94835947e970372638fed02980904a89503822a5ad7d20b9219372aed0",
@@ -13538,7 +13922,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, repeat paneer"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b4b05cf2660cd8a7c6be0ba1d124de13af7f56c9d5bd3ef0464110ab32d13fb2",
@@ -13602,7 +13990,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b4e2cd5d56dde458f346c1b80e9321cf72cce42463805e535d6548799e582e8e",
@@ -13658,7 +14050,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b4f1172faf9a0ff595ba7e2304034a579f7307459fb2ef7fcf30d9e51eee2b4b",
@@ -13713,7 +14109,11 @@
     "grid: snack, body no body figures, diabetes, medicine yes, skips this meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b57e2cf90d1da8a97e2fd8615848743b268ffcbf0ea0ce55176ba3fbf1809942",
@@ -13804,7 +14204,11 @@
     "grid: hook list of 6 (3) focus_iron,had_breakfast,long_gap,easy_lunch,repeat_rajma,low_protein_meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b5e90a2c4c7c0f39d83b5e100c176f20a8659b14dc87da49477632eea5cad024",
@@ -13891,7 +14295,11 @@
     "grid: hook list of 7 (4) goal_lose,focus_b12,had_lunch,late_dinner,easy_dinner,repeat_idli,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b87c1dd7e60cfe42fa823653e10e055677a03935dddaa0f0cba1e32207e2c737",
@@ -13945,7 +14353,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, late dinners (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b886fac7765ea975ec0d27c864b9c54d2676802fabbaf7b79b2fbbff0fd3e9a7",
@@ -14007,7 +14419,11 @@
     "grid: breakfast, body no body figures, diabetes, medicine yes, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "b8e583b3164bfc2fa3c96f5ce8eca5a5f58077cf9764fbcbdb140aaf5e4c240e",
@@ -14067,7 +14483,11 @@
     "grid: dinner, body no body figures, lose, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ba4702fc92fe7093afc2a61429d7f7a9412d3d6e4cfb7c503b4990c67d625493",
@@ -14128,7 +14548,11 @@
     "grid: dinner, body no body figures, lose, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ba65ab7dfb4f61e551f3f66b5500c46f4b18baaeb4b1b7e9ab53b66ee3b3a02f",
@@ -14218,7 +14642,11 @@
     "grid: hook list of 6 (3) focus_iron,had_breakfast,long_gap,easy_lunch,repeat_rajma,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ba8621ff142e453bc65acc948fcc5da8dfb23ef81e74221cd5a7ecc04c362a6e",
@@ -14318,7 +14746,11 @@
     "grid: hook list of 8 (3) focus_fib,protein_gap,skipped_lunch,had_snack,skipped_dinner,low_protein_meal,mode_active,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "bcdd118706999775c4d6844d06d8444533ecfb1bd1d1ca1373f2dd7796273f76",
@@ -14380,7 +14812,11 @@
     "grid: lunch, body no body figures, diabetes, medicine yes, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "bdbb7e4b7b4e168d3550d79eff84d101e4e323da94af3c49eea8026492032551",
@@ -14468,7 +14904,11 @@
     "grid: hook list of 7 (6) goal_lose,focus_iron,ate_out,ate_out,easy_snack,low_protein_meal,bp_salt"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "bf26567b2d060025dfa9a10eb27f042351e2785bd1e76462418cfe78e67f5960",
@@ -14552,7 +14992,11 @@
     "grid: hook list of 6 (8) goal_build,focus_fib,long_gap,easy_snack,low_protein_meal,diabetes_grain"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "c135758835c13261145e04ce8fe6bd857328a31d8bbac95177e088cc0fd5900b",
@@ -14615,7 +15059,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, another meal had (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "c3211b1281aa25ff1384d8acbee62c7ca9246de935f9a6782a9690c9997cafc6",
@@ -14676,7 +15124,11 @@
     "grid: dinner, body no body figures, lose, light day so far (protein gap) (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "c551597f17b41a8ba5a10a0e55d12c05a16f5013429534ef4e8ee2c8c0a18328",
@@ -14754,7 +15206,11 @@
     "grid: hook list of 6 (7) goal_build,focus_b12,protein_gap,had_dinner,long_gap,low_protein_meal (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "c954a1afdd30e2853665e1a5ec1e459626a9a30dc417f0ea38c3092d92d18065",
@@ -14831,7 +15287,11 @@
     "grid: hook list of 6 (6) goal_build,focus_b12,skipped_dinner,repeat_rajma,steady_carbs,diabetes_grain"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "cbabfa01cc9c34d0a56ad438fc4ebecefca8aa9e5ef9494ff07daf9f46489c8d",
@@ -14917,7 +15377,11 @@
     "grid: hook list of 6 (9) skipped_lunch,long_gap,easy_snack,repeat_dal,low_protein_meal,mode_active"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "cc00412d1c37d2dd1f0ad6aee2aa2a4e5c9dfa5cb4ff8a3d3c14114449b67f5a",
@@ -14972,7 +15436,11 @@
     "grid: snack, body no body figures, lose, repeat paneer (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "cce1648eccad45ff11fdce641db8eb380cb18fb1bbb132693c24500fbe7c92de",
@@ -15024,7 +15492,11 @@
     "grid: dinner, body no body figures, lose, late dinners (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "d11a00fb531c041e0e929852708d8f5fa7102c99555601467c47fdda7a7c5a2f",
@@ -15114,7 +15586,11 @@
     "grid: hook list of 6 (10) focus_iron,had_lunch,easy_breakfast,repeat_dal,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "d1fc3b947591ee3d13b52b87a6c1b88371b36141c03da77b62df3c4a956d434b",
@@ -15202,7 +15678,11 @@
     "grid: hook list of 7 (9) goal_lose,focus_cal,lighter_now,ate_out,had_snack,late_dinner,easy_dinner (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "d51fefbfaae96bbdba31c33c5f51caa386fd239607b364982c81347d6119aee8",
@@ -15262,7 +15742,11 @@
     "grid: lunch, body no body figures, lose, another meal rescued (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "d7c9c5282c65689edf49a57d37555f53dc0f51864fe5862421f73dcf18d078bc",
@@ -15326,7 +15810,11 @@
     "grid: dinner, body no body figures, diabetes, medicine yes, light day so far (protein gap)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ddfbfc37ac5b2950167e9ba73931238b761f59b15c045ee5c24d6cfc3efc0b39",
@@ -15416,7 +15904,11 @@
     "grid: hook list of 8 (9) focus_b12,protein_gap,skipped_breakfast,ate_out,long_gap,easy_dinner,repeat_dal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "e03f7f95eb25c77ac51205fccf958e29ca24b272e800bed76c91cf4f3dd7f524",
@@ -15498,7 +15990,11 @@
     "grid: hook list of 8 (5) goal_build,focus_pro,protein_gap,had_dinner,long_gap,easy_breakfast,mode_active,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "e57ae933e17578f462ff640877a264f9b4015631b139d2c4db0ff9ab1624f6c3",
@@ -15593,7 +16089,11 @@
     "grid: hook list of 8 (2) goal_build,focus_fib,protein_gap,had_lunch,had_snack,late_dinner,easy_dinner,repeat_paneer (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "eb4c1f728679912646d9ec7254cc0ff7515928e228b48d17e3cfc5ad39fcdfc3",
@@ -15669,7 +16169,11 @@
     "grid: hook list of 6 (6) goal_build,focus_b12,skipped_dinner,repeat_rajma,steady_carbs,diabetes_grain (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ec5b1ec87fa1744ee0a294ab6fb99375f1b3ee61158b1f6a75fcafa6e181420e",
@@ -15731,7 +16235,11 @@
     "grid: dinner, body no body figures, lose, heavy day so far (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "f11bd0c441e95c71193624019538da27894fb9934a100484846275e592e20f4a",
@@ -15791,7 +16299,11 @@
     "grid: lunch, body no body figures, lose, another meal skipped"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "f14258c677e080b57a9472db197d6ef1adcbef69f19ad6ebbddffef6d750526e",
@@ -15887,7 +16399,11 @@
     "grid: hook list of 8 (8) focus_b12,ate_out,skipped_lunch,easy_snack,repeat_paneer,low_protein_meal,mode_active,diabetes_grain"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "f7eb207461674d16540f522b8caa2c95f5114f219d8ed0857755985e9b51bb56",
@@ -15941,7 +16457,11 @@
     "grid: breakfast, body no body figures, lose, skips this meal"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "fb7db99c1df349a08a7c3b8ec4fa84f9bf9dce1b83329cd683404175e31ee3c9",
@@ -16001,7 +16521,11 @@
     "grid: breakfast, body no body figures, hold, heavy day so far"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "fe029d9b6877605617ce2bffdad3057420cb494e3ca6087d018fcb9e10a5713a",
@@ -16054,7 +16578,11 @@
     "grid: snack, body no body figures, lose, long gap (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   },
   {
    "sha256": "ff9b6a2fda147b78c08da41e871690e4d1fc9de3bac511c584879ed3d6cf9102",
@@ -16145,7 +16673,11 @@
     "grid: hook list of 6 (1) focus_cal,ate_out,had_dinner,easy_breakfast,low_protein_meal,bp_salt (without lite)"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   }
  ]
 }

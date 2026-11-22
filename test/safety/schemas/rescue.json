@@ -54,7 +54,11 @@
     "eval/v6 rescue-with-day"
    ],
    "window": false,
-   "accepted_by": "pending"
+   "accepted_by": {
+    "commit": "3b8585aa5a47a8d5a15460e23ef1d3b972398c04",
+    "date": "2026-11-22",
+    "how": "second sample window, 135 of 135 answered ok (owner, 22 Nov, \"Window (Recommended)\")"
+   }
   }
  ]
 }
