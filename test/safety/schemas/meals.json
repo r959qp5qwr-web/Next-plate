@@ -3379,11 +3379,7 @@
     "eval/atrisk jain-n-breakfast"
    ],
    "window": true,
-   "accepted_by": {
-    "commit": "ad03d71",
-    "date": "2026-11-17",
-    "how": "referral sample window, 4 plates returned"
-   }
+   "accepted_by": "pending"
   },
   {
    "sha256": "93342c085389e52a1064817fdec9e603a7264697d2dd3e2d9403350bb8ce5f73",

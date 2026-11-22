@@ -5,29 +5,22 @@
 // An entry counts as accepted only with all of these (safety audit of 21a04a3, m6: the first version took any value but "pending", so
 // accepted_by true, {} or null passed, and a kind that built no schema printed "0 schemas" and passed):
 //   - accepted_by is an object with a commit (7 to 40 hex characters), a date (yyyy-mm-dd, a valid calendar day) and a how (text);
-//   - the record behind it exists. If a window directory test/safety/schemas/window-<commit>-<date>/ is committed, the entry's kind and the first
-//     12 characters of its sha256 must be on an answered ("ok") line of that window's schemas.log. If no window directory is committed for the
-//     commit, the entry must be one of the acceptances recorded elsewhere, listed below by kind and hash with where the record is (a commit with
-//     no record and no place in that list does not pass);
+//   - the record behind it exists: a window directory test/safety/schemas/window-<commit>-<date>/ is committed for that commit and date, and the entry's
+//     kind and the first 12 characters of its sha256 are on an answered ("ok") line of that window's schemas.log. There is no other way to be accepted: the list
+//     of acceptances recorded elsewhere (the 17 Nov referral window, the 18 Nov live check of log and Rescue) was retired in fix-r19 and those entries are pending
+//     again, so the next window re-sends them;
 //   - every kind builds at least one schema, and the enumeration reports no problem (a plan that returned an error is a failure here too).
 // Every pending entry blocks, the plate request without the app's "lite" flag included (the server's own API and the v5 screens send it, and
 // whether the v5 page is served depends on PAGE_PATH). --app-only is the narrower view for a first look: it leaves out the entries only
 // a request without "lite" builds. A PASS is about the schemas the test enumerates (test/safety/schemas.js: the recorded bodies and a grid);
 // the space of meals schemas is open (the order and the combination of the day's hooks, and a "repeat_" hook that carries a word from the
 // client's own log), so a PASS does not say that no other schema can be built. It is a sample. Two things it does not cover at all:
-// hook lists of length 6 to 8 outside the grid (the audit of 21a04a3, m8, drew 576 such lists in a random sample), and the rest of the
+// hook lists of length 6 to 8 beyond the ten of each length the grid holds (the audit of 21a04a3, m8, drew 576 such lists in a random sample), and the rest of the
 // request: src/v5/server.ts sends maxOutputTokens, temperature, the model list and the thinking level, which no check reads.
-// usage: node test/deploy/schemas-accepted.js [--app-only] [page]     (default hosted/v6/index.min.html, the page the server serves)
+// usage: node test/deploy/schemas-accepted.js [--app-only] [--all] [page]     (default hosted/v6/index.min.html, the page the server serves)
 const fs = require('fs'), path = require('path');
 const S = require('../safety/schemas.js');
 const SCHEMAS = path.join(__dirname, '../safety/schemas');
-
-// Acceptances whose record is not a committed window directory. The 17 Nov referral window is kept under eval/referral/WINDOW.md; the live-engine check of
-// 18 Nov after the Deploy of 50090ef (log and Rescue answered) is in the handoff, the row "Deploy attempt of 50090ef (18 Nov)".
-const ELSEWHERE = [
-  { kind: 'meals', sha12: '8da719c012ab', commit: 'ad03d71', date: '2026-11-17', where: 'eval/referral/WINDOW.md (the referral sample window; 4 plates returned)' },
-  { kind: 'log', sha12: '72693cf296f1', commit: '50090ef', date: '2026-11-18', where: 'handoff-next-plate.md, row "Deploy attempt of 50090ef (18 Nov)" (live-engine check after the Deploy)' },
-  { kind: 'rescue', sha12: '613f642cc4e1', commit: '50090ef', date: '2026-11-18', where: 'handoff-next-plate.md, row "Deploy attempt of 50090ef (18 Nov)" (live-engine check after the Deploy)' }];
 
 // the committed window records: window-<commit>-<date>/schemas.log, one line per request format: kind, 12 characters of the hash, the live model's answer
 const windows = [];
@@ -52,9 +45,7 @@ function whyNot(kind, e) {
     if (win.date !== a.date) return `accepted at ${a.commit} on ${a.date}, but the window record ${win.dir} is dated ${win.date}`;
     if (!win.hasLog) return `the window record ${win.dir} has no schemas.log`;
     return win.answered.has(kind + ' ' + sha12) ? '' : `accepted at ${a.commit}, but ${win.dir}/schemas.log has no answered line for ${kind} ${sha12}`; }
-  const el = ELSEWHERE.find(x => x.kind === kind && x.sha12 === sha12);
-  if (el) return sameCommit(el.commit, a.commit) && el.date === a.date ? '' : `listed as accepted at ${el.commit} on ${el.date}, the snapshot says ${a.commit} on ${a.date}`;
-  return `accepted at ${a.commit} (${a.date}), but no window record for that commit is committed and it is not in the list of acceptances recorded elsewhere`;
+  return `accepted at ${a.commit} (${a.date}), but no window record for that commit is committed`;
 }
 
 const args = process.argv.slice(2), appOnly = args.includes('--app-only'), file = args.filter(x => /\.html$/.test(x))[0] || path.join(__dirname, '../../hosted/v6/index.min.html');
@@ -75,9 +66,9 @@ for (const k of S.KINDS) {
   }
   blocked += pend + missing + bad; listed += soft;
   console.log(`${k}: ${got[k].size} schemas the page can build; ${ok} accepted by the live model (on record), ${pend} pending, ${bad} with a record that does not hold, ${missing} not in the snapshot${soft ? `, ${soft} pending, only a request without lite builds them (left out by --app-only)` : ''}`);
-  shown.slice(0, 6).forEach(x => console.log(x)); if (shown.length > 6) console.log(`  ... and ${shown.length - 6} more`);
+  const lim = args.includes('--all') ? shown.length : 6; shown.slice(0, lim).forEach(x => console.log(x)); if (shown.length > lim) console.log(`  ... and ${shown.length - lim} more (--all lists them)`);
 }
-console.log(`records: ${windows.map(w => `${w.dir} (${w.answered.size} answered lines)`).join(', ') || 'no window directory'}; recorded elsewhere: ${ELSEWHERE.length} entries`);
-console.log('not covered: the enumeration is a sample (hook lists of length 6 to 8 outside the grid), and src/v5/server.ts (maxOutputTokens, temperature, the model list, the thinking level) is read by no check');
+console.log(`records: ${windows.map(w => `${w.dir} (${w.answered.size} answered lines)`).join(', ') || 'no window directory'}`);
+console.log('not covered: the enumeration is a sample (ten hook lists of each length 6, 7 and 8, not every list), and src/v5/server.ts (maxOutputTokens, temperature, the model list, the thinking level) is read by no check');
 console.log(blocked ? `schemas-accepted: FAIL, ${blocked} problems: schemas not accepted by the live model, a kind with no schema, or a record that does not hold (${file})` : `schemas-accepted: PASS, every enumerated schema is on record as accepted by the live model (the enumeration is a sample; see the header) (${file})`);
 process.exit(blocked ? 1 : 0);

@@ -42,11 +42,7 @@
     "eval/v6 log-out"
    ],
    "window": false,
-   "accepted_by": {
-    "commit": "50090ef",
-    "date": "2026-11-18",
-    "how": "live-engine check after the Deploy"
-   }
+   "accepted_by": "pending"
   }
  ]
 }
