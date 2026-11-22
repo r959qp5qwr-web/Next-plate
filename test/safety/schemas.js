@@ -89,6 +89,29 @@ function grid(a) {
     add(m + ', every hook', { goal: 'lose', focus: 'iron', health: 'bp' }, { meal: m, mode: 'active', hour: 22.4 }, all);
     add(m + ', every hook, diabetes medicine', { goal: 'build', focus: 'pro', health: 'diabetes', meds: 'yes', bp: true }, { meal: m, mode: 'active', hour: 22.4 }, all);
   }
+  // long hook lists (fix-r19; safety audit of 21a04a3, m8): the audit drew 576 lists of length 6 to 8 from random contexts and the snapshot held none.
+  // A seeded generator makes contexts (goal, focus, health and medicine, mode, the clock, the day so far, the patterns), builds plan() for each and keeps the
+  // first ten distinct hook lists of each length 6, 7 and 8 the page itself builds. Deterministic: the same page gives the same sample.
+  { let seed = 20261122; const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648, pickR = (l) => l[Math.floor(rnd() * l.length)];
+    const keep = { 6: new Map(), 7: new Map(), 8: new Map() }, FOODS = ['rajma', 'paneer', 'dal', 'egg', 'poha', 'idli'];
+    for (let n = 0; n < 6000 && [6, 7, 8].some(L => keep[L].size < 10); n++) {
+      const m = pickR(meals), o = other(m), file = { today: { kcal: Math.round(rnd() * 1600), protein: Math.round(rnd() * 70), lastHoursAgo: Math.round(rnd() * 100) / 10, lastKcal: Math.round(rnd() * 800), meals: [] }, patterns: [], slotProtein: {}, days: 6 };
+      for (const x of o) if (rnd() < 0.55) file.today.meals.push({ meal: x, kind: pickR(['skipped', 'rescued', 'ordered', 'had', 'had']), title: 'Dal and roti', kcal: 400, protein: 12 });
+      if (rnd() < 0.7) file.patterns.push({ id: 'late_dinner', n: 4, of: 6 });
+      if (rnd() < 0.7) file.patterns.push({ id: 'skips_meal', meal: m, n: 4, of: 6 });
+      if (rnd() < 0.7) file.patterns.push({ id: 'repeat', slot: m === 'breakfast' ? 'b' : m === 'snack' ? 's' : 'm', food: pickR(FOODS), n: 4 });
+      if (rnd() < 0.7) file.slotProtein = { [m]: 5, [o[0]]: 30, [o[1]]: 25 };
+      const prof = { goal: pickR(['lose', 'hold', 'build']), focus: pickR(Object.keys(a.FOCUSRULE).concat(['none'])), health: pickR(['none', 'diabetes', 'bp']), bp: rnd() < 0.3 };
+      if (prof.health === 'diabetes') prof.meds = pickR(['yes', 'unsure', 'no']);
+      if (rnd() < 0.2) Object.assign(prof, { age: 46, cm: 0, kg: 0 });
+      const ctx = { meal: m, mode: pickR(['active', 'desk', 'rest']), hour: rnd() < 0.5 ? null : Math.round(rnd() * 240) / 10 };
+      const body = { profile: Object.assign({}, P, prof), ctx: Object.assign({}, C, ctx), file }, pl = a.plan('meals', body);
+      if (!pl || !pl.schema) continue;
+      const ids = pl.schema.properties.meals.items.properties.planned_around.items.enum, L = ids.length;
+      if (keep[L] && keep[L].size < 10 && !keep[L].has(ids.join(','))) keep[L].set(ids.join(','), body);
+    }
+    for (const L of [6, 7, 8]) { let i = 0; for (const [ids, body] of keep[L]) out.push({ label: `grid: hook list of ${L} (${++i}) ${ids}`, kind: 'meals', partial: false, body }); }
+  }
   return out;
 }
 function recorded() {
@@ -156,6 +179,15 @@ function update(a, args) {
     console.log(`${k}: ${entries.length} entries (${entries.filter(e => e.accepted_by !== 'pending').length} accepted, ${entries.filter(e => e.accepted_by === 'pending').length} pending, ${entries.filter(e => e.current === false).length} kept but no longer built)`);
   }
 }
+// fix-r19: append the schemas the page builds that no entry names, as pending; every entry already in the file is left as it is (not rewritten, not reordered)
+function addNew(a) {
+  const { got, problems } = enumerate(a); if (problems.length) { problems.forEach(p => console.log('PROBLEM ' + p)); process.exit(1); }
+  for (const k of KINDS) {
+    const snap = readSnap(k), known = new Set(snap.entries.map(e => e.sha256)); let n = 0;
+    for (const [h, e] of [...got[k]].sort((x, y) => x[0].localeCompare(y[0]))) if (!known.has(h)) { const x = Object.assign({}, e, { accepted_by: 'pending', app_sends: !!e.app_sends }); delete x.partialOnly; snap.entries.push(x); n++; }
+    fs.writeFileSync(snapFile(k), JSON.stringify(snap, null, 1) + '\n'); console.log(`${k}: ${n} entries added as pending, ${snap.entries.length} in all`);
+  }
+}
 function accept(args) {
   const opt = n => { const i = args.indexOf(n); return i < 0 ? null : args[i + 1]; };
   const [kind, which] = [args[1], args[2]], rec = { commit: opt('--commit'), date: opt('--date'), how: opt('--how') };
@@ -170,6 +202,7 @@ if (require.main === module) {
   const args = process.argv.slice(2), page = args.filter(x => /\.html$/.test(x))[0] || path.join(ROOT, 'hosted/v6/index.html');
   if (args[0] === '--accept') accept(args);
   else if (args[0] === '--update') update(loadPage(page), args);
+  else if (args[0] === '--add') addNew(loadPage(page));
   else {
     const { rows, bad, partial } = check(loadPage(page));
     for (const r of rows) console.log(`schema snapshot ${r.kind}: ${r.built} schemas built, ${r.entries} entries, ${r.accepted} of those accepted live, ${r.miss} not in the snapshot${r.partialN ? `, ${r.partialN} more only a partial body entry builds (below)` : ''}`);
