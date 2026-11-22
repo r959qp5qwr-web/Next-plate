@@ -31,7 +31,7 @@ const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n
 
 const section = (name, f) => { try { f(); } catch (e) { add('section ran: ' + name, false, (e && e.message) || String(e)); } };
 // ---------- the phone: its own functions, on a P like the set-up leaves ----------
-const PHONE_FNS = ['has', 'healthOf', 'setCond', 'bodyRead', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'composedWhy', 'bodyNeed', 'bodyHold'];
+const PHONE_FNS = ['has', 'healthOf', 'setCond', 'bodyRead', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'composedWhy', 'bodyLive', 'bodyNeed', 'bodyHold'];
 const missingFns = PHONE_FNS.filter(n => !grab(n));
 add('the phone\'s intake functions are in src/v6/app.js', missingFns.length === 0, 'not found: ' + missingFns.join(', '));
 const phoneSrc = PHONE_FNS.map(grab).filter(Boolean).join('\n');

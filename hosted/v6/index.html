@@ -3633,9 +3633,17 @@ function bodyMissing(){var m=[[!P.age,"age","body-age"],[!P.cm,"height","body-cm
 /* The body step takes all three of age, height and weight, or none (owner, 22 Nov, option survey "Ask for the missing figure"). One or two given is a body the
    engine refuses (body_partial) and the phone never sends: the step cannot be finished, one line says what is missing, and a phone that holds a partial body
    (the 6febc1a page and the fix-r18 page could store one) asks for the rest before it plans. All three empty stays allowed: plates without a target, at the usual sizes. */
-function bodyNeed(){var m=[[!P.age,"age","body-age"],[!P.cm,"height","body-cm"],[!P.kg,"weight","body-kg"]].filter(function(x){return x[0];});
-  if(m.length===0||m.length===3)return null;var w=m.map(function(x){return x[1];});
-  return {line:"Add your "+(w.length>1?w[0]+" and "+w[1]:w[0])+" too, or leave all three empty.",at:m[0][2]};}
+/* what the three body fields hold now: typed text is committed to P as it is typed, not when the field is left (fix-r21, Critic r21 F1 and F4: the button and its line read one
+   live answer). Returns the figures that show their own range message, which the missing-figure line leaves out (F5). Only a field on screen is read (the set-up step or My food). */
+function bodyLive(){var bad=[];if(typeof document==="undefined"||typeof $!=="function")return bad;
+  var host=UI.sheet==="food"?$("sheet"):!P.done?$("v-setup"):null;   /* the sheet, or the first-run set-up (the page has no other body field) */if(!host)return bad;
+  ["age","cm","kg"].forEach(function(k){var i=host.querySelector("#body-"+k);if(!i||i.offsetParent===null)return;
+    var r=bodyRead(k,i.value);P[k]=r.v;var m=host.querySelector("#body-"+k+"-msg");if(i.value&&!r.good&&m&&m.textContent&&/\berr\b/.test(m.className))bad.push(k);});
+  return bad;}
+function bodyNeed(){var bad=bodyLive(),m=[[!P.age,"age","body-age","age"],[!P.cm,"height","body-cm","cm"],[!P.kg,"weight","body-kg","kg"]].filter(function(x){return x[0];});
+  if(m.length===0||m.length===3)return null;
+  var w=m.filter(function(x){return bad.indexOf(x[3])<0;}).map(function(x){return x[1];}),all=m.map(function(x){return x[1];});
+  return {line:w.length?"Add your "+(w.length>1?w[0]+" and "+w[1]:w[0])+" too, or leave all three empty.":"",at:m[0][2],names:all.length>1?all[0]+" and "+all[1]:all[0]};}
 function blocked(){return P.done&&(has("kidney")||has("preg"));}
 function clockText(){var h=now.getHours(),m=now.getMinutes();return ((h%12)||12)+":"+(m<10?"0":"")+m+(h<12?" am":" pm");}
 function mealName(k){return lab("meal",k);}
@@ -3902,12 +3910,13 @@ function bodyRead(k,text){
 }
 var bodyGate=function(){};
 function bodyQs(host,after){
-  var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. Give all three, or leave all three empty; then plates have no calorie or protein target."));
+  var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. Give all three. If you leave all three empty, plates have no calorie or protein target."));
   choiceRow(a,"sex",function(v){return P.sex===v;},function(v){P.sex=v;after();},2);
   var f=el("div","fields");
   [["age","Age (years)","years"],["cm","Height (cm)","cm or ft"],["kg","Weight (kg)","kg"]].forEach(function(x){
     var l=el("label");l.appendChild(el("span","cap",x[1]));var i=el("input");i.type="number";i.inputMode="numeric";i.min=String(BODYB[x[0]][0]);i.max=String(BODYB[x[0]][1]);i.id="body-"+x[0];i.placeholder=x[2];if(P[x[0]])i.value=String(P[x[0]]);
     if(x[0]==="cm")i.inputMode="decimal";
+    i.addEventListener("input",function(){gate();});   /* the line and the button follow the typing (Critic r21 F4) */
     /* height also reads feet (5.4 = 5 ft 4 in) and inches; a value out of range stays, with a line saying what to type (screen review B1) */
     i.addEventListener("change",function(){var r=bodyRead(x[0],i.value),b=BODYB[x[0]];
       P[x[0]]=r.v;if(r.good&&r.said)i.value=String(r.v);gate();
@@ -3916,12 +3925,16 @@ function bodyQs(host,after){
     var msg=el("p","fine");msg.setAttribute("aria-live","polite");msg.id="body-"+x[0]+"-msg";l.appendChild(i);l.appendChild(msg);f.appendChild(l);});
   a.appendChild(f);
   /* one plain line says which figure is missing; the step cannot be finished while one or two are filled (the button is off), and it updates as the person types */
-  var nd=el("p","fine err");nd.id="body-need";nd.setAttribute("aria-live","polite");a.appendChild(nd);
-  function gate(){var n=bodyNeed();nd.textContent=n?n.line:"";nd.hidden=!n;var g=UI.sheet==="food"?$("sheet-done"):$("setup-next");
-    if(g){g.disabled=!!n;g.style.opacity=g.disabled?".5":"";}}
+  var nd=el("p","fine err");nd.id="body-need";nd.tabIndex=-1;nd.setAttribute("aria-live","polite");a.appendChild(nd);
+  /* the set-up button is off while one or two figures are given; My food's Done stays tappable (aria-disabled) and a tap on it takes the person to the reason (F8) */
+  function gate(){var n=bodyNeed();nd.textContent=n?n.line:"";nd.hidden=!(n&&n.line);var held=!!n,g=UI.sheet==="food"?$("sheet-done"):$("setup-next");
+    if(g){if(g.id==="setup-next")g.disabled=held;else g.setAttribute("aria-disabled",held?"true":"false");g.style.opacity=held?".5":"";}}
   bodyGate=gate;gate();
   var b=el("div","qs act");b.appendChild(el("p","cap","Activity"));tiles(b,"act",function(v){return P.act===v;},function(v){P.act=v;after();});a.appendChild(b);
 }
+/* whether the set-up step on screen can be finished, read live: the render, the button's look and its tap all call this */
+function setupOK(){var s=UI.step;if(s===0)return !!P.diet&&!!P.goal&&!!P.region;
+  if(s===1)return !!P.health&&(has("kidney")||has("preg")||!has("diabetes")||!!P.meds);return !bodyNeed();}
 function renderSetup(){
   var v=$("v-setup");v.textContent="";
   var h=el("div","setup-hero"),st=el("div","steps");for(var i=0;i<3;i++)st.appendChild(el("i",UI.step>=i?"on":null));
@@ -3935,12 +3948,12 @@ function renderSetup(){
   if(UI.step){var bk=btn("btn","Back",null,"setup-back");bk.addEventListener("click",function(){UI.step--;render();});row.appendChild(bk);}
   /* a kidney condition or pregnancy is referred: the body step is not asked for nothing (screen review B1) */
   var refer=UI.step===1&&(has("kidney")||has("preg"));
-  var ok=UI.step===0?!!P.diet&&!!P.goal&&!!P.region:UI.step===1?!!P.health&&(refer||!has("diabetes")||!!P.meds):!bodyNeed();
+  var ok=setupOK();
   if(!ok&&UI.step===0){var miss=[!P.goal&&"a goal",!P.diet&&"what you eat",!P.region&&"your home food"].filter(Boolean);
     v.appendChild(el("p","fine","Choose "+(miss.length>1?miss.slice(0,-1).join(", ")+" and "+miss[miss.length-1]:miss[0])+" to go on."));}
   if(!ok&&UI.step===1&&has("diabetes")&&!P.meds)v.appendChild(el("p","fine","Answer the medicine question to go on."));
   var go=btn("btn primary",refer?"Done":UI.step<2?"Next":"Show my plate",null,"setup-next");if(!ok){go.disabled=true;go.style.opacity=".5";}
-  go.addEventListener("click",function(){if(!ok||UI.step===2&&bodyNeed())return;if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
+  go.addEventListener("click",function(){if(!setupOK())return;   /* read live at the tap, never the value captured when the step was drawn (Critic r21 F1) */if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
   row.appendChild(go);v.appendChild(row);if(UI.step===2)bodyGate();
   v.appendChild(el("p","fine disc","Meals are planned by AI (Google Gemini) from your choices and your day. Numbers are estimates. General food guidance, not medical advice."));
 }
@@ -3949,10 +3962,10 @@ function renderSetup(){
 function renderNoCode(){var v=$("v-setup");v.textContent="";var c=el("div","empty-card err"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="no-code";
   add(c,i,el("h2",null,ERRS.bad_key),el("p",null,LOSTIT));v.appendChild(c);}
 /* a phone that holds a partial body (set-up finished before this rule) shows this where the plates, Builder and Rescue would be, and the body step opens once */
-function bodyCard(){var nd=bodyNeed(),c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="body-card";
-  add(c,i,el("h2",null,nd.line),el("p",null,"Your plates, swaps and Rescue are sized from all three. Leaving all three empty plans plates at the usual sizes."));
-  var b=btn("btn primary","Add them now",null,"add-body-missing");b.addEventListener("click",function(){openSheet("food",nd.at);});c.appendChild(b);
-  if(!slotOf(C.meal)){c.appendChild(el("p","fine","You can still log this meal."));c.appendChild(logRow());}   /* "Keep log" (owner, 22 Nov): the log needs no body figure, so it stays one tap away */
+function bodyCard(withLog){var nd=bodyNeed(),c=el("div","empty-card"),i=el("span","safe-ic");i.appendChild(ic("info"));c.id="body-card";
+  add(c,i,el("h2",null,nd.line),el("p",null,"Your plates, swaps and Rescue are sized from your age, height and weight. If you leave all three empty, plates are planned at the usual sizes."));
+  var b=btn("btn primary","Add my "+nd.names,null,"add-body-missing");b.addEventListener("click",function(){openSheet("food",nd.at);});c.appendChild(b);
+  if(withLog&&!slotOf(C.meal)){c.appendChild(el("p","fine","You can still log this meal."));c.appendChild(logRow());}   /* "Keep log" (owner, 22 Nov): the log needs no body figure, so on the Plate tab it stays one tap away (Critic r21 F2) */
   if(!UI.bodyOpened&&!UI.sheet){UI.bodyOpened=true;setTimeout(function(){var n2=bodyNeed();if(n2&&!UI.sheet)openSheet("food",n2.at);},0);}
   return c;}
 function blockedCard(){
@@ -4147,7 +4160,7 @@ function composer(host){
 function renderPlate(){
   var v=$("v-plate");v.textContent="";
   if(blocked()){v.appendChild(blockedCard());return;}
-  if(P.done&&bodyNeed()){var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard());return;}
+  if(P.done&&bodyNeed()){var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
   if(s&&!asked){v.appendChild(loggedCard(s));}
@@ -4379,8 +4392,13 @@ var ANS0="",SAFE0="";function answers(){return JSON.stringify([profileOut(),P.co
 /* what the food rules are made of: a change here makes every kept plate unsafe to show; any other answer keeps them for "Show my last plates" (R2-B4 053-1) */
 function rules(){return JSON.stringify([P.diet,P.leave.slice().sort(),P.conds.slice().sort(),P.meds,P.age,P.cm,P.kg,P.sex,P.act]);}   /* the body figures set the usual size (audit B9) */
 /* "at": the question the sheet opens on, when a card sends the person to one answer (screen review B2, B6) */
-function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
-function closeSheet(){var fd=UI.sheet==="food"&&answers()!==ANS0;UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
+function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
+/* My food closes any way but Done (Escape, a tap outside) without saving a partial body: the three body figures go back as they were stored when the sheet opened (no clamp, no zero),
+   every other answer the person changed is kept (Critic r21 F3). A phone that held a partial body before the sheet opened keeps it and reaches the body card. A typed-medicine hold clears
+   once an answer changed (the tap in "Add it in My food" came from it; fix-r21, D12). */
+var BODY0=[0,0,0];
+function closeSheet(){if(UI.sheet==="food"&&bodyNeed()){P.age=BODY0[0];P.cm=BODY0[1];P.kg=BODY0[2];}
+  var fd=UI.sheet==="food"&&answers()!==ANS0;if(fd){if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text){
@@ -4428,7 +4446,7 @@ function renderSheet(){
     var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");},closeSheet));
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
-  sheetHead(c,"My food","Done",function(){if(bodyNeed())return;save();closeSheet();render();});
+  sheetHead(c,"My food","Done",function(){if(bodyNeed()){var nd=$("body-need"),t=nd&&!nd.hidden?nd:["age","cm","kg"].map(function(k){return $("body-"+k);}).filter(function(i){return i&&i.value&&bodyRead(i.id.slice(5),i.value).good===false;})[0]||nd;if(t){t.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});t.focus({preventScroll:true});}return;}save();closeSheet();render();});
   function again(soft){if(!soft)renderSheet();}
   goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
   var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));

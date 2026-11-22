@@ -19,7 +19,7 @@ const B = require(path.join(ROOT, 'eval/v6/bodies.js')), J = (x) => JSON.parse(J
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
 
 // ---------- the phone, with its own load ----------
-const FNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'rules', 'bodyNeed', 'bodyHold', 'api'];
+const FNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'rules', 'bodyLive', 'bodyNeed', 'bodyHold', 'api'];
 const missing = FNS.filter(n => !grab(n)); add('the phone\'s functions are in src/v6/app.js', missing.length === 0, 'not found: ' + missing.join(', '));
 const P0 = (/^var P=\{[^\n]*\};$/m.exec(appSrc) || [''])[0], li = appSrc.indexOf('(function load(){try{'), le = appSrc.indexOf('})();', li) + 5, LOAD = li < 0 ? '' : appSrc.slice(li, le);
 add('the phone\'s load is in src/v6/app.js', !!P0 && !!LOAD, 'P or load not found');

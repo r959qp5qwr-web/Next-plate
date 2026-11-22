@@ -304,16 +304,16 @@ const STATES = [
   // fix-r20: a phone that finished the set-up with a partial body (the 6febc1a page and the fix-r18 page could store one) plans nothing: the body step opens with the line, and the
   // Plate tab, Builder and Rescue show the same line with a button
   ['sheet-body-stored-partial', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await h.settle(500);
-    const r = await p.evaluate(() => ({ line: document.getElementById('body-need').textContent, done: document.getElementById('sheet-done').disabled, sheet: !document.getElementById('sheet').hidden }));
+    const r = await p.evaluate(() => ({ line: document.getElementById('body-need').textContent, done: document.getElementById('sheet-done').getAttribute('aria-disabled') === 'true', sheet: !document.getElementById('sheet').hidden }));
     if (!r.sheet || r.line !== 'Add your height and weight too, or leave all three empty.' || !r.done) throw new Error('the stored partial body does not open the body step with the line: ' + JSON.stringify(r));
     await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await p.fill('#body-kg', '72'); await p.press('#body-kg', 'Tab'); await h.settle(300);
-    if (await p.evaluate(() => document.getElementById('sheet-done').disabled || document.getElementById('body-need').textContent !== '')) throw new Error('with the two figures typed the step is still held');
+    if (await p.evaluate(() => document.getElementById('sheet-done').getAttribute('aria-disabled') === 'true' || document.getElementById('body-need').textContent !== '')) throw new Error('with the two figures typed the step is still held');
     await p.click('#sheet-done'); await h.settle(300); await h.plate(p); }],
   ['plate-body-stored-partial', seed({ p: Object.assign({}, P, { meds: 'no', age: 0, cm: 158, kg: 72 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await h.settle(400); await p.keyboard.press('Escape'); await h.settle(400);
-    const r = await p.evaluate(() => ({ card: (document.querySelector('#body-card h2') || {}).textContent || '', add: !!document.getElementById('add-body-missing'), plateCard: !!document.getElementById('plate-card'), log: !!document.querySelector('#body-card #log-other'), skip: !!document.querySelector('#body-card #log-skip') }));
+    const r = await p.evaluate(() => ({ card: (document.querySelector('#body-card h2') || {}).textContent || '', add: (document.getElementById('add-body-missing') || {}).textContent === 'Add my age', plateCard: !!document.getElementById('plate-card'), log: !!document.querySelector('#body-card #log-other'), skip: !!document.querySelector('#body-card #log-skip') }));
     if (r.card !== 'Add your age too, or leave all three empty.' || !r.add || r.plateCard) throw new Error('the Plate tab of a stored partial body does not ask: ' + JSON.stringify(r));
     if (!r.log || !r.skip) throw new Error('the body card does not hold "I had something else" and "Skipped it" (owner, 22 Nov, "Keep log"): ' + JSON.stringify(r));
-    await p.click('#tab-rescue'); await h.settle(); if (!(await p.$('#body-card'))) throw new Error('Rescue of a stored partial body does not ask'); if (!(await p.$('#body-card #log-other'))) throw new Error('the Rescue tab of a stored partial body has no route to the log'); }],
+    await p.click('#tab-rescue'); await h.settle(); if (!(await p.$('#body-card'))) throw new Error('Rescue of a stored partial body does not ask'); if (await p.$('#v-rescue #body-card #log-other')) throw new Error('the Rescue tab carries the log row: it sits on the Plate tab only'); }],
   // fix-r21 (safety audit of 7935ec0, m1): "Keep log (Recommended)": a phone that holds a partial body still logs a meal. The body card carries "I had something else"; the estimate comes
   // back (the log goes with the three figures at 0), "Yes, count it" counts the meal, the toast says so, and the Plate tab then shows the logged meal above the body card
   ['plate-body-stored-partial-log', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await p.keyboard.press('Escape'); await h.settle(400);
@@ -333,6 +333,51 @@ const STATES = [
   ['rescue-meds-typed', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Veg thali, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
     await p.click('#add-meds'); await h.settle(500); const at = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, focus: (document.activeElement || {}).id || '' }));
     if (!at.sheet || at.focus !== 'meds-yes') throw new Error('the button does not open My food at the medicine question: ' + JSON.stringify(at)); }],
+  // fix-r21 (Critic r21 F1 and F4): the set-up button and its line read one live answer. Age and height typed, a tile tapped while the body is partial (which redraws the step), then the
+  // weight typed WITHOUT leaving the box: the line clears and the button is on as the digits go in, and one tap shows the plate
+  ['setup-3-tile-then-weight', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
+    await p.fill('#body-age', '47'); await p.press('#body-age', 'Tab'); await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await h.settle(200); await p.click('#sex-f'); await h.settle(300);
+    await p.click('#body-kg'); await p.keyboard.type('72'); await h.settle(200);
+    const e = await p.evaluate(() => ({ line: document.getElementById('body-need').textContent, off: document.getElementById('setup-next').disabled, focus: document.activeElement.id }));
+    if (e.focus !== 'body-kg' || e.line || e.off) throw new Error('while the weight is being typed the line or the button lags: ' + JSON.stringify(e));
+    await p.click('#setup-next'); await h.plate(p); }],
+  // fix-r21 (Critic r21 F1, the dead button itself): the same path with the weight typed and the box left. On 738244e the line clears and the button looks on, and the tap does nothing
+  ['setup-3-tile-then-weight-tap', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
+    await p.fill('#body-age', '47'); await p.press('#body-age', 'Tab'); await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await h.settle(200); await p.click('#sex-m'); await h.settle(300);
+    await p.fill('#body-kg', '72'); await p.press('#body-kg', 'Tab'); await h.settle(300);
+    if (await p.evaluate(() => document.getElementById('setup-next').disabled)) throw new Error('with all three figures given the button is still off');
+    await p.click('#setup-next'); await h.plate(p); }],
+  // fix-r21 (Critic r21 F5): a figure out of range shows its own line only; the missing-figure line leaves it out
+  ['setup-3-body-badfigure', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
+    await p.fill('#body-age', '47'); await p.press('#body-age', 'Tab'); await p.fill('#body-cm', '1.58'); await p.press('#body-cm', 'Tab'); await p.fill('#body-kg', '72'); await p.press('#body-kg', 'Tab'); await h.settle(300);
+    const r = await p.evaluate(() => ({ field: (document.getElementById('body-cm-msg') || {}).textContent || '', need: document.getElementById('body-need').textContent, hidden: document.getElementById('body-need').hidden, off: document.getElementById('setup-next').disabled }));
+    if (!/Type your height in cm/.test(r.field) || r.need || !r.hidden || !r.off) throw new Error('one bad figure does not show one line and hold the step: ' + JSON.stringify(r));
+    await p.fill('#body-cm', ''); await p.press('#body-cm', 'Tab'); await p.fill('#body-age', '16'); await p.press('#body-age', 'Tab'); await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await h.settle(300);
+    const r2 = await p.evaluate(() => ({ field: (document.getElementById('body-age-msg') || {}).textContent || '', need: document.getElementById('body-need').textContent }));
+    if (!/Age between 18 and 95/.test(r2.field) || r2.need) throw new Error('an age of 16 shows two lines: ' + JSON.stringify(r2)); }],
+  // fix-r21 (Critic r21 F3): My food closed any way but Done (a tap outside, Escape) never saves a partial body: the three figures go back as stored when it opened, the other answers stay,
+  // the first tap closes it, and the plates are still there
+  ['sheet-close-keeps-body', seed(), async (p, h) => { await h.plate(p); const stored = () => p.evaluate(() => { const q = JSON.parse(localStorage.getItem('np6')).p; return [q.age, q.cm, q.kg].join(','); }); const s0 = await stored();
+    await p.click('#myfood'); await h.settle(); await p.click('#leave-nut'); await p.fill('#body-kg', ''); await p.mouse.click(180, 12); await h.settle(600);
+    const r = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, plate: !!document.getElementById('plate-card'), card: !!document.getElementById('body-card'), nut: JSON.parse(localStorage.getItem('np6')).p.leave.indexOf('nut') >= 0 }));
+    if (r.sheet || r.card || !r.nut) throw new Error('a tap outside with a cleared weight does not close My food once, keep the other answers and the plates: ' + JSON.stringify(r)); await h.plate(p);
+    const s1 = await stored(); if (s1 !== s0) throw new Error('the closed sheet saved a partial body: ' + s0 + ' became ' + s1);
+    await p.click('#myfood'); await h.settle(); await p.fill('#body-cm', ''); await p.keyboard.press('Escape'); await h.settle(600);
+    const r2 = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, card: !!document.getElementById('body-card') })); if (r2.sheet || r2.card) throw new Error('Escape with a cleared height does not close My food once and keep the plates: ' + JSON.stringify(r2));
+    if (await stored() !== s0) throw new Error('Escape saved a partial body'); }],
+  // fix-r21 (D12 with F3): the typed-medicine hold opens My food; the client adds insulin there and closes it by tapping outside: the answer is kept and the hold clears
+  ['plate-ask-meds-typed-close', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin and glimepiride, a light dinner please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 });
+    await p.click('#add-meds'); await h.settle(500); await p.click('#health-diabetes'); await h.settle(200); await p.click('#meds-yes'); await h.settle(200); await p.mouse.click(180, 12); await h.settle(600);
+    await p.waitForSelector('#plate-card:not(.wait)', { timeout: 20000 }); await h.settle(400);
+    const r = await p.evaluate(() => { const q = JSON.parse(localStorage.getItem('np6')).p; return { hold: !!document.getElementById('add-meds'), sheet: !document.getElementById('sheet').hidden, meds: q.meds, health: q.health, plate: !!document.getElementById('plate-card') }; });
+    if (r.hold || r.sheet || r.meds !== 'yes' || r.health !== 'diabetes' || !r.plate) throw new Error('after adding insulin and tapping outside the hold stays or the answer is lost: ' + JSON.stringify(r)); }],
+  // fix-r21 (Critic r21 F8): a tap on the switched-off Done takes the person to the reason
+  ['sheet-done-held-focus', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await h.settle(500); await p.click('#sheet-done', { force: true }); await h.settle(400);
+    const r = await p.evaluate(() => ({ focus: document.activeElement.id, sheet: !document.getElementById('sheet').hidden }));
+    if (r.focus !== 'body-need' || !r.sheet) throw new Error('a tap on the held Done does not focus the reason: ' + JSON.stringify(r)); }],
+  // fix-r21 (Critic r21 F2): the log sheet opened from the body card of a stored partial body, with the estimate on screen
+  ['sheet-log-body-partial', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await p.keyboard.press('Escape'); await h.settle(400);
+    await p.click('#body-card #log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 20000 }); await h.settle(); }],
   // fix-r18 (safety audit of 21a04a3, m5): unticking the last condition in My food left the health answer unset, and every request then answered
   // bad_request ("Next Plate couldn't read that"). No condition ticked is "None of these"; the plates come back
   ['sheet-health-untick-last', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no' }) }), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await h.settle(300);

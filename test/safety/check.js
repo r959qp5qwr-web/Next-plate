@@ -886,7 +886,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
   // My food closed after a food rule changed empties the kept plates at once (final audit m4: removing this passed every check, the review
   // included, because pruneKept drops them on the next render; this keeps both nets)
   { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n return closeSheet; }'), null);
-    if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, $: () => ({ hidden: false }), behind: () => {},
+    if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, bodyNeed: () => null, BODY0: [0, 0, 0], P: {}, $: () => ({ hidden: false }), behind: () => {},
         answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {} };
       safe(() => cs(ctx)(), null);
       add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
@@ -993,7 +993,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     // m4: the phone runs the nets plan() runs, before anything is sent. api() is taken from app.js with a fetch that counts: typed referral,
     // pregnancy, kidney and urgent text, and one low-sugar sign on an insulin profile, are answered on the phone with no request, as plan()
     // answers them; food text is sent
-    { let fetched = 0; const mk = () => run(['api', 'bodyHold', 'bodyNeed'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
+    { let fetched = 0; const mk = () => run(['api', 'bodyHold', 'bodyNeed', 'bodyLive'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
       const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
       const phone = (t, prof) => { let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
       const want = [['chest pain since morning, what can I eat', plain, true], ['I am pregnant, what can I order', plain, false], ['kidney problem, had dal and rice', plain, false], ['feeling shaky, what should I eat', ins, true], ['sugar low, what now', plain, true]];
