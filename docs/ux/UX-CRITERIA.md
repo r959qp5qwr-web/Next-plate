@@ -700,6 +700,15 @@ on a meal's protein energy (rules: protein cap).
   both sides on every medicine answer and fails on the fix-r15 `app.js` and on an `app.js` without the skipped-meal clause. The exception has
   no rendered guard: plate-skipped-meds ("Plan snack") passes with or without the clause on its default body, which has room left, so
   check.js is the guard for it. The grading rules ("Block", `docs/SAFETY-INVARIANTS.md` Tiers) are unchanged.
+- D11 Age and a partial body (owner, 22 Nov, option surveys). Two decisions, the option text word for word: age, "Keep 18 (Recommended)"; a partial body, "Ask for the missing
+  figure". (1) The set-up takes an age from 18 to 95; a stored 16 or 17 reads as not given (built in fix-r18; the age floor was the engine's). (2) The body step takes all three of
+  age, height and weight, or none. With one or two typed, the step cannot be finished: "Show my plate" (and "Done" in My food) is off, and one line under the three fields says what is
+  missing, naming the figures: "Add your height and weight too, or leave all three empty." (the age alone), "Add your weight too, or leave all three empty." (age and height); it updates as the
+  person types. All three empty stays allowed (plates without a calorie target, at the usual sizes and the S6 floors). A phone that finished the set-up with a partial body (the 6febc1a page and
+  the fix-r18 page could store one) opens the body step once with that line; the Plate tab, Builder and Rescue show the line with the button "Add them now" and plan nothing. No request with a
+  partial body leaves the phone: plates, Rescue and the swaps are held (they read the body: the day's target and the usual size on medicines); the log goes without the three figures, because it
+  counts what the person ate and reads none. The engine refuses a partial body with its own code (body_partial), after the referrals (S7). Review states: setup-3-body-partial,
+  sheet-body-stored-partial, plate-body-stored-partial; plate-meds-no-body keeps the insulin floor for all three empty (a man: no plate under 600).
 
 ## Watch list after Critic round 42 (on 530a503, PASS)
 Watched, not changed (coordinator, fix-r12), each cosmetic:
