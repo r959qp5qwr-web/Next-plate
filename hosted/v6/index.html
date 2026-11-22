@@ -3321,49 +3321,68 @@ function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t|
 function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
   var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
 /* ---------- typed medicine words (fix-r21; owner, 22 Nov, option survey "Ask to update (Recommended)") ----------
-   S5 and S6 read the set-up's answers. A client whose set-up says no condition, or no medicine, who types that they take insulin or sugar tablets in the ask box or
-   a Rescue dish gets plates with no grain rule and no usual size. So typed text that says the client takes insulin or a sugar tablet holds the request: the phone
-   says so in one line and a tap opens My food (the engine answers meds_typed even if a phone skips the hold). It reads first-person present use only, clause by clause,
-   in English, Hinglish and common misspellings; a negation ("I don't take insulin", "no insulin", "stopped insulin", "insulin nahi leta"), another person ("my mother takes
-   insulin", "papa insulin leta hai") and a word that makes it something else ("insulin resistance") do not hold. The medicine words are the set-up question's own ("insulin, or
-   sugar tablets such as glimepiride or gliclazide") and the sulfonylurea and insulin names the app already uses; the brand names are the builder's, not clinically reviewed. The log
-   is not held: it counts what was eaten and S6 does not read it. Typed "I am diabetic" with no medicine word is not part of this net (an open owner question). No look-behind. */
-var MEDNAME="insulins?|lantus|humulin|novorapid|novomix|mixtard|tresiba|levemir|basalog|glimepiride|gliclazide|glipizide|glibenclamide|glyburide|amaryl|glimy|diamicron|daonil|"+
-  "(?:sugar|shugar|suger|diabetes|diabetic)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?)|"+
-  "(?:tablets?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes)";
-var MEDRX=new RegExp("\\b(?:"+MEDNAME+")\\b","i");
-/* A negation counts only when it governs the medicine: a negation word up to three words before the medicine word, with no "and"/"or" between them unless what follows the
-   "and" is only more medicine names ("I don't take insulin and glimepiride") (fix-r21, Critic follow-up). Words that make it something else count only right after the medicine
-   word ("insulin resistance", "insulin levels", "insulin free"). "May/might/will/would/could/should" before it is not present use. */
-var MEDNEGW=/\b(?:no\s+longer|used\s+to|instead\s+of|(?:alternatives?|replacements?|substitutes?)\s+(?:to|for|of)|no|not|dont|don'?t|doesn'?t|didn'?t|never|cant|can'?t|cannot|won'?t|wont|stop\w*|quit\w*|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|avoid\w*|afraid|scared|refus\w*|allergic)\b/;
-var MEDMODALW=/\b(?:may|might|will|would|could|should|shall|i'll|we'll|i'd|we'd|gonna|wanna|maybe|perhaps|going\s+to|about\s+to|planning|plans?\s+to|wants?\s+(?:me\s+)?to|hope\s+to)\b/;
-var MEDPOSTX=/^[\s-]*(?:resistan\w*|sensitiv\w*|spikes?|spiking|levels?|response|production|secretion|hormone|index|free|alternatives?|replacements?|substitutes?)\b/;
-var MEDPOSTNEG=/^(?:\s+(?!(?:and|but|or|aur|ya|lekin|par|magar)\b)\S+){0,3}?\s+(?:nahi|nahin|nhi|band|chhod\w*|chod\w*)\b/;
-var MEDDEP=/^[\s-]*(?:dependent|user)\b/;
-var MEDOPEN=/^\s*(?:take|taking|taken|took|use|using|inject\w*|started|starting|start|prescribed|on|got|getting|having|have|skipped|skip|forgot|missed)\b/;
-function medsScope(before,rx,max){var re=new RegExp(rx.source,"g"),m;
-  while((m=re.exec(before))){var toks=before.slice(m.index+m[0].length).split(/\s+/).filter(Boolean),cj=-1,i;
+   The owner's decision, word for word: "Typed insulin or sugar-tablet words hold the plate." S5 and S6 read the set-up's answers. A client whose set-up says no condition, or no
+   medicine, who types a medicine name in the ask box or a Rescue dish gets plates with no grain rule and no usual size. So a medicine name in the client's own typed text holds the
+   request unless one narrow exclusion applies; the phone says so in one line and a tap opens My food (the engine answers meds_typed even if a phone skips the hold). The default is
+   to hold, because a missed present user is the unsafe side and an over-hold costs a retype. The only exclusions, each unable to release a present user:
+   (a) a negation that governs the medicine (up to three words before it, or the Hinglish nahi/band/chhod after it; "no", "stopped", "never", "without", "off", "avoid", "scared of");
+   not when the client writes "my <medicine>"; (b) a word right after the medicine name that makes it something else ("insulin resistance", "insulin levels", "insulin free");
+   (c) someone else is the user: a third-person word within four words of the medicine ("my mother takes insulin", "papa insulin leta hai", "his insulin") and no first-person
+   word ("I", "me", "we", "main") and no "my <medicine>" in the clause; (d) a future onset: a modal or plan word with an onset verb before the medicine ("may need insulin later",
+   "doctor will start insulin"); a modal alone ("I'll take my insulin", "should I take my insulin") holds. Past use ("I was on insulin last year") holds on purpose: a past-tense
+   exclusion would also swallow "on insulin since last year"; the client retypes without the word or changes My food. The medicine words are the set-up question's own ("insulin, or
+   sugar tablets such as glimepiride or gliclazide") plus the generic and brand names of the insulins and the diabetes tablets and injections the app or the owner's probes named;
+   the names are the builder's, not clinically reviewed. The log is not held: it counts what was eaten and S6 does not read it. Typed "I am diabetic" with no medicine word is not
+   part of this net (an open owner question). No look-behind. */
+var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|novomix|mixtard|actrapid|insugen|tresiba|levemir|toujeo|apidra|basalog|glargine|degludec|detemir|aspart|lispro|"+
+  "glimepiride|glimepride|glimiperide|glimpiride|gliclazide|gliclazid|glipizide|glibenclamide|glyburide|tolbutamide|amaryl|glimy|glimestar|diamicron|daonil|euglucon|zoryl|repaglinide|nateglinide|"+
+  "metformin|glucophage|glycomet|gluconorm|obimet|pioglitazone|sitagliptin|januvia|janumet|vildagliptin|galvus|teneligliptin|linagliptin|trajenta|dapagliflozin|forxiga|empagliflozin|jardiance|"+
+  "voglibose|acarbose|semaglutide|ozempic|rybelsus|liraglutide|victoza|dulaglutide|trulicity|tirzepatide|mounjaro|"+
+  "(?:sugar|shugar|suger|diabetes|diabetic|madhumeh)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?|meds?)|"+
+  "(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes|madhumeh)";
+var MEDDEVA="इंसुलिन|इन्सुलिन|इंसुलीन|मेटफॉर्मिन|मेटफोर्मिन|ग्लिमेपिराइड|ग्लाइक्लाज़ाइड|शुगर की गोली|शुगर की दवा|शुगर की दवाई|डायबिटीज की दवा|डायबिटीज की दवाई";   /* the medicine words in Devanagari (no \b: it is not a word character) */
+var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|(?:"+MEDDEVA+")","i");
+var MEDALLOW=/^(?:do|does|did|am|are|is|was|were|be|been|ever|really|actually|any|the|a|an|of|to|for|from|more|longer|anymore|again|yet|since|usually|normally|regular|regularly|current|currently|take|taking|took|taken|use|using|used|on|have|having|had|get|getting|got|inject|injecting|need|needs|needed|medicine|medicines|medication|tablets?|pills?|oral|such|kind|type)$/;
+var MEDHINDIOK=/^(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|lena|padta|padti|lagta|lagti|le|li|liya|lia|karta|karti|kabhi|bilkul|ab|abhi|main|mai|maine|hoon|hu|hun|hai|hain|tha|thi|raha|rahi|rha|rhi|gayi|gaya|ho|di|diya|dia)$/;
+var MEDNEGW=/\b(?:no\s+longer|instead\s+of|(?:alternatives?|replacements?|substitutes?)\s+(?:to|for|of)|no|not|dont|don'?t|doesn'?t|didn'?t|never|cant|can'?t|cannot|won'?t|wont|stopped|quit|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|avoid\w*|afraid|scared|refus\w*|allergic)\b/;
+var MEDPOSTX=/^[\s-]*(?:resistan\w*|sensitiv\w*|spikes?|spiking|levels?|response|production|secretion|hormone|index|free(?!\s+(?:of\s+cost|from|at|by|supply))|alternatives?|replacements?|substitutes?)\b/;
+var MEDTHIRD=/\b(?:he|she|they|his|her|their|him|them|mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grand\w+|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|relative|colleague|neighbou?r|someone|somebody|guest|guests|kid|kids|child|children|baby|in-?laws?|saas|sasur|unhe|unko|unke|unka|uski|uska|iski|iska)\b/;
+var MEDFIRST=/\b(?:i|i'm|im|i've|ive|i'll|i'd|we|we're|us|our|ours|ourselves|me|myself|mine|main|mai|mujhe|maine|hum|humne|hamara|hamari|hamare)\b/;
+var MEDTHIRDVERB=/^(?:\s+\S+){0,2}?\s+(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|khata|khati)\s+(?:hai|hain|tha|thi|the)\b/;
+var MEDTHIRDAFTER=new RegExp("^(?:\\s+\\S+){0,2}?\\s+(?:for|of|ke\\s+liye|ke\\s+lie|ka|ki|ke)\\s+(?:(?:my|mere|meri|mera)\\s+)?"+MEDTHIRD.source);
+/* a future onset: a modal or plan word, then an onset verb, then the medicine (no "and"/"or" between); a modal alone is not enough, and a present-use cue after the name ("units", "before dinner") keeps the hold */
+var MEDFUTURE=/\b(?:may|might|will|would|could|should|shall|i'll|we'll|i'd|we'd|gonna|wanna|maybe|perhaps|going\s+to|about\s+to|planning|plans?\s+to|wants?\s+(?:me\s+)?to|hope\s+to)\b(?:\s+(?!(?:and|but|or|aur|ya)\b)\S+){0,3}\s+(?:need|needs|start|starting|begin|go\s+on|going\s+on|put\s+on|put\s+me\s+on|get\s+on|switch\s+to|shift\s+to|move\s+to|try|prescribe\w*)\b(?:\s+(?:to|on|a|some|the|any|me|him|her))?\s*$/;
+var MEDCUE=/\b(?:units?|u|mg|doses?|shots?|injections?|pen|before|after|with|tonight|today|now|daily|every|morning|night|evening|lunch|dinner|breakfast|snack|twice)\b|\d/;
+/* a negation governs the medicine when only light words (take, use, any, of, to, ...) lie between them, at most three, and when nothing after an "and"/"or" says the client takes something */
+function medsNeg(before){var re=new RegExp(MEDNEGW.source,"g"),m;
+  while((m=re.exec(before))){var rest=before.slice(m.index+m[0].length),cj=-1,toks=rest.split(/\s+/).filter(Boolean),i;
     for(i=0;i<toks.length;i++)if(/^(?:and|but|or|aur|ya|nor)$/.test(toks[i]))cj=i;
-    if(cj<0){if(toks.length<=max)return true;}
-    else{var seg=toks.slice(cj+1).join(" ");if(toks.length<=max+3&&!MEDUSE.test(seg)&&!MEDHIVERB.test(seg)&&!/\b(?:i|we|main|mai)\b/.test(seg))return true;}}
+    if(cj>=0&&/\b(?:i|we|main|mai|take|taking|use|using|have|on|get|start|need|inject\w*)\b/.test(toks.slice(cj+1).join(" ")))continue;
+    var light=rest.replace(new RegExp(MEDRX.source,"gi")," ").split(/\s+/).filter(function(w){return w&&!/^(?:and|or|nor|aur|ya)$/.test(w);});
+    if(light.length<=3&&light.every(function(w){return MEDALLOW.test(w);}))return true;}
   return false;}
-var MEDTHIRD=/\b(?:he|she|they|his|her|their|him|them|mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grand\w+|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|relative|colleague|neighbou?r|patient|client|someone|somebody|person|people|guest|guests|visitor|kid|kids|child|children|baby|in-?laws?|saas|sasur|unhe|unko|unke|unka|uski|uska|iski|iska|diabetics)\b/i;
-var MEDUSE=/\b(?:take|taking|took|use|using|inject|injecting|injected|on|have|having|get|getting|got|need|needs|skip|skipped|forgot|miss|missed|started|start|prescribed|dose|doses|shots?)\b/i;
-var MEDHIVERB=/\b(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|khata|khati|le\s+raha|le\s+rahi|le\s+rha|le\s+rhi|lena\s+padta|lena\s+padti|lagta|lagti)\b/i;
-function medsClause(c){
-  if(MEDTHIRD.test(c))return false;
+/* a Hinglish negation after the medicine governs it when only verbs and auxiliaries lie between ("insulin nahi leta", "insulin band ho gayi") */
+function medsNegAfter(after){var m=/^((?:\s+\S+){0,3}?)\s+(?:nahi|nahin|nhi|band|chhod\w*|chod\w*|नहीं|नही|बंद)(?![a-z])/.exec(after);
+  return !!m&&m[1].split(/\s+/).filter(Boolean).every(function(w){return MEDHINDIOK.test(w);});}
+/* (c) a third-person word is the user when only light words lie between it and the medicine ("my mother takes insulin", "she is on", "his insulin"), within four words, after the last "and"/"when" */
+var MEDTHIRDOK=/^(?:takes|uses|gets|injects|has|must|also|too|always|both|sometimes|now|who|that|which|ko|ka|ki|ke|bhi|roz|lagta|lagti|lagata|lagati|leta|leti|lete|hai|hain|ne|\S*'s)$/;
+function medsThirdBefore(before){var seg=before.split(/\s+(?:and|or|but|so|because|while|when|aur|ya|jab)\s+/).pop().split(/\s+/).filter(Boolean).slice(-5),i,k=0;
+  for(i=seg.length-1;i>=0&&k<=4;i--,k++){if(MEDTHIRD.test(seg[i]))return true;if(!MEDALLOW.test(seg[i])&&!MEDTHIRDOK.test(seg[i]))return false;}
+  return false;}
+function medsClause(c,all){
   /* "never skip", "don't forget" and "don't stop" say the person takes it; "no problem" is not a negation */
   c=c.replace(/\b(?:never|dont|don'?t|do\s+not|didn'?t|doesn'?t|not)\s+(?:ever\s+)?(?:skip|miss|forget|forgot|stop)\w*/g," take ").replace(/\bno\s+(?:problems?|issues?|trouble|worr(?:y|ies)|doubt)\b/g," ");
-  var me=new RegExp("\\bmy\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\bon\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:mera|meri|mere)\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:tablets?|pills?|medicines?|golis?|dawai|dawa)\\s+(?:for|ke\\s+liye)\\s+my\\s+(?:sugar|shugar|suger|diabetes)\\b","i");
-  var first=/\b(?:i|i'm|im|i've|ive|we)\b/i.test(c)&&MEDUSE.test(c),hi=MEDHIVERB.test(c)&&/\b(?:main|mai|mujhe|hoon|hu|hun|hoo)\b/i.test(c),open=MEDOPEN.test(c),mine=me.test(c);
-  var re=new RegExp(MEDRX.source,"gi"),m;
+  var first=MEDFIRST.test(c),re=new RegExp(MEDRX.source,"gi"),m;
   while((m=re.exec(c))){var before=c.slice(0,m.index),after=c.slice(m.index+m[0].length);
-    if(MEDPOSTX.test(after)||MEDPOSTNEG.test(after))continue;
-    if(medsScope(before,MEDNEGW,3)||medsScope(before,MEDMODALW,4))continue;
-    if(mine||first||hi||open||MEDDEP.test(after))return true;}
+    if((MEDPOSTX.test(after)&&!/\b(?:units?|mg|doses?|shots?|injections?|pen)\b/.test(all))||medsNegAfter(after))continue;                                       /* (b) "insulin resistance", "insulin free"; Hinglish "insulin nahi leta" */
+    var mp=/\b(?:my|mera|meri|mere|our|hamara|hamari|hamare)((?:\s+[\w'-]+){0,2})\s*$/.exec(before),mine=!!mp&&!MEDTHIRD.test(mp[1]);   /* "my <medicine>": the client's own */
+    if(!mine&&medsNeg(before))continue;                                                          /* (a) a negation that governs it */
+    if(!mine&&MEDFUTURE.test(before)&&!MEDCUE.test(after))continue;                              /* (d) a future onset */
+    if(!mine&&!first&&(medsThirdBefore(before)||MEDTHIRDVERB.test(after)||MEDTHIRDAFTER.test(after)))continue;   /* (c) someone else is the user, nobody here says "I" */
+    return true;}
   return false;}
-function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t||t.length>2000)return false;
-  return t.split(/[.;!?\n,]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/).some(medsClause);}
+function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t)return false;t=t.slice(0,20000);   /* a long paste is read as far as 20,000 characters, not skipped */
+  return t.split(/[.;!?\n,\u0964]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/).some(function(c){return medsClause(c,t);});}
 function medsOnSetup(p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure");}
 function medsTypedHold(t,p){return !!p&&!medsOnSetup(p)&&typedMeds(t);}
 /* the phone's check on a request body (src/v6/app.js api()): plates and Rescue carry the typed text, the profile is read as plan() reads it */

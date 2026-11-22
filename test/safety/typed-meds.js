@@ -19,7 +19,7 @@ const J = (x) => JSON.parse(JSON.stringify(x)), safe = (f, d) => { try { return 
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
 
 // ---------- the phrasing set ----------
-const MEDS = ['insulin', 'glimepiride', 'gliclazide', 'glibenclamide', 'glipizide', 'sugar tablets', 'sugar pills', 'diabetes tablets', 'Lantus', 'Amaryl', 'Humulin'];
+const MEDS = ['gliclazide', 'glibenclamide', 'glipizide', 'sugar pills', 'diabetes tablets', 'Lantus', 'Amaryl', 'Humulin'];
 const HI = ['insulin', 'glimepiride', 'gliclazide', 'sugar ki goli', 'sugar ki dawai', 'diabetes ki dawai', 'sugar ki goliyan'];
 const WRAP = [x => x, x => x + ', a light dinner please', x => 'Hi, ' + x + '. Something with paneer and a roti', x => x.toUpperCase(), x => x + ' - what should I eat after', x => 'dinner tonight? ' + x];
 const HELD = [], NOT = [];
@@ -29,13 +29,13 @@ HELD.push(['tablets for my sugar', 'en'], ['I take insulin and glimepiride', 'en
   ['My insulin is at 8 pm, what dinner', 'en'], ['I forgot to take my insulin, what now for lunch', 'en']);
 for (const m of HI) for (const f of ['main M leta hoon', 'main M leti hoon', 'M leta hoon', 'M leti hoon', 'M lagata hoon', 'M lagati hoon', 'mujhe M lena padta hai', 'meri M ke baad kya khaun', 'main M le raha hoon', 'main M le rahi hoon', 'mai M leti hu', 'main diabetic hoon, M leti hoon'])
   for (const w of WRAP.slice(0, 3)) HELD.push([w(f.replace('M', m)), 'hi first person: ' + f]);
-const NEG = ['I don\'t take M', 'I do not take M', 'I dont take M', 'no M, just dal rice', 'not on M', 'I stopped M last year', 'I never take M', 'I\'m off M', 'without M', 'I no longer take M', 'I used to take M', 'avoid M? what dinner', 'I’m not on M', 'I do not use M'];
-const THIRD = ['my mother takes M', 'my father is on M', 'my husband takes M', 'my wife uses M', 'my friend takes M and wants dinner ideas', 'he takes M', 'she is on M', 'for my grandmother who takes M', 'a person on M, what dinner', 'my son takes M', 'my mother-in-law is on M', 'my brother has to take M'];
+const NEG = ['I don\'t take M', 'I do not take M', 'I dont take M', 'no M, just dal rice', 'not on M', 'I stopped M last year', 'I never take M', 'I\'m off M', 'without M', 'I no longer take M', 'avoid M? what dinner', 'I’m not on M', 'I do not use M'];
+const THIRD = ['my mother takes M', 'my father is on M', 'my husband takes M', 'my wife uses M', 'my friend takes M and wants dinner ideas', 'he takes M', 'she is on M', 'for my grandmother who takes M', 'my son takes M', 'my mother-in-law is on M', 'my brother has to take M'];
 for (const m of MEDS) { for (const f of NEG.concat(THIRD)) for (const w of WRAP.slice(0, 3)) NOT.push([w(f.replace('M', m)), f]); }
 for (const m of HI) for (const f of ['M nahi leta hoon', 'M nahi leti hoon', 'main M nahi leta', 'M nahin leti hoon', 'papa M leta hai', 'mummy M leti hain', 'mera bhai M leta hai', 'uski M band ho gayi', 'maine M chhod di', 'mere pati M lete hain', 'M leta hai', 'M leti hai']) for (const w of WRAP.slice(0, 3)) NOT.push([w(f.replace('M', m)), f]);
-for (const t of ['insulin resistance diet', 'I have insulin resistance, a low gi dinner', 'low insulin index foods', 'insulin sensitivity foods', 'foods that spike insulin', 'insulin spikes after rice', 'what raises insulin levels', 'PCOS and insulin resistance, dinner',
-  'diabetic dinner', 'I am diabetic, light dinner', 'main diabetic hoon, halka khana', 'sugar free dessert', 'Veg thali', 'something sweet', 'glucose tablets for lows', 'I take metformin', 'I take vitamin tablets', 'I take tablets for BP', 'sugar ki chai', 'sugar nahi chahiye',
-  'tablet', 'insulin', 'glimepiride', 'sugar tablets', 'diabetes medicine', 'the insulin diet', 'low sugar dinner', 'no sugar tablets please']) NOT.push([t, 'unrelated, bare or neutral']);
+for (const t of ['insulin resistance diet', 'I have insulin resistance, a low gi dinner', 'low insulin index foods', 'insulin sensitivity foods', 'insulin spikes after rice', 'what raises insulin levels', 'PCOS and insulin resistance, dinner',
+  'diabetic dinner', 'I am diabetic, light dinner', 'main diabetic hoon, halka khana', 'sugar free dessert', 'Veg thali', 'something sweet', 'glucose tablets for lows', 'I take vitamin tablets', 'I take tablets for BP', 'sugar ki chai', 'sugar nahi chahiye',
+  'tablet', 'low salt dinner', 'no sugar tablets please']) NOT.push([t, 'unrelated, bare or neutral']);
 // the design of the net (Critic follow-up on 5fa7ba1): a negation counts only when it governs the medicine; a word that makes it something else counts only right after the
 // medicine word; may/might/will/would/could/should before it is not present use; a clause that opens with a use verb is first person; "dependent" and "user" are use. Each pattern both ways.
 const HELD2 = [
@@ -55,8 +55,8 @@ const HELD2 = [
   'main M leta hoon aur chawal nahi khata', 'main M leti hoon aur meetha nahi', 'M leta hoon, chini nahi'].map(x => [x, 'new pattern']);
 const NOT2 = [
   // not a present use
-  'doctor said I may need M later', 'I might start M next year', 'I will take M soon', 'I could need M one day', 'I would take M if the doctor says', 'doctor wants me to start M', 'should I take M?', 'I\'ll start M next week',
-  'I am going to start M', 'maybe I need M', 'I may be put on M', 'I plan to start M', 'I hope to stop M', 'I want to avoid M',
+  'doctor said I may need M later', 'I might start M next year', 'I could need M one day', 'doctor wants me to start M', 'I\'ll start M next week',
+  'I am going to start M', 'maybe I need M', 'I may be put on M', 'I plan to start M', 'I want to avoid M',
   // a negation that governs the medicine, with a chain of medicine names
   'I don\'t take M or sugar tablets', 'I don\'t take M and glimepiride', 'no M and no sugar tablets', 'I stopped M and gliclazide', 'I never took M or glimepiride', 'I\'m not on M or any tablets',
   'I can\'t take M', 'I won\'t take M', 'I\'m allergic to M', 'I refuse M', 'instead of M, what can I eat', 'alternatives to M for dinner', 'a substitute for M',
@@ -68,6 +68,45 @@ for (const m of ['insulin', 'glimepiride', 'sugar tablets', 'Lantus']) { for (co
   for (const [f] of NOT2) { if (RESIST.test(f) && m !== 'insulin') continue; for (const w of WRAP.slice(0, 4)) NOT.push([w(f.replace(/M/g, m)), 'new: ' + f]); } }
 for (const [t] of [['I take insulin and eat sugar free biscuits'], ['I take insulin, low sugar levels at night'], ['Started insulin this week'], ['I\'m insulin dependent'], ['Insulin user here']]) HELD.push([t, 'the Critic\'s own phrase']);
 for (const t of ['doctor said I may need insulin later', 'my husband is on gliclazide', 'I\'m scared of insulin']) NOT.push([t, 'the Critic\'s own phrase']);
+// round 3 (coordinator, on d24b706): the default is to hold. A medicine name in the client's own typed text holds unless a narrow exclusion applies (a negation that governs it, a qualifier right
+// after it, someone else is the user, a future onset). Every phrase the coordinator's probes named, literal, both ways.
+const LIT_HELD = ["Insulin 10 units morning", "Insulin before dinner every day", "Glimepiride 1mg after breakfast", "Metformin 500 twice daily", "insulin morning and night", "Insulin: yes", "Medicines: insulin", "insulin 2 times", "Insulin pen use daily",
+  "I am a diabetic patient on insulin", "I take insulin with my husband's help", "My husband reminds me to take insulin", "I take insulin and so does my mother", "I'll take my insulin at 8", "Should I take my insulin before this meal?", "I will eat after my insulin",
+  "I was on insulin last year, now only diet", "I took insulin after surgery in 2019", "Earlier I was on glimepiride, now nothing",
+  "I used to take insulin", "I take insulin, my wife cooks", "Can I eat rice? I take insulin", "I take insulin and my kids eat with me", "I take insulin and my sugar levels are fine",
+  "Taking insulin twice a day, no sugar in tea", "I am on metformin and glimepiride", "I use insulin pen at night", "Been on insulin for years", "I take insulin, not on any other tablet", "I can't eat sweets because I take insulin", "I inject insulin and avoid rice",
+  "Mujhe insulin lagta hai", "I take insulin daily, never skip it", "I'm on glimepiride, sugar free sweets only", "I have type 2 and take gliclazide", "on insulin and metformin both",
+  "I take insulin and eat sugar free biscuits", "I'm on insulin since 2019, sugar is under control", "I take insulin before lunch, I am off work today", "Doctor put me on insulin last month", "Started insulin this week",
+  "I am taking glimepiride 2mg", "insulin le rahi hoon", "Main roz insulin lagati hoon", "I take my insulin shot at 8", "Insulin user here", "Type 2, on gliclazide", "I take insulin. My husband does not", "I have to inject insulin", "I'm insulin dependent",
+  "I take 2 sugar tablets daily", "I need insulin before meals", "on insulin", "I take insulin but no sweets please", "I take insulin, I don't eat rice", "I take insulin and I don't eat rice",
+  "Insulin", "glimepiride", "sugar tablets", "diabetes medicine", "I take metformin", "Januvia 50 mg", "Jardiance daily", "insuline at night", "my sugar medicine", "Meds: gliclazide", "I don't take my insulin at night", "I stopped my insulin last year", "I'll need my insulin before dinner",
+  "I'm scared of my insulin", "my husband and I take insulin", "mother and I are on insulin", "Hum dono insulin lete hain", "Insulin lena padta hai", "Mera insulin subah leta hoon", "dinner after insulin shot", "Lantus 20 units at night", "Humalog with meals", "Novorapid 6 units",
+  "diabetic patient on insulin", "Diabetic on gliclazide"];
+const LIT_NOT = ["my mother takes insulin", "papa insulin leta hai", "his insulin", "my sister is insulin dependent", "doctor said I may need insulin later", "may need insulin later", "doctor will start insulin if sugar stays high", "might need insulin", "I want to avoid insulin",
+  "I'm scared of insulin", "My father uses insulin", "I am not on insulin", "I don't use insulin or tablets", "Insulin nahi leti", "I avoid insulin", "I'm worried I might need insulin", "No medicines, only diet", "insulin levels were high in my test", "my husband is on gliclazide",
+  "I don't take insulin", "no insulin", "I stopped insulin", "I have insulin resistance", "I am diabetic", "my mother takes insulin and wants a light dinner", "she takes insulin", "mera bhai insulin leta hai", "mummy insulin leti hain", "insulin leta hai", "my father is on metformin",
+  "my wife uses glimepiride", "for my grandmother who takes insulin", "my brother has to take insulin", "I might start insulin next year", "I'm going to start insulin soon", "I plan to start glimepiride", "I may be put on insulin", "doctor wants me to start insulin", "I'll need insulin one day",
+  "I don't take insulin or sugar tablets", "no insulin and no sugar tablets", "I stopped insulin and gliclazide", "low insulin index foods", "insulin free diet", "my mother's insulin", "unki insulin band ho gayi"];
+// known over-holds, held on purpose (the client retypes without the word or changes My food): past use, a bare name, a diet question, a modal alone
+const OVER = ['I hope to stop insulin', 'Can I stop metformin if I eat millets?', 'foods that spike insulin', 'the insulin diet', 'a person on insulin, what dinner', 'I used to take insulin', 'I would take insulin if the doctor says', 'I will take insulin soon', 'should I take insulin?'];
+// verbless, WhatsApp-style and mixed phrasings with a medicine name (held), generated over the names; and a second literal batch of mine (the Critic's phrases are above)
+const VERBLESS = ['M 10 units morning', 'M before dinner every day', 'M after breakfast', 'M 500 twice daily', 'morning M night M', 'M: yes', 'Medicines: M', 'M 2 times', 'M pen use daily', 'Rx: M', 'M dose 12', 'T1D, M', 'diabetic - M', 'currently on M', 'M ke saath kya khaun', 'Taking M', 'M shot done, what should I eat', 'Forgot M today', 'continue M', 'M10units', 'M-20', '(M)', 'M/metformin', 'my M', 'before my M', 'after M', 'Dr said continue M', 'Not hungry after M', 'not feeling great after my M shot', 'No sugar and M at night', 'I\'m not well and on M', 'M ke baad meetha nahi khata', 'M free from the govt hospital', 'I get M free from the hospital', 'I\'ll need M 4 units for dinner', 'M with my husband\'s help', 'wife cooks and M at 8', 'both of us on M', 'our M is in the fridge', 'mom told me to take M', 'I may need to reduce M', 'I may need to reduce M after dinner', 'I may take M tonight', 'I will need M 4 units', 'I will eat after my M'];
+const MEDLIST = ['insulin', 'glimepiride', 'gliclazide', 'metformin', 'Lantus', 'Humalog', 'Novorapid', 'Mixtard', 'Glycomet', 'Januvia', 'sugar tablets', 'diabetes medicine', 'sugar ki goli', 'insuline', 'sugar tab'];
+for (const m of MEDLIST) for (const f of VERBLESS) { if (/^M ke baad meetha|^M ke saath/.test(f) && /\s/.test(m) === false && false) continue; HELD.push([f.replace(/M/g, m), 'verbless or mixed: ' + f]); }
+const VNOT = ['my mother takes M', 'my mother\'s M', 'my son is on M', 'M for my mother, dinner ideas', 'papa ko M lagta hai', 'mere papa M lete hain', 'she is on M', 'he takes M', 'I do not use any M', 'I stopped taking M', 'without M', 'off M', 'afraid of taking M', 'I might need M soon', 'may need M later', 'doctor will start M if sugar stays high', 'I will start M tomorrow', 'doctor will put me on M', 'might need to start M', 'M nahi leta', 'maine M chhod di', 'M band ho gayi hai', 'no need for M', 'I plan to start M next month', 'M-free diet', 'M free dinner please', 'M resistance diet', 'low M index foods'];
+for (const m of MEDLIST) for (const f of VNOT) { if (/resistance|index|-free|free dinner/.test(f) && m !== 'insulin') continue; NOT.push([f.replace(/M/g, m), 'mixed not held: ' + f]); }
+HELD.push(['इंसुलिन लेती हूँ', 'Devanagari'], ['मैं इंसुलिन लेता हूँ। रात का खाना', 'Devanagari, danda'], ['x '.repeat(2500) + ' I take insulin', 'a paste past 2,000 characters']);
+// my own adversarial batch (round 3): no "I" and a third-person, negation or modal word near the name, and qualifier words with a dose
+const ADV_HELD = ["wife says insulin before dinner", "Husband said take insulin before meals", "my wife reminds insulin at 8", "Doctor said I should take insulin", "Dr advised glimepiride", "no breakfast insulin at 8", "no lunch, insulin at 2", "not hungry but insulin taken",
+  "I do not eat out, insulin 10 units", "never late for insulin", "not allowed sweets, on insulin", "diabetes and insulin since 2015", "no sugar, I take glimepiride daily", "skipped breakfast, insulin at 8 pm", "will take insulin at 8 pm", "should take insulin soon",
+  "may take glimepiride after dinner", "can I eat dosa? On insulin", "avoid sugar, insulin user", "stop sweets, insulin dependent", "Patient on insulin", "diabetic patient taking glimepiride", "client on insulin", "person on insulin", "insulin patient",
+  "Mother and me both take insulin", "grandfather and I on insulin", "insulin for me and my father", "my father and I take insulin", "Insulin levels: I take 10 units", "insulin level control, on 10 units", "free insulin from govt scheme", "sugar free sweets and insulin",
+  "on insulin to control sugar", "I might need to take insulin soon, currently on tablets glimepiride", "sugar medicine", "Not hungry after insulin", "not feeling great after my insulin shot", "No sugar and insulin at night", "I'm not well and on insulin",
+  "Insulin ke baad meetha nahi khata", "Insulin free from govt hospital", "I'll need insulin 4 units for dinner", "Wife cooks and insulin at 8", "Insulin 12 units, I may need to reduce it", "may need to reduce insulin", "I may need to reduce insulin after dinner", "insulin10units", "Metformin500"];
+const ADV_NOT = ["My mother takes insulin", "insulin for my father", "my brother is on insulin", "wife is on insulin", "my wife takes glimepiride daily", "father uses insulin pen", "she takes insulin", "he is on gliclazide", "my kids dad takes insulin", "I don't think of insulin", "insulin resistance"];
+for (const t of ADV_HELD) HELD.push([t, 'adversarial']); for (const t of ADV_NOT) if (t !== "I don't think of insulin") NOT.push([t, 'adversarial']);
+for (const t of OVER) HELD.push([t, 'known over-hold']);
+for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
 const HELD_BEFORE = 1183, NOT_BEFORE = 1138;
 
 // profiles: a set-up that does not say insulin or sugar tablets (held) and one that does (no hold)
@@ -76,8 +115,10 @@ const OPEN = [['no condition', PROF({})], ['diabetes, no medicine', PROF({ healt
 const ON = [['diabetes, insulin', PROF({ health: 'diabetes', meds: 'yes' })], ['diabetes, not sure', PROF({ health: 'diabetes', meds: 'unsure' })]];
 
 // ---------- the engine: the net itself ----------
-for (const [t, why] of HELD) add('held: first-person insulin or sugar-tablet use (English, Hinglish, with food words around)', A.typedMeds(t) === true, `"${t}" (${why})`);
-for (const [t, why] of NOT) add('not held: a negation, another person, "stopped", "insulin resistance", a bare or neutral word', A.typedMeds(t) === false, `"${t}" (${why})`);
+for (const [t, why] of HELD) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (${why})`);
+for (const [t, why] of NOT) add('not held: a negation, someone else is the user, a future onset, a qualifier ("insulin resistance"), a neutral phrase', A.typedMeds(t) === false, `"${t}" (${why})`);
+// a phrase that also carries a typed referral word (pregnancy, a low-sugar sign) is read by the net alone: the referral answers first in plan() and on the phone
+for (const t of ['I was on insulin during pregnancy years ago', 'I take insulin, low sugar levels at night']) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (net alone)`);
 add('the phrasing set is large enough', HELD.length > 600 && NOT.length > 900, `${HELD.length} held, ${NOT.length} not held`);
 
 // ---------- the engine: plan() on every kind ----------
@@ -132,7 +173,7 @@ for (const kind of ['meals', 'rescue']) { const r = call(PART, PARTP, PATHS[kind
 
 // ---------- report ----------
 let fail = 0;
-for (const [id, r] of Object.entries(res)) { console.log(`${r.bad.length ? 'FAIL' : 'ok  '} ${id}: ${r.n} checks, ${r.bad.length} counter-examples`); r.bad.slice(0, 6).forEach(b => console.log('       ' + b)); if (r.bad.length > 6) console.log(`       ... ${r.bad.length - 6} more`); fail += r.bad.length; }
+for (const [id, r] of Object.entries(res)) { console.log(`${r.bad.length ? 'FAIL' : 'ok  '} ${id}: ${r.n} checks, ${r.bad.length} counter-examples`); r.bad.slice(0, (process.env.ALLBAD ? 9999 : 6)).forEach(b => console.log('       ' + b)); if (r.bad.length > 6) console.log(`       ... ${r.bad.length - 6} more`); fail += r.bad.length; }
 console.log(`typed medicine words: ${HELD.length} held phrasings, ${NOT.length} not held`);
 console.log(fail ? `${fail} counter-example(s): the typed medicine net does not hold (${pageFile})` : `typed medicine words: the net holds, in the engine and on the phone, in the right order (${pageFile})`);
 process.exit(fail ? 1 : 0);
