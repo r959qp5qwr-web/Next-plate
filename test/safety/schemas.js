@@ -54,7 +54,7 @@ function servedPlate(a, rq) {
 // ---------- the request shapes ----------
 function grid(a) {
   const out = [], P = B.baseP, C = B.baseC, meals = a.OPT.meal.map(x => x[0]);
-  const add = (label, p, c, file, partial) => out.push({ label: 'grid: ' + label, kind: 'meals', partial: !!partial, body: { profile: Object.assign({}, P, p), ctx: Object.assign({}, C, c), file: file || {} } });
+  const add = (label, p, c, file) => out.push({ label: 'grid: ' + label, kind: 'meals', body: { profile: Object.assign({}, P, p), ctx: Object.assign({}, C, c), file: file || {} } });
   const other = m => meals.filter(x => x !== m);
   const days = (m) => { const o = other(m), f = [];
     f.push(['nothing logged', {}]);
@@ -82,7 +82,7 @@ function grid(a) {
     // weight missing) the hooks that read the day's plan (protein to catch up, lighter after earlier meals) are not offered
     for (const [bl, bp] of [['age only', { age: 46, cm: 0, kg: 0 }], ['age and height', { age: 46, cm: 158, kg: 0 }], ['height and weight, no age', { age: 0, cm: 158, kg: 68 }], ['no body figures', { age: 0, cm: 0, kg: 0 }]])
       for (const [pl, p] of [['hold', {}], ['lose', { goal: 'lose' }], ['diabetes, medicine yes', { health: 'diabetes', meds: 'yes' }]])
-        for (const [dl, f] of days(m)) add(m + ', body ' + bl + ', ' + pl + ', ' + dl, Object.assign({}, bp, p), { meal: m }, f, true);
+        for (const [dl, f] of days(m)) add(m + ', body ' + bl + ', ' + pl + ', ' + dl, Object.assign({}, bp, p), { meal: m }, f);
     // every hook at once (the longest list the page can send: nine), with and without the diabetes medicine hooks
     const o = other(m), all = { today: { kcal: 1250, protein: 10, lastHoursAgo: 9, lastKcal: 800, meals: [{ meal: o[0], kind: 'skipped' }, { meal: o[1], kind: 'rescued', title: 'Thali' }, { meal: o[2], kind: 'had', title: 'Upma' }] },
       patterns: [{ id: 'late_dinner', n: 4, of: 6 }, { id: 'skips_meal', meal: m, n: 4, of: 6 }, { id: 'repeat', slot: m === 'breakfast' ? 'b' : m === 'snack' ? 's' : 'm', food: 'rajma', n: 4 }], slotProtein: { [m]: 5, [o[0]]: 30, [o[1]]: 25 }, days: 6 };
@@ -110,7 +110,7 @@ function grid(a) {
       const ids = pl.schema.properties.meals.items.properties.planned_around.items.enum, L = ids.length;
       if (keep[L] && keep[L].size < 10 && !keep[L].has(ids.join(','))) keep[L].set(ids.join(','), body);
     }
-    for (const L of [6, 7, 8]) { let i = 0; for (const [ids, body] of keep[L]) out.push({ label: `grid: hook list of ${L} (${++i}) ${ids}`, kind: 'meals', partial: false, body }); }
+    for (const L of [6, 7, 8]) { let i = 0; for (const [ids, body] of keep[L]) out.push({ label: `grid: hook list of ${L} (${++i}) ${ids}`, kind: 'meals', body }); }
   }
   return out;
 }
@@ -128,12 +128,11 @@ function recorded() {
 // builds every shape; returns {kind: Map(sha -> entry)} and the problems found while building
 function enumerate(a) {
   const got = {}, problems = []; KINDS.forEach(k => { got[k] = new Map(); });
-  const put = (kind, schema, body, label, app, win, partial) => {
+  const put = (kind, schema, body, label, app, win) => {
     const text = JSON.stringify(schema), h = sha(text);
     let e = got[kind].get(h);
     if (!e) { e = { sha256: h, bytes: text.length, schema: text, app_sends: app, hooks: kind === 'meals' ? schema.properties.meals.items.properties.planned_around.items.enum : undefined,
-      lite: kind === 'meals' ? !schema.properties.meals.items.properties.swaps : undefined, example_body: body, shapes: 0, labels: [], window: false, partialOnly: !!partial }; got[kind].set(h, e); }
-    if (!partial) e.partialOnly = false;
+      lite: kind === 'meals' ? !schema.properties.meals.items.properties.swaps : undefined, example_body: body, shapes: 0, labels: [], window: false }; got[kind].set(h, e); }
     e.shapes++; if (e.labels.length < 3) e.labels.push(label); if (app) e.app_sends = true; if (win) e.window = true; };
   const shapes = recorded().concat(grid(a));
   for (const s of shapes) {
@@ -141,7 +140,7 @@ function enumerate(a) {
     for (const r of rqs) {
       const pl = a.plan(r.kind, r.body);
       if (!pl || !pl.schema) { if (!pl || pl.error) problems.push(`${r.label}: plan(${r.kind}) gave ${pl && pl.error ? pl.error : 'no schema'}`); continue; }   // a reply without the model (a referral) has no schema
-      put(r.kind, pl.schema, r.body, r.label, !r.nolite, !!s.window && !r.nolite, !!s.partial);
+      put(r.kind, pl.schema, r.body, r.label, !r.nolite, !!s.window && !r.nolite);
     }
     if (s.tune) {   // the follow-up the app sends for a plate it was served
       const sp = servedPlate(a, s.body), tb = sp && B.tuneBody(s.body.profile, s.body.ctx.meal, sp), pl = tb && a.plan('tune', tb);
@@ -156,15 +155,14 @@ function enumerate(a) {
 const snapFile = k => path.join(DIR, k + '.json');
 const readSnap = k => fs.existsSync(snapFile(k)) ? JSON.parse(fs.readFileSync(snapFile(k), 'utf8')) : { kind: k, entries: [] };
 function check(a) {
-  const { got, problems } = enumerate(a), rows = [], bad = [], partial = [];
+  const { got, problems } = enumerate(a), rows = [], bad = [];
   for (const k of KINDS) {
     const snap = readSnap(k), known = new Map(snap.entries.map(e => [e.sha256, e]));
     snap.entries.forEach(e => { if (sha(e.schema) !== e.sha256) bad.push(`${k}: the snapshot entry ${e.sha256.slice(0, 12)} does not hold the schema its hash names`); });
-    let miss = 0; for (const [h, e] of got[k]) if (!known.has(h) && e.partialOnly) { partial.push({ kind: k, sha: h, bytes: e.bytes, hooks: e.hooks, label: e.labels[0], app: e.app_sends }); }
-      else if (!known.has(h)) { miss++; bad.push(`${k}: a schema the page builds (${h.slice(0, 12)}, ${e.bytes} bytes${e.hooks ? ', hooks ' + JSON.stringify(e.hooks) : ''}; ${e.labels[0]}) is in no snapshot entry. If the change is deliberate: node test/safety/schemas.js --update, then record a live acceptance`); }
-    rows.push({ kind: k, built: got[k].size, entries: snap.entries.length, miss, partialN: partial.filter(x => x.kind === k).length, accepted: [...got[k].keys()].filter(h => known.get(h) && known.get(h).accepted_by !== 'pending').length });
+    let miss = 0; for (const [h, e] of got[k]) if (!known.has(h)) { miss++; bad.push(`${k}: a schema the page builds (${h.slice(0, 12)}, ${e.bytes} bytes${e.hooks ? ', hooks ' + JSON.stringify(e.hooks) : ''}; ${e.labels[0]}) is in no snapshot entry. If the change is deliberate: node test/safety/schemas.js --update (or --add), then record a live acceptance`); }
+    rows.push({ kind: k, built: got[k].size, entries: snap.entries.length, miss, accepted: [...got[k].keys()].filter(h => known.get(h) && known.get(h).accepted_by !== 'pending').length });
   }
-  return { rows, bad: problems.concat(bad), got, partial };
+  return { rows, bad: problems.concat(bad), got };
 }
 function update(a, args) {
   const { got, problems } = enumerate(a); if (problems.length) { problems.forEach(p => console.log('PROBLEM ' + p)); process.exit(1); }
@@ -184,7 +182,7 @@ function addNew(a) {
   const { got, problems } = enumerate(a); if (problems.length) { problems.forEach(p => console.log('PROBLEM ' + p)); process.exit(1); }
   for (const k of KINDS) {
     const snap = readSnap(k), known = new Set(snap.entries.map(e => e.sha256)); let n = 0;
-    for (const [h, e] of [...got[k]].sort((x, y) => x[0].localeCompare(y[0]))) if (!known.has(h)) { const x = Object.assign({}, e, { accepted_by: 'pending', app_sends: !!e.app_sends }); delete x.partialOnly; snap.entries.push(x); n++; }
+    for (const [h, e] of [...got[k]].sort((x, y) => x[0].localeCompare(y[0]))) if (!known.has(h)) { const x = Object.assign({}, e, { accepted_by: 'pending', app_sends: !!e.app_sends }); snap.entries.push(x); n++; }
     fs.writeFileSync(snapFile(k), JSON.stringify(snap, null, 1) + '\n'); console.log(`${k}: ${n} entries added as pending, ${snap.entries.length} in all`);
   }
 }
@@ -204,14 +202,10 @@ if (require.main === module) {
   else if (args[0] === '--update') update(loadPage(page), args);
   else if (args[0] === '--add') addNew(loadPage(page));
   else {
-    const { rows, bad, partial } = check(loadPage(page));
-    for (const r of rows) console.log(`schema snapshot ${r.kind}: ${r.built} schemas built, ${r.entries} entries, ${r.accepted} of those accepted live, ${r.miss} not in the snapshot${r.partialN ? `, ${r.partialN} more only a partial body entry builds (below)` : ''}`);
-    // fix-r18: formats only a partial body entry builds (the phone sends 0 for a figure the client left empty) are enumerated and reported; they are in no
-    // snapshot entry yet and are not recorded here (no --update). They do not fail this test, which is about a schema changing under a build; the pre-Deploy
-    // check (test/deploy/schemas-accepted.js) counts them and fails until a live window has answered them and they are recorded
-    if (partial.length) console.log(`schema snapshot: ${partial.length} formats built only by a partial body entry are in no snapshot entry (${partial.filter(x => x.app).length} the app sends, with its lite flag); reported, not recorded. test/deploy/schemas-accepted.js fails on them until a live window has answered them`);
+    const { rows, bad } = check(loadPage(page));
+    for (const r of rows) console.log(`schema snapshot ${r.kind}: ${r.built} schemas built, ${r.entries} entries, ${r.accepted} of those accepted live, ${r.miss} not in the snapshot`);
     bad.slice(0, 8).forEach(b => console.log('FAIL ' + b)); if (bad.length > 8) console.log(`FAIL ... and ${bad.length - 8} more`);
-    console.log(bad.length ? `schema snapshot: ${bad.length} failures (${page})` : partial.length ? `schema snapshot: no schema changed under the build; ${partial.length} partial-body formats await a live window (${page})` : `schema snapshot: every enumerated schema the page builds is in the snapshot (${page})`);
+    console.log(bad.length ? `schema snapshot: ${bad.length} failures (${page})` : `schema snapshot: every enumerated schema the page builds is in the snapshot (${page})`);
     process.exit(bad.length ? 1 : 0);
   }
 }
