@@ -838,19 +838,36 @@ var MEDNAME="insulins?|lantus|humulin|novorapid|novomix|mixtard|tresiba|levemir|
   "(?:sugar|shugar|suger|diabetes|diabetic)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?)|"+
   "(?:tablets?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes)";
 var MEDRX=new RegExp("\\b(?:"+MEDNAME+")\\b","i");
-var MEDNEG=/\b(?:no|not|dont|don'?t|do\s+not|doesn'?t|didn'?t|never|stopped|stop|quit|quitting|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|used\s+to|no\s+longer|avoid\w*|afraid|scared|resistan\w*|sensitiv\w*|spikes?|levels?|response|production|hormone|index|free|alternatives?|replace\w*|instead)\b/i;
+/* A negation counts only when it governs the medicine: a negation word up to three words before the medicine word, with no "and"/"or" between them unless what follows the
+   "and" is only more medicine names ("I don't take insulin and glimepiride") (fix-r21, Critic follow-up). Words that make it something else count only right after the medicine
+   word ("insulin resistance", "insulin levels", "insulin free"). "May/might/will/would/could/should" before it is not present use. */
+var MEDNEGW=/\b(?:no\s+longer|used\s+to|instead\s+of|(?:alternatives?|replacements?|substitutes?)\s+(?:to|for|of)|no|not|dont|don'?t|doesn'?t|didn'?t|never|cant|can'?t|cannot|won'?t|wont|stop\w*|quit\w*|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|avoid\w*|afraid|scared|refus\w*|allergic)\b/;
+var MEDMODALW=/\b(?:may|might|will|would|could|should|shall|i'll|we'll|i'd|we'd|gonna|wanna|maybe|perhaps|going\s+to|about\s+to|planning|plans?\s+to|wants?\s+(?:me\s+)?to|hope\s+to)\b/;
+var MEDPOSTX=/^[\s-]*(?:resistan\w*|sensitiv\w*|spikes?|spiking|levels?|response|production|secretion|hormone|index|free|alternatives?|replacements?|substitutes?)\b/;
+var MEDPOSTNEG=/^(?:\s+(?!(?:and|but|or|aur|ya|lekin|par|magar)\b)\S+){0,3}?\s+(?:nahi|nahin|nhi|band|chhod\w*|chod\w*)\b/;
+var MEDDEP=/^[\s-]*(?:dependent|user)\b/;
+var MEDOPEN=/^\s*(?:take|taking|taken|took|use|using|inject\w*|started|starting|start|prescribed|on|got|getting|having|have|skipped|skip|forgot|missed)\b/;
+function medsScope(before,rx,max){var re=new RegExp(rx.source,"g"),m;
+  while((m=re.exec(before))){var toks=before.slice(m.index+m[0].length).split(/\s+/).filter(Boolean),cj=-1,i;
+    for(i=0;i<toks.length;i++)if(/^(?:and|but|or|aur|ya|nor)$/.test(toks[i]))cj=i;
+    if(cj<0){if(toks.length<=max)return true;}
+    else{var seg=toks.slice(cj+1).join(" ");if(toks.length<=max+3&&!MEDUSE.test(seg)&&!MEDHIVERB.test(seg)&&!/\b(?:i|we|main|mai)\b/.test(seg))return true;}}
+  return false;}
 var MEDTHIRD=/\b(?:he|she|they|his|her|their|him|them|mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grand\w+|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|relative|colleague|neighbou?r|patient|client|someone|somebody|person|people|guest|guests|visitor|kid|kids|child|children|baby|in-?laws?|saas|sasur|unhe|unko|unke|unka|uski|uska|iski|iska|diabetics)\b/i;
 var MEDUSE=/\b(?:take|taking|took|use|using|inject|injecting|injected|on|have|having|get|getting|got|need|needs|skip|skipped|forgot|miss|missed|started|start|prescribed|dose|doses|shots?)\b/i;
 var MEDHIVERB=/\b(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|khata|khati|le\s+raha|le\s+rahi|le\s+rha|le\s+rhi|lena\s+padta|lena\s+padti|lagta|lagti)\b/i;
 function medsClause(c){
-  var m=MEDRX.exec(c);if(!m)return false;
-  if(MEDNEG.test(c)||MEDTHIRD.test(c))return false;
+  if(MEDTHIRD.test(c))return false;
+  /* "never skip", "don't forget" and "don't stop" say the person takes it; "no problem" is not a negation */
+  c=c.replace(/\b(?:never|dont|don'?t|do\s+not|didn'?t|doesn'?t|not)\s+(?:ever\s+)?(?:skip|miss|forget|forgot|stop)\w*/g," take ").replace(/\bno\s+(?:problems?|issues?|trouble|worr(?:y|ies)|doubt)\b/g," ");
   var me=new RegExp("\\bmy\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\bon\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:mera|meri|mere)\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:tablets?|pills?|medicines?|golis?|dawai|dawa)\\s+(?:for|ke\\s+liye)\\s+my\\s+(?:sugar|shugar|suger|diabetes)\\b","i");
-  if(me.test(c))return true;
-  if(/\b(?:i|i'm|im|i've|ive|we)\b/i.test(c)&&MEDUSE.test(c))return true;
-  if(MEDHIVERB.test(c)&&/\b(?:main|mai|mujhe|hoon|hu|hun|hoo)\b/i.test(c))return true;
-  return false;
-}
+  var first=/\b(?:i|i'm|im|i've|ive|we)\b/i.test(c)&&MEDUSE.test(c),hi=MEDHIVERB.test(c)&&/\b(?:main|mai|mujhe|hoon|hu|hun|hoo)\b/i.test(c),open=MEDOPEN.test(c),mine=me.test(c);
+  var re=new RegExp(MEDRX.source,"gi"),m;
+  while((m=re.exec(c))){var before=c.slice(0,m.index),after=c.slice(m.index+m[0].length);
+    if(MEDPOSTX.test(after)||MEDPOSTNEG.test(after))continue;
+    if(medsScope(before,MEDNEGW,3)||medsScope(before,MEDMODALW,4))continue;
+    if(mine||first||hi||open||MEDDEP.test(after))return true;}
+  return false;}
 function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t||t.length>2000)return false;
   return t.split(/[.;!?\n,]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/).some(medsClause);}
 function medsOnSetup(p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure");}
@@ -872,8 +889,8 @@ plan=function(kind,body){
   if(carriesPhoto(body))return {error:"bad_request"};
   /* a body figure the set-up cannot store is refused (fix-r18); after the referrals above, so a typed urgent sign or a kidney condition still refers (S7) */
   if(profileRefused(body&&body.profile))return {error:"bad_request"};
-  if(profilePartial(body&&body.profile))return {error:"body_partial"};
-  if((kind==="meals"||kind==="rescue")&&medsTypedHold(body&&body.ctx&&body.ctx.text,p))return {error:"meds_typed"};   /* typed insulin or sugar tablets with a set-up that does not say so: the phone asks to update My food (fix-r21; owner 22 Nov); after the referrals and the refusals above */   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
+  if(profilePartial(body&&body.profile))return {error:"body_partial"};   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
+  if((kind==="meals"||kind==="rescue")&&medsTypedHold(body&&body.ctx&&body.ctx.text,p))return {error:"meds_typed"};   /* typed insulin or sugar tablets with a set-up that does not say so: the phone asks to update My food (fix-r21; owner 22 Nov); after the referrals and the refusals above */
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";if(!p.slot&&medsUsual(p,"lunch"))return {error:"bad_request"};p.medsUsual=medsUsual(p,p.slot);   /* on medicines a tune names its meal (audit m4) */var cm=checkMeal(body&&body.meal&&typeof body.meal==="object"?keptPlate(body.meal):null,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};

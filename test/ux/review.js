@@ -184,6 +184,11 @@ const randomRoutes = (p) => Promise.all([p.route('**/api/meals', J(200, RANDPLAT
 const NOGRAIN = seed({ p: Object.assign({}, P, { health: 'none' }) });
 // ---------- the surfaces and states ----------
 // each: [name, seed, async (page, h) => bring the page to the state]; h has helpers
+// fix-r21 (Critic follow-up, F5): a figure's own message spans the whole row under the three boxes, never one box's width: for each of age, height and weight with a bad figure typed
+// the message is as wide as the row of boxes and sits below all three
+const BODYMSG = (p) => p.evaluate(() => { const row = document.querySelector('.fields').getBoundingClientRect(), inputs = ['age', 'cm', 'kg'].map(k => document.getElementById('body-' + k).getBoundingClientRect()), low = Math.max(...inputs.map(r => r.bottom));
+  return ['age', 'cm', 'kg'].map(k => { const m = document.getElementById('body-' + k + '-msg'), r = m.getBoundingClientRect(); return { k, text: m.textContent, w: Math.round(r.width), row: Math.round(row.width), below: r.top >= low - 0.5, lines: Math.round(r.height / parseFloat(getComputedStyle(m).lineHeight)) }; }); });
+const BODYMSGOK = (rs, where) => { for (const r of rs) { if (!r.text) throw new Error(where + ': the message of ' + r.k + ' is empty: ' + JSON.stringify(rs)); if (r.w < r.row - 1 || !r.below) throw new Error(where + ': the message of ' + r.k + ' is narrower than the row of boxes or not below all three: ' + JSON.stringify(r)); } };
 const STATES = [
   ['setup-1-goal-food', NEW, async (p) => { const r = await p.evaluate(() => ({ n: document.querySelector('#region-n').getAttribute('aria-checked'), t: document.querySelector('#v-setup').innerText }));
     if (r.n !== 'false') throw new Error('a home food is chosen for the person before they answer'); if (!/Choose a goal, what you eat and your home food to go on/.test(r.t)) throw new Error('Next is off with no reason given'); await noTagline(p); }],
@@ -324,6 +329,24 @@ const STATES = [
     await p.click('#body-card #log-skip'); await h.settle(300);
     const r = await p.evaluate(() => ({ said: (document.getElementById('said') || {}).textContent || '', logged: !!document.querySelector('#v-plate .card.logged'), body: !!document.getElementById('body-card') }));
     if (!/a skipped meal can drop your sugar/.test(r.said) || !r.logged || !r.body) throw new Error('"Skipped it" from a stored partial body on medicines does not log it with the warning: ' + JSON.stringify(r)); }],
+  // fix-r21 (Critic follow-up, F5): the three own messages (age 12, height 1.58, weight 5) each span the row, in the set-up and in My food
+  ['setup-3-body-msgs-full-row', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
+    for (const [k, v] of [['age', '12'], ['cm', '1.58'], ['kg', '5']]) { await p.fill('#body-' + k, v); await p.press('#body-' + k, 'Tab'); } await h.settle(300); BODYMSGOK(await BODYMSG(p), 'set-up'); }],
+  ['sheet-body-msgs-full-row', seed(), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle();
+    for (const [k, v] of [['age', '12'], ['cm', '1.58'], ['kg', '5']]) { await p.fill('#body-' + k, v); await p.press('#body-' + k, 'Tab'); } await h.settle(300); BODYMSGOK(await BODYMSG(p), 'My food');
+    await p.fill('#body-cm', '1.62'); await p.press('#body-cm', 'Tab'); await h.settle(200); BODYMSGOK([(await BODYMSG(p)).find(r => r.k === 'cm')], 'My food, height in metres'); }],
+  // fix-r21 (Critic follow-up, item 2): after a log from the body card of a partial body the Plate tab does not offer "Plan snack" (nothing can be planned: no request leaves the phone). The
+  // body card carries the next step; "Reopen lunch" opens the lunch body card with the log row again; the meal chips reach dinner, whose body card carries its log row
+  ['plate-body-stored-partial-logged-next', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await p.keyboard.press('Escape'); await h.settle(400);
+    await p.click('#body-card #log-other'); await h.settle(); await p.fill('#login', '2 aloo paratha with curd'); await p.press('#login', 'Enter'); await p.waitForSelector('#log-ok', { timeout: 20000 }); await h.settle(); await p.click('#log-ok'); await h.settle(1800);
+    const r = await p.evaluate(() => ({ logged: !!document.querySelector('#v-plate .card.logged'), next: !!document.getElementById('slot-next'), reopen: !!document.getElementById('slot-change'), add: (document.getElementById('add-body-missing') || {}).textContent, chips: document.querySelectorAll('#v-plate .meals .meal').length, row: !!document.querySelector('#body-card #log-other'), primary: [...document.querySelectorAll('#v-plate .btn.primary')].map(b => b.textContent.trim()) }));
+    if (!r.logged || r.next || !r.reopen || r.add !== 'Add my height and weight' || r.chips !== 4 || r.row) throw new Error('after a log from the body card of a partial body the Plate tab offers a plan, or lacks the way on: ' + JSON.stringify(r));
+    if (r.primary.length !== 1) throw new Error('more than one primary button on the logged Plate tab of a partial body: ' + JSON.stringify(r.primary));
+    await p.click('#meal-dinner'); await h.settle(300); const d = await p.evaluate(() => ({ row: !!document.querySelector('#body-card #log-other'), plan: !!document.getElementById('plate-card'), busy: !!document.querySelector('#v-plate .plate.wait') }));
+    if (!d.row || d.plan || d.busy) throw new Error('the dinner chip on a partial body does not show the body card with its log row and no plan: ' + JSON.stringify(d));
+    await p.click('#meal-lunch'); await h.settle(300); if (!(await p.$('#v-plate .card.logged'))) throw new Error('the lunch chip does not show the logged lunch again');
+    await p.click('#slot-change'); await h.settle(300); const a = await p.evaluate(() => ({ row: !!document.querySelector('#body-card #log-other'), skip: !!document.querySelector('#body-card #log-skip'), logged: !!document.querySelector('#v-plate .card.logged'), plan: !!document.getElementById('plate-card') }));
+    if (!a.row || !a.skip || a.logged || a.plan) throw new Error('"Reopen lunch" on a partial body does not open the body card with its log row: ' + JSON.stringify(a)); }],
   // fix-r21 (owner, 22 Nov, "Ask to update (Recommended)"): typed insulin or sugar tablets with a set-up that says no medicine hold the request; one line and a button that opens My food at the answer
   ['plate-ask-meds-typed', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin and glimepiride, a light dinner please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
     const r = await p.evaluate(() => ({ line: document.getElementById('v-plate').innerText, btn: !!document.getElementById('add-meds') }));

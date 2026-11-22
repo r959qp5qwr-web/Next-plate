@@ -36,6 +36,40 @@ for (const m of HI) for (const f of ['M nahi leta hoon', 'M nahi leti hoon', 'ma
 for (const t of ['insulin resistance diet', 'I have insulin resistance, a low gi dinner', 'low insulin index foods', 'insulin sensitivity foods', 'foods that spike insulin', 'insulin spikes after rice', 'what raises insulin levels', 'PCOS and insulin resistance, dinner',
   'diabetic dinner', 'I am diabetic, light dinner', 'main diabetic hoon, halka khana', 'sugar free dessert', 'Veg thali', 'something sweet', 'glucose tablets for lows', 'I take metformin', 'I take vitamin tablets', 'I take tablets for BP', 'sugar ki chai', 'sugar nahi chahiye',
   'tablet', 'insulin', 'glimepiride', 'sugar tablets', 'diabetes medicine', 'the insulin diet', 'low sugar dinner', 'no sugar tablets please']) NOT.push([t, 'unrelated, bare or neutral']);
+// the design of the net (Critic follow-up on 5fa7ba1): a negation counts only when it governs the medicine; a word that makes it something else counts only right after the
+// medicine word; may/might/will/would/could/should before it is not present use; a clause that opens with a use verb is first person; "dependent" and "user" are use. Each pattern both ways.
+const HELD2 = [
+  // a word that used to cancel the whole clause now sits away from the medicine ("sugar free", "low sugar", "levels", "off", "index", "instead", "spikes", "free" after an and)
+  'I take M and eat sugar free biscuits', 'I take M and want sugar free sweets', 'I take M and low sugar dessert please', 'I take M and I want a low sugar dessert', 'I take M, sugar free please',
+  'I take M and my sugar levels are high at night', 'I take M and my sugar is under control', 'I take M and want to avoid sugar spikes', 'I take M and glucose index of the meal matters',
+  'I take M and I am off work today', 'I take M and eat rice instead of roti', 'I take M and no sweets please', 'I take M and I don\'t eat rice', 'I take M and don\'t eat rice at night',
+  'I take M and sugar free tea', 'I\'m on M and free for dinner', 'I use M and want a light, sugar free dinner', 'I take M, I\'m off sugar', 'I take M and avoid fried food',
+  'I don\'t eat rice and take M', 'I do not eat sugar and I take M', 'I do not eat sweets and take M every morning', 'I stopped sweets and take M', 'I never eat out and I take M',
+  // a negation of use that does not mean "no medicine": never skip, never miss, no problem
+  'I never skip my M', 'I never miss M', 'I do not forget my M', 'I don\'t stop M', 'I have no problem taking M', 'no worries, I take M',
+  // Indian English drops the I: a clause that opens with a use verb is first person
+  'Started M this week', 'Taking M since 2019', 'Injecting M daily', 'On M', 'Prescribed M last week', 'Took M this morning', 'Start M tonight, what dinner', 'Skipped M today, what lunch',
+  // dependent and user
+  'I\'m M dependent', 'I am M dependent', 'Im M dependent', 'M user here', 'M dependent', 'Type 1, M dependent', 'M-dependent, light dinner', 'Type 2 and M user, what dinner',
+  // Hinglish: a verb after, a negation that belongs to something else
+  'main M leta hoon aur chawal nahi khata', 'main M leti hoon aur meetha nahi', 'M leta hoon, chini nahi'].map(x => [x, 'new pattern']);
+const NOT2 = [
+  // not a present use
+  'doctor said I may need M later', 'I might start M next year', 'I will take M soon', 'I could need M one day', 'I would take M if the doctor says', 'doctor wants me to start M', 'should I take M?', 'I\'ll start M next week',
+  'I am going to start M', 'maybe I need M', 'I may be put on M', 'I plan to start M', 'I hope to stop M', 'I want to avoid M',
+  // a negation that governs the medicine, with a chain of medicine names
+  'I don\'t take M or sugar tablets', 'I don\'t take M and glimepiride', 'no M and no sugar tablets', 'I stopped M and gliclazide', 'I never took M or glimepiride', 'I\'m not on M or any tablets',
+  'I can\'t take M', 'I won\'t take M', 'I\'m allergic to M', 'I refuse M', 'instead of M, what can I eat', 'alternatives to M for dinner', 'a substitute for M',
+  // a word right after the medicine that makes it something else
+  'I have M resistance', 'I take supplements for M resistance', 'my M levels are high', 'I need to bring my M levels down', 'my M spikes after rice', 'low M index foods for me', 'M-free dinner please', 'I want an M free diet', 'my M sensitivity is low',
+  'I am worried about M production', 'I read about the M hormone'].map(x => [x, 'new pattern']);
+const RESIST = /resistance|levels|spikes|index|free|sensitivity|production|hormone/;
+for (const m of ['insulin', 'glimepiride', 'sugar tablets', 'Lantus']) { for (const [f] of HELD2) for (const w of WRAP.slice(0, 4)) { if (/\bM (?:dependent|user)|\bM-dependent/.test(f) && /sugar tablets/.test(m)) continue; HELD.push([w(f.replace(/M/g, m)), 'new: ' + f]); }
+  for (const [f] of NOT2) { if (RESIST.test(f) && m !== 'insulin') continue; for (const w of WRAP.slice(0, 4)) NOT.push([w(f.replace(/M/g, m)), 'new: ' + f]); } }
+for (const [t] of [['I take insulin and eat sugar free biscuits'], ['I take insulin, low sugar levels at night'], ['Started insulin this week'], ['I\'m insulin dependent'], ['Insulin user here']]) HELD.push([t, 'the Critic\'s own phrase']);
+for (const t of ['doctor said I may need insulin later', 'my husband is on gliclazide', 'I\'m scared of insulin']) NOT.push([t, 'the Critic\'s own phrase']);
+const HELD_BEFORE = 1183, NOT_BEFORE = 1138;
+
 // profiles: a set-up that does not say insulin or sugar tablets (held) and one that does (no hold)
 const PROF = (o) => Object.assign({ goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, o);
 const OPEN = [['no condition', PROF({})], ['diabetes, no medicine', PROF({ health: 'diabetes', meds: 'no' })], ['high BP', PROF({ health: 'bp' })], ['diabetes with BP, no medicine', PROF({ health: 'diabetes', meds: 'no', bp: true })], ['no body figures', PROF({ age: 0, cm: 0, kg: 0 })]];

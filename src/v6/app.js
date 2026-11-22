@@ -339,7 +339,7 @@ var bodyGate=function(){};
 function bodyQs(host,after){
   var a=q(host,"For your targets");a.appendChild(el("p","fine","Calories and protein for each meal are worked out from these. Give all three. If you leave all three empty, plates have no calorie or protein target."));
   choiceRow(a,"sex",function(v){return P.sex===v;},function(v){P.sex=v;after();},2);
-  var f=el("div","fields");
+  var f=el("div","fields"),msgs=[];
   [["age","Age (years)","years"],["cm","Height (cm)","cm or ft"],["kg","Weight (kg)","kg"]].forEach(function(x){
     var l=el("label");l.appendChild(el("span","cap",x[1]));var i=el("input");i.type="number";i.inputMode="numeric";i.min=String(BODYB[x[0]][0]);i.max=String(BODYB[x[0]][1]);i.id="body-"+x[0];i.placeholder=x[2];if(P[x[0]])i.value=String(P[x[0]]);
     if(x[0]==="cm")i.inputMode="decimal";
@@ -349,7 +349,9 @@ function bodyQs(host,after){
       P[x[0]]=r.v;if(r.good&&r.said)i.value=String(r.v);gate();
       msg.textContent=!i.value?"":!r.good?(x[0]==="cm"?"Type your height in cm, for example 162, or in feet, for example 5.4.":x[1].replace(/ \(.*/,"")+" between "+b[0]+" and "+b[1]+" "+x[2]+", please."):r.said;
       msg.className=r.good?"fine":"fine err";after(true);});
-    var msg=el("p","fine");msg.setAttribute("aria-live","polite");msg.id="body-"+x[0]+"-msg";l.appendChild(i);l.appendChild(msg);f.appendChild(l);});
+    var msg=el("p","fine");msg.setAttribute("aria-live","polite");msg.id="body-"+x[0]+"-msg";i.setAttribute("aria-describedby",msg.id);l.appendChild(i);f.appendChild(l);msgs.push(msg);});
+  /* a field's own message spans the whole row under the three boxes, never one box's width (Critic r21 F5, second part); legible.css gives it the row */
+  msgs.forEach(function(m){f.appendChild(m);});
   a.appendChild(f);
   /* one plain line says which figure is missing; the step cannot be finished while one or two are filled (the button is off), and it updates as the person types */
   var nd=el("p","fine err");nd.id="body-need";nd.tabIndex=-1;nd.setAttribute("aria-live","polite");a.appendChild(nd);
@@ -475,7 +477,8 @@ function loggedCard(s){
     c.appendChild(el("p","tsub",PL?"The rest of the day adjusts. No meal is asked to make up for it in one sitting.":"Add your age, height and weight so the rest of the day can adjust."));}   /* without targets nothing adjusts (R2-B3 038-1) */
   else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈\u00A0"+Math.round(s.kcal)+"\u00A0kcal · "+Math.round(s.protein)+"\u00A0g protein"));c.appendChild(p);}
   var row=el("div","pick-acts"),ch=btn("btn","Reopen "+nm.toLowerCase(),null,"slot-change");ch.addEventListener("click",act(null,function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");}));row.appendChild(ch);
-  var nf=nextOffer(),nx=nf.meal;if(nf.low){var lw=el("p","tsub","Little is left for a snack today.");lw.id="snack-low";c.appendChild(lw);}
+  /* on a partial body nothing can be planned (no request leaves the phone), so "Plan snack" is not offered: the body card under this one carries the next step, and the meal chips above reach another meal's log (Critic r21 follow-up) */
+  var held=P.done&&!!bodyNeed(),nf=held?{meal:"",low:false}:nextOffer(),nx=nf.meal;if(nf.low){var lw=el("p","tsub","Little is left for a snack today.");lw.id="snack-low";c.appendChild(lw);}
   if(nx){var go=btn("btn primary","Plan "+mealName(nx).toLowerCase(),"chev","slot-next");go.addEventListener("click",function(){pickMeal(nx);render();$("scroll").scrollTop=0;});row.appendChild(go);}
   c.appendChild(row);return c;
 }
@@ -587,7 +590,7 @@ function composer(host){
 function renderPlate(){
   var v=$("v-plate");v.textContent="";
   if(blocked()){v.appendChild(blockedCard());return;}
-  if(P.done&&bodyNeed()){var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
+  if(P.done&&bodyNeed()){choices(v);var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
   if(s&&!asked){v.appendChild(loggedCard(s));}
