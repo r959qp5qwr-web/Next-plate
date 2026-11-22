@@ -162,10 +162,14 @@ function directive(p,pl,hooks,meal,done){
 
 /* ---------- request validation for the food file (the phone sends numbers and short words, never prompt text) ----------
    fix-r18, the intake rule: a figure the phone can hold is read as sent, and one past the bound the phone can hold makes the request a bad_request
-   (readFile gives null); nothing is clamped. The bounds are what the phone can store: a logged meal up to 4,000 kcal and 300 g protein (the log's
-   own ranges), the day the sum of four meals, a pattern list up to 16 (one late dinner, four skipped meals, eight repeated foods at most). A
-   missing figure is 0, as it was; a list longer than the phone makes is refused, not cut. */
-var FILEB={kcal:16000,protein:1200,carbs:2000,fats:1200,fiber:320,mealKcal:4000,mealProtein:300,patterns:16,meals:4,recent:10};
+   (readFile gives null); nothing is clamped. The bounds are the most any shipped page can write into a logged meal (fix-r21, safety audit of 7935ec0, m2: a meal
+   logged on 6febc1a at more than 4,000 kcal blocked every request until 4 am). Per meal, from the writers of 6febc1a (the pages after it write less):
+   the log (kcal 1-5000, protein 0-300, carbs 0-600, fats 0-300, fiber 0-100, and kcal recomputed from the macros when they differ by a fifth: up to 6,300),
+   a Rescue dish (kcal 40-4000, protein 0-300, carbs 0-500, fats 0-300, fiber 0-80) plus up to four moves (+300 kcal, +40 protein, +60 carbs, +30 fats, +20 fiber each:
+   5,200 kcal, 460 g protein, 740 g carbs, 420 g fats, 160 g fiber), a composed plate (2,500 kcal, 250 g protein after its swaps and changes: 3,300 kcal, 330 g). The
+   day is four such meals (the latest event of each slot), a pattern list up to 16 (one late dinner, four skipped meals, eight repeated foods at most). A missing
+   figure is 0, as it was; a list longer than the phone makes is refused, not cut. test/safety/phone-states.js writes stores from these ranges. */
+var FILEB={kcal:25200,protein:1840,carbs:2960,fats:1680,fiber:640,mealKcal:6300,mealProtein:460,patterns:16,meals:4,recent:10};
 function readFile(x,par){
   var f={today:{kcal:0,protein:0,carbs:0,fats:0,fiber:0,meals:[],lastHoursAgo:null,lastKcal:0},patterns:[],slotProtein:{},days:0,recent:[]},bad=false;
   if(!x||typeof x!=="object")return f;var t=x.today||{};
@@ -822,20 +826,54 @@ function typedReferral(text,p){var t=norm(typeof text==="string"?text:"");if(!t|
    than a person's own usual size). 0 when the person is not on that medicine. */
 function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure"))||!par.split[meal])return 0;
   var day=dayTargets6(p,par),k=day?day.kcal:par.floor[p.sex==="m"?"m":"f"];return Math.round(k*par.split[meal]/10)*10;}
+/* ---------- typed medicine words (fix-r21; owner, 22 Nov, option survey "Ask to update (Recommended)") ----------
+   S5 and S6 read the set-up's answers. A client whose set-up says no condition, or no medicine, who types that they take insulin or sugar tablets in the ask box or
+   a Rescue dish gets plates with no grain rule and no usual size. So typed text that says the client takes insulin or a sugar tablet holds the request: the phone
+   says so in one line and a tap opens My food (the engine answers meds_typed even if a phone skips the hold). It reads first-person present use only, clause by clause,
+   in English, Hinglish and common misspellings; a negation ("I don't take insulin", "no insulin", "stopped insulin", "insulin nahi leta"), another person ("my mother takes
+   insulin", "papa insulin leta hai") and a word that makes it something else ("insulin resistance") do not hold. The medicine words are the set-up question's own ("insulin, or
+   sugar tablets such as glimepiride or gliclazide") and the sulfonylurea and insulin names the app already uses; the brand names are the builder's, not clinically reviewed. The log
+   is not held: it counts what was eaten and S6 does not read it. Typed "I am diabetic" with no medicine word is not part of this net (an open owner question). No look-behind. */
+var MEDNAME="insulins?|lantus|humulin|novorapid|novomix|mixtard|tresiba|levemir|basalog|glimepiride|gliclazide|glipizide|glibenclamide|glyburide|amaryl|glimy|diamicron|daonil|"+
+  "(?:sugar|shugar|suger|diabetes|diabetic)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?)|"+
+  "(?:tablets?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes)";
+var MEDRX=new RegExp("\\b(?:"+MEDNAME+")\\b","i");
+var MEDNEG=/\b(?:no|not|dont|don'?t|do\s+not|doesn'?t|didn'?t|never|stopped|stop|quit|quitting|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|used\s+to|no\s+longer|avoid\w*|afraid|scared|resistan\w*|sensitiv\w*|spikes?|levels?|response|production|hormone|index|free|alternatives?|replace\w*|instead)\b/i;
+var MEDTHIRD=/\b(?:he|she|they|his|her|their|him|them|mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grand\w+|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|relative|colleague|neighbou?r|patient|client|someone|somebody|person|people|guest|guests|visitor|kid|kids|child|children|baby|in-?laws?|saas|sasur|unhe|unko|unke|unka|uski|uska|iski|iska|diabetics)\b/i;
+var MEDUSE=/\b(?:take|taking|took|use|using|inject|injecting|injected|on|have|having|get|getting|got|need|needs|skip|skipped|forgot|miss|missed|started|start|prescribed|dose|doses|shots?)\b/i;
+var MEDHIVERB=/\b(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|khata|khati|le\s+raha|le\s+rahi|le\s+rha|le\s+rhi|lena\s+padta|lena\s+padti|lagta|lagti)\b/i;
+function medsClause(c){
+  var m=MEDRX.exec(c);if(!m)return false;
+  if(MEDNEG.test(c)||MEDTHIRD.test(c))return false;
+  var me=new RegExp("\\bmy\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\bon\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:mera|meri|mere)\\s+(?:\\w+\\s+){0,2}(?:"+MEDNAME+")\\b|\\b(?:tablets?|pills?|medicines?|golis?|dawai|dawa)\\s+(?:for|ke\\s+liye)\\s+my\\s+(?:sugar|shugar|suger|diabetes)\\b","i");
+  if(me.test(c))return true;
+  if(/\b(?:i|i'm|im|i've|ive|we)\b/i.test(c)&&MEDUSE.test(c))return true;
+  if(MEDHIVERB.test(c)&&/\b(?:main|mai|mujhe|hoon|hu|hun|hoo)\b/i.test(c))return true;
+  return false;
+}
+function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t||t.length>2000)return false;
+  return t.split(/[.;!?\n,]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/).some(medsClause);}
+function medsOnSetup(p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure");}
+function medsTypedHold(t,p){return !!p&&!medsOnSetup(p)&&typedMeds(t);}
+/* the phone's check on a request body (src/v6/app.js api()): plates and Rescue carry the typed text, the profile is read as plan() reads it */
+function medsTypedBody(path,body){if(!/\/(?:meals|rescue)$/.test(String(path||"")))return false;var p=readProfile(body&&body.profile);return !!p&&medsTypedHold(body&&body.ctx&&body.ctx.text,p);}
 function carriesPhoto(b){if(!b||typeof b!=="object")return false;var x=b.ctx&&typeof b.ctx==="object"?b.ctx:{};
   return [b.image,x.image].some(function(v){return v!=null&&v!==""&&v!==false;})||!!b.photo||!!x.photo;}
 plan=function(kind,body){
   if(KINDS.indexOf(kind)<0)return {error:"bad_request"};   /* first: a kind not listed (the menu, owner 17 Nov) gets no prompt, reply or check */
   var p=readProfile(body&&body.profile);if(!p)return {error:"bad_request"};
-  if(p.health==="kidney"||p.health==="preg")return {reply:{status:"refer",read:SAFETY,meals:[]}};
-  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
+  var tr=typedReferral(body&&body.ctx&&body.ctx.text,p);
+  /* a kidney condition or pregnancy is referred whatever else is sent; an urgent sign typed with it still gets the line to get help now first (fix-r21; safety audit of 7935ec0, watch note) */
+  if(p.health==="kidney"||p.health==="preg")return {reply:tr&&tr.urgent?tr:{status:"refer",read:SAFETY,meals:[]}};
+  if(tr)return {reply:tr};   /* a kidney condition, pregnancy or an urgent sign typed in any box is referred, not sent to the model (S7); the phone runs the same function */
   /* No picture reaches the model, on any kind (owner, 17 Nov, option survey, "Remove menu reading (Recommended)"; their reason: "Just a
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
   if(carriesPhoto(body))return {error:"bad_request"};
   /* a body figure the set-up cannot store is refused (fix-r18); after the referrals above, so a typed urgent sign or a kidney condition still refers (S7) */
   if(profileRefused(body&&body.profile))return {error:"bad_request"};
-  if(profilePartial(body&&body.profile))return {error:"body_partial"};   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
+  if(profilePartial(body&&body.profile))return {error:"body_partial"};
+  if((kind==="meals"||kind==="rescue")&&medsTypedHold(body&&body.ctx&&body.ctx.text,p))return {error:"meds_typed"};   /* typed insulin or sugar tablets with a set-up that does not say so: the phone asks to update My food (fix-r21; owner 22 Nov); after the referrals and the refusals above */   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
   if(kind==="tune"){p.slot=okOpt("meal",body&&body.slot)?body.slot:"";if(!p.slot&&medsUsual(p,"lunch"))return {error:"bad_request"};p.medsUsual=medsUsual(p,p.slot);   /* on medicines a tune names its meal (audit m4) */var cm=checkMeal(body&&body.meal&&typeof body.meal==="object"?keptPlate(body.meal):null,p);if(!cm.meal)return {error:"bad_request"};
     return {prompt:buildTunePrompt(p,cm.meal),schema:SCH.tune,image:false,weight:.25,check:function(d){return checkTune(d,p,cm.meal);}};}
   var c=readCtx(body&&body.ctx,kind);if(!c)return {error:"bad_request"};
