@@ -31,12 +31,12 @@ const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n
 
 const section = (name, f) => { try { f(); } catch (e) { add('section ran: ' + name, false, (e && e.message) || String(e)); } };
 // ---------- the phone: its own functions, on a P like the set-up leaves ----------
-const PHONE_FNS = ['has', 'healthOf', 'setCond', 'bodyRead', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'composedWhy'];
+const PHONE_FNS = ['has', 'healthOf', 'setCond', 'bodyRead', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'composedWhy', 'bodyNeed', 'bodyHold'];
 const missingFns = PHONE_FNS.filter(n => !grab(n));
 add('the phone\'s intake functions are in src/v6/app.js', missingFns.length === 0, 'not found: ' + missingFns.join(', '));
 const phoneSrc = PHONE_FNS.map(grab).filter(Boolean).join('\n');
 const phoneFns = PHONE_FNS.filter(n => grab(n));
-const makePhone = safe(() => vm.runInContext('(function(P,C,APP,FILE,now,hr,CLOCK){var CONDS=["kidney","preg","diabetes","bp"];' + phoneSrc + '\nreturn {' + phoneFns.map(n => n + ':' + n).join(',') + '};})', A), null);
+const makePhone = safe(() => vm.runInContext('(function(P,C,APP,FILE,now,hr,CLOCK){var CONDS=["kidney","preg","diabetes","bp"],UI={sheet:"",bodyOpened:false},opened=[];function openSheet(k,at){opened.push(at);}' + phoneSrc + '\nreturn {' + phoneFns.map(n => n + ':' + n).join(',') + ',opened:opened};})', A), null);
 const P0 = { goal: 'hold', focus: 'none', meds: '', diet: 'veg', health: 'diabetes', conds: ['diabetes'], region: 'n', leave: [], sex: 'f', age: 0, cm: 0, kg: 0, act: 'low', done: true };
 const NOW = (h) => new Date(2026, 10, 18, Math.floor(h), Math.round((h % 1) * 60), 0);
 const EMPTY_FILE = () => ({ today: { kcal: 0, protein: 0, carbs: 0, fats: 0, fiber: 0, meals: [], lastHoursAgo: null, lastKcal: 0 }, patterns: [], slotProtein: {}, days: 0, recent: [] });
@@ -90,33 +90,43 @@ function goldenCells(OLDKG) {
 const GOLD = path.join(__dirname, 'intake-golden.json');
 if (WRITE_GOLDEN) { const cells = goldenCells(true); fs.writeFileSync(GOLD, JSON.stringify({ about: 'sha256 prefixes of the prompt, the schema and the check\'s answer to a fixed reply, for requests with every body figure given and with none, from the page at 21a8bcc (before fix-r18). test/safety/intake.js compares the page under test to these; a difference is a change to what the model is told or asked for.', source: 'hosted/v6/index.html at 21a8bcc5302f', cells }, null, 1) + '\n'); console.log(`wrote ${Object.keys(cells).length} cells to ${GOLD}`); process.exit(0); }
 
-// ---------- B1: the reproduction (a woman on insulin, 45 years, height and weight left empty) ----------
-section('B1 reproduction', () => { const S = phoneState({ P: { meds: 'yes', sex: 'f', age: 45, cm: 0, kg: 0, act: 'low' }, meal: 'lunch' }), body = mealsBody(S);
+// ---------- B1: the reproduction (a woman on insulin, 45 years) ----------
+// With the age alone (height and weight left empty) the engine used to state 30 kg, a day target of 860 and a usual size of 340 against the phone's 480. Since fix-r20
+// (owner, 22 Nov: "Ask for the missing figure") that request is never sent and the engine refuses it (body_partial); the same client with all three empty is planned,
+// at the usual sizes, and the cells below hold what B1 was about for that request.
+section('B1 reproduction', () => { const S0 = phoneState({ P: { meds: 'yes', sex: 'f', age: 45, cm: 0, kg: 0, act: 'low' }, meal: 'lunch' }), b0 = mealsBody(S0), nd = S0.fn.bodyNeed();
+  add('B1 the phone asks for the missing figures in one line and does not send', !!nd && nd.line === 'Add your height and weight too, or leave all three empty.' && nd.at === 'body-cm', JSON.stringify(nd));
+  for (const kind of ['meals', 'rescue', 'log', 'tune']) { const pl = safe(() => A.plan(kind, J(Object.assign({}, b0, { ctx: Object.assign({}, b0.ctx, { text: 'Veg thali' }), slot: 'lunch', meal: Object.assign(plateAt(700), { minutes: 20 }) }))), { error: 'threw' });
+    add('B1 the engine refuses an age with no height or weight, on every kind, with its own code', pl.error === 'body_partial' && Object.keys(pl).length === 1, `${kind}: ${JSON.stringify(pl).slice(0, 80)}`); }
+  const S = phoneState({ P: { meds: 'yes', sex: 'f', age: 0, cm: 0, kg: 0, act: 'low' }, meal: 'lunch' }), body = mealsBody(S);
   const phoneUsual = A.medsUsual(S.fn.profileOut(), 'lunch'), plan = A.plan('meals', body), s = stated(plan.prompt || '');
   add('B1 phone: no height or weight gives the day split of the energy floor', phoneUsual === 480, 'the phone says ' + phoneUsual);
-  add('B1 the prompt states no weight that was not given', s.kg === null, 'prompt: "' + s.line + '"');
-  add('B1 the prompt states no day target when height and weight are not given', s.day === null, 'Day target: about ' + s.day + ' kcal');
-  add('B1 the prompt states the phone\'s usual size as the minimum', s.floor === phoneUsual && s.target === null, 'prompt floor ' + s.floor + ', target line ' + s.target + ', phone ' + phoneUsual);
-  add('B1 a plate under the phone\'s usual size is dropped, one at it is shown', !shownPlate(plan, phoneUsual - 10) && !!shownPlate(plan, phoneUsual), 'at ' + (phoneUsual - 10) + ' shown: ' + !!shownPlate(plan, phoneUsual - 10) + '; at ' + phoneUsual + ' shown: ' + !!shownPlate(plan, phoneUsual));
-  add('B1 a plate at 340 kcal (the figure the old engine stated) is not shown', !shownPlate(plan, 340), 'a 340 kcal plate is shown');
+  add('B1 all three empty: the prompt states no weight that was not given', s.kg === null && s.years === null, 'prompt: "' + s.line + '"');
+  add('B1 all three empty: the prompt states no day target', s.day === null, 'Day target: about ' + s.day + ' kcal');
+  add('B1 all three empty: the prompt states the phone\'s usual size as the minimum', s.floor === phoneUsual && s.target === null, 'prompt floor ' + s.floor + ', target line ' + s.target + ', phone ' + phoneUsual);
+  add('B1 all three empty: a plate under the phone\'s usual size is dropped, one at it is shown', !shownPlate(plan, phoneUsual - 10) && !!shownPlate(plan, phoneUsual), 'at ' + (phoneUsual - 10) + ' shown: ' + !!shownPlate(plan, phoneUsual - 10) + '; at ' + phoneUsual + ' shown: ' + !!shownPlate(plan, phoneUsual));
+  add('B1 all three empty: a plate at 340 kcal (the figure the old engine stated) is not shown', !shownPlate(plan, 340), 'a 340 kcal plate is shown');
   const rp = A.plan('rescue', J({ profile: body.profile, ctx: Object.assign({}, body.ctx, { text: 'Veg thali' }), file: body.file })), rs = stated(rp.prompt || '');
-  add('B1 Rescue: no weight that was not given; no move takes the dish under the phone\'s usual size', rs.kg === null && (rescueMovesFor(body.profile, 'lunch', 700) || { hacks: [] }).hacks.every(h => (h.deltaKcal || 0) >= 0 || 700 + h.deltaKcal >= phoneUsual), 'prompt: "' + rs.line + '"');
+  add('B1 all three empty: Rescue states no weight; no move takes the dish under the phone\'s usual size', rs.kg === null && (rescueMovesFor(body.profile, 'lunch', 700) || { hacks: [] }).hacks.every(h => (h.deltaKcal || 0) >= 0 || 700 + h.deltaKcal >= phoneUsual), 'prompt: "' + rs.line + '"');
   const tp = A.plan('tune', J({ profile: body.profile, slot: 'lunch', meal: Object.assign(plateAt(phoneUsual + 20), { minutes: 20 }) })), ts = stated(tp.prompt || '');
-  add('B1 tune: no weight that was not given, the usual size the phone\'s', ts.kg === null && ts.tuneFloor === phoneUsual, 'prompt: "' + ts.line + '", floor ' + ts.tuneFloor);
+  add('B1 all three empty: tune states no weight and the usual size the phone\'s', ts.kg === null && ts.tuneFloor === phoneUsual, 'prompt: "' + ts.line + '", floor ' + ts.tuneFloor);
 });
 
 // ---------- the audit's 48 cells ----------
 // Age 0 or 45, height 0 or 160, weight 0 or 70, woman or man, breakfast, lunch and dinner, on insulin: the lowest plate the engine shows (scanned in
 // steps of 10 kcal) against the phone's usual size (medsUsual on the raw profile). With all three figures or none they agreed on 21a04a3; of the 36
 // partial cells 16 differed (10 with the engine lower).
-section('audit cells', () => { let partial = 0, differ = 0, lower = 0, whole = 0, wholeDiffer = 0;
+section('audit cells', () => { let partial = 0, differ = 0, whole = 0, wholeDiffer = 0;
   for (const age of [0, 45]) for (const cm of [0, 160]) for (const kg of [0, 70]) for (const sex of ['f', 'm']) for (const meal of ['breakfast', 'lunch', 'dinner']) {
     const S = phoneState({ P: { meds: 'yes', sex, act: 'low' }, meal }); setBody(S.fn, S.P, 'age', age); setBody(S.fn, S.P, 'cm', cm); setBody(S.fn, S.P, 'kg', kg);
-    const body = mealsBody(S), U = A.medsUsual(S.fn.profileOut(), meal), plan = A.plan('meals', body); let low = null;
-    for (let k = 40; k <= 1600 && low === null; k += 10) if (shownPlate(plan, k)) low = k;
-    const n3 = (age > 0) + (cm > 0) + (kg > 0), part = n3 > 0 && n3 < 3; if (part) { partial++; if (low !== U) { differ++; if (low < U) lower++; } } else { whole++; if (low !== U) wholeDiffer++; }
-    add('audit: the lowest plate the engine shows is the phone\'s usual size, in every cell', low === U, `age ${age || '-'} cm ${cm || '-'} kg ${kg || '-'} ${sex} ${meal}: engine ${low}, phone ${U}`); }
-  console.log(`audit cells: ${partial} partial cells, ${differ} where the engine\'s lowest shown plate differs from the phone\'s usual size (${lower} with the engine lower); ${whole} cells with all three figures or none, ${wholeDiffer} differ`); });
+    const body = mealsBody(S), U = A.medsUsual(S.fn.profileOut(), meal), plan = A.plan('meals', body), n3 = (age > 0) + (cm > 0) + (kg > 0), part = n3 > 0 && n3 < 3;
+    if (part) { partial++; const nd = S.fn.bodyNeed(), refused = plan.error === 'body_partial' && Object.keys(plan).length === 1;
+      if (!refused || !nd) differ++;
+      add('audit: a partial body entry is refused by the engine and asked for by the phone, in every cell', refused && !!nd && /^Add your .+ too, or leave all three empty\.$/.test(nd.line), `age ${age || '-'} cm ${cm || '-'} kg ${kg || '-'} ${sex} ${meal}: engine ${JSON.stringify(plan).slice(0, 40)}, phone ${nd && nd.line}`); continue; }
+    let low = null; for (let k = 40; k <= 1600 && low === null; k += 10) if (shownPlate(plan, k)) low = k;
+    whole++; if (low !== U) wholeDiffer++;
+    add('audit: with all three figures or none the lowest plate the engine shows is the phone\'s usual size', low === U, `age ${age || '-'} cm ${cm || '-'} kg ${kg || '-'} ${sex} ${meal}: engine ${low}, phone ${U}`); }
+  console.log(`audit cells: ${partial} partial cells (${differ} not refused and asked for), ${whole} cells with all three figures or none (${wholeDiffer} where the lowest shown plate differs from the phone's usual size)`); });
 
 // ---------- the hour: null is not given, 0 is midnight ----------
 // The page sends hour:null on every tab that is not the meal of the clock; +null is 0, which the engine read as midnight, so a dinner planned
@@ -140,15 +150,22 @@ const BF = { age: [0, 18, 45], cm: [0, 120, 160], kg: [0, 30, 70] }, SEX = ['f',
 // medicine answers: insulin or tablets (yes), not sure, the question never answered (diabetes ticked from My food), no, and no diabetes
 const MEDS = [['yes', { health: 'diabetes', conds: ['diabetes'], meds: 'yes' }], ['unsure', { health: 'diabetes', conds: ['diabetes'], meds: 'unsure' }], ['unanswered', { health: 'diabetes', conds: ['diabetes'], meds: '' }],
   ['no', { health: 'diabetes', conds: ['diabetes'], meds: 'no' }], ['no diabetes', { health: 'none', conds: [], meds: '' }]];
-let cellsA = 0, cellsB = 0, cellsPartial = 0, partialDiffer = 0, probes = 0, changes = 0;
+let cellsA = 0, cellsB = 0, cellsPartial = 0, probes = 0, changes = 0;
 const medsCells = [];
 for (const age of BF.age) for (const cm of BF.cm) for (const kg of BF.kg) for (const sex of SEX) for (const act of ACT) for (const meal of MEALS) for (const [mname, mp] of MEDS) {
   const S = phoneState({ P: Object.assign({ sex, act }, mp), meal }); setBody(S.fn, S.P, 'age', age); setBody(S.fn, S.P, 'cm', cm); setBody(S.fn, S.P, 'kg', kg);
   const label = `age ${age || '-'} cm ${cm || '-'} kg ${kg || '-'} ${sex || 'sex?'} ${act || 'act?'} ${meal} meds ${mname}`;
   add('grid: the phone keeps the figures typed and no others (a figure not typed is 0)', S.P.age === age && S.P.cm === cm && S.P.kg === kg, `${label}: ${S.P.age}/${S.P.cm}/${S.P.kg}`);
-  const body = mealsBody(S), prof = S.fn.profileOut(), U = A.medsUsual(prof, meal), eU = A.medsUsual(A.readProfile(body.profile), meal);
+  const body = mealsBody(S), prof = S.fn.profileOut(), U = A.medsUsual(prof, meal), eU = A.medsUsual(A.readProfile(body.profile), meal), n3 = (age > 0) + (cm > 0) + (kg > 0);
+  if (n3 > 0 && n3 < 3) {   // a partial body entry: the engine refuses it, and the phone says which figure is missing, cannot finish the step and sends nothing (plates, Rescue, tune) or sends the log without the figures
+    cellsA++; cellsPartial++; const nd = S.fn.bodyNeed(), miss = [!age && 'age', !cm && 'height', !kg && 'weight'].filter(Boolean), want = 'Add your ' + (miss.length > 1 ? miss.join(' and ') : miss[0]) + ' too, or leave all three empty.';
+    const pl = A.plan('meals', body), held = S.fn.bodyHold('/api/meals', J(body)), lb = J(body), logHeld = S.fn.bodyHold('/api/log', lb), asked = S.fn.opened.length;
+    const bad = []; if (pl.error !== 'body_partial' || Object.keys(pl).length !== 1) bad.push('engine ' + JSON.stringify(pl).slice(0, 40)); if (!nd || nd.line !== want) bad.push('phone line "' + (nd && nd.line) + '"'); if (held !== true) bad.push('the phone would send plates');
+    if (logHeld !== false || lb.profile.age !== 0 || lb.profile.cm !== 0 || lb.profile.kg !== 0) bad.push('the log goes with a body figure or is held'); if (A.plan('log', J({ profile: lb.profile, ctx: { meal, text: '2 roti and dal' } })).error) bad.push('the log without the figures is refused');
+    if (!nd || (nd.at !== (!age ? 'body-age' : !cm ? 'body-cm' : 'body-kg'))) bad.push('opens at ' + (nd && nd.at)); if (asked > 1) bad.push('opened the step ' + asked + ' times');
+    add('grid: a partial body entry is refused by the engine (body_partial) and asked for by the phone: it names the missing figure, holds plates, Rescue and tune, and sends the log without the three', bad.length === 0, `${label}: ${bad.join('; ')}`); continue; }
   const PL = A.planDay(prof, S.FILE, meal, S.fn.appetite()), plan = A.plan('meals', body), s = stated(plan.prompt || '');
-  cellsA++; const given3 = (age > 0) + (cm > 0) + (kg > 0); if (given3 > 0 && given3 < 3) cellsPartial++;
+  cellsA++;
   const diffs = [];
   if (U !== eU) diffs.push(`usual size: phone ${U}, engine ${eU}`);
   if ((s.years || null) !== (age ? String(age) : null)) diffs.push(`prompt states ${s.years} years, given ${age}`);
@@ -156,7 +173,6 @@ for (const age of BF.age) for (const cm of BF.cm) for (const kg of BF.kg) for (c
   if (s.day !== (PL ? PL.day.kcal : null)) diffs.push(`day target: phone ${PL ? PL.day.kcal : 'none'}, prompt ${s.day}`);
   if (s.target !== (PL ? (U ? Math.max(PL.target.kcal, U) : PL.target.kcal) : null)) diffs.push(`meal target: phone ${PL ? PL.target.kcal : 'none'} (usual ${U}), prompt ${s.target}`);
   if (s.floor !== (U || null)) diffs.push(`medicines floor: phone ${U || 'none'}, prompt ${s.floor}`);
-  if (given3 > 0 && given3 < 3 && diffs.length) partialDiffer++;
   add('grid: engine target, usual size and medicines floor equal the phone\'s; the prompt states no body figure that was not given', diffs.length === 0, `${label}: ${diffs.join('; ')}`);
   if (U) medsCells.push({ S, body, prof, U, meal, label });
 }
@@ -182,6 +198,7 @@ for (const c of medsCells) {
 // goals, appetites, the day so far and the clock, on the body figures given or not (a fixed usual body for the figures that are given)
 const EATEN = [['nothing logged', []], ['900 kcal 3 hours ago', [{ meal: 'breakfast', kcal: 900, hoursAgo: 3 }]], ['2,600 kcal 7 hours ago', [{ meal: 'breakfast', kcal: 2600, hoursAgo: 7 }]]];
 for (const age of [0, 45]) for (const cm of [0, 160]) for (const kg of [0, 70]) for (const [mname, mp] of MEDS) for (const meal of MEALS) for (const goal of ['lose', 'hold', 'build']) for (const ap of [1, 5, 10]) for (const [ename, events0] of EATEN) for (const clock of [13, 21.7]) {
+  if ((age > 0) + (cm > 0) + (kg > 0) === 1 || (age > 0) + (cm > 0) + (kg > 0) === 2) continue;   // a partial body entry is refused and asked for (above)
   const events = events0.map(e => Object.assign({}, e, { meal: meal === 'breakfast' ? 'dinner' : e.meal })), S = phoneState({ P: Object.assign({ sex: 'f', act: 'low', goal }, mp), meal, appetite: ap, events, clock });
   setBody(S.fn, S.P, 'age', age); setBody(S.fn, S.P, 'cm', cm); setBody(S.fn, S.P, 'kg', kg);
   const body = mealsBody(S), prof = S.fn.profileOut(), U = A.medsUsual(prof, meal), PL = A.planDay(prof, S.FILE, meal, S.fn.appetite()), plan = A.plan('meals', body), s = stated(plan.prompt || '');
@@ -192,7 +209,7 @@ for (const age of [0, 45]) for (const cm of [0, 160]) for (const kg of [0, 70]) 
   if (JSON.stringify(hookIds(plan.prompt)) !== JSON.stringify(phoneHooks)) diffs.push(`hooks: phone ${phoneHooks}, prompt ${hookIds(plan.prompt)}`);
   cellsB++; add('grid: day target, meal target, medicines floor and hooks equal the phone\'s across goals, appetite, the day so far and the clock', diffs.length === 0, `age ${age} cm ${cm} kg ${kg} meds ${mname} ${meal} ${goal} appetite ${ap} ${ename} clock ${clock}: ${diffs.join('; ')}`);
 }
-console.log(`intake grid: ${cellsA} body cells (${cellsPartial} with a partial body entry, ${partialDiffer} where the engine and the phone differ), ${medsCells.length} on medicines (${probes} plate pairs, ${changes} one-tap pairs), ${cellsB} cells across goals, appetite, the day so far and the clock`);
+console.log(`intake grid: ${cellsA} body cells (${cellsPartial} with a partial body entry, refused and asked for; the rest read the same), ${medsCells.length} on medicines (${probes} plate pairs, ${changes} one-tap pairs), ${cellsB} cells across goals, appetite, the day so far and the clock`);
 
 // ---------- the phone's input bounds against the engine's ----------
 // Every text a person can type into age, height and weight: what the phone keeps is what the engine reads, and what the phone cannot keep is not given.
@@ -205,12 +222,16 @@ section('bounds', () => { const TEXT = ['', ' ', '0', '-1', '-0', '5', '17', '18
   for (const k of ['age', 'cm', 'kg']) for (let v = -5; v <= 300; v++) { const prof = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 45, cm: 160, kg: 70, act: 'low' }; prof[k] = v;
     const inB = v >= A.BODYB[k][0] && v <= A.BODYB[k][1], pl = A.plan('meals', J({ profile: prof, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5 }, file: {} }));
     const phoneKeeps = fn.bodyRead(k, String(v)).v === v;
-    add('bounds: a whole number the set-up can store is read as sent; one it cannot is refused', v === 0 ? (pl.prompt && A.readProfile(J(prof))[k] === 0) : inB ? (pl.prompt && A.readProfile(J(prof))[k] === v) : (pl.error === 'bad_request' && Object.keys(pl).length === 1), `${k} ${v}: ${JSON.stringify(pl).slice(0, 80)}`);
+    add('bounds: a whole number the set-up can store is read as sent; one it cannot is refused', v === 0 ? (pl.error === 'body_partial' && A.readProfile(J(prof))[k] === 0) : inB ? (pl.prompt && A.readProfile(J(prof))[k] === v) : (pl.error === 'bad_request' && Object.keys(pl).length === 1), `${k} ${v}: ${JSON.stringify(pl).slice(0, 80)}`);
     add('bounds: the phone\'s set-up keeps a number when, and only when, the engine reads it', v === 0 || phoneKeeps === inB, `${k} ${v}: the phone keeps ${phoneKeeps}, the engine bound ${A.BODYB[k]}`); }
   // not given, in every spelling the wire can carry
-  for (const k of ['age', 'cm', 'kg']) for (const v of [0, null, '', undefined, -0]) { const prof = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 45, cm: 160, kg: 70, act: 'low' }; if (v === undefined) delete prof[k]; else prof[k] = v;
+  // (all three at once: one or two not given is a partial body entry, refused with its own code)
+  for (const v of [0, null, '', undefined, -0]) { const prof = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: v, cm: v, kg: v, act: 'low' }; if (v === undefined) { delete prof.age; delete prof.cm; delete prof.kg; }
     const eng = A.readProfile(J(prof)), pl = A.plan('meals', J({ profile: prof, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5 }, file: {} }));
-    add('bounds: 0, null, "" and missing are all "not given", stay 0 and are not refused', eng[k] === 0 && !!pl.prompt, `${k} ${JSON.stringify(v)}: reads ${eng[k]}, ${JSON.stringify(pl).slice(0, 60)}`); }
+    add('bounds: 0, null, "" and missing are all "not given", stay 0 and are not refused (all three)', eng.age === 0 && eng.cm === 0 && eng.kg === 0 && !!pl.prompt, `${JSON.stringify(v)}: reads ${eng.age}/${eng.cm}/${eng.kg}, ${JSON.stringify(pl).slice(0, 60)}`); }
+  for (const k of ['age', 'cm', 'kg']) for (const v of [0, null, '', undefined]) { const prof = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 45, cm: 160, kg: 70, act: 'low' }; if (v === undefined) delete prof[k]; else prof[k] = v;
+    const pl = A.plan('meals', J({ profile: prof, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5 }, file: {} }));
+    add('bounds: one figure not given (0, null, "" or missing) with the other two given is a partial body entry: refused as body_partial', pl.error === 'body_partial' && Object.keys(pl).length === 1, `${k} ${JSON.stringify(v)}: ${JSON.stringify(pl).slice(0, 70)}`); }
   // a value no phone sends: refused, never moved into the bounds
   for (const k of ['age', 'cm', 'kg']) for (const v of [true, false, [], {}, 'abc', '45.5', 45.5, NaN, Infinity, -Infinity, 1e9, [45], { v: 45 }]) { const prof = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 45, cm: 160, kg: 70, act: 'low' }; prof[k] = v;
     const pl = safe(() => A.plan('meals', { profile: prof, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5 }, file: {} }), { error: 'threw' });
@@ -220,6 +241,13 @@ section('bounds', () => { const TEXT = ['', ' ', '0', '-1', '-0', '5', '17', '18
     const body = { profile: prof, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5, text: 'Veg thali' }, file: {}, slot: 'lunch', meal: Object.assign(plateAt(700), { minutes: 20 }) };
     const pl = safe(() => A.plan(kind, J(body)), { error: 'threw' });
     add('bounds: every kind refuses a body figure the set-up cannot store', pl.error === 'bad_request' && Object.keys(pl).length === 1, `${kind} ${k} ${v}: ${JSON.stringify(pl).slice(0, 80)}`); }
+  // S7 first for a partial body entry: kidney, pregnancy and typed urgent or pregnancy text are referred, on every kind, before the partial body is read
+  for (const [what, prof, text] of [['kidney', { health: 'kidney' }, ''], ['pregnancy', { health: 'preg' }, ''], ['typed urgent sign', {}, 'chest pain after lunch'], ['typed pregnancy', {}, 'I am pregnant']]) for (const kind of ['meals', 'rescue', 'log', 'tune']) for (const body3 of [{ age: 45, cm: 0, kg: 0 }, { age: 0, cm: 160, kg: 70 }, { age: 45, cm: 160, kg: 0 }]) {
+    const b = { profile: Object.assign({ goal: 'hold', focus: 'none', meds: 'no', diet: 'veg', health: 'none', bp: false, region: 'n', leave: [], sex: 'f', act: 'low' }, body3, prof), ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5, text: kind === 'rescue' && !text ? 'Veg thali' : text }, file: {}, slot: 'lunch', meal: Object.assign(plateAt(700), { minutes: 20 }) };
+    if (kind === 'log' && !text) b.ctx.text = 'dal and roti'; if (kind === 'tune' && text) delete b.ctx.text;
+    const pl = safe(() => A.plan(kind, J(b)), { error: 'threw' }), ownText = kind === 'tune' && text;   // tune carries no typed text: only the kidney and pregnancy answers refer
+    if (ownText) continue;
+    add('S7 first: a referral still refers when the body entry is partial (body_partial comes after the referrals)', !!(pl.reply && pl.reply.status === 'refer' && !pl.prompt), `${kind}, ${what}, ${JSON.stringify(body3)}: ${JSON.stringify(pl).slice(0, 100)}`); }
   // S7 first: an unstorable figure with a kidney condition, pregnancy or a typed urgent sign still refers (as the photo rule does)
   for (const [what, prof, text] of [['kidney', { health: 'kidney' }, ''], ['pregnancy', { health: 'preg' }, ''], ['typed urgent sign', {}, 'chest pain after lunch'], ['typed pregnancy', {}, 'I am pregnant']]) for (const kind of ['meals', 'rescue', 'log']) {
     const body = { profile: Object.assign({ goal: 'hold', focus: 'none', meds: 'no', diet: 'veg', health: 'none', bp: false, region: 'n', leave: [], sex: 'f', age: 12, cm: 160, kg: 70, act: 'low' }, prof), ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5, text }, file: {} };

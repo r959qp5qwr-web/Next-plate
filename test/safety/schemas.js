@@ -78,9 +78,9 @@ function grid(a) {
     add(m + ', late hour', {}, { meal: m, hour: 22.4, time: '10:24 pm' });
     // the app sends hour:null on every tab that is not the meal of the clock (fix-r18: the engine read it as midnight)
     add(m + ', hour not given', {}, { meal: m, hour: null });
-    // partial body entries (fix-r18; safety audit of 21a04a3, B1): the phone sends 0 for a figure the client left empty. With no target (height or
-    // weight missing) the hooks that read the day's plan (protein to catch up, lighter after earlier meals) are not offered
-    for (const [bl, bp] of [['age only', { age: 46, cm: 0, kg: 0 }], ['age and height', { age: 46, cm: 158, kg: 0 }], ['height and weight, no age', { age: 0, cm: 158, kg: 68 }], ['no body figures', { age: 0, cm: 0, kg: 0 }]])
+    // an empty body (all three figures left empty, which the set-up allows): no target, so the hooks that read the day's plan (protein to catch up, lighter after earlier
+    // meals) are not offered. One or two figures given is refused by the engine (fix-r20) and is not enumerated: a request with a partial body never leaves the phone
+    for (const [bl, bp] of [['no body figures', { age: 0, cm: 0, kg: 0 }]])
       for (const [pl, p] of [['hold', {}], ['lose', { goal: 'lose' }], ['diabetes, medicine yes', { health: 'diabetes', meds: 'yes' }]])
         for (const [dl, f] of days(m)) add(m + ', body ' + bl + ', ' + pl + ', ' + dl, Object.assign({}, bp, p), { meal: m }, f);
     // every hook at once (the longest list the page can send: nine), with and without the diabetes medicine hooks
@@ -103,7 +103,7 @@ function grid(a) {
       if (rnd() < 0.7) file.slotProtein = { [m]: 5, [o[0]]: 30, [o[1]]: 25 };
       const prof = { goal: pickR(['lose', 'hold', 'build']), focus: pickR(Object.keys(a.FOCUSRULE).concat(['none'])), health: pickR(['none', 'diabetes', 'bp']), bp: rnd() < 0.3 };
       if (prof.health === 'diabetes') prof.meds = pickR(['yes', 'unsure', 'no']);
-      if (rnd() < 0.2) Object.assign(prof, { age: 46, cm: 0, kg: 0 });
+      if (rnd() < 0.2) Object.assign(prof, { age: 0, cm: 0, kg: 0 });   // all three empty: the same hooks as the age-only body the sample used before fix-r20 (no target either way), and a body the engine reads
       const ctx = { meal: m, mode: pickR(['active', 'desk', 'rest']), hour: rnd() < 0.5 ? null : Math.round(rnd() * 240) / 10 };
       const body = { profile: Object.assign({}, P, prof), ctx: Object.assign({}, C, ctx), file }, pl = a.plan('meals', body);
       if (!pl || !pl.schema) continue;
@@ -186,6 +186,21 @@ function addNew(a) {
     fs.writeFileSync(snapFile(k), JSON.stringify(snap, null, 1) + '\n'); console.log(`${k}: ${n} entries added as pending, ${snap.entries.length} in all`);
   }
 }
+// fix-r20: remove the pending entries the page no longer builds (the partial-body formats, which the engine now refuses); nothing else is rewritten or reordered. An entry
+// that is still built but whose example_body is a body the engine now refuses (a partial one) gets the example body the enumeration builds it from today, its labels and
+// nothing else (the hash, the schema and accepted_by stay); the entries and the counts are printed
+function pruneUnbuilt(a) {
+  const { got, problems } = enumerate(a), partial = (b) => { const p = (b && b.profile) || {}, n = ['age', 'cm', 'kg'].filter(k => +p[k] > 0).length; return n > 0 && n < 3; };
+  if (problems.length) { problems.forEach(p => console.log('PROBLEM ' + p)); process.exit(1); }
+  for (const k of KINDS) {
+    const snap = readSnap(k), keep = []; let removed = 0, redone = 0;
+    for (const e of snap.entries) { const b = got[k].get(e.sha256);
+      if (!b) { if (e.accepted_by === 'pending') { removed++; continue; } keep.push(e); continue; }   // an accepted entry is kept even when no longer built
+      if (partial(e.example_body)) { e.example_body = b.example_body; e.labels = b.labels; redone++; }
+      keep.push(e); }
+    snap.entries = keep; fs.writeFileSync(snapFile(k), JSON.stringify(snap, null, 1) + '\n'); console.log(`${k}: ${removed} pending entries removed (no longer built), ${redone} example bodies replaced, ${snap.entries.length} in all`);
+  }
+}
 function accept(args) {
   const opt = n => { const i = args.indexOf(n); return i < 0 ? null : args[i + 1]; };
   const [kind, which] = [args[1], args[2]], rec = { commit: opt('--commit'), date: opt('--date'), how: opt('--how') };
@@ -201,6 +216,7 @@ if (require.main === module) {
   if (args[0] === '--accept') accept(args);
   else if (args[0] === '--update') update(loadPage(page), args);
   else if (args[0] === '--add') addNew(loadPage(page));
+  else if (args[0] === '--prune') pruneUnbuilt(loadPage(page));
   else {
     const { rows, bad } = check(loadPage(page));
     for (const r of rows) console.log(`schema snapshot ${r.kind}: ${r.built} schemas built, ${r.entries} entries, ${r.accepted} of those accepted live, ${r.miss} not in the snapshot`);

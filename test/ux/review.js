@@ -278,15 +278,41 @@ const STATES = [
   ['rescue-blocked', seed({ p: Object.assign({}, P, { health: 'preg' }) }), async (p, h) => { await h.settle(600); await p.click('#tab-rescue'); await h.settle(); }],
   ['builder-no-plate', seed(), async (p, h) => { await p.waitForSelector('#remake', { timeout: 20000 }); await p.click('#tab-build'); await h.settle(); }, (p, h) => h.failApi(p)],
   ['plate-no-body', seed({ p: Object.assign({}, P, { kg: 0, cm: 0, age: 0 }) }), async (p, h) => { await h.plate(p); await h.inView(p, '#not-sized', 'the line that the portions are not sized'); await h.next(p, { text: 'Add your age, height and weight' }, 'Plate without body details'); }],
-  // fix-r18 (safety audit of 21a04a3, B1): a man on insulin who gave an age and left height and weight empty. The engine used to state his lunch
-  // at 430 kcal (and a body of 30 kg) while the phone's usual size is 600 and the phone drops every plate under it, so plates the server kept were
-  // dropped on the screen and he saw few or none. Now the engine states the phone's usual size: the plates that stay are all at least that
-  ['plate-meds-age-only', seed({ p: Object.assign({}, P, { meds: 'yes', sex: 'm', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await h.plate(p); await h.settle(600);
+  // fix-r18 (safety audit of 21a04a3, B1): a man on insulin who gave no age, height or weight (all three empty is allowed). The engine used to state his lunch
+  // at 430 kcal (and a body of 30 kg) while the phone's usual size is 600 and the phone drops every plate under it, so plates the server kept were dropped
+  // on the screen and he saw few or none. The engine states the phone's usual size: the plates that stay are all at least that
+  ['plate-meds-no-body', seed({ p: Object.assign({}, P, { meds: 'yes', sex: 'm', age: 0, cm: 0, kg: 0 }) }), async (p, h) => { await h.plate(p); await h.settle(600);
     const r = await p.evaluate(() => { const st = JSON.parse(localStorage.getItem('np6')), q = st.p, res = Object.values((st.store || {}).res || {}), meals = [].concat(...res.map(x => x.meals || []));
       const usual = medsUsual({ goal: q.goal, focus: q.focus, meds: q.meds, diet: q.diet, health: 'diabetes', region: 'n', leave: [], sex: q.sex, age: q.age, cm: q.cm, kg: q.kg, act: q.act }, 'lunch');
-      return { usual, kcals: meals.map(m => m.kcal), shown: +document.getElementById('h-k').textContent, kept: document.querySelectorAll('#plate-card').length, said: (document.getElementById('v-plate').innerText || '').slice(0, 200) }; });
+      return { usual, kcals: meals.map(m => m.kcal), shown: +document.getElementById('h-k').textContent }; });
     if (r.usual !== 600) throw new Error('the usual size of a man\'s lunch with no height or weight is ' + r.usual + ', not the day split of the energy floor (600)');
     if (r.kcals.length < 2 || r.kcals.some(k => k < r.usual) || !(r.shown >= r.usual)) throw new Error('the screen holds ' + r.kcals.length + ' plates (' + r.kcals.join(', ') + ' kcal), the one shown ' + r.shown + ' kcal; at least two plates, none under ' + r.usual + ' kcal, are expected'); }],
+  // fix-r20 (owner, 22 Nov, "Ask for the missing figure"): the body step takes all three of age, height and weight, or none. With the age typed alone the step cannot be
+  // finished: one line names the missing figures, the button is off; typing the other two turns it on; clearing all three leaves it on
+  ['setup-3-body-partial', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
+    const on = () => p.evaluate(() => ({ line: (document.getElementById('body-need') || {}).textContent || '', hidden: (document.getElementById('body-need') || {}).hidden, off: document.getElementById('setup-next').disabled }));
+    const e0 = await on(); if (e0.off || e0.line) throw new Error('with all three empty the step is held or says something: ' + JSON.stringify(e0));
+    await p.fill('#body-age', '47'); await p.press('#body-age', 'Tab'); await h.settle(300); const e1 = await on();
+    if (e1.line !== 'Add your height and weight too, or leave all three empty.' || !e1.off) throw new Error('with the age alone the step is not held with the line: ' + JSON.stringify(e1));
+    await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await h.settle(300); const e2 = await on();
+    if (e2.line !== 'Add your weight too, or leave all three empty.' || !e2.off) throw new Error('with age and height the line does not name the weight: ' + JSON.stringify(e2));
+    await p.fill('#body-age', '47'); await p.fill('#body-kg', '72'); await p.press('#body-kg', 'Tab'); await h.settle(300); const e3 = await on();
+    if (e3.line || e3.off) throw new Error('with all three given the step is still held: ' + JSON.stringify(e3));
+    await p.fill('#body-age', ''); await p.press('#body-age', 'Tab'); await p.fill('#body-cm', ''); await p.press('#body-cm', 'Tab'); await p.fill('#body-kg', ''); await p.press('#body-kg', 'Tab'); await h.settle(300); const e4 = await on();
+    if (e4.line || e4.off) throw new Error('with all three cleared the step is still held: ' + JSON.stringify(e4));
+    await p.fill('#body-age', '47'); await p.press('#body-age', 'Tab'); await h.settle(300); await h.inView(p, '#body-need', 'the line that names the missing figures'); }],
+  // fix-r20: a phone that finished the set-up with a partial body (the 6febc1a page and the fix-r18 page could store one) plans nothing: the body step opens with the line, and the
+  // Plate tab, Builder and Rescue show the same line with a button
+  ['sheet-body-stored-partial', seed({ p: Object.assign({}, P, { meds: 'no', age: 47, cm: 0, kg: 0 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await h.settle(500);
+    const r = await p.evaluate(() => ({ line: document.getElementById('body-need').textContent, done: document.getElementById('sheet-done').disabled, sheet: !document.getElementById('sheet').hidden }));
+    if (!r.sheet || r.line !== 'Add your height and weight too, or leave all three empty.' || !r.done) throw new Error('the stored partial body does not open the body step with the line: ' + JSON.stringify(r));
+    await p.fill('#body-cm', '158'); await p.press('#body-cm', 'Tab'); await p.fill('#body-kg', '72'); await p.press('#body-kg', 'Tab'); await h.settle(300);
+    if (await p.evaluate(() => document.getElementById('sheet-done').disabled || document.getElementById('body-need').textContent !== '')) throw new Error('with the two figures typed the step is still held');
+    await p.click('#sheet-done'); await h.settle(300); await h.plate(p); }],
+  ['plate-body-stored-partial', seed({ p: Object.assign({}, P, { meds: 'no', age: 0, cm: 158, kg: 72 }) }), async (p, h) => { await p.waitForSelector('#body-need:not([hidden])', { timeout: 20000 }); await h.settle(400); await p.keyboard.press('Escape'); await h.settle(400);
+    const r = await p.evaluate(() => ({ card: (document.querySelector('#body-card h2') || {}).textContent || '', add: !!document.getElementById('add-body-missing'), plateCard: !!document.getElementById('plate-card') }));
+    if (r.card !== 'Add your age too, or leave all three empty.' || !r.add || r.plateCard) throw new Error('the Plate tab of a stored partial body does not ask: ' + JSON.stringify(r));
+    await p.click('#tab-rescue'); await h.settle(); if (!(await p.$('#body-card'))) throw new Error('Rescue of a stored partial body does not ask'); }],
   // fix-r18 (safety audit of 21a04a3, m5): unticking the last condition in My food left the health answer unset, and every request then answered
   // bad_request ("Next Plate couldn't read that"). No condition ticked is "None of these"; the plates come back
   ['sheet-health-untick-last', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no' }) }), async (p, h) => { await h.plate(p); await p.click('#myfood'); await h.settle(); await p.click('#health-diabetes'); await h.settle(300);

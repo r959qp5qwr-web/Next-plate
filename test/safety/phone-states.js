@@ -19,14 +19,14 @@ const B = require(path.join(ROOT, 'eval/v6/bodies.js')), J = (x) => JSON.parse(J
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
 
 // ---------- the phone, with its own load ----------
-const FNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'rules'];
+const FNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'fileOut', 'appetite', 'dayNo', 'clockText', 'ctxOut', 'rules', 'bodyNeed', 'bodyHold', 'api'];
 const missing = FNS.filter(n => !grab(n)); add('the phone\'s functions are in src/v6/app.js', missing.length === 0, 'not found: ' + missing.join(', '));
 const P0 = (/^var P=\{[^\n]*\};$/m.exec(appSrc) || [''])[0], li = appSrc.indexOf('(function load(){try{'), le = appSrc.indexOf('})();', li) + 5, LOAD = li < 0 ? '' : appSrc.slice(li, le);
 add('the phone\'s load is in src/v6/app.js', !!P0 && !!LOAD, 'P or load not found');
 // one phone: its store text, the time, the meal tab; returns what the page holds after its own load and the functions that build a request
 const makePhone = safe(() => vm.runInContext('(function(store,now,hr,CLOCK,meal){var DAY=dayOf(now.getTime()),CONDS=["kidney","preg","diabetes","bp"],localStorage={getItem:function(k){return store[k]==null?null:store[k];}};' + P0 +
-  'var C={meal:meal,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",ratio:null},APP={},EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",REMADE={},REMADEWHY={},FILE=null;' + FNS.map(grab).join('\n') + '\n' + LOAD +
-  '\nFILE=buildFile(EV,now.getTime());return {P:P,C:C,EV:EV,APP:APP,fn:{profileOut:profileOut,fileOut:fileOut,ctxOut:ctxOut,appetite:appetite},file:function(){return FILE;}};})', A), null);
+  'var C={meal:meal,mode:"desk",mood:"best",cuisine:"home",prep:"home",oil:"min",ratio:null},APP={},EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",REMADE={},REMADEWHY={},FILE=null,UI={sheet:"",bodyOpened:false},opened=[],sent=[],window={},setTimeout=function(){return 0;},clearTimeout=function(){},fetch=function(path,o){sent.push({path:path,body:JSON.parse(o.body)});return {then:function(){return {then:function(){}};}};};function openSheet(k,at){opened.push(at);}' + FNS.map(grab).join('\n') + '\n' + LOAD +
+  '\nFILE=buildFile(EV,now.getTime());return {P:P,C:C,EV:EV,APP:APP,fn:{profileOut:profileOut,fileOut:fileOut,ctxOut:ctxOut,appetite:appetite,api:api,bodyNeed:bodyNeed},opened:opened,sent:sent,file:function(){return FILE;}};})', A), null);
 const clockOf = (h) => { const d = new Date(2026, 10, 18, Math.floor(h), Math.round((h % 1) * 60), 0); return [d, d.getHours() + d.getMinutes() / 60]; };
 const CLOCKMEAL = (hr) => hr < 4 ? 'dinner' : hr < 11 ? 'breakfast' : hr < 15.5 ? 'lunch' : hr < 18.5 ? 'snack' : 'dinner';
 const MEALS = ['breakfast', 'lunch', 'snack', 'dinner'];
@@ -43,9 +43,16 @@ function askAll(label, store, hours, tabs, expect) {
     const body = J({ profile: ph.fn.profileOut(), ctx: ph.fn.ctxOut(''), file: ph.fn.fileOut() }), resc = J({ profile: body.profile, ctx: { meal, time: ph.fn.ctxOut('').time, text: 'Veg thali', photo: false, appetite: ph.fn.appetite() }, file: body.file });
     const logb = J({ profile: body.profile, ctx: { meal, time: ph.fn.ctxOut('').time, text: '2 roti and dal', photo: false } }), sp = safe(() => { const pm = A.plan('meals', body); if (!pm || !pm.check) return null; for (const k of [760, 900, 1200, 520]) { const r = pm.check({ status: 'ok', refer_reason: 'none', meals: [plateAt(k)] }); if ((r.meals || []).length) return r.meals[0]; } return null; }, null);
     const tune = sp ? J(B.tuneBody(body.profile, meal, sp)) : null;   // the plate the phone holds is one the engine served; a profile that is referred, or whose rules show no plate, has none to tune
-    for (const [kind, b] of [['meals', body], ['rescue', resc], ['log', logb], ['tune', tune]]) { if (!b) continue; requests++; const pl = safe(() => A.plan(kind, b), { error: 'threw' });
-      const refused = pl.error === 'bad_request' || (pl.error && !pl.reply);
-      add('a request the phone builds from a state it can hold is not refused', !refused, `${label}, ${kind}, ${meal} tab at ${h}: ${JSON.stringify(pl).slice(0, 90)}${refused ? ' (file ' + JSON.stringify(b.file || {}).slice(0, 160) + ')' : ''}`); }
+    // every request goes through the phone's own api(): what it sends (its fetch is a stub that keeps the body) is what plan() is asked about
+    const nd = ph.fn.bodyNeed(), PATH = { meals: '/api/meals', rescue: '/api/rescue', log: '/api/log', tune: '/api/tune' };
+    for (const [kind, b] of [['meals', body], ['rescue', resc], ['log', logb], ['tune', tune]]) { if (!b) continue; requests++;
+      const n0 = ph.sent.length; let code = null; safe(() => ph.fn.api(PATH[kind], J(b), (st, j) => { code = (j && j.code) || st; }), null);
+      const went = ph.sent.length > n0, sentBody = went ? ph.sent[ph.sent.length - 1].body : null;
+      if (went) { const pl = safe(() => A.plan(kind, J(Object.assign({}, sentBody, { key: undefined }))), { error: 'threw' }), pr = sentBody.profile || {}, n3 = (pr.age > 0) + (pr.cm > 0) + (pr.kg > 0);
+        const refused = !!pl.error && !pl.reply; add('a request the phone sends is not refused by the engine', !refused, `${label}, ${kind}, ${meal} tab at ${h}: ${JSON.stringify(pl).slice(0, 90)} (profile ${JSON.stringify(pr).slice(0, 120)})`);
+        add('no request with a partial body entry leaves the phone', n3 === 0 || n3 === 3, `${label}, ${kind}, ${meal} tab at ${h}: sent age ${pr.age} cm ${pr.cm} kg ${pr.kg}`);
+        add('a phone that holds a partial body sends only the log, and without the three figures', !nd || (kind === 'log' && n3 === 0), `${label}, ${kind}: sent with a partial body held`); }
+      else add('the phone holds a request only when it holds a partial body, and then it asks (the body step opens, once)', !!nd && kind !== 'log' && code === 'body_partial' && ph.opened.length <= 1, `${label}, ${kind}, ${meal} tab at ${h}: not sent (${code}) with ${nd ? 'a partial body' : 'a whole one'}`); }
     expect && expect(ph, body, meal, h); } }
 }
 
@@ -106,6 +113,8 @@ for (let i = 0; i < 60; i++) states.push(['random ' + i, Object.assign({}, PROFI
   health: pick(['none', 'diabetes', 'bp', 'kidney', 'preg', '', null, 'x']), diet: pick(['veg', 'egg', 'nonveg', 'jain', 'vegan']), goal: pick(['lose', 'hold', 'build', null, 'x']), focus: pick(['none', 'iron', 'b12', 'cal', 'pro', 'fib', 'x']), region: pick(['n', 's', 'w', 'e']), leave: pick([[], ['dairy'], ['dairy', 'dairy', 'nut', 'wheat', 'soya', 'x'], 'x', null]) })]);
 for (const f of ['age', 'cm', 'kg', 'sex', 'act', 'meds', 'goal', 'focus', 'leave', 'conds', 'done']) { const p = Object.assign({}, PROFILE_OK); delete p[f]; states.push(['field left out: ' + f, p]); }
 states.push(['an empty profile', {}], ['a profile that is not an object', null]);
+// a body stored with one or two figures (the 6febc1a page and the fix-r18 page could store one; an age of 16 or 17 reads as not given, so it can leave the other two alone)
+for (const [a, c, k] of [[45, 0, 0], [0, 158, 0], [0, 0, 72], [45, 158, 0], [45, 0, 72], [0, 158, 72], [17, 158, 72], [16, 0, 72], [17, 0, 0], [16, 158, 0]]) states.push([`a partial body stored: age ${a} cm ${c} kg ${k}`, Object.assign({}, PROFILE_OK, { age: a, cm: c, kg: k })]);
 let loaded = 0;
 for (const [label, p] of states) { const evs = heavyDays(8, 4).slice(0, 80);
   askAll('6febc1a store, ' + label, storeOf(p, { ev: evs }), FEW.filter((_, i) => i % 3 === 0).concat([13.25, 21.5]), MEALS, () => { loaded++; }); }
