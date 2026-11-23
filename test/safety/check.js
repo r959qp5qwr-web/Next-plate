@@ -885,7 +885,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     else add('S10 kept plates: one stamped with other rules is dropped while the app is open', false, 'pruneKept or rules not found in app.js'); }
   // My food closed after a food rule changed empties the kept plates at once (final audit m4: removing this passed every check, the review
   // included, because pruneKept drops them on the next render; this keeps both nets)
-  { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n return closeSheet; }'), null);
+  { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n' + grab('medsHoldOff') + '\n return closeSheet; }'), null);   // closeSheet clears a typed-medicine hold first (round 6b)
     if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, bodyNeed: () => null, BODY0: [0, 0, 0], P: {}, $: () => ({ hidden: false }), behind: () => {},
         answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {} };
       safe(() => cs(ctx)(), null);
@@ -927,7 +927,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m3 app S12: a new day drops yesterday\'s Rescue and log answers', !!f && UI.rres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
     // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
     { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };
-      const f = run(['rescue'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
+      const f = run(['rescue', 'medsHeld', 'medsHoldOff', 'medsHoldOn'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
       add('m3 app S11: a stale Rescue reply is not shown', !!f && !!cb && UI.rres === null, f ? JSON.stringify(UI.rres) : 'rescue not found');
       let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k' };
       const t = run(['tune'], c2, 'tune'); if (t) { t('k', 0); tsig = 'b'; if (tcb) tcb(200, { status: 'ok', swaps: { protein: [{ food: 'x' }], base: [] }, alchemy: {} }); }
@@ -958,7 +958,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m6 app: high BP ticked beside diabetes is sent and read (S3)', !!f && f.bp === true && /High blood pressure: no pickle/.test(pr || ''), JSON.stringify(f && f.bp)); }
     // the wait guards: a second tap during a wait sends nothing (plates and the log)
     { let sentP = 0; const UIp = { busy: '' }; const cp = { UI: UIp, refresh: () => {}, render: () => {}, logEv: () => {}, C: { meal: 'lunch' }, ctxKey: () => 'k', askedFor: () => 's', api: () => { sentP++; }, profileOut: () => ({}), ctxOut: () => ({}), fileOut: () => ({}), $: () => ({}) };
-      const mp = run(['makePlates'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
+      const mp = run(['makePlates', 'medsHeld', 'medsHoldOff', 'medsHoldOn'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
       add('m6 app: a second plates request during a wait sends nothing (the wait guard)', !!mp && sentP === 1, mp ? `${sentP} requests` : 'makePlates not found');
       let sentL = 0; const UIl = { lbusy: false, lock: '' }; const cl = { UI: UIl, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: () => { sentL++; }, $: () => ({}) };
       const lo = run(['logOther'], cl, 'logOther'); if (lo) { lo('dal and rice'); lo('dal and rice'); }

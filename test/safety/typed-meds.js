@@ -1,8 +1,9 @@
 // Typed medicine words (fix-r21; owner, 22 Nov, option survey "Ask to update (Recommended)"): "Typed insulin or sugar-tablet words hold the plate. One line asks the client to add it
 // in My food, and a tap opens that step." S5 and S6 read the set-up's answers, so a client whose set-up says no medicine who types that they take insulin got plates with no grain
 // rule and no usual size. The net (typedMeds, medsTypedHold, medsTypedBody in src/v6/engine.js; api() in src/v6/app.js) is tested both ways here:
-//   - a generated phrasing set: first-person present use, English and Hinglish, with food words around, is held; a negation, another person, "stopped", "insulin resistance" and a
-//     bare "I am diabetic" are not;
+//   - a generated phrasing set: first-person present use, English and Hinglish, with food words around, is held; a text that is one release shape (MEDSHAPES: a negation,
+//     a qualifier, someone else, a future onset; S6) and a bare "I am diabetic" are not; round 6 (safety audit of d7702c4, B1): the auditor's grid, every shape exemplar with
+//     fragments before and after it (all held), a mutant per exclusion (TM_MUTANT), the known over-holds by frame, the m2 timing and length cells;
 //   - the engine's plan() on every kind (meals and Rescue answer meds_typed; the log, which counts what was eaten and which S6 does not read, and tune are not held), for a profile
 //     that does not say insulin or sugar tablets and for one that does (no hold: the usual size already applies);
 //   - the order: a typed referral (urgent, kidney, pregnancy) comes first, then this hold, then the body hold; in the engine and on the phone with the app's own api(), with the
@@ -14,6 +15,8 @@ const ROOT = path.join(__dirname, '../..');
 const pageFile = process.argv.filter(x => /\.html$/.test(x))[0] || path.join(ROOT, 'hosted/v6/index.html');
 const page = fs.readFileSync(pageFile, 'utf8'), A = {}; vm.createContext(A); vm.runInContext(page.split('<script id="np-core">')[1].split('</script>')[0], A);
 const appSrc = fs.readFileSync(process.env.NP_APP || path.join(ROOT, 'src/v6/app.js'), 'utf8');
+// TM_MUTANT=<a|b|c|d>-<after|before> runs every cell with that exclusion widened back (its shapes read with any text after, or before, them): the run must fail
+if (process.env.TM_MUTANT) { const [k, how] = process.env.TM_MUTANT.split('-'); A.MEDSHAPES[k] = A.MEDSHAPES[k].map(rx => new RegExp(how === 'before' ? rx.source.replace(/^\^/, '') : rx.source.replace(/\$$/, ''))); console.log('mutant: ' + process.env.TM_MUTANT); }
 const grab = (name) => { const i = appSrc.indexOf('function ' + name + '('); if (i < 0) return ''; let d = 0, j = appSrc.indexOf('{', i); for (; j < appSrc.length; j++) { if (appSrc[j] === '{') d++; else if (appSrc[j] === '}') { d--; if (!d) break; } } return appSrc.slice(i, j + 1); };
 const J = (x) => JSON.parse(JSON.stringify(x)), safe = (f, d) => { try { return f(); } catch (e) { return d; } };
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
@@ -134,24 +137,84 @@ for (const t of ['Is Januvia safe? asking for my mother', 'My aunt started Ozemp
   add('the name rule finds only medicine words in the recorded strings under eval/ (names, notes, typed asks, prompts)', extra.length === 0, 'new hits: ' + extra.join(', ')); }
 for (const t of OVER) HELD.push([t, 'known over-hold']);
 for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
-const HELD_BEFORE = 1183, NOT_BEFORE = 1138;
 
 // profiles: a set-up that does not say insulin or sugar tablets (held) and one that does (no hold)
 const PROF = (o) => Object.assign({ goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, o);
 const OPEN = [['no condition', PROF({})], ['diabetes, no medicine', PROF({ health: 'diabetes', meds: 'no' })], ['high BP', PROF({ health: 'bp' })], ['diabetes with BP, no medicine', PROF({ health: 'diabetes', meds: 'no', bp: true })], ['no body figures', PROF({ age: 0, cm: 0, kg: 0 })]];
 const ON = [['diabetes, insulin', PROF({ health: 'diabetes', meds: 'yes' })], ['diabetes, not sure', PROF({ health: 'diabetes', meds: 'unsure' })]];
 
+// ---------- round 6 (safety audit of d7702c4, B1): a release needs the whole text to be one listed shape (MEDSHAPES in src/v6/engine.js, S6) ----------
+// the controls above that no shape covers now hold: known over-holds, named in S6 by frame (the client retypes without the word, or answers "not sure" in My food)
+const OVER6_FRAMES = new Set(['no M, just dal rice', 'I stopped M last year', 'I\'m off M', 'without M', 'I no longer take M', 'avoid M? what dinner', 'uski M band ho gayi', 'maine M chhod di', 'M leta hai', 'M leti hai',
+  'I\'ll start M next week', 'I am going to start M', 'maybe I need M', 'I plan to start M', 'I want to avoid M', 'I don\'t take M and glimepiride', 'I stopped M and gliclazide', 'I never took M or glimepiride', 'I\'m not on M or any tablets',
+  'I can\'t take M', 'I won\'t take M', 'I\'m allergic to M', 'I refuse M', 'instead of M, what can I eat', 'alternatives to M for dinner', 'a substitute for M', 'I take supplements for M resistance', 'I need to bring my M levels down',
+  'my M spikes after rice', 'low M index foods for me', 'I want an M free diet', 'I am worried about M production', 'I read about the M hormone', 'I stopped taking M', 'off M', 'afraid of taking M', 'I might need M soon', 'may need M later',
+  'I will start M tomorrow', 'might need to start M', 'M band ho gayi hai', 'no need for M', 'M free dinner please']);
+const OVER6_LIT = new Set(['insulin spikes after rice', 'I\'m scared of insulin', 'my kids dad takes insulin', 'My husband takes metformin, I don\'t', 'may need insulin later', 'might need insulin', 'I want to avoid insulin', 'I avoid insulin',
+  'I\'m worried I might need insulin', 'insulin levels were high in my test', 'I stopped insulin', 'insulin leta hai', 'I\'m going to start insulin soon', 'I plan to start glimepiride', 'I stopped insulin and gliclazide', 'insulin free diet', 'unki insulin band ho gayi']);
+const FOODWRAP = /, a light dinner please$|^Hi, .*\. Something with paneer and a roti$| - what should I eat after$|^dinner tonight\? /;
+{ const keep = []; for (const [t, why] of NOT) { const f = why.replace(/^(?:new|mixed not held): /, ''); if (OVER6_FRAMES.has(f) || OVER6_LIT.has(t) || (FOODWRAP.test(t) && !(f === 'I have M resistance' && /, a light dinner please$/.test(t)))) HELD.push([t, 'round 6 known over-hold: ' + (FOODWRAP.test(t) ? 'a food line around a negation or a relative' : f)]); else keep.push([t, why]); }
+  NOT.length = 0; NOT.push(...keep); }
+// the auditor's grid (test/safety/AUDIT.md, B1), as written in the audit's frames.js: its frames times 12 names, every cell held; its 36 controls held
+const AUD_NAMES = ['insulin', 'Lantus', 'Humalog', 'metformin', 'Glycomet', 'glimepiride', 'Amaryl', 'gliclazide', 'sugar tablets', 'Januvia', 'Jardiance', 'Ozempic'];
+const AUD_G = {
+  'double negation': ["I can't live without M", "can't manage without M", "I don't go anywhere without M", "never without M", "not a day without M", "Without M my sugar goes 400", "not off M", "I'm not off M yet", "never been off M", "not been off M since 2015", "I haven't stopped M", "never quit M", "I haven't quit M"],
+  'negation scoped to a meal or time': ["I don't take M at lunch, only at night", "I don't take M in the morning", "No M at lunch, only at night", "not on M during the day", "I do not take M before breakfast, only dinner", "Don't take M on Sundays", "no M for breakfast", "dont need M for snacks"],
+  'missed or not-yet dose': ["I didn't take M today, what lunch", "didn't take M this morning", "not taken M yet", "No M this morning", "did not take M yet, lunch?", "not yet taken M", "aaj M nahi liya", "abhi tak M nahi liya", "M abhi nahi liya, lunch kya"],
+  'share cue not on the list': ["mother on M, same as me", "my mother takes M, me as well", "my father is on M. Even I am", "mom on M. mine too", "dad takes M, including me", "My mother takes M. I'm the same.", "mom takes M, same with me", "papa M lete hain, mere ko bhi", "papa M lete hain, mera bhi", "papa M lete hain, humko bhi"],
+  'qualifier "free of charge"': ["I get M free of charge", "M free of charge from the clinic"] };
+const AUD_CTRL = ["I take M", "I'm on M", "M before dinner"];
+const GRID = []; for (const fr of Object.values(AUD_G)) for (const f of fr) for (const m of AUD_NAMES) { const t = f.replace(/M/g, m); if (A.MEDRX.test(t)) GRID.push(t); }
+add('round 6: the auditor\'s grid has its 504 cells and 36 controls', GRID.length === 504 && AUD_CTRL.length * AUD_NAMES.length === 36, `${GRID.length} cells`);
+for (const t of GRID) HELD.push([t, 'round 6, the auditor\'s grid']);
+for (const f of AUD_CTRL) for (const m of AUD_NAMES) HELD.push([f.replace(/M/g, m), 'round 6, the auditor\'s controls']);
+// the round-6 brief's examples, literal
+const B1LIT = ["I can't live without insulin", 'never been off insulin since 2015', "I haven't stopped insulin", "I don't take insulin at lunch, only at night", 'no insulin for breakfast', "didn't take insulin today", 'aaj insulin nahi liya', 'My father is on metformin, same as me', 'Got insulin free of charge'];
+for (const t of B1LIT) HELD.push([t, 'round 6, the brief\'s literal']);
+// the frames.js port turns the capital M of "My" into a name too (kept above for its count); the sentence it meant, for the 12 names
+for (const m of AUD_NAMES) HELD.push([`My mother takes ${m}. I'm the same.`, 'round 6, the auditor\'s frame as meant']);
+// one or more exemplars of every shape, with the shape that releases it (a: negation, b: qualifier, c: someone else, d: future onset)
+const SHAPE_EX = [['a', 'no insulin'], ['a', 'not on insulin'], ['a', "I don't take insulin"], ['a', 'I do not use metformin'], ['a', "I'm not on Lantus"], ['a', 'I never take glimepiride'], ['a', 'I have never taken insulin'], ['a', 'never been on insulin'],
+  ['a', 'no sugar tablets, no insulin'], ['a', 'no insulin and no sugar tablets'], ['a', "I don't take insulin or sugar tablets"], ['a', "I don't use insulin or tablets"], ['a', 'insulin nahi leta hoon'], ['a', 'main insulin nahi leti'], ['a', 'Hi, no insulin.'], ['a', 'no sugar tablets please'],
+  ['b', 'insulin resistance'], ['b', 'I have insulin resistance, a low gi dinner'], ['b', 'what raises insulin levels?'], ['b', 'low insulin index foods'], ['b', 'insulin sensitivity foods'], ['b', 'my insulin levels are high'], ['b', 'PCOS and insulin resistance, dinner'], ['b', 'insulin-free diet'], ['b', 'Insulin resistance diet please'],
+  ['c', 'my mother takes insulin'], ['c', 'my father is on metformin'], ['c', 'she takes insulin'], ['c', 'his insulin'], ['c', "my mother's insulin"], ['c', 'my sister is insulin dependent'], ['c', 'My mother takes insulin, what should I cook for her?'], ['c', 'For my father who takes insulin, what should he eat?'],
+  ['c', 'Papa ko insulin lagta hai, main kya banau'], ['c', 'Meri saas insulin leti hai'], ['c', 'My mother takes insulin and I help her'], ['c', 'insulin for my father'], ['c', 'mera bhai insulin leta hai'], ['c', 'My mother is on Lantus, I make her lunch'], ['c', 'father uses insulin pen'], ['c', 'my mother takes insulin and wants a light dinner'],
+  ['d', 'doctor said I may need insulin later'], ['d', 'doctor will start insulin if sugar stays high'], ['d', 'doctor wants me to start insulin'], ['d', "I'll need insulin one day"], ['d', 'I might start insulin next year'], ['d', 'I may be put on insulin'], ['d', 'doctor will put me on insulin']];
+const shapeOf = (t) => A.medsRelease(A.norm(t).toLowerCase());
+for (const [k, t] of SHAPE_EX) add('round 6: each listed shape releases its exemplar, and only that shape', A.typedMeds(t) === false && shapeOf(t) === k, `"${t}": held ${A.typedMeds(t)}, shape "${shapeOf(t)}", want "${k}"`);
+for (const t of ["I don't take insulin", 'my mother takes insulin']) add('round 6: the two phrasings the owner\'s decision names as not held stay not held', A.typedMeds(t) === false, t);
+// anything else in the text holds: every exemplar, with a fragment from outside the shapes before or after it (time, meal, dose, a share, a negation, a first-person use, "free of charge")
+const FRAG = ['today', 'at lunch', 'this morning', 'tonight', 'yet', 'abhi', 'aaj', 'only at night', 'before dinner', 'for breakfast', '10 units', '500 mg', 'twice daily', 'same as me', 'me too', 'mine too', 'including me', 'so am I', 'even I am', 'as well as me',
+  'mera bhi', 'humko bhi', 'mujhe bhi', 'main bhi', 'I take it too', "I'm on it", 'I take insulin', 'but I take metformin', 'free of charge', "I can't live without it", 'never off it', 'not', 'never', 'I stopped', 'only', 'but', 'since 2015', 'what lunch', 'same', 'both of us', 'us too', 'hum dono'];
+const PROPS = []; for (const [, ex] of SHAPE_EX) for (const fr of FRAG) PROPS.push(ex + ', ' + fr, ex + ' ' + fr, fr + ' ' + ex, fr + ', ' + ex);
+for (const t of PROPS) add('round 6: a shape with anything outside it holds (a fragment before or after each exemplar)', A.typedMeds(t) === true, `"${t}" (shape "${shapeOf(t)}")`);
+// mutants: each exclusion widened back (its shapes read with any text after them, or before them) must let a held cell through
+{ const keep = {}; for (const k of Object.keys(A.MEDSHAPES)) keep[k] = A.MEDSHAPES[k];
+  const heldCells = GRID.concat(B1LIT, PROPS);
+  for (const k of Object.keys(keep)) for (const [how, f] of [['any text after the shape', (s) => s.replace(/\$$/, '')], ['any text before the shape', (s) => s.replace(/^\^/, '')]]) {
+    A.MEDSHAPES[k] = keep[k].map(rx => new RegExp(f(rx.source))); const leak = heldCells.filter(t => !A.typedMeds(t)); A.MEDSHAPES[k] = keep[k];
+    add('round 6 mutants: each exclusion widened back lets a held cell through (so these cells would fail)', leak.length > 0, `(${k}) with ${how}: no held cell is released`); } }
+
 // ---------- the engine: the net itself ----------
 for (const [t, why] of HELD) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (${why})`);
 for (const [t, why] of NOT) add('not held: a negation, someone else is the user, a future onset, a qualifier ("insulin resistance"), a neutral phrase', A.typedMeds(t) === false, `"${t}" (${why})`);
 // a phrase that also carries a typed referral word (pregnancy, a low-sugar sign) is read by the net alone: the referral answers first in plan() and on the phone
 for (const t of ['I was on insulin during pregnancy years ago', 'I take insulin, low sugar levels at night']) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (net alone)`);
-add('the phrasing set is large enough', HELD.length > 600 && NOT.length > 900, `${HELD.length} held, ${NOT.length} not held`);
+add('the phrasing set is large enough', HELD.length > 4000 && NOT.length > 500,   /* round 6: the controls that no shape covers moved to the held set as known over-holds */
+   `${HELD.length} held, ${NOT.length} not held`);
 
 // ---------- the engine: plan() on every kind ----------
 const ask = (kind, p, text) => { const b = { profile: p, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5, text }, file: {}, slot: 'lunch' };
   if (kind === 'tune') { b.meal = { title: 'Moong dal with jowar roti', subtitle: 'x', cuisine: 'x', prepMinutes: 20, minutes: 20, items: [{ food: 'Moong dal', grams: 200, group: 'protein', contains: ['plain'] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Cucumber', grams: 100, group: 'greens', contains: ['plain'] }], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, contains: ['grain'], kcal: 448, protein: 16, carbs: 78, fats: 8, fiber: 12, why: [] }; delete b.ctx.text; }
   return safe(() => A.plan(kind, J(b)), { error: 'threw' }); };
+// the scan is linear (audit m2): 20,000 characters of each kind under 200 ms, in the net and in plan(); a longer text is refused after the referrals, which still read it whole
+{ const P0f = PROF({}), LONG = ['no insulin ', 'my mother takes insulin ', 'insulin resistance ', 'x ', 'gl' + 'i'.repeat(25000), 'a'.repeat(19990) + 'sulin', 'glim' + 'a'.repeat(25000) + 'ride'];
+  for (const u of LONG) { const t = (u.length > 100 ? u : u.repeat(Math.ceil(20000 / u.length))).slice(0, 20000); let t0 = Date.now(); A.typedMeds(t); const a = Date.now() - t0; t0 = Date.now(); const pl = A.plan('meals', J({ profile: P0f, ctx: { meal: 'lunch', text: t }, file: {} })); const b = Date.now() - t0;
+    add('round 6 (audit m2): 20,000 characters take under 200 ms in the net and in plan()', a < 200 && b < 200 && (pl.error === 'meds_typed' || !!pl.prompt), `${JSON.stringify(u.slice(0, 14))}: net ${a} ms, plan ${b} ms, ${JSON.stringify(pl).slice(0, 40)}`); }
+  for (const kind of ['meals', 'rescue', 'log']) { const over = ask(kind, P0f, 'x '.repeat(10000) + 'a'), urg = ask(kind, P0f, 'x '.repeat(15000) + 'chest pain'), at = ask(kind, P0f, 'x'.repeat(20000));
+    const tall = ask(kind, P0f, '\u0130'.repeat(19990) + ' insulin'), folded = A.norm('\u0130'.repeat(19990) + ' insulin').toLowerCase().length;   // a letter that lower-cases to two code units is folded first
+    add('round 6 (audit m2): no text is planned that the net did not read whole (the cap counts the string the net reads)', folded <= 20000 ? tall.error === (kind === 'log' ? undefined : 'meds_typed') || (kind === 'log' && !!tall.prompt) : tall.error === 'bad_request', `${kind}: folded ${folded}, ${JSON.stringify(tall).slice(0, 50)}`);
+    add('round 6 (audit m2): typed text over 20,000 characters is refused, after the referrals', over.error === 'bad_request' && !!(urg.reply && urg.reply.urgent) && !at.error, `${kind}: over ${JSON.stringify(over)}, urgent ${JSON.stringify(urg).slice(0, 60)}, at ${JSON.stringify(at).slice(0, 40)}`); } }
 const SAMPLE = HELD.filter((_, i) => i % 9 === 0), SAMPN = NOT.filter((_, i) => i % 11 === 0);
 for (const [t] of SAMPLE) for (const [pn, p] of OPEN) { for (const kind of ['meals', 'rescue']) { const pl = ask(kind, p, t); add('engine: meals and Rescue answer meds_typed to typed insulin or sugar tablets when the set-up does not say so', pl.error === 'meds_typed' && Object.keys(pl).length === 1, `${kind}, ${pn}: "${t}": ${JSON.stringify(pl).slice(0, 70)}`); }
   const lg = ask('log', p, t); add('engine: the log is not held (it counts what was eaten; S6 does not read it)', !lg.error && !!lg.prompt, `${pn}: "${t}": ${JSON.stringify(lg).slice(0, 70)}`); }
@@ -188,6 +251,11 @@ for (const [t] of HELD.filter((_, i) => i % 9 === 0)) { const r = call(WHOLE, OP
 for (const [t] of NOT.filter((_, i) => i % 7 === 0)) for (const kind of ['meals', 'rescue', 'log']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t); add('phone: a phrasing that is not held is sent', r.sent === 1, `${kind}: "${t}": ${JSON.stringify(r.got)}`);
   add('phone and engine agree: not held by either', ask(kind, OPEN[0][1], t).error !== 'meds_typed', `${kind}: "${t}"`); }
 for (const [t] of HELD.filter((_, i) => i % 13 === 0)) for (const [pn, p] of ON) { const r = call(WHOLE, p, PATHS.meals, t); add('phone: no hold when the set-up already says insulin, sugar tablets or not sure', r.sent === 1, `${pn}: "${t}"`); }
+// round 6: the phone and the engine agree on every cell of the auditor's grid (held by both, nothing sent) and on every shape exemplar (released by both, sent)
+for (const t of GRID) for (const kind of ['meals', 'rescue']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t), pl = ask(kind, OPEN[0][1], t);
+  add('round 6: the phone and the engine both hold every cell of the auditor\'s grid', r.sent === 0 && !!r.got && r.got[1].code === 'meds_typed' && pl.error === 'meds_typed', `${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 50)}`); }
+for (const [, t] of SHAPE_EX) for (const kind of ['meals', 'rescue']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t), pl = ask(kind, OPEN[0][1], t);
+  add('round 6: the phone and the engine both release every shape exemplar', r.sent === 1 && !r.got && !!pl.prompt, `${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 50)}`); }
 // the order on the phone: a typed referral first, then the medicine hold, then the body hold
 for (const t of URG) for (const kind of ['meals', 'rescue', 'log']) for (const [label, pv, pp] of [['a whole body', WHOLE, OPEN[0][1]], ['a partial body held by bodyHold', PART, PARTP]]) { const r = call(pv, pp, PATHS[kind], t);
   add('order, phone: an urgent sign typed with insulin (or from a partial body) is answered as a referral with no request, ahead of both holds', r.sent === 0 && r.got && r.got[0] === 200 && r.got[1].status === 'refer' && !!r.got[1].urgent, `${kind}, ${label}: "${t}": sent ${r.sent}, ${JSON.stringify(r.got).slice(0, 90)}`); }
@@ -196,7 +264,80 @@ for (const kind of ['meals', 'rescue']) { const r = call(PART, PARTP, PATHS[kind
   const f = call(PART, PARTP, PATHS[kind], 'something light'); add('order, phone: food text from a partial body: the body hold answers, nothing is sent', f.sent === 0 && f.got && f.got[1].code === 'body_partial', `${kind}: ${JSON.stringify(f.got)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'dal and roti'); add('order, phone: the log from a partial body goes without the three figures', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && r.ph.sent[0].body.profile.cm === 0 && r.ph.sent[0].body.profile.kg === 0, JSON.stringify(r.ph.sent[0] && r.ph.sent[0].body.profile)); }
 
+// a kidney or pregnancy set-up (round 6, audit m1): the phone refers first, before the typed referral, the medicine hold and the body hold, with the reply plan() gives (the line to
+// get help now when an urgent sign is typed); 2 profiles x 2 bodies x 3 texts x 3 kinds, the phone's answer deep-equal to the engine's, nothing sent
+for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole body', WHOLE, {}], ['a partial body', PART, { age: 45, cm: 0, kg: 0 }]]) for (const t of ['I take insulin', 'something light with dal', 'I take insulin and I have chest pain']) for (const kind of ['meals', 'rescue', 'log']) {
+  const p = PROF(Object.assign({ health: h }, extra)), r = call(pv, p, PATHS[kind], t), pl = ask(kind, p, t);
+  add('order, phone: a kidney or pregnancy set-up is referred first, with the reply plan() gives, and nothing is sent (audit m1)', r.sent === 0 && !!r.got && r.got[0] === 200 && !!pl.reply && JSON.stringify(r.got[1]) === JSON.stringify(pl.reply) && (/chest pain/.test(t) ? r.got[1].urgent === A.URGENTLINE : !r.got[1].urgent), `${h}, ${bl}, ${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 90)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'I take insulin and had dal and roti for lunch'); add('order, phone: a partial body with typed insulin in the log: the log still goes, without the three figures, and the engine reads it', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && !A.plan('log', J(r.ph.sent[0].body)).error, JSON.stringify(r.got)); }
+
+// ---------- the typed-medicine hold on screen (owner, 23 Nov: "Hide them (Recommended)", "Add a line (Recommended)", "Keep log (Recommended)", "All tabs (Recommended)") ----------
+// the app's own makePlates, rescue, renderPlate, renderBuild, renderRescue and logRow on a small fake page. While a hold is up, raised on Plate or on Rescue, every tab shows the
+// hold card on its own: the owner's hold sentence, the line for someone else, "Add it in My food"; no earlier plate, "Show my last plates", line about plates from before, Rescue
+// dish, move, "I had this" or "Another dish"; on Plate the log row stays. Controls: with no hold the same state draws the plate and the dish.
+{ const HFNS = ['medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue', 'errText', 'RETRY', 'curRes', 'lastForMeal'];
+  const hmiss = HFNS.filter(n => !grab(n)); add('hide: the hold, its card and the renders are in src/v6/app.js', hmiss.length === 0, 'not found: ' + hmiss.join(', '));
+  const VARS = ['MEDSTYPED', 'MEDSOTHER', 'NORETRY'].map(n => (new RegExp('^var ' + n + '=[^\\n]*;$', 'm').exec(appSrc) || [''])[0]).join('\n');
+  const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{},hidden:false,disabled:false,
+      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},addEventListener:function(){},remove:function(){},scrollTo:function(){},
+      querySelector:function(q){var f=function(n){for(var i=0;i<n.kids.length;i++){var k=n.kids[i];if(q[0]==="."?(" "+k.cls+" ").indexOf(" "+q.slice(1)+" ")>=0:("#"+k.id)===q)return k;var r=f(k);if(r)return r;}return null;};return f(this);}};
+    Object.defineProperty(o,"textContent",{get:function(){return o.text;},set:function(x){o.kids=[];o.text=x;}});return o;}
+    var document={createTextNode:function(t){return N("#text",null,t);}},VIEWS={},said=N("p");function $(id){if(id==="said")return said;return VIEWS[id]||(VIEWS[id]=N("main"));}
+    function el(t,c,x){return N(t,c,x);}function btn(c,l,i,id){var b=N("button",c,l);b.id=id||"";return b;}function ic(){return N("svg");}function add(p){for(var i=1;i<arguments.length;i++)if(arguments[i])p.appendChild(arguments[i]);return p;}
+    var UI={},P={done:true,conds:[]},C={meal:"lunch"},STORE={res:{},shown:{}},ERRS={},LOSTIT="",REMADE={},REMADEWHY={},PL={target:{kcal:500,protein:20},left:{kcal:900,protein:30}},FILE={today:{kcal:0}},DISHES=[["Veg thali"]],RM=true,SLOT=null,API=null,PENDING=[],KEYCODE="",TUNING={};
+    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function bodyNeed(){return null;}function choices(){}function slotOf(){return SLOT;}function curKey(){return STORE.shown[C.meal]||"";}
+    function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}function mealName(m){return m;}function render(){}function referHead(){}function curMeal(){var r=curRes();return r.meals[UI.sel||0];}
+    function plateWhy(){return "";}function viewOf(){return {};}function bodyMissing(){return {text:"",at:""};}function openSheet(){}function medsAt(){return "health-diabetes";}
+    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function has(){return false;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){};}function logEv(){}
+    function directiveCard(){}function ctxBlock(){}function askBlock(){}function composer(){}function stamp(){return N("i");}function sprig(){return N("i");}function setTimeout(){return 0;}
+    function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function appFoodOK(){return true;}function profileOut(){return {};}function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}
+    function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function revealOut(){}function clockText(){return "1:10 pm";}function appetite(){return 5;}function fileOut(){return {};}function askedFor(){return "s";}function lockOn(){}
+    function save(){}function refresh(){}function ctxKey(){return "plates|lunch";}function ctxOut(t){return {text:t};}function tune(){}function rules(){return "r";}function resetAt(){return "";}
+    function api(path,body,cb){if(API==="defer"){PENDING.push(cb);return;}cb(API[0],API[1]);}
+    function walk(n,out){out.push((n.id?"#"+n.id+" ":"")+(n.cls?"."+n.cls.split(" ").join(".")+" ":"")+n.text);n.kids.forEach(function(k){walk(k,out);});return out;}
+    function view(id,f){VIEWS[id]=N("main");try{f();}catch(e){return "threw: "+e.message;}return walk(VIEWS[id],[]).join("\\n");}`;
+  const page = (() => { try { return vm.runInContext('(function(){' + VARS + '\n' + STUB + '\n' + HFNS.map(grab).join('\n') + '\nreturn {UI:UI,STORE:STORE,' +
+    'set:function(k,v){if(k==="SLOT")SLOT=v;if(k==="API")API=v;},pending:function(){return PENDING.splice(0);},' +
+    'reset:function(res){Object.keys(UI).forEach(function(k){delete UI[k];});UI.view="x";UI.err="";UI.busy="";UI.alc={};UI.rmoves={};STORE.res={};STORE.shown={};if(res){STORE.res.k=res;STORE.shown.lunch="k";}C.meal="lunch";SLOT=null;API=null;PENDING.length=0;},' +
+    'plate:function(){return view("v-plate",function(){renderPlate();});},build:function(){return view("v-build",function(){renderBuild();});},resc:function(){return view("v-rescue",function(){renderRescue();});},' +
+    'ask:function(t){try{makePlates(t);}catch(e){return e.message;}},rescue:function(t){try{rescue(t);}catch(e){return e.message;}},MEDSTYPED:MEDSTYPED,MEDSOTHER:typeof MEDSOTHER==="string"?MEDSOTHER:""};})', A)(); } catch (e) { return null; } })();
+  add('hide: the app\'s functions run on the fake page', !!page, 'the harness did not load');
+  if (page) {
+    const U = page.UI, LINE = 'If this is about someone else, ask again without the medicine name.';
+    const PLATE = { meal: 'lunch', status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '', at: 1, rules: 'r' };
+    const DISH = { status: 'ok', meal: 'lunch', dish: { name: 'Paneer butter masala', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
+    const card = (t) => t.includes(page.MEDSTYPED) && t.includes(LINE) && t.includes('#add-meds');
+    const noPlate = (t) => !/HERO PLATE|#plate-card|#lastplates|Showing the plates from before\.|Your plates from before are kept\.|Show my last plates/.test(t);
+    const noDish = (t) => !/Paneer butter masala|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(t);
+    const logRow = (t) => t.includes('#log-other') && t.includes('#log-skip');
+    add('hide: the line under the hold sentence is the owner\'s, word for word ("Add a line (Recommended)")', page.MEDSOTHER === LINE, JSON.stringify(page.MEDSOTHER));
+    // controls: with no hold the plate and the dish are drawn
+    page.reset(PLATE); const c1 = page.plate(); add('hide: control, with no hold the stored plate is drawn', c1.includes('HERO PLATE'), c1.replace(/\n/g, ' | ').slice(0, 200));
+    page.reset(PLATE); U.rres = DISH; U.rtext = 'Paneer butter masala'; const c2 = page.resc(); add('hide: control, with no hold Rescue draws the dish, its move and "I had this"', c2.includes('Paneer butter masala') && c2.includes('#rescue-had'), c2.replace(/\n/g, ' | ').slice(0, 200));
+    // a hold raised on Plate, then Plate, Builder and Rescue (an earlier dish in memory)
+    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.ask('I take insulin, a light lunch'); const p1 = page.plate();
+    add('hide: a Plate hold shows the card on Plate with the line, and the log row ("Keep log"), and no earlier plate', card(p1) && noPlate(p1) && logRow(p1) && p1.includes('You can still log this meal.'), p1.replace(/\n/g, ' | ').slice(0, 300));
+    add('hide: a hold puts away the plates and the dish made before it', Object.keys(page.STORE.res).length === 0 && U.rres === null, `res ${Object.keys(page.STORE.res).length}, rres ${JSON.stringify(U.rres).slice(0, 40)}`);
+    const r1 = page.resc(); add('hide: a Plate hold covers Rescue ("All tabs"): the card and the line, no earlier dish, move or "I had this"', card(r1) && noDish(r1), r1.replace(/\n/g, ' | ').slice(0, 300));
+    U.rres = DISH; const r1b = page.resc(); add('hide: under a hold a dish kept in memory is not drawn on Rescue', card(r1b) && noDish(r1b), r1b.replace(/\n/g, ' | ').slice(0, 300));
+    const b1 = page.build(); add('hide: a hold covers Builder ("All tabs"): the card and the line', card(b1) && b1.includes('#meds-hold'), b1.replace(/\n/g, ' | ').slice(0, 300));
+    page.set('SLOT', { kind: 'had' }); const p1s = page.plate(); add('hide: on Plate, a meal already logged shows the card without the log row', card(p1s) && noPlate(p1s) && !p1s.includes('LOGGED'), p1s.replace(/\n/g, ' | ').slice(0, 200)); page.set('SLOT', null);
+    // a hold raised on Rescue, then Plate (plates stored before) and Builder
+    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.rescue('Paneer butter masala, I take insulin'); const p2 = page.plate();
+    add('hide: a Rescue hold covers Plate ("All tabs"): the card, the line and the log row, no earlier plate', card(p2) && noPlate(p2) && logRow(p2) && Object.keys(page.STORE.res).length === 0, p2.replace(/\n/g, ' | ').slice(0, 300));
+    page.STORE.res.k = PLATE; page.STORE.shown.lunch = 'k'; const p2b = page.plate(); add('hide: under a hold a plate kept in memory is not drawn on Plate', card(p2b) && noPlate(p2b), p2b.replace(/\n/g, ' | ').slice(0, 200));
+    const r2 = page.resc(); add('hide: a Rescue hold shows the card and the line on Rescue, no dish', card(r2) && noDish(r2), r2.replace(/\n/g, ' | ').slice(0, 300));
+    // a plates reply sent before a hold came up on Rescue is not shown
+    page.reset(PLATE); page.set('API', 'defer'); page.ask(''); const late = page.pending(); page.set('API', [0, { code: 'meds_typed' }]); U.rbusy = false; page.rescue('Veg thali, I take insulin');
+    if (late[0]) late[0](200, { status: 'ok', meals: PLATE.meals }); const p3 = page.plate();
+    add('hide: a plates reply sent before a hold came up is not shown', late.length === 1 && card(p3) && noPlate(p3) && Object.keys(page.STORE.res).length === 0, p3.replace(/\n/g, ' | ').slice(0, 200));
+    // a new ask without the medicine name runs the net again and its plates show
+    page.set('API', [200, { status: 'ok', meals: PLATE.meals }]); page.ask('something light'); const p4 = page.plate();
+    add('hide: a new ask without the medicine name clears the hold and its plates show', !U.mhold && p4.includes('HERO PLATE') && !p4.includes('#meds-hold'), p4.replace(/\n/g, ' | ').slice(0, 200)); }
+  // what clears the hold, read from the source: updating My food (closeSheet, answers changed) does; a meal tab or a Your day choice does not
+  add('hide: updating My food clears the hold and the plates are made again (closeSheet)', /if\(fd\)medsHoldOff\(\);[^\n]*if\(fd\)\{if\(rules\(\)!==SAFE0\)STORE\.res=\{\};STORE\.shown=\{\};UI\.rres=null;/.test(grab('closeSheet')), 'not found in closeSheet()');
+  add('hide: a meal tab does not clear the hold (the tab handler keeps UI.err while medsHeld())', /C\.meal=m\[0\];[^\n]*if\(!medsHeld\(\)\)UI\.err="";/.test(grab('choices')), 'not found in choices()');
+  add('hide: a Your day choice does not clear the hold (changed() keeps UI.err while medsHeld())', /function changed\(what\)\{STORE\.shown\[C\.meal\]=null;if\(!medsHeld\(\)\)UI\.err="";/.test(appSrc), 'not found in changed()'); }
 
 // ---------- report ----------
 let fail = 0;

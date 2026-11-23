@@ -43,6 +43,16 @@ const seed = (o) => Object.assign({ p: P, c: {}, ev: week.concat([bf]), k: CODE 
 // owner, 14 Nov: the score reads "Close to your target: N / 100", never "Fit N / 100" (plate and Rescue)
 const closeTo = async (p, sels) => { const r = await p.evaluate((sels) => ({ fit: /\bFit\s*\d/.test(document.body.innerText), miss: sels.filter(s => !/Close to your target:\s\d+\s\/\s100/.test((document.querySelector(s) || {}).innerText || '')) }), sels);
   if (r.fit || r.miss.length) throw new Error('the score is not worded "Close to your target" (' + (r.fit ? '"Fit" shown; ' : '') + r.miss.join(', ') + ')'); };
+// owner, 23 Nov ("Hide them", "Add a line", "Keep log", "All tabs"): under a typed-medicine hold a tab shows the hold sentence, the line for someone else and "Add it in My food",
+// and nothing made before the hold: no plate, "Show my last plates", line about plates from before, Rescue dish, move, "I had this" or "Another dish"; on Plate the log row stays
+const HOLDLINE = 'If this is about someone else, ask again without the medicine name.';
+const holdOnly = async (p, view, log) => { const r = await p.evaluate(([view]) => { const v = document.getElementById(view), t = v.innerText;
+    return { t, line: t.includes('You mentioned insulin or sugar tablets. Add it in My food so your plates keep the safe size.'), other: [...v.querySelectorAll('.meds-other')].map(e => e.textContent), btn: !!v.querySelector('#add-meds'),
+      before: !!v.querySelector('#plate-card, .alts, #lastplates, .inst, .cmp, .moves, #rescue-had, #rescue-again, .move') || /Showing the plates from before\.|Your plates from before are kept\.|I had this/.test(t),
+      log: !!v.querySelector('#log-other') && !!v.querySelector('#log-skip') }; }, [view]);
+  if (!r.line || r.other.length !== 1 || r.other[0] !== HOLDLINE || !r.btn) throw new Error(view + ': the hold card is not the owner\'s sentence, the line and the button: ' + JSON.stringify(r).slice(0, 300));
+  if (r.before) throw new Error(view + ': something made before the hold shows under it: ' + r.t.slice(0, 300));
+  if (log && !r.log) throw new Error(view + ': the log row ("I had something else", "Skipped it") is not under the hold card'); };
 // owner, 14 Nov: the example asks are these four; a diet or a food left out still removes one that crosses it
 const asks = async (p, want) => { const got = await p.evaluate(() => [...document.querySelectorAll('.prompts .prompt')].map(b => b.textContent.replace(/[\u201C\u201D]/g, '').trim()));
   if (got.join('|') !== want.join('|')) throw new Error('the example asks are not the owner\'s (' + got.join(' | ') + ')'); };
@@ -349,13 +359,43 @@ const STATES = [
     if (!a.row || !a.skip || a.logged || a.plan) throw new Error('"Reopen lunch" on a partial body does not open the body card with its log row: ' + JSON.stringify(a)); }],
   // fix-r21 (owner, 22 Nov, "Ask to update (Recommended)"): typed insulin or sugar tablets with a set-up that says no medicine hold the request; one line and a button that opens My food at the answer
   ['plate-ask-meds-typed', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin and glimepiride, a light dinner please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
-    const r = await p.evaluate(() => ({ line: document.getElementById('v-plate').innerText, btn: !!document.getElementById('add-meds') }));
-    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line)) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    // owner, 23 Nov, "Hide them (Recommended)": the plates shown before the ask (h.plate waited for them) are not drawn under the hold; the hold card is on its own
+    const r = await p.evaluate(() => { const v = document.getElementById('v-plate'); return { line: v.innerText, btn: !!document.getElementById('add-meds'), card: !!document.getElementById('meds-hold'),
+      plate: !!v.querySelector('#plate-card, .alts, .card.why, .hero'), last: !!document.getElementById('lastplates'), before: /Showing the plates from before\.|Your plates from before are kept\./.test(v.innerText) }; });
+    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line) || !r.card || !r.btn) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    if (r.plate || r.last || r.before) throw new Error('an earlier plate, "Show my last plates" or a line about plates from before shows under the hold: ' + JSON.stringify(r));
+    await holdOnly(p, 'v-plate', true);
     await p.click('#add-meds'); await h.settle(500); const at = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, focus: (document.activeElement || {}).id || '' }));
     if (!at.sheet || at.focus !== 'health-diabetes') throw new Error('the button does not open My food at the health question: ' + JSON.stringify(at)); }],
-  ['rescue-meds-typed', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Veg thali, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+  // owner, 23 Nov, "Hide them (Recommended)": a dish is worked out and shown first, then the typed insulin: no dish, move, "I had this" or "Another dish" is drawn under the hold
+  ['rescue-meds-typed', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala'); await p.press('#rin', 'Enter'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(300);
+    if (!(await p.$('#rescue-had'))) throw new Error('the first dish is not shown, so the hold is not tested over it');
+    await p.fill('#rin', 'Veg thali, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+    const r = await p.evaluate(() => { const v = document.getElementById('v-rescue'); return { line: v.innerText, dish: !!v.querySelector('.inst, .cmp, .moves, #rescue-had, #rescue-again, .move'), had: /I had this/.test(v.innerText) }; });
+    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line)) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    if (r.dish || r.had) throw new Error('an earlier dish, a move or "I had this" shows under the hold: ' + JSON.stringify(r).slice(0, 300));
+    await holdOnly(p, 'v-rescue', false);
     await p.click('#add-meds'); await h.settle(500); const at = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, focus: (document.activeElement || {}).id || '' }));
     if (!at.sheet || at.focus !== 'meds-yes') throw new Error('the button does not open My food at the medicine question: ' + JSON.stringify(at)); }],
+  // owner, 23 Nov, "Hide them (Recommended)": the hold card on its own, as the client sees it (Plate after its plates were shown, Rescue after a dish was shown)
+  ['plate-meds-hold', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, a light lunch please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#meds-hold', { timeout: 20000 }); await h.settle(300);
+    await p.evaluate(() => document.getElementById('scroll').scrollTo({ top: 0 })); await h.settle(200);
+    if (await p.$('#v-plate #plate-card, #v-plate .alts, #lastplates')) throw new Error('an earlier plate shows under the hold'); await holdOnly(p, 'v-plate', true); }],
+  ['rescue-meds-hold', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala'); await p.press('#rin', 'Enter'); await p.waitForSelector('#rescue-had', { timeout: 20000 }); await h.settle(300);
+    await p.fill('#rin', 'Paneer butter masala, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+    if (await p.$('#v-rescue .inst, #v-rescue .moves, #rescue-had, #rescue-again')) throw new Error('an earlier dish shows under the hold'); await holdOnly(p, 'v-rescue', false); }],
+  // "All tabs (Recommended)": a dish shown on Rescue, then a hold raised on Plate; Rescue and Builder show the hold, not the dish
+  ['plate-hold-then-rescue', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala'); await p.press('#rin', 'Enter'); await p.waitForSelector('#rescue-had', { timeout: 20000 }); await h.settle(300);
+    await p.click('#tab-plate'); await h.settle(); await p.fill('#askin', 'I take insulin, a light lunch please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300);
+    await holdOnly(p, 'v-plate', true); await p.click('#tab-build'); await h.settle(); await holdOnly(p, 'v-build', false);
+    await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); }],
+  // and the reverse: plates shown on Plate, then a hold raised on Rescue; Plate shows the hold, not the plates, with the log row
+  ['rescue-hold-then-plate', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#v-rescue #add-meds', { timeout: 20000 }); await h.settle(300); await holdOnly(p, 'v-rescue', false);
+    await p.click('#tab-plate'); await h.settle(); await holdOnly(p, 'v-plate', true); await p.click('#tab-build'); await h.settle(); await holdOnly(p, 'v-build', false); await p.click('#tab-plate'); await h.settle(); }],
   // fix-r21 (Critic r21 F1 and F4): the set-up button and its line read one live answer. Age and height typed, a tile tapped while the body is partial (which redraws the step), then the
   // weight typed WITHOUT leaving the box: the line clears and the button is on as the digits go in, and one tap shows the plate
   ['setup-3-tile-then-weight', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();

@@ -163,6 +163,19 @@ var LOSTIT="Lost it? Ask your coach to send it again.";
 var MEDSTYPED="You mentioned insulin or sugar tablets. Add it in My food so your plates keep the safe size.";
 function medsAt(){return has("diabetes")?"meds-yes":"health-diabetes";}
 function medsBtn(host){var b=btn("btn primary","Add it in My food",null,"add-meds");b.addEventListener("click",function(){openSheet("food",medsAt());});host.appendChild(b);}
+/* While a typed-medicine hold is up the hold card shows on its own: no earlier plate, no "Show my last plates", no line about plates from before, no earlier Rescue dish, move or
+   "I had this" (owner, 23 Nov, option survey: "Hide them (Recommended)"). One hold covers Plate, Builder and Rescue, whichever raised it (owner, 23 Nov: "All tabs
+   (Recommended)"): the plates and the dish made before it were made for a set-up with no medicine, so they are put away when it comes up. Under the owner's hold sentence the
+   card says MEDSOTHER (owner, 23 Nov: "Add a line (Recommended)"), and on Plate the log stays one tap away ("Keep log (Recommended)": the log is not held). Updating My food
+   clears the hold and the plates are made again at the safe size (closeSheet); a new ask or dish runs the net again; a meal tab or a Your day choice does not clear it. */
+var MEDSOTHER="If this is about someone else, ask again without the medicine name.";
+function medsHeld(){return !!UI.mhold;}
+function medsHoldOn(){UI.mhold=true;UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
+function medsHoldOff(){UI.mhold=false;if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
+function medsCard(withLog){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(c);
+  if(withLog&&!slotOf(C.meal)){c.appendChild(el("p","fine","You can still log this meal."));c.appendChild(logRow());}   /* "Keep log (Recommended)", owner 23 Nov */
+  return c;}
+function medsNote(){var n=el("div","note err");n.id="meds-hold-note";n.appendChild(ic("info"));var tx=el("div");add(tx,el("p",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(tx);n.appendChild(tx);return n;}
 function errText(code,where){
   if(code==="limit_day"||code==="limit_ip"){var tail=where==="plate"?"":where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.";
     if(code==="limit_ip")return (where==="plate"?"Today's limit of new plates on this network is reached. They open again at ":"Today's limit of requests on this network is reached. They open again at ")+resetAt()+"."+tail;
@@ -184,6 +197,10 @@ function api(path,body,cb){
      anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
      gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
   var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  /* a kidney condition or pregnancy in the set-up is referred first, on every path, with the same reply plan() gives: the line to get help now when an urgent sign is typed
+     (fix-r21 round 6; safety audit of d7702c4, m1: the phone answered meds_typed or body_partial where the engine refers) */
+  var rp=typeof readProfile==="function"?readProfile(body&&body.profile):null;
+  if(rp&&(rp.health==="kidney"||rp.health==="preg")){cb(200,tr&&tr.urgent?tr:{status:"refer",read:SAFETY,meals:[]});return;}
   if(tr){cb(200,tr);return;}
   if(medsTypedBody(path,body)){cb(0,{code:"meds_typed"});return;}   /* typed insulin or sugar tablets with a set-up that does not say so: plates and Rescue are held and the client is asked to add it in My food (fix-r21; owner 22 Nov); after the referral above, before the body hold */
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
@@ -198,15 +215,17 @@ function api(path,body,cb){
 function askedFor(){return JSON.stringify([profileOut(),C.mode,C.mood,C.cuisine,C.prep,C.oil,C.ratio,APP,dayOf(Date.now()),EV.filter(function(e){return isMealEv(e)||e.type==="skipped";}).length]);}   /* and the day and the food log: a reply made before a meal was logged, or before the day changed, is not shown (S11, S12) */
 function makePlates(text,again){
   if(UI.busy)return;refresh();UI.empty=false;var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey(),sent=askedFor();
+  if(medsHeld())medsHoldOff();var hn=UI.mholdN;
   UI.busy=text?"ask":"plates";UI.err="";UI.ecode="";UI.eretry=true;UI.lastAsk=text||"";render();if(text&&!again)logEv("asked",{text:text.slice(0,120)});
   api("/api/meals",{profile:profileOut(),ctx:ctxOut(text),file:fileOut()},function(s,j){
     UI.busy="";
+    if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: what it brings is not shown */
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)UI.askDraft=text;}
-    else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);}
+    else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);if(j.code==="meds_typed")medsHoldOn();}
     UI.errAsk=UI.err?text||"":"";
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});if(UI.err)$("said").textContent=UI.err;
   });
@@ -431,7 +450,7 @@ function ctxBlock(host){
   /* the open setting's panel goes right under its pill, with the question it answers (second screen review, R2-B2 027-1) */
   var pan=el("div","panel"),HOST=host;host=pan;
   function title(t,sub){var c=el("p","cap",t);pan.appendChild(c);if(sub)pan.appendChild(el("p","fine",sub));pan.setAttribute("role","group");pan.setAttribute("aria-label",t);}
-  function changed(what){STORE.shown[C.meal]=null;UI.err="";UI.open="";UI.moved=what||"setting";save();render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
+  function changed(what){STORE.shown[C.meal]=null;if(!medsHeld())UI.err="";UI.open="";UI.moved=what||"setting";save();render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
   function radios(list,isOn,set,iconOf,cls){var g=el("div",cls||"grid2");g.setAttribute("role","radiogroup");
     list.forEach(function(o){var b=el("button",cls==="choice-row"||cls==="lows"?"choice":"tile");b.type="button";b.id=o.id;b.setAttribute("role","radio");b.setAttribute("aria-checked",isOn(o.v)?"true":"false");if(iconOf)b.appendChild(ic(iconOf(o.v)));var tx=el("span",null,o.t);if(o.s)tx.appendChild(el("small",null,o.s));b.appendChild(tx);
       b.addEventListener("click",function(){set(o.v);});g.appendChild(b);});host.appendChild(g);}
@@ -457,7 +476,7 @@ function choices(host){
   var ms=el("div","meals");ms.setAttribute("role","radiogroup");ms.setAttribute("aria-label","Meal");
   MEALS.forEach(function(m){var b=el("button","meal");b.type="button";b.id="meal-"+m[0];b.setAttribute("role","radio");b.setAttribute("aria-checked",C.meal===m[0]?"true":"false");var s=slotOf(m[0]);
     b.appendChild(ic(m[2]));b.appendChild(el("span",null,m[1]+(s&&s.kind!=="skipped"?" ✓":"")));if(s&&s.kind==="skipped"){var sx=ic("x");sx.classList.add("skipx");b.appendChild(sx);}   /* a skipped meal shows the mark of "Skipped it", not a dash (R2-B2 021-2) */if(s)b.setAttribute("aria-label",m[1]+(s.kind==="skipped"?", skipped":", logged"));if(m[0]===CLOCK&&!s){var d=el("i","now");d.setAttribute("aria-label","now");b.appendChild(d);}
-    b.addEventListener("click",function(){if(C.meal===m[0])return;C.meal=m[0];UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.err="";UI.fresh=true;UI.open="";render();});ms.appendChild(b);});
+    b.addEventListener("click",function(){if(C.meal===m[0])return;C.meal=m[0];UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;if(!medsHeld())UI.err="";UI.fresh=true;UI.open="";render();});ms.appendChild(b);});
   host.appendChild(ms);
 }
 /* a wait line whose animated dots stay on the line of its last word (screen review B4, B5) */
@@ -593,7 +612,8 @@ function renderPlate(){
   if(P.done&&bodyNeed()){choices(v);var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(s&&!asked){v.appendChild(loggedCard(s));}
+  if(medsHeld()&&!UI.busy){v.appendChild(medsCard(true));}   /* "Hide them (Recommended)", owner 23 Nov */
+  else if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for \u201C"+UI.lastAsk+"\u201D":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
     var last=lastForMeal(),auto=!STORE.shown.hasOwnProperty(C.meal)&&!UI.err;
@@ -605,7 +625,6 @@ function renderPlate(){
       if(UI.err===ERRS.bad_key)c.appendChild(el("p",null,LOSTIT));
       if(UI.err)c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* every error that leaves no plate (second screen review, R2-B4 059-1) */   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
-      if(UI.err&&UI.ecode==="meds_typed")medsBtn(c);
       if(last&&UI.err)c.appendChild(el("p",null,"Your plates from before are kept."));   /* R2-B5 065-2 */
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
@@ -615,7 +634,6 @@ function renderPlate(){
   }else{
     if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.empty&&UI.errAsk?"Nothing for \u201C"+UI.errAsk+"\u201D fit your food rules. Change a choice under Your day, or tap Try again. Showing the plates from before.":(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));   /* R2-B5 069 */
       if(UI.eretry!==false){var ar=btn("btn primary","Try again","refresh","ask-retry");ar.addEventListener("click",function(){var x=UI.lastAsk||"";UI.err="";makePlates(x);});et.appendChild(ar);}
-      if(UI.ecode==="meds_typed")medsBtn(et);
       en.appendChild(et);v.appendChild(en);}
     if(asked){var rl=el("div","readline");rl.appendChild(el("p","asked","“"+r.ask+"”"));if(r.read)rl.appendChild(el("p","ans-read",r.read));
       var back=btn("linkbtn","Back to my plates",null,"back");back.addEventListener("click",function(){STORE.shown[C.meal]=null;UI.sel=0;UI.alc={};render();});rl.appendChild(back);v.appendChild(rl);}
@@ -681,6 +699,7 @@ function renderBuild(){
   panelHead(v,"02 · Builder",blocked()?"":"Build the plate");
   if(blocked()){var eh=v.querySelector(".panel-h h2");if(eh)eh.remove();v.appendChild(blockedCard());return;}
   if(P.done&&bodyNeed()){v.appendChild(bodyCard());return;}
+  if(medsHeld()){v.appendChild(medsCard());return;}   /* one hold for every tab (owner, 23 Nov: "All tabs (Recommended)") */
   if(!UI.ratio){UI.ratio=C.ratio||MODEPLATE[C.mode];
     /* a saved share marks the preset it matches, or none (Critic round 36) */
     if(C.ratio){var same=function(a){return a&&["protein","greens","carbs","fats"].every(function(k){return a[k]===C.ratio[k];});};UI.preset=same(MODEPLATE[C.mode])?"mode":same(PRESETS.balanced)?"balanced":same(PRESETS.steady)?"steady":"";}}
@@ -742,22 +761,23 @@ function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(
   for(var j=0;j<kids.length;j++){var k=kids[j];if(/(^| )(panel-h|lede|entries|sits|sitbox|again-h)( |$)/.test(k.className))continue;t=k;break;}
   if(!t)return;var r=t.getBoundingClientRect(),sr=s.getBoundingClientRect();if(r.top<sr.top+8||r.top>sr.top+sr.height*0.5)s.scrollTo({top:Math.max(0,s.scrollTop+r.top-sr.top-12),behavior:RM?"auto":"smooth"});},60);}
 function rescue(text){
-  if(UI.rbusy||UI.lock)return;UI.rbusy=true;UI.rerr="";UI.rcode="";UI.rkeep="";UI.rretry=false;UI.rtext=text||"";render();revealOut();
+  if(UI.rbusy||UI.lock)return;if(medsHeld())medsHoldOff();var hn=UI.mholdN;UI.rbusy=true;UI.rerr="";UI.rcode="";UI.rkeep="";UI.rretry=false;UI.rtext=text||"";render();revealOut();
   var rmeal=C.meal,body={profile:profileOut(),ctx:{meal:rmeal,time:clockText(),text:text||"",photo:false,appetite:appetite()},file:fileOut()};
   var sent=askedFor();   /* a reply made for answers changed during the wait is not shown; it is asked for again (Critic round 36) */
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
+    if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: the dish is not shown */
     if(askedFor()!==sent){if(!blocked())rescue(text);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
     else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
-    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
+    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);if(j.code==="meds_typed")medsHoldOn();}   /* "Hide them" and "All tabs", owner 23 Nov */
     render();if(UI.rerr)$("said").textContent=UI.rerr;});
 }
 /* once there is an answer, a wait or an error, it leads and the entry tools follow it (screen review B4-B6) */
-function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.rres||UI.rerr||UI.rbusy))return;
+function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.rres||UI.rerr||UI.rbusy||medsHeld()))return;
   var ent=v.querySelector(".entries"),ch=v.querySelector(".sitbox");
-  if(ent){if(UI.rres){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
+  if(ent){if(UI.rres&&!medsHeld()){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
 function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
@@ -765,7 +785,8 @@ function renderRescue0(){
   if(P.done&&bodyNeed()){v.appendChild(bodyCard());return;}
   var mn=mealName(C.meal).toLowerCase(),ent=el("div","entries"),busy=UI.rbusy,wait=busy||!!UI.lock;   /* at a limit or without the link nothing is sent */
   /* what Rescue gives, first and at body size (screen review B4, B5) */
-  if(!(UI.rres||UI.rerr||busy)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
+  var held=medsHeld();
+  if(!(UI.rres||UI.rerr||busy||held)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
   var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Name the dish you chose");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
   var go=el("button","send"+(UI.rerr&&UI.rretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
   f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t);});
@@ -775,11 +796,11 @@ function renderRescue0(){
   ent.appendChild(f);
   if(UI.rbusy){v.appendChild(waitCard("Working out "+UI.rtext.toLowerCase(),"The dish is being worked out",true));return;}
   if(UI.lock&&!UI.rerr){var ln=el("div","note");ln.id="rescue-lock";ln.setAttribute("role","note");ln.appendChild(ic("info"));ln.appendChild(el("p",null,errText(UI.lock,"rescue")));v.appendChild(ln);}   /* why the tools are off */
-  if(UI.rerr){var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,UI.rerr));
+  if(held&&!busy)v.appendChild(medsNote());   /* one hold for every tab (owner, 23 Nov: "All tabs (Recommended)") */
+  else if(UI.rerr){var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,UI.rerr));
     if(UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x);});tx.appendChild(tb);}
-    if(UI.rcode==="meds_typed")medsBtn(tx);
     n.appendChild(tx);v.appendChild(n);}
-  var r=UI.rres;
+  var r=held?null:UI.rres;   /* under a typed-medicine hold no dish, move or "I had this" is drawn ("Hide them (Recommended)") */
   if(!r)return;
   if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
@@ -828,7 +849,7 @@ function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(ki
    once an answer changed (the tap in "Add it in My food" came from it; fix-r21, D12). */
 var BODY0=[0,0,0];
 function closeSheet(){if(UI.sheet==="food"&&bodyNeed()){P.age=BODY0[0];P.cm=BODY0[1];P.kg=BODY0[2];}
-  var fd=UI.sheet==="food"&&answers()!==ANS0;if(fd){if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
+  var fd=UI.sheet==="food"&&answers()!==ANS0;if(fd)medsHoldOff();UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text){
