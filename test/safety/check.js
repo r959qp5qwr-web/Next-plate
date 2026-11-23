@@ -923,11 +923,11 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     // m3, A11: a tab open past 4 am drops yesterday's Rescue and log answers
     { const UI = { rres: { status: 'ok' }, rmoves: { 0: true }, rtext: 'x', lres: { status: 'ok' }, ltext: 'x', lerr: 'x' };
       const ctx = { now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
-      const f = run(['refresh'], ctx, 'refresh'); if (f) safe(() => f(), null);
+      const f = run(['refresh', 'storeSync', 'storeRaw', 'memNow'], ctx, 'refresh'); if (f) safe(() => f(), null);
       add('m3 app S12: a new day drops yesterday\'s Rescue and log answers', !!f && UI.rres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
     // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
     { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };
-      const f = run(['rescue', 'medsHeld', 'medsHoldOff', 'medsHoldOn'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
+      const f = run(['rescue', 'medsHeld', 'medsHoldOff', 'medsHoldOn', 'boxDish'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
       add('m3 app S11: a stale Rescue reply is not shown', !!f && !!cb && UI.rres === null, f ? JSON.stringify(UI.rres) : 'rescue not found');
       let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k' };
       const t = run(['tune'], c2, 'tune'); if (t) { t('k', 0); tsig = 'b'; if (tcb) tcb(200, { status: 'ok', swaps: { protein: [{ food: 'x' }], base: [] }, alchemy: {} }); }
@@ -958,7 +958,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m6 app: high BP ticked beside diabetes is sent and read (S3)', !!f && f.bp === true && /High blood pressure: no pickle/.test(pr || ''), JSON.stringify(f && f.bp)); }
     // the wait guards: a second tap during a wait sends nothing (plates and the log)
     { let sentP = 0; const UIp = { busy: '' }; const cp = { UI: UIp, refresh: () => {}, render: () => {}, logEv: () => {}, C: { meal: 'lunch' }, ctxKey: () => 'k', askedFor: () => 's', api: () => { sentP++; }, profileOut: () => ({}), ctxOut: () => ({}), fileOut: () => ({}), $: () => ({}) };
-      const mp = run(['makePlates', 'medsHeld', 'medsHoldOff', 'medsHoldOn'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
+      const mp = run(['makePlates', 'medsHeld', 'medsHoldOff', 'medsHoldOn', 'boxAsk'], cp, 'makePlates'); if (mp) { mp(''); mp(''); }
       add('m6 app: a second plates request during a wait sends nothing (the wait guard)', !!mp && sentP === 1, mp ? `${sentP} requests` : 'makePlates not found');
       let sentL = 0; const UIl = { lbusy: false, lock: '' }; const cl = { UI: UIl, C: { meal: 'lunch' }, renderSheet: () => {}, profileOut: () => ({}), clockText: () => '', askedFor: () => 's', api: () => { sentL++; }, $: () => ({}) };
       const lo = run(['logOther'], cl, 'logOther'); if (lo) { lo('dal and rice'); lo('dal and rice'); }
@@ -996,7 +996,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     { let fetched = 0; const LS = { d: {}, getItem(k) { return k in this.d ? this.d[k] : null; }, setItem(k, v) { this.d[k] = String(v); }, removeItem(k) { delete this.d[k]; } };   // the phone's storage; the stored medicine hold lives here (round 7)
       const hctx = { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON,
         localStorage: LS, MEDSKEY: 'np6meds', MEDSFACT: false, STORE: { res: {}, shown: {} }, save: () => {}, profileOut: () => ({}) };
-      const mk = () => run(['api', 'bodyHold', 'bodyNeed', 'bodyLive', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed'], hctx, 'api');
+      const mk = () => run(['api', 'bodyHold', 'bodyNeed', 'bodyLive', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsExitB'], hctx, 'api');
       const fresh = (fact) => { LS.d = fact ? { np6meds: '{"at":1}' } : {}; hctx.MEDSFACT = false; hctx.UI = {}; };   // each call on its own phone storage: with or without a stored hold
       const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
       const phone = (t, prof) => { fresh(false); let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };

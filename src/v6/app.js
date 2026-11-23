@@ -36,14 +36,41 @@ var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=fals
     var why=typeof r.rules==="string"&&r.rules!==rules()?"answers":"app";Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;REMADEWHY[s]=why;}});}});   /* the note names the cause (Critic round 38, finding 6) */
   if(typeof raw.k==="string")KEYCODE=raw.k;
 }catch(e){}})();
+storeInit();   /* what this page read, for save() to tell its own changes from another tab's (B3) */
 /* the code from the coach's link is kept on the phone at once, so a reload or a closed tab during set-up keeps it (Critic round 34) */
 try{var qk=new URLSearchParams(location.search).get("k");if(qk){KEYCODE=qk.slice(0,80);history.replaceState(null,"",location.pathname);save();FROMLINK=true;}}catch(e){}
 /* after "Remove my data" the page reloads on set-up; it says once that the data went (screen review B3) */
 try{if(sessionStorage.getItem("np-removed")){REMOVED=true;sessionStorage.removeItem("np-removed");}}catch(e){}
+/* Two tabs of the page share one store (safety audit of 3ee7b41, B3: a tab opened earlier wrote its old answers back over a My food change made in the other).
+   save() reads the store again, takes in what another tab changed that this page did not, and only then writes; refresh() does the same before any request is
+   built, and a storage event from another tab redraws at once. RAW0 is the store as this page last read or wrote it; MEM0 is this page's own state at that moment. */
+var RAW0,MEM0;   /* set by storeInit() right after load(), which runs above this line: no initial value here */
+function memNow(){return JSON.parse(JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:APP,store:STORE,k:KEYCODE}));}
+function storeRaw(){try{return JSON.parse(localStorage.getItem("np6")||"null")||{};}catch(e){return null;}}
+function storeInit(){RAW0=storeRaw()||{};MEM0=memNow();}
+function storeSync(){var cur=storeRaw();if(!cur||!RAW0||!MEM0)return;var J=JSON.stringify,mem=memNow(),cp=cur.p||{},rp=RAW0.p||{},cc=cur.c||{},rc=RAW0.c||{},took=false;
+  var other=function(a,b){return J(a)!==J(b);};
+  Object.keys(cp).forEach(function(k){if(!other(cp[k],rp[k])||other(mem.p[k],MEM0.p[k]))return;took=true;var v=cp[k];   /* another tab changed it and this page did not: read as load() reads it */
+    if(["goal","focus","meds","diet","health","region","sex","act"].indexOf(k)>=0){if(lab(k,v))P[k]=v;}
+    else if(k==="leave"){if(Array.isArray(v))P.leave=v.filter(function(x){return !!lab("leave",x);});}
+    else if(k==="age"||k==="cm"||k==="kg")P[k]=bodyStored(v,k);
+    else if(k==="conds"){if(Array.isArray(v))P.conds=v.filter(function(c){return CONDS.indexOf(c)>=0;});}
+    else if(k==="done")P.done=!!v;});
+  if(took){if(P.conds.length)P.health=healthOf(P.conds);P.done=!!P.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;}
+  ["mode","mood","cuisine","prep","oil"].forEach(function(k){if(other(cc[k],rc[k])&&!other(mem.c[k],MEM0.c[k])){var v=optNow(k,cc[k]);if(lab(k,v))C[k]=v;}});
+  if(other(cc.ratio,rc.ratio)&&!other(mem.c.ratio,MEM0.c.ratio))C.ratio=ratioOK(cc.ratio);
+  if(other(cur.ev,RAW0.ev)&&Array.isArray(cur.ev)){var have={},base={};EV.forEach(function(e){have[J(e)]=1;});(RAW0.ev||[]).forEach(function(e){base[J(e)]=1;});   /* events another tab added */
+    cur.ev.forEach(function(e){if(e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0&&!have[J(e)]&&!base[J(e)])EV.push(e);});EV.sort(function(a,b){return a.t-b.t;});}
+  if(other(cur.app,RAW0.app)&&!other(mem.app,MEM0.app)&&cur.app&&cur.app.day===DAY)APP=appKept(cur.app.v);
+  if(other(cur.store,RAW0.store)&&!other(mem.store,MEM0.store)&&cur.store&&cur.store.day===DAY&&cur.store.res)STORE=cur.store;
+  if(other(cur.k,RAW0.k)&&mem.k===MEM0.k&&typeof cur.k==="string")KEYCODE=cur.k;
+  RAW0=cur;MEM0=memNow();}
 function save(){try{
+  storeSync();
   var cut=Date.now()-90*864e5;EV=EV.filter(function(e){return e.t>=cut;}).slice(-3000);
   var keys=Object.keys(STORE.res);if(keys.length>12)keys.sort(function(a,b){return STORE.res[a].at-STORE.res[b].at;}).slice(0,keys.length-12).forEach(function(k){delete STORE.res[k];});
-  localStorage.setItem("np6",JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:STORE,k:KEYCODE}));}catch(e){}}
+  var out=JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:STORE,k:KEYCODE});
+  localStorage.setItem("np6",out);RAW0=JSON.parse(out);MEM0=memNow();}catch(e){}}
 function logEv(type,o,meal){var e={t:Date.now(),type:type,meal:meal||C.meal};if(o)for(var k in o)e[k]=o[k];EV.push(e);save();}
 var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",step:0,fresh:true,hab:{veg:false,walk:false,lemon:false},ratio:null,preset:"mode",
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
@@ -84,7 +111,7 @@ function pruneKept(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[
     var keep=r.meals.filter(function(m){return m&&m.items&&!baseWhy(m,r.meal);});if(keep.length===r.meals.length)return;
     if(!keep.length){delete STORE.res[k];Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k)STORE.shown[s]=null;});}else r.meals=keep;UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;});}
 function clockMeal(h){return h<4?"dinner":h<11?"breakfast":h<15.5?"lunch":h<18.5?"snack":"dinner";}
-function refresh(){now=new Date();hr=now.getHours()+now.getMinutes()/60;CLOCK=clockMeal(hr);
+function refresh(){storeSync();now=new Date();hr=now.getHours()+now.getMinutes()/60;CLOCK=clockMeal(hr);
   if(dayOf(now.getTime())!==DAY){DAY=dayOf(now.getTime());C.meal=CLOCK;STORE={day:DAY,res:{},shown:{}};APP={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;
     /* yesterday's Rescue and log answers go too (S12): the day starts at 4 am */
     UI.rres=null;UI.rmoves={};UI.rtext="";UI.rerr="";UI.lres=null;UI.ltext="";UI.lerr="";}   /* a tab open past the day's start starts the new day (S12) */FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());pruneKept();
@@ -119,6 +146,11 @@ function rescueWhy(r,moves){return composedWhy(rescueSum(r,moves),r.dish,{meal:r
 function refuse(why){toast("Not changed. "+why,true);}
 /* a referral card's words: on an urgent symptom the line to get help now comes first, at the heading's weight, and the referral under it
    (Critic round 38, finding 4); otherwise the referral is the heading */
+/* the Plate's referral card: it quotes the ask it answers (R2-B5 072-1); an urgent symptom adds the line to get help now (B1) */
+function referCard(r){var e=el("div","empty-card"),si=el("span","safe-ic");e.id="refer-card";si.appendChild(ic("shield"));add(e,si);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);
+  var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);return e;}
+/* Rescue's referral card: it quotes the dish it answers (R2-B6 088-1) */
+function referCardR(r){var e=el("div","empty-card"),s=el("span","safe-ic");e.id="refer-card-r";s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);return e;}
 function referHead(e,r){if(r.urgent){e.appendChild(el("h2","urgent",URGENTLINE));e.appendChild(el("p",null,r.read||SAFETY));}else e.appendChild(el("h2",null,r.read||SAFETY));}
 /* Every tap that shows a composed state or writes the log goes through act() (safety round 5): the day is checked first (S12), then the
    composed result the tap would make (S5, S6). test/safety/check.js reads app.js and fails if a click handler that logs or clears does not. */
@@ -173,11 +205,20 @@ var MEDSOTHER="If this is about someone else, ask again without the medicine nam
    under its own key, outside the day's store, so a reload and the 4 am day change keep it. One reader, medsHeld(): the fact is stored and the saved set-up does not say
    insulin, sugar tablets or not sure (np-core's medsOnSetup, the reading under which plan() states the usual size as a minimum). It is set in api() only, when api() or the
    engine answers meds_typed. It ends in two places only: api() when the client types a new ask or dish without the medicine name and it is sent, and closeSheet() when
-   My food then says insulin, sugar tablets or not sure. A storage error keeps the hold (the copy in memory is read with what is stored). */
+   My food then says insulin, sugar tablets or not sure; "Remove my data" also removes the key (a third end, an owner question, O1). A storage error keeps the hold
+   for this page's life only (the copy in memory is read with what is stored); a fact that could not be stored is gone after a reload (safety audit of 3ee7b41, m1). */
 var MEDSKEY="np6meds",MEDSFACT=false;
 function medsFact(){try{MEDSFACT=MEDSFACT||localStorage.getItem(MEDSKEY)!==null;}catch(e){}return MEDSFACT;}
 function medsSetupOK(pr){return typeof medsOnSetup==="function"&&typeof readProfile==="function"&&medsOnSetup(readProfile(pr||profileOut()));}
 function medsHeld(pr){return medsFact()&&!medsSetupOK(pr);}
+/* What the page writes to the ask box or the dish box is not typed (safety audit of 3ee7b41, B2): a failed example ask or chip keeps its words in the box, and sending
+   them must not count as a typed ask. The mark is set only by an input event in the box and cleared at every write the page makes (these two functions are the only
+   writers of the two drafts; the render puts the same draft back into a new box and leaves its mark as it is). */
+/* exit (b), in one place (owner question O2 may change it): text the client typed in the ask box or the dish box, with no medicine name in it at all (np-core's MEDRX,
+   the generic phrases included); a release shape that carries a name ("my mother takes insulin") passed the net but does not end the stored hold (round 7b) */
+function medsExitB(body,typed){var t=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";return typed===true&&!!t.trim()&&!medsNamed(t);}
+function boxAsk(t){UI.askDraft=t;UI.askTyped=false;}
+function boxDish(t){UI.rkeep=t;UI.rinTyped=false;}
 function medsNamed(t){if(typeof MEDRX==="undefined"||typeof norm!=="function")return true;return MEDRX.test(norm(String(t)).toLowerCase());}   /* any medicine name the net reads; unreadable counts as named */
 function medsHoldOn(){MEDSFACT=true;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){}UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
 function medsHoldOff(){MEDSFACT=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
@@ -217,9 +258,7 @@ function api(path,body,cb,typed){
      the page makes itself is not typed) and it passed the net above. Any other path fails closed. */
   var exitB=false;
   if(/\/(?:meals|rescue)$/.test(String(path||""))&&medsHeld(body&&body.profile)){
-    /* exit (b) needs typed text with no medicine name in it at all (np-core's MEDRX, the generic phrases included): a release shape that carries a name ("my mother takes
-       insulin") passed the net but does not end the stored hold (round 7b, coordinator, after the owner's line "ask again without the medicine name") */
-    if(!(typed===true&&body&&body.ctx&&typeof body.ctx.text==="string"&&body.ctx.text.trim()&&!medsNamed(body.ctx.text))){cb(0,{code:"meds_typed"});return;}
+    if(!medsExitB(body,typed)){cb(0,{code:"meds_typed"});return;}
     exitB=true;}
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
   if(exitB)medsHoldOff();   /* a typed ask or dish without the medicine name is sent: the hold ends ("If this is about someone else, ask again without the medicine name.") */
@@ -243,8 +282,8 @@ function makePlates(text,again,typed){
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
-    }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)UI.askDraft=text;}
-    else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)UI.askDraft=text;lockOn(j.code);}
+    }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)boxAsk(text);}
+    else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)boxAsk(text);lockOn(j.code);}
     UI.errAsk=UI.err?text||"":"";
     render();if(UI.view==="plate")$("scroll").scrollTo({top:0,behavior:RM?"auto":"smooth"});if(UI.err)$("said").textContent=UI.err;
   },typed===true&&!again);   /* typed: from the ask box only (round 7); a re-ask the page makes itself is not */
@@ -620,9 +659,9 @@ function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
   var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));go.disabled=!!UI.busy||!!UI.lock;
-  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;});
+  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;UI.askTyped=true;});   /* the client's own keystrokes mark the box typed; boxAsk() clears the mark when the page writes to it */
   if(UI.lock){i.readOnly=true;i.placeholder=/^limit_/.test(UI.lock)?"Asks open at "+resetAt():"Asks are off for now";}   /* the box says why it is off and keeps what was typed (second screen review, R2-B4 060-1) */   /* what is typed stays across re-renders; a failed ask stays too */
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();UI.askDraft="";makePlates(t,false,true);});
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();var ty=UI.askTyped===true;boxAsk("");makePlates(t,false,ty);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
 }
 function renderPlate(){
@@ -631,7 +670,7 @@ function renderPlate(){
   if(P.done&&bodyNeed()){choices(v);var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(medsHeld()&&!UI.busy){v.appendChild(medsCard(true));}   /* "Hide them (Recommended)", owner 23 Nov */
+  if(medsHeld()&&!UI.busy){if(r&&r.status==="refer")v.appendChild(referCard(r));v.appendChild(medsCard(true));}   /* a referral this meal's ask brought is drawn ahead of the hold card (S7; safety audit of 3ee7b41, B1): the hold stays stored */   /* "Hide them (Recommended)", owner 23 Nov */
   else if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for \u201C"+UI.lastAsk+"\u201D":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
@@ -648,8 +687,7 @@ function renderPlate(){
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
   }else if(r.status==="refer"){
-    var e=el("div","empty-card"),si=el("span","safe-ic");si.appendChild(ic("shield"));add(e,si);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);   /* the card quotes the ask it answers (R2-B5 072-1); an urgent symptom adds the line to get help now (B1) */
-    var bb=btn("btn","Back to my plates",null,"back");bb.addEventListener("click",function(){STORE.shown[C.meal]=null;render();});e.appendChild(bb);v.appendChild(e);
+    v.appendChild(referCard(r));
   }else{
     if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.empty&&UI.errAsk?"Nothing for \u201C"+UI.errAsk+"\u201D fit your food rules. Change a choice under Your day, or tap Try again. Showing the plates from before.":(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));   /* R2-B5 069 */
       if(UI.eretry!==false){var ar=btn("btn primary","Try again","refresh","ask-retry");ar.addEventListener("click",function(){var x=UI.lastAsk||"";UI.err="";makePlates(x);});et.appendChild(ar);}
@@ -780,7 +818,7 @@ function revealOut(){setTimeout(function(){var v=$("v-rescue"),s=$("scroll");if(
   for(var j=0;j<kids.length;j++){var k=kids[j];if(/(^| )(panel-h|lede|entries|sits|sitbox|again-h)( |$)/.test(k.className))continue;t=k;break;}
   if(!t)return;var r=t.getBoundingClientRect(),sr=s.getBoundingClientRect();if(r.top<sr.top+8||r.top>sr.top+sr.height*0.5)s.scrollTo({top:Math.max(0,s.scrollTop+r.top-sr.top-12),behavior:RM?"auto":"smooth"});},60);}
 function rescue(text,typed){
-  if(UI.rbusy||UI.lock)return;var hn=UI.mholdN;UI.rbusy=true;UI.rerr="";UI.rcode="";UI.rkeep="";UI.rretry=false;UI.rtext=text||"";render();revealOut();
+  if(UI.rbusy||UI.lock)return;var hn=UI.mholdN;UI.rbusy=true;UI.rerr="";UI.rcode="";boxDish("");UI.rretry=false;UI.rtext=text||"";render();revealOut();
   var rmeal=C.meal,body={profile:profileOut(),ctx:{meal:rmeal,time:clockText(),text:text||"",photo:false,appetite:appetite()},file:fileOut()};
   var sent=askedFor();   /* a reply made for answers changed during the wait is not shown; it is asked for again (Critic round 36) */
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
@@ -788,9 +826,9 @@ function rescue(text,typed){
     if(askedFor()!==sent){if(!blocked())rescue(text);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
-    else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
-    else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
-    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}   /* "Hide them" and "All tabs", owner 23 Nov */
+    else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";boxDish("");UI.rretry=false;}
+    else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";boxDish(text||"");UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
+    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;boxDish(text||"");UI.rretry=RETRY(j.code);lockOn(j.code);}   /* "Hide them" and "All tabs", owner 23 Nov */
     render();if(UI.rerr)$("said").textContent=UI.rerr;},typed===true);   /* typed: from the dish box only (round 7) */
 }
 /* once there is an answer, a wait or an error, it leads and the entry tools follow it (screen review B4-B6) */
@@ -808,20 +846,21 @@ function renderRescue0(){
   if(!(UI.rres||UI.rerr||busy||held)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
   var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Name the dish you chose");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
   var go=el("button","send"+(UI.rerr&&UI.rretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,true);});
+  i.addEventListener("input",function(){UI.rinTyped=true;});   /* the client's own keystrokes mark the dish box typed; boxDish() clears the mark when the page writes to it */
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,UI.rinTyped===true);});
   var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;v.appendChild(ent);
   var sb=el("div","sitbox"),ch=el("div","sits"),chc=el("p","cap","Or tap a common dish");chc.id="dish-cap";add(sb,chc,ch);DISHES.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.disabled=wait;b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d);});ch.appendChild(b);});
   if(!held)v.appendChild(sb);   /* no common-dish chips under the hold: only a typed dish counts as asking again (owner, 23 Nov: "Hide all three (Recommended)") */
   ent.appendChild(f);
   if(UI.rbusy){v.appendChild(waitCard("Working out "+UI.rtext.toLowerCase(),"The dish is being worked out",true));return;}
   if(UI.lock&&!UI.rerr){var ln=el("div","note");ln.id="rescue-lock";ln.setAttribute("role","note");ln.appendChild(ic("info"));ln.appendChild(el("p",null,errText(UI.lock,"rescue")));v.appendChild(ln);}   /* why the tools are off */
-  if(held&&!busy)v.appendChild(medsNote());   /* one hold for every tab (owner, 23 Nov: "All tabs (Recommended)") */
+  if(held&&!busy){if(UI.rres&&UI.rres.status==="refer")v.appendChild(referCardR(UI.rres));v.appendChild(medsNote());}   /* one hold for every tab (owner, 23 Nov: "All tabs (Recommended)"); a referral the dish brought is drawn ahead of it (S7; safety audit of 3ee7b41, B1) */
   else if(UI.rerr){var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,UI.rerr));
     if(UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x);});tx.appendChild(tb);}
     n.appendChild(tx);v.appendChild(n);}
   var r=held?null:UI.rres;   /* under a typed-medicine hold no dish, move or "I had this" is drawn ("Hide them (Recommended)") */
   if(!r)return;
-  if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
+  if(r.status==="refer"){v.appendChild(referCardR(r));return;}   /* the card quotes what it answers (R2-B6 088-1) */
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
   var d=r.dish,a={kcal:d.kcal,protein:d.protein,carbs:d.carbs,fats:d.fats,fiber:d.fiber},hab={veg:false,walk:false,lemon:false};
   r.hacks.forEach(function(h,k){if(!UI.rmoves[k])return;a.kcal+=h.deltaKcal;a.protein+=h.deltaProtein;a.carbs+=h.deltaCarbs;a.fats+=h.deltaFats;a.fiber+=h.deltaFiber;if(h.kind==="sequence")hab.veg=true;if(h.kind==="move")hab.walk=true;});
@@ -870,6 +909,8 @@ var BODY0=[0,0,0];
 function closeSheet(){if(UI.sheet==="food"&&bodyNeed()){P.age=BODY0[0];P.cm=BODY0[1];P.kg=BODY0[2];}
   var fd=UI.sheet==="food"&&answers()!==ANS0;if(medsFact()&&medsSetupOK())medsHoldOff();UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
+/* another tab changed the store or the medicine hold: take its change in and redraw (B3); save() and refresh() read the store again in any case, so a late event loses nothing */
+if(window.addEventListener)window.addEventListener("storage",function(e){if(e.key===null||e.key==="np6"||e.key===MEDSKEY){storeSync();if(!UI.sheet)render();}});
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text){
   if(UI.lbusy||UI.lock)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
