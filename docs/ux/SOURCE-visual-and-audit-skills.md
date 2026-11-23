@@ -11,7 +11,7 @@ review prompt drawn from the brief, not a finding.
 
 ### 0.1 Sources
 
-`P` = `/root/.claude/plugins/synced/32d4318a-0b45-4fc3-924b-2337b9305fc9_a15d919d-8211-4c7f-bd7e-1e222b8815c2`
+`P` = `<plugin cache folder>`
 
 | Key | Plugin (version) | Root | Files read |
 |---|---|---|---|
