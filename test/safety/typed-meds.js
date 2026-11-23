@@ -240,7 +240,7 @@ for (const h of ['kidney', 'preg']) for (const kind of ['meals', 'rescue', 'log'
   for (const t of URG) for (const kind of ['meals', 'rescue', 'log']) add('order, engine: an urgent sign typed from a partial body is referred, not refused', !!(ask(kind, partial, t).reply || {}).urgent, `${kind}: "${t}"`); }
 
 // ---------- the phone: the app's own api() with the live bodyHold and the live medicine hold ----------
-const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff'];
+const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed'];
 const MEDSVAR = (/^var MEDSKEY=[^\n]*;$/m.exec(appSrc) || [''])[0];   // the stored hold's key (round 7)
 const missing = FNS.filter(n => !grab(n)); add('the phone\'s api, bodyHold and bodyNeed are in src/v6/app.js', missing.length === 0, 'not found: ' + missing.join(', '));
 const P0 = (/^var P=\{[^\n]*\};$/m.exec(appSrc) || [''])[0];
@@ -283,7 +283,7 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
 // stored outside the day's store; while it is stored, plates and Rescue send nothing unless the set-up says insulin, sugar tablets or not sure, or the client typed the ask or
 // dish (and it passed the net).
 { const PFNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'save', 'appetite', 'refresh', 'clockMeal', 'rules', 'answers', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'slotOf', 'curKey',
-    'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
+    'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
     'askBlock', 'lockLine', 'errText', 'RETRY', 'curRes', 'lastForMeal', 'closeSheet', 'unAsk', 'onMeds'];
   const pmiss = PFNS.filter(n => !grab(n)); add('hold page: the app\'s functions are in src/v6/app.js', pmiss.length === 0, 'not found: ' + pmiss.join(', '));
   const line = (re) => (re.exec(appSrc) || [''])[0];
@@ -376,7 +376,14 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
     { const ls = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), a = page(ls); a.ask('something light with dal', true);
       add('hold: a typed ask without the medicine name is sent and ends the hold ("ask again without the medicine name")', a.SENT.length === 1 && !stored(ls) && !a.held(), `sent ${a.SENT.length}, stored ${stored(ls)}`);
       const ls2 = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), b = page(ls2); b.rescue('Veg thali', true);
-      add('hold: a typed dish without the medicine name is sent and ends the hold', b.SENT.length === 1 && !stored(ls2), `sent ${b.SENT.length}, stored ${stored(ls2)}`); }
+      add('hold: a typed dish without the medicine name is sent and ends the hold', b.SENT.length === 1 && !stored(ls2), `sent ${b.SENT.length}, stored ${stored(ls2)}`);
+      // round 7b (coordinator): a typed release shape that carries a name passes the net but does not end the stored hold, and nothing is sent that plans without the floor
+      for (const t of ['my mother takes insulin', 'My mother takes insulin, what should I cook for her?', "I don't take insulin", 'no insulin', 'insulin resistance diet', 'doctor will start insulin if sugar stays high', 'papa ko insulin lagta hai, main kya banau', 'meri saas metformin leti hai']) {
+        for (const via of ['ask', 'dish']) { const lsx = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), c = page(lsx); if (via === 'ask') c.ask(t, true); else c.rescue(t, true); c.flush(); const pt = c.plate();
+          const noFloor = c.SENT.filter(s => /\/api\/(meals|rescue)$/.test(s.path) && !/at least \d+ kcal, never below/.test((A.plan(s.path.split('/').pop(), J(s.body)) || {}).prompt || ''));
+          add('hold (round 7b): a typed release shape with a medicine name keeps the stored hold and sends nothing that plans without the floor', A.typedMeds(t) === false && stored(lsx) && c.held() && noFloor.length === 0 && c.SENT.length === 0 && card(pt), `${via} "${t}": stored ${stored(lsx)}, sent ${c.SENT.length}`); } }
+      for (const t of ['something light with dal', 'Masala dosa with chutney', 'my mother wants a light dinner', 'no sugar in my tea please']) { const lsx = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), c = page(lsx); c.ask(t, true);
+        add('hold (round 7b): a typed ask with no medicine name is sent and ends the hold', c.SENT.length === 1 && !stored(lsx) && !c.held(), `"${t}": sent ${c.SENT.length}, stored ${stored(lsx)}`); } }
     // late replies (safety audit of 41e8ac0, m2): a Rescue reply and a plates reply sent before a hold came up are not kept or shown, also after the hold ends
     { const ls = seedLS(), a = page(ls); a.rescue('Veg thali', true); const rr = a.SENT[0]; a.ask('I take insulin', true); if (rr && rr.done) rr.done({ s: 200, j: JSON.parse(JSON.stringify(DISH)) });
       const kept = a.UI.rres; a.ask('something light', true); const r = a.resc();

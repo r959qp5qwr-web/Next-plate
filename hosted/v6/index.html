@@ -3814,6 +3814,7 @@ var MEDSKEY="np6meds",MEDSFACT=false;
 function medsFact(){try{MEDSFACT=MEDSFACT||localStorage.getItem(MEDSKEY)!==null;}catch(e){}return MEDSFACT;}
 function medsSetupOK(pr){return typeof medsOnSetup==="function"&&typeof readProfile==="function"&&medsOnSetup(readProfile(pr||profileOut()));}
 function medsHeld(pr){return medsFact()&&!medsSetupOK(pr);}
+function medsNamed(t){if(typeof MEDRX==="undefined"||typeof norm!=="function")return true;return MEDRX.test(norm(String(t)).toLowerCase());}   /* any medicine name the net reads; unreadable counts as named */
 function medsHoldOn(){MEDSFACT=true;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){}UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
 function medsHoldOff(){MEDSFACT=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
 function medsCard(withLog){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(c);
@@ -3852,7 +3853,9 @@ function api(path,body,cb,typed){
      the page makes itself is not typed) and it passed the net above. Any other path fails closed. */
   var exitB=false;
   if(/\/(?:meals|rescue)$/.test(String(path||""))&&medsHeld(body&&body.profile)){
-    if(!(typed===true&&body&&body.ctx&&typeof body.ctx.text==="string"&&body.ctx.text.trim())){cb(0,{code:"meds_typed"});return;}
+    /* exit (b) needs typed text with no medicine name in it at all (np-core's MEDRX, the generic phrases included): a release shape that carries a name ("my mother takes
+       insulin") passed the net but does not end the stored hold (round 7b, coordinator, after the owner's line "ask again without the medicine name") */
+    if(!(typed===true&&body&&body.ctx&&typeof body.ctx.text==="string"&&body.ctx.text.trim()&&!medsNamed(body.ctx.text))){cb(0,{code:"meds_typed"});return;}
     exitB=true;}
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
   if(exitB)medsHoldOff();   /* a typed ask or dish without the medicine name is sent: the hold ends ("If this is about someone else, ask again without the medicine name.") */
