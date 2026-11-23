@@ -842,12 +842,22 @@ function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.
    part of this net (an open owner question). No look-behind. */
 var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|novomix|mixtard|actrapid|insugen|tresiba|levemir|toujeo|apidra|basalog|glargine|degludec|detemir|aspart|lispro|"+
   "glimepiride|glimepride|glimiperide|glimpiride|gliclazide|gliclazid|glipizide|glibenclamide|glyburide|tolbutamide|amaryl|glimy|glimestar|diamicron|daonil|euglucon|zoryl|repaglinide|nateglinide|"+
-  "metformin|glucophage|glycomet|gluconorm|obimet|pioglitazone|sitagliptin|januvia|janumet|vildagliptin|galvus|teneligliptin|linagliptin|trajenta|dapagliflozin|forxiga|empagliflozin|jardiance|"+
+  "metformin|glucophage|glycomet|gluconorm|obimet|pioglitazone|sitagliptin|januvia|janumet|vildagliptin|galvus|teneligliptin|linagliptin|trajenta|tradjenta|dapagliflozin|forxiga|empagliflozin|jardiance|"+
   "voglibose|acarbose|semaglutide|ozempic|rybelsus|liraglutide|victoza|dulaglutide|trulicity|tirzepatide|mounjaro|"+
+  /* brand names, from the sources named in SAFETY-INVARIANTS S6 (Wikipedia "List of commercially available insulins", Medindia "Drugs for Management of Diabetes", Healthline, pharmacy pages; 23 Nov 2026) */
+  "actraphane|admelog|afrezza|abasaglar|abasria|basaglar|humanext|insulatard|insulong|insuman|jusline|kirsty|lentard|liprolog|lyumjev|merilog|monotard|myxredlin|novolin|novolog|protaphane|rezvoglar|ronulin|ryzodeg|scilin|semglee|trurapi|ultratard|univia|fiasp|exubera|iletin|rapidica|zinulin|"+
+  "glubose|asucrose|glucarb|discarb|zebay|recarb|disorb|glucobay|olcarbos|chlorpropamide|diabinese|copamide|chlorformin|exenatide|byetta|lixisenatide|pramlintide|miglitol|"+
+  "comdiab|glybid|glucotrac|sycored|sugatrol|glycurb|benclamet|glifil|refraz|glurib|bioformin|glitec|ancalzide|gzide|glizid|reclide|adride|amarglim|asoride|glipimet|glimet|glicept|glipmet|bimode|godde|glycind|metaglez|glynase|glucotrol|"+
+  "chromet|asoformin|avimet|baymet|bemet|bigesens|istamet|zita[\\s-]?met|zita[\\s-]?piomet|zita[\\s-]?plus|gemer|ziten|volix|"+
+  "diamig|migset|migtor|miglit|misobit|mignar|natelide|natiz|natstar|glinate|piomed|piolem|diaglit|pglit|pizorad|pioz|eurepa|repide|rapilin|repamon|glitenly|tenliptin|rastinone?|jalra|zolmelis|"+
+  "glucovance|invokamet|xigduo|synjardy|segluromet|jentadueto|actoplus|kazano|glyxambi|duetact|"+
   "(?:sugar|shugar|suger|diabetes|diabetic|madhumeh)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?|meds?)|"+
   "(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes|madhumeh)";
+/* name families with a distinctive stem match inside a word (a brand the list does not know, a misspelling): insulins (-sulin and the spellings of insulin), the -gliptins, -gliflozins, -glutides, -glinides, -glitazones,
+   the spellings of metformin, the sulfonylureas (glimepiride, gliclazide, glipizide, glibenclamide) and the voglibose family. Each stem was checked against the recorded names, the corpus and a word list (S6). */
+var MEDSTEM="[a-z]*[nio]sulin[a-z]*|ins[ua]?[iu]?l{1,2}[iuey]n[a-z]{0,2}|[a-z]{2,}gl[ie]+p[ie]?tin[a-z]{0,2}|[a-z]{2,}gli(?:f|ph)l?ozin|[a-z]{2,}glutide|[a-z]{2,}glinide|[a-z]{2,}glitazone?|met[ah]?[fp]h?[or]{1,3}[mn]{1,2}[iu][nm]e?|gli[mcpb][a-z]{0,10}(?:ride|zide|mide|zid|mid)|glyclazide|glyburid|vogli[a-z]{2,}";
 var MEDDEVA="इंसुलिन|इन्सुलिन|इंसुलीन|मेटफॉर्मिन|मेटफोर्मिन|ग्लिमेपिराइड|ग्लाइक्लाज़ाइड|शुगर की गोली|शुगर की दवा|शुगर की दवाई|डायबिटीज की दवा|डायबिटीज की दवाई";   /* the medicine words in Devanagari (no \b: it is not a word character) */
-var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|(?:"+MEDDEVA+")","i");
+var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|\\b(?:"+MEDSTEM+")(?![a-z])|(?:"+MEDDEVA+")","i");
 var MEDALLOW=/^(?:do|does|did|am|are|is|was|were|be|been|ever|really|actually|any|the|a|an|of|to|for|from|more|longer|anymore|again|yet|since|usually|normally|regular|regularly|current|currently|take|taking|took|taken|use|using|used|on|have|having|had|get|getting|got|inject|injecting|need|needs|needed|medicine|medicines|medication|tablets?|pills?|oral|such|kind|type)$/;
 var MEDHINDIOK=/^(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|lena|padta|padti|lagta|lagti|le|li|liya|lia|karta|karti|kabhi|bilkul|ab|abhi|main|mai|maine|hoon|hu|hun|hai|hain|tha|thi|raha|rahi|rha|rhi|gayi|gaya|ho|di|diya|dia)$/;
 var MEDNEGW=/\b(?:no\s+longer|instead\s+of|(?:alternatives?|replacements?|substitutes?)\s+(?:to|for|of)|no|not|dont|don'?t|doesn'?t|didn'?t|never|cant|can'?t|cannot|won'?t|wont|stopped|quit|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|avoid\w*|afraid|scared|refus\w*|allergic)\b/;

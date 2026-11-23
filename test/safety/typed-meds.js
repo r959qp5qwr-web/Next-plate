@@ -112,6 +112,26 @@ const R4_HELD = ["Me and my mother both on metformin", "I and my father take ins
 const R4_NOT = ["My husband takes metformin, I don't", "My mother takes insulin, what should I cook for her?", "For my father who takes insulin, what should he eat?", "Papa ko insulin lagta hai, main kya banau", "Meri saas insulin leti hai", "My mom is on Lantus",
   "my mother takes insulin and I help her", "My mother takes insulin. I cook for her."];
 for (const t of R4_HELD) HELD.push([t, 'round 4 literal']); for (const t of R4_NOT) NOT.push([t, 'round 4 literal']);
+// round 5: name families by stem, brands from the sources named in S6, misspellings; and food, plate and English words that share letters stay unheld
+const STEM_HELD = ['Huminsulin', 'Wosulin', 'Lupisulin N', 'Gensulin R', 'Velosulin', 'Optisulin', 'Dipisulin', 'Ryzodeg', 'Basaglar', 'Glucobay', 'Pioz', 'Volix', 'Gemer', 'Istamet', 'Zita-met', 'Zita Met', 'Zita-PioMet', 'Glynase', 'Glizid', 'Reclide', 'Ziten', 'Eurepa',
+  'Insulatard', 'Insugen', 'Insuman', 'Actraphane', 'Semglee', 'Admelog', 'Chromet', 'Natiz', 'Rastinon', 'Voglistar', 'Voglibose', 'Evogliptin', 'Gemigliptin', 'Anagliptin', 'Alogliptin', 'Canagliflozin', 'Ertugliflozin', 'Mitiglinide', 'Rosiglitazone', 'Lobeglitazone', 'Exenatide', 'Dulaglutide', 'Glucovance', 'Xigduo', 'Synjardy'];
+const MISSPELL = ['metformine', 'metfromin', 'metfornin', 'metphormin', 'metaformin', 'methformin', 'metfomin', 'insullin', 'insulen', 'insuline', 'inslin', 'insulyn', 'insuilin', 'insuling', 'sitaglipitin', 'sitagliptine', 'sitagleptin', 'vildagleptin', 'glimepride', 'glimeperide',
+  'glimipiride', 'glimpiride', 'glicazide', 'gliclazid', 'glyclazide', 'glibenclamid', 'glyburid', 'pioglitazon', 'dapaglifozin', 'semiglutide'];
+for (const m of STEM_HELD.concat(MISSPELL)) for (const f of ['I take M daily', 'Taking M since 2019', 'M 10 units morning', 'on M', 'M before dinner']) HELD.push([f.replace('M', m), 'round 5 name or stem: ' + m]);
+// the Critic's probes, as given
+for (const t of ['Taking Huminsulin since 2019', 'I take Wosulin daily', 'I take Glucobay daily', 'I take metformine daily']) HELD.push([t, 'round 5 literal']);
+const STEM_NOT = ['Glycemic index low gi dinner', 'glutinous rice', 'Gluten free roti', 'Glucose water after the walk', 'Insulated lunch box', 'insulate the flask', 'Consuming less rice', 'Insurance card', 'Gliding home', 'Glitter on the cake', 'Triglyceride report', 'Glyceride on the label', 'Mono and diglycerides listed', 'Inulin fibre', 'Metabolism check',
+  'Metallic taste', 'Metro station', 'Glucosamine tablets', 'Methi paratha', 'Metha dal', 'Gliadin free diet', 'Gloomy day', 'Capsuling machine', 'Sulphur water', 'Sugar free sweets', 'Low gi glide', 'Pioneer dal', 'Regan dal fry', 'Aliza dal', 'Glock', 'Pio', 'Dapa', 'Teneli',
+  'Pomegranate raita', 'Moong dal khichdi', 'Jowar roti with lauki sabzi', 'Palak paneer', 'Idli sambar', 'Masala dosa with chutney'];
+for (const t of STEM_NOT) NOT.push([t, 'round 5 shares letters, no medicine']);
+// known over-holds, kept on the safe side (no release widened): a bare name, a relative word that is not on the list
+for (const t of ['Is Januvia safe? asking for my mother', 'My aunt started Ozempic for weight', 'My mausi is on metformin', 'My chacha takes Glycomet']) HELD.push([t, 'known over-hold']);
+// every medicine word the rule finds in the recorded strings under eval/ is one of these (a new stem or name must not hit a recorded food, plate name, note or typed ask)
+{ const known = new Set(['insulin', 'diabetes medicine', 'diabetes medication', 'metformin']), found = {}; const rx = new RegExp(A.MEDRX.source, 'gi');
+  const walk = (o) => { if (typeof o === 'string') { for (const m of o.match(rx) || []) found[m.toLowerCase()] = 1; } else if (Array.isArray(o)) o.forEach(walk); else if (o && typeof o === 'object') Object.values(o).forEach(walk); };
+  const rd = (d) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const q = path.join(d, f.name); if (f.isDirectory()) rd(q); else if (/\.json$/.test(f.name)) { try { walk(JSON.parse(fs.readFileSync(q, 'utf8'))); } catch (e) {} } } };
+  rd(path.join(ROOT, 'eval')); const extra = Object.keys(found).filter(k => !known.has(k));
+  add('the name rule finds only medicine words in the recorded strings under eval/ (names, notes, typed asks, prompts)', extra.length === 0, 'new hits: ' + extra.join(', ')); }
 for (const t of OVER) HELD.push([t, 'known over-hold']);
 for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
 const HELD_BEFORE = 1183, NOT_BEFORE = 1138;
