@@ -49,10 +49,12 @@ const HOLDLINE = 'If this is about someone else, ask again without the medicine 
 const holdOnly = async (p, view, log) => { const r = await p.evaluate(([view]) => { const v = document.getElementById(view), t = v.innerText;
     return { t, line: t.includes('You mentioned insulin or sugar tablets. Add it in My food so your plates keep the safe size.'), other: [...v.querySelectorAll('.meds-other')].map(e => e.textContent), btn: !!v.querySelector('#add-meds'),
       before: !!v.querySelector('#plate-card, .alts, #lastplates, .inst, .cmp, .moves, #rescue-had, #rescue-again, .move') || /Showing the plates from before\.|Your plates from before are kept\.|I had this/.test(t),
-      log: !!v.querySelector('#log-other') && !!v.querySelector('#log-skip') }; }, [view]);
+      log: !!v.querySelector('#log-other') && !!v.querySelector('#log-skip'),
+      three: !!v.querySelector('#directive, .prompts, .prompt, .sitbox, #dish-cap') || /:\s*about \d+\s*kcal/.test(t) }; }, [view]);
   if (!r.line || r.other.length !== 1 || r.other[0] !== HOLDLINE || !r.btn) throw new Error(view + ': the hold card is not the owner\'s sentence, the line and the button: ' + JSON.stringify(r).slice(0, 300));
   if (r.before) throw new Error(view + ': something made before the hold shows under it: ' + r.t.slice(0, 300));
-  if (log && !r.log) throw new Error(view + ': the log row ("I had something else", "Skipped it") is not under the hold card'); };
+  if (log && !r.log) throw new Error(view + ': the log row ("I had something else", "Skipped it") is not under the hold card');
+  if (r.three) throw new Error(view + ': the meal figure, the example asks or the dish chips show under the hold ("Hide all three (Recommended)")'); };
 // owner, 14 Nov: the example asks are these four; a diet or a food left out still removes one that crosses it
 const asks = async (p, want) => { const got = await p.evaluate(() => [...document.querySelectorAll('.prompts .prompt')].map(b => b.textContent.replace(/[\u201C\u201D]/g, '').trim()));
   if (got.join('|') !== want.join('|')) throw new Error('the example asks are not the owner\'s (' + got.join(' | ') + ')'); };
@@ -392,6 +394,17 @@ const STATES = [
     await p.click('#tab-plate'); await h.settle(); await p.fill('#askin', 'I take insulin, a light lunch please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300);
     await holdOnly(p, 'v-plate', true); await p.click('#tab-build'); await h.settle(); await holdOnly(p, 'v-build', false);
     await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); }],
+  // owner, 23 Nov, "Until updated (Recommended)": the hold is stored on the phone; after a reload every tab shows the card and the page plans nothing by itself
+  ['meds-hold-reload', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, what lunch?'); await p.press('#askin', 'Enter');
+    await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300); let asked = 0; p.on('request', r => { if (/\/api\/(meals|rescue)$/.test(new URL(r.url()).pathname)) asked++; });
+    await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(1500); await p.waitForSelector('#v-plate #meds-hold', { timeout: 10000 }); await holdOnly(p, 'v-plate', true);
+    await p.click('#tab-build'); await h.settle(); await holdOnly(p, 'v-build', false); await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); await p.click('#tab-plate'); await h.settle(800);
+    if (asked) throw new Error('after a reload under the hold the page sent ' + asked + ' plate or Rescue request(s) by itself'); }],
+  // owner, 23 Nov, "Hide all three (Recommended)": under the hold card no meal figure (the day note, the appetite slider), no example asks, no common-dish chips
+  ['meds-hold-hidden', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take metformin, a light lunch'); await p.press('#askin', 'Enter');
+    await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300); await holdOnly(p, 'v-plate', true); await p.click('#dial-appetite'); await h.settle(300);
+    const sv = await p.evaluate(() => { const e = document.querySelector('.slide-v'); return e ? e.textContent : ''; }); if (/kcal/.test(sv)) throw new Error('the appetite slider shows a meal figure under the hold: ' + sv);
+    await p.click('#dial-appetite'); await h.settle(200); await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); }],
   // and the reverse: plates shown on Plate, then a hold raised on Rescue; Plate shows the hold, not the plates, with the log row
   ['rescue-hold-then-plate', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
     await p.fill('#rin', 'Paneer butter masala, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#v-rescue #add-meds', { timeout: 20000 }); await h.settle(300); await holdOnly(p, 'v-rescue', false);
