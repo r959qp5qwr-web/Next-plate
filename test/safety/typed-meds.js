@@ -267,6 +267,49 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
   add('order, phone: a kidney or pregnancy set-up is referred first, with the reply plan() gives, and nothing is sent (audit m1)', r.sent === 0 && !!r.got && r.got[0] === 200 && !!pl.reply && JSON.stringify(r.got[1]) === JSON.stringify(pl.reply) && (/chest pain/.test(t) ? r.got[1].urgent === A.URGENTLINE : !r.got[1].urgent), `${h}, ${bl}, ${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 90)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'I take insulin and had dal and roti for lunch'); add('order, phone: a partial body with typed insulin in the log: the log still goes, without the three figures, and the engine reads it', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && !A.plan('log', J(r.ph.sent[0].body)).error, JSON.stringify(r.got)); }
 
+// ---------- "Hide them (Recommended)" (owner, 23 Nov): while a meds_typed hold is up the hold card shows on its own ----------
+// the app's own renderPlate, renderRescue0, renderRescue and rescue() on a small fake page: no earlier plate, no "Show my last plates", no line about plates from before, no
+// earlier Rescue dish, move or "I had this"; the hold line and "Add it in My food" are there. Controls: with no hold the same state draws the plate and the dish.
+{ const HFNS = ['medsHeld', 'medsCard', 'medsBtn', 'renderPlate', 'renderRescue0', 'renderRescue', 'rescue', 'errText', 'RETRY'];
+  const hmiss = HFNS.filter(n => !grab(n)); add('hide: the hold card and the renders are in src/v6/app.js', hmiss.length === 0, 'not found: ' + hmiss.join(', '));
+  const VARS = ['MEDSTYPED', 'NORETRY'].map(n => (new RegExp('^var ' + n + '=[^\\n]*;$', 'm').exec(appSrc) || [''])[0]).join('\n');
+  const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{},hidden:false,disabled:false,
+      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},addEventListener:function(){},remove:function(){},
+      querySelector:function(q){var f=function(n){for(var i=0;i<n.kids.length;i++){var k=n.kids[i];if(q[0]==="."?(" "+k.cls+" ").indexOf(" "+q.slice(1)+" ")>=0:("#"+k.id)===q)return k;var r=f(k);if(r)return r;}return null;};return f(this);}};
+    Object.defineProperty(o,"textContent",{get:function(){return o.text;},set:function(x){o.kids=[];o.text=x;}});return o;}
+    var document={createTextNode:function(t){return N("#text",null,t);}},VIEWS={"v-plate":N("main"),"v-rescue":N("main")},said=N("p");function $(id){return id==="said"?said:VIEWS[id]||null;}
+    function el(t,c,x){return N(t,c,x);}function btn(c,l,i,id){var b=N("button",c,l);b.id=id||"";return b;}function ic(){return N("svg");}function add(p){for(var i=1;i<arguments.length;i++)if(arguments[i])p.appendChild(arguments[i]);return p;}
+    var UI={},P={done:true,conds:[]},C={meal:"lunch"},STORE={res:{},shown:{}},ERRS={},LOSTIT="",REMADE={},REMADEWHY={},PL={target:{kcal:500,protein:20},left:{kcal:900,protein:30}},FILE={today:{kcal:0}},DISHES=[["Veg thali"]],RM=true,SLOT=null,RES=null,LAST=null,API=null,KEYCODE="";
+    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function bodyNeed(){return null;}function choices(){}function slotOf(){return SLOT;}function curRes(){return RES;}function lastForMeal(){return LAST;}
+    function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}function mealName(m){return m;}function makePlates(){}function render(){}function referHead(){}function curMeal(){return RES.meals[0];}
+    function plateWhy(){return "";}function viewOf(){return {};}function curKey(){return "k";}function bodyMissing(){return {text:"",at:""};}function openSheet(){}function medsAt(){return "health-diabetes";}
+    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function has(){return false;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){};}function logEv(){}
+    function directiveCard(){}function ctxBlock(){}function askBlock(){}function composer(){}function stamp(){return N("i");}function sprig(){return N("i");}function setTimeout(){return 0;}
+    function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function appFoodOK(){return true;}function profileOut(){return {};}function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}
+    function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function revealOut(){}function clockText(){return "1:10 pm";}function appetite(){return 5;}function fileOut(){return {};}function askedFor(){return "s";}function lockOn(){}
+    function api(path,body,cb){cb(API[0],API[1]);}
+    function walk(n,out){out.push((n.id?"#"+n.id+" ":"")+n.text);n.kids.forEach(function(k){walk(k,out);});return out;}`;
+  const page = (() => { try { return vm.runInContext('(function(){' + VARS + '\n' + STUB + '\n' + HFNS.map(grab).join('\n') + '\nreturn {UI:UI,set:function(k,v){if(k==="SLOT")SLOT=v;if(k==="RES")RES=v;if(k==="LAST")LAST=v;if(k==="API")API=v;},' +
+    'plate:function(){VIEWS["v-plate"]=N("main");try{renderPlate();}catch(e){return "threw: "+e.message;}return walk(VIEWS["v-plate"],[]).join("\\n");},resc:function(){VIEWS["v-rescue"]=N("main");try{renderRescue();}catch(e){return "threw: "+e.message;}return walk(VIEWS["v-rescue"],[]).join("\\n");},rescue:function(t){try{rescue(t);}catch(e){}},MEDSTYPED:MEDSTYPED};})', A)(); } catch (e) { return null; } })();
+  add('hide: the app\'s renders run on the fake page', !!page, 'the harness did not load');
+  if (page) {
+    const plate = { status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '' }, U = page.UI;
+    const hold = (t) => t.includes(page.MEDSTYPED) && t.includes('#add-meds') && t.includes('#meds-hold');
+    const noPlate = (t) => !t.includes('HERO PLATE') && !t.includes('#plate-card') && !t.includes('#lastplates') && !/Showing the plates from before\.|Your plates from before are kept\.|Show my last plates/.test(t);
+    for (const [label, res, last, slot] of [['a plate on screen', plate, plate, null], ['no plate on screen, an earlier one kept', null, plate, null], ['the meal logged', plate, plate, { kind: 'had' }]]) {
+      page.set('RES', res); page.set('LAST', last); page.set('SLOT', slot);
+      Object.assign(U, { err: '', ecode: '', busy: '', eretry: true }); const ctl = page.plate();
+      Object.assign(U, { err: page.MEDSTYPED, ecode: 'meds_typed', eretry: false }); const t = page.plate();
+      add('hide: on Plate the hold card shows on its own (no earlier plate, no "Show my last plates", no line about plates from before)', hold(t) && noPlate(t) && !t.includes('LOGGED'), `${label}: ${t.replace(/\n/g, ' | ').slice(0, 300)}`);
+      if (label === 'a plate on screen') add('hide: control, with no hold the same state draws the plate', ctl.includes('HERO PLATE') && !ctl.includes('#meds-hold'), ctl.replace(/\n/g, ' | ').slice(0, 200)); }
+    const dish = { status: 'ok', meal: 'lunch', dish: { name: 'Paneer butter masala', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
+    Object.assign(U, { rres: dish, rmoves: {}, rerr: '', rcode: '', rbusy: false, lock: '', rtext: 'Paneer butter masala' }); const rc = page.resc();
+    add('hide: control, with no hold Rescue draws the dish, its move and "I had this"', rc.includes('Paneer butter masala') && rc.includes('#rescue-had') && rc.includes('Eat about half'), rc.replace(/\n/g, ' | ').slice(0, 200));
+    page.set('API', [0, { code: 'meds_typed' }]); page.rescue('Veg thali, I take insulin'); const rt = page.resc();
+    add('hide: on Rescue the hold shows on its own after a dish was shown (no dish, move, "I had this" or "Another dish")', rt.includes(page.MEDSTYPED) && rt.includes('#add-meds') && !/Paneer butter masala|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(rt) && U.rres === null, rt.replace(/\n/g, ' | ').slice(0, 300));
+    Object.assign(U, { rres: dish, rerr: page.MEDSTYPED, rcode: 'meds_typed' }); const rk = page.resc();
+    add('hide: on Rescue a dish kept in memory is not drawn under the hold', !/Paneer butter masala|#rescue-had|Another dish/.test(rk), rk.replace(/\n/g, ' | ').slice(0, 300)); } }
+
 // ---------- report ----------
 let fail = 0;
 for (const [id, r] of Object.entries(res)) { console.log(`${r.bad.length ? 'FAIL' : 'ok  '} ${id}: ${r.n} checks, ${r.bad.length} counter-examples`); r.bad.slice(0, (process.env.ALLBAD ? 9999 : 6)).forEach(b => console.log('       ' + b)); if (r.bad.length > 6) console.log(`       ... ${r.bad.length - 6} more`); fail += r.bad.length; }

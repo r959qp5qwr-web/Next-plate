@@ -3797,6 +3797,11 @@ var LOSTIT="Lost it? Ask your coach to send it again.";
 var MEDSTYPED="You mentioned insulin or sugar tablets. Add it in My food so your plates keep the safe size.";
 function medsAt(){return has("diabetes")?"meds-yes":"health-diabetes";}
 function medsBtn(host){var b=btn("btn primary","Add it in My food",null,"add-meds");b.addEventListener("click",function(){openSheet("food",medsAt());});host.appendChild(b);}
+/* While a typed-medicine hold is up the hold card shows on its own: no earlier plate, no "Show my last plates", no line about plates from before, no earlier Rescue dish, move or
+   "I had this" (owner, 23 Nov, option survey: "Hide them (Recommended)"). Those plates and that dish were made for a set-up with no medicine. Once My food is updated the hold
+   clears and the plates are made again at the safe size (closeSheet). A new ask or dish runs the net again. */
+function medsHeld(){return !!UI.err&&UI.ecode==="meds_typed";}
+function medsCard(){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED));medsBtn(c);return c;}
 function errText(code,where){
   if(code==="limit_day"||code==="limit_ip"){var tail=where==="plate"?"":where==="log"?" Until then, the day keeps what you logged before.":" Until then, your plates on the Plate tab are still there.";
     if(code==="limit_ip")return (where==="plate"?"Today's limit of new plates on this network is reached. They open again at ":"Today's limit of requests on this network is reached. They open again at ")+resetAt()+"."+tail;
@@ -4069,7 +4074,7 @@ function ctxBlock(host){
   /* the open setting's panel goes right under its pill, with the question it answers (second screen review, R2-B2 027-1) */
   var pan=el("div","panel"),HOST=host;host=pan;
   function title(t,sub){var c=el("p","cap",t);pan.appendChild(c);if(sub)pan.appendChild(el("p","fine",sub));pan.setAttribute("role","group");pan.setAttribute("aria-label",t);}
-  function changed(what){STORE.shown[C.meal]=null;UI.err="";UI.open="";UI.moved=what||"setting";save();render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
+  function changed(what){STORE.shown[C.meal]=null;if(!medsHeld())UI.err="";UI.open="";UI.moved=what||"setting";save();render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
   function radios(list,isOn,set,iconOf,cls){var g=el("div",cls||"grid2");g.setAttribute("role","radiogroup");
     list.forEach(function(o){var b=el("button",cls==="choice-row"||cls==="lows"?"choice":"tile");b.type="button";b.id=o.id;b.setAttribute("role","radio");b.setAttribute("aria-checked",isOn(o.v)?"true":"false");if(iconOf)b.appendChild(ic(iconOf(o.v)));var tx=el("span",null,o.t);if(o.s)tx.appendChild(el("small",null,o.s));b.appendChild(tx);
       b.addEventListener("click",function(){set(o.v);});g.appendChild(b);});host.appendChild(g);}
@@ -4095,7 +4100,7 @@ function choices(host){
   var ms=el("div","meals");ms.setAttribute("role","radiogroup");ms.setAttribute("aria-label","Meal");
   MEALS.forEach(function(m){var b=el("button","meal");b.type="button";b.id="meal-"+m[0];b.setAttribute("role","radio");b.setAttribute("aria-checked",C.meal===m[0]?"true":"false");var s=slotOf(m[0]);
     b.appendChild(ic(m[2]));b.appendChild(el("span",null,m[1]+(s&&s.kind!=="skipped"?" ✓":"")));if(s&&s.kind==="skipped"){var sx=ic("x");sx.classList.add("skipx");b.appendChild(sx);}   /* a skipped meal shows the mark of "Skipped it", not a dash (R2-B2 021-2) */if(s)b.setAttribute("aria-label",m[1]+(s.kind==="skipped"?", skipped":", logged"));if(m[0]===CLOCK&&!s){var d=el("i","now");d.setAttribute("aria-label","now");b.appendChild(d);}
-    b.addEventListener("click",function(){if(C.meal===m[0])return;C.meal=m[0];UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.err="";UI.fresh=true;UI.open="";render();});ms.appendChild(b);});
+    b.addEventListener("click",function(){if(C.meal===m[0])return;C.meal=m[0];UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;if(!medsHeld())UI.err="";UI.fresh=true;UI.open="";render();});ms.appendChild(b);});
   host.appendChild(ms);
 }
 /* a wait line whose animated dots stay on the line of its last word (screen review B4, B5) */
@@ -4231,7 +4236,8 @@ function renderPlate(){
   if(P.done&&bodyNeed()){choices(v);var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(s&&!asked){v.appendChild(loggedCard(s));}
+  if(medsHeld()&&!UI.busy){v.appendChild(medsCard());}   /* "Hide them (Recommended)", owner 23 Nov */
+  else if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for \u201C"+UI.lastAsk+"\u201D":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
     var last=lastForMeal(),auto=!STORE.shown.hasOwnProperty(C.meal)&&!UI.err;
@@ -4243,7 +4249,6 @@ function renderPlate(){
       if(UI.err===ERRS.bad_key)c.appendChild(el("p",null,LOSTIT));
       if(UI.err)c.appendChild(el("p",null,"Your day, below, still shows what this meal should hold."));   /* every error that leaves no plate (second screen review, R2-B4 059-1) */   /* a next step without a new plate (screen review B3) */
       if(!UI.err||UI.eretry!==false){var b=btn("btn primary",UI.err?"Try again":"Plan my plates",UI.err?"refresh":"spark","remake");b.addEventListener("click",function(){makePlates(UI.lastAsk||"");});c.appendChild(b);}
-      if(UI.err&&UI.ecode==="meds_typed")medsBtn(c);
       if(last&&UI.err)c.appendChild(el("p",null,"Your plates from before are kept."));   /* R2-B5 065-2 */
       if(last){var lb=btn("linkbtn","Show my last plates",null,"lastplates");lb.addEventListener("click",function(){var k=Object.keys(STORE.res).filter(function(k){return STORE.res[k]===last;})[0];STORE.shown[C.meal]=k;UI.err="";UI.sel=0;render();});c.appendChild(lb);}
       v.appendChild(c);}
@@ -4253,7 +4258,6 @@ function renderPlate(){
   }else{
     if(UI.err){var en=el("div","note err");en.appendChild(ic("info"));var et=el("div");et.appendChild(el("p",null,UI.empty&&UI.errAsk?"Nothing for \u201C"+UI.errAsk+"\u201D fit your food rules. Change a choice under Your day, or tap Try again. Showing the plates from before.":(UI.errAsk?"Your ask \u201C"+UI.errAsk+"\u201D didn't go through. ":"")+UI.err+" Showing the plates from before."));   /* R2-B5 069 */
       if(UI.eretry!==false){var ar=btn("btn primary","Try again","refresh","ask-retry");ar.addEventListener("click",function(){var x=UI.lastAsk||"";UI.err="";makePlates(x);});et.appendChild(ar);}
-      if(UI.ecode==="meds_typed")medsBtn(et);
       en.appendChild(et);v.appendChild(en);}
     if(asked){var rl=el("div","readline");rl.appendChild(el("p","asked","“"+r.ask+"”"));if(r.read)rl.appendChild(el("p","ans-read",r.read));
       var back=btn("linkbtn","Back to my plates",null,"back");back.addEventListener("click",function(){STORE.shown[C.meal]=null;UI.sel=0;UI.alc={};render();});rl.appendChild(back);v.appendChild(rl);}
@@ -4389,13 +4393,13 @@ function rescue(text){
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
     else if(s===200&&j.reason==="diet"){UI.rerr="Rescue helps with a meal, not a supplement or a powder. Name the dish you are having.";UI.rkeep="";UI.rretry=false;}
     else if(s===200){UI.rerr="Next Plate couldn't work out that dish. Try again, or name it another way, with how much you will eat.";UI.rkeep=text||"";UI.rretry=!!text;}   /* the model's reply, which another try can fix (R2-B6 085-1) */
-    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);}
+    else{UI.rerr=errText(j.code,"rescue");UI.rcode=j.code;UI.rkeep=text||"";UI.rretry=RETRY(j.code);lockOn(j.code);if(j.code==="meds_typed"){UI.rres=null;UI.rmoves={};}}   /* "Hide them (Recommended)", owner 23 Nov */
     render();if(UI.rerr)$("said").textContent=UI.rerr;});
 }
 /* once there is an answer, a wait or an error, it leads and the entry tools follow it (screen review B4-B6) */
 function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.rres||UI.rerr||UI.rbusy))return;
   var ent=v.querySelector(".entries"),ch=v.querySelector(".sitbox");
-  if(ent){if(UI.rres){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
+  if(ent){if(UI.rres&&UI.rcode!=="meds_typed"){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
 function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
@@ -4417,7 +4421,7 @@ function renderRescue0(){
     if(UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x);});tx.appendChild(tb);}
     if(UI.rcode==="meds_typed")medsBtn(tx);
     n.appendChild(tx);v.appendChild(n);}
-  var r=UI.rres;
+  var r=UI.rcode==="meds_typed"?null:UI.rres;   /* under a typed-medicine hold no dish, move or "I had this" is drawn ("Hide them (Recommended)") */
   if(!r)return;
   if(r.status==="refer"){var e=el("div","empty-card"),s=el("span","safe-ic");s.appendChild(ic("shield"));add(e,s);if(r.ask)e.appendChild(el("p","asked","\u201C"+r.ask+"\u201D"));referHead(e,r);v.appendChild(e);return;}   /* the card quotes what it answers (R2-B6 088-1) */
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */

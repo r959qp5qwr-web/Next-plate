@@ -349,13 +349,31 @@ const STATES = [
     if (!a.row || !a.skip || a.logged || a.plan) throw new Error('"Reopen lunch" on a partial body does not open the body card with its log row: ' + JSON.stringify(a)); }],
   // fix-r21 (owner, 22 Nov, "Ask to update (Recommended)"): typed insulin or sugar tablets with a set-up that says no medicine hold the request; one line and a button that opens My food at the answer
   ['plate-ask-meds-typed', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin and glimepiride, a light dinner please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
-    const r = await p.evaluate(() => ({ line: document.getElementById('v-plate').innerText, btn: !!document.getElementById('add-meds') }));
-    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line)) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    // owner, 23 Nov, "Hide them (Recommended)": the plates shown before the ask (h.plate waited for them) are not drawn under the hold; the hold card is on its own
+    const r = await p.evaluate(() => { const v = document.getElementById('v-plate'); return { line: v.innerText, btn: !!document.getElementById('add-meds'), card: !!document.getElementById('meds-hold'),
+      plate: !!v.querySelector('#plate-card, .alts, .card.why, .hero'), last: !!document.getElementById('lastplates'), before: /Showing the plates from before\.|Your plates from before are kept\./.test(v.innerText) }; });
+    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line) || !r.card || !r.btn) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    if (r.plate || r.last || r.before) throw new Error('an earlier plate, "Show my last plates" or a line about plates from before shows under the hold: ' + JSON.stringify(r));
     await p.click('#add-meds'); await h.settle(500); const at = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, focus: (document.activeElement || {}).id || '' }));
     if (!at.sheet || at.focus !== 'health-diabetes') throw new Error('the button does not open My food at the health question: ' + JSON.stringify(at)); }],
-  ['rescue-meds-typed', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Veg thali, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+  // owner, 23 Nov, "Hide them (Recommended)": a dish is worked out and shown first, then the typed insulin: no dish, move, "I had this" or "Another dish" is drawn under the hold
+  ['rescue-meds-typed', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala'); await p.press('#rin', 'Enter'); await p.waitForSelector('.cmp', { timeout: 20000 }); await h.settle(300);
+    if (!(await p.$('#rescue-had'))) throw new Error('the first dish is not shown, so the hold is not tested over it');
+    await p.fill('#rin', 'Veg thali, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+    const r = await p.evaluate(() => { const v = document.getElementById('v-rescue'); return { line: v.innerText, dish: !!v.querySelector('.inst, .cmp, .moves, #rescue-had, #rescue-again, .move'), had: /I had this/.test(v.innerText) }; });
+    if (!/You mentioned insulin or sugar tablets\. Add it in My food so your plates keep the safe size\./.test(r.line)) throw new Error('the hold does not say so: ' + r.line.slice(0, 200));
+    if (r.dish || r.had) throw new Error('an earlier dish, a move or "I had this" shows under the hold: ' + JSON.stringify(r).slice(0, 300));
     await p.click('#add-meds'); await h.settle(500); const at = await p.evaluate(() => ({ sheet: !document.getElementById('sheet').hidden, focus: (document.activeElement || {}).id || '' }));
     if (!at.sheet || at.focus !== 'meds-yes') throw new Error('the button does not open My food at the medicine question: ' + JSON.stringify(at)); }],
+  // owner, 23 Nov, "Hide them (Recommended)": the hold card on its own, as the client sees it (Plate after its plates were shown, Rescue after a dish was shown)
+  ['plate-meds-hold', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, a light lunch please'); await p.press('#askin', 'Enter'); await p.waitForSelector('#meds-hold', { timeout: 20000 }); await h.settle(300);
+    await p.evaluate(() => document.getElementById('scroll').scrollTo({ top: 0 })); await h.settle(200);
+    if (await p.$('#v-plate #plate-card, #v-plate .alts, #lastplates')) throw new Error('an earlier plate shows under the hold'); }],
+  ['rescue-meds-hold', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.click('#tab-rescue'); await h.settle();
+    await p.fill('#rin', 'Paneer butter masala'); await p.press('#rin', 'Enter'); await p.waitForSelector('#rescue-had', { timeout: 20000 }); await h.settle(300);
+    await p.fill('#rin', 'Paneer butter masala, I take insulin'); await p.press('#rin', 'Enter'); await p.waitForSelector('#add-meds', { timeout: 20000 }); await h.settle(300);
+    if (await p.$('#v-rescue .inst, #v-rescue .moves, #rescue-had, #rescue-again')) throw new Error('an earlier dish shows under the hold'); }],
   // fix-r21 (Critic r21 F1 and F4): the set-up button and its line read one live answer. Age and height typed, a tile tapped while the body is partial (which redraws the step), then the
   // weight typed WITHOUT leaving the box: the line clears and the button is on as the digits go in, and one tap shows the plate
   ['setup-3-tile-then-weight', NEW, async (p, h) => { await p.click('#goal-lose'); await p.click('#diet-veg'); await p.click('#region-n'); await p.click('#setup-next'); await p.click('#health-none'); await p.click('#setup-next'); await h.settle();
