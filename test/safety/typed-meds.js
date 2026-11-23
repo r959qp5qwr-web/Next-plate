@@ -196,6 +196,11 @@ for (const kind of ['meals', 'rescue']) { const r = call(PART, PARTP, PATHS[kind
   const f = call(PART, PARTP, PATHS[kind], 'something light'); add('order, phone: food text from a partial body: the body hold answers, nothing is sent', f.sent === 0 && f.got && f.got[1].code === 'body_partial', `${kind}: ${JSON.stringify(f.got)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'dal and roti'); add('order, phone: the log from a partial body goes without the three figures', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && r.ph.sent[0].body.profile.cm === 0 && r.ph.sent[0].body.profile.kg === 0, JSON.stringify(r.ph.sent[0] && r.ph.sent[0].body.profile)); }
 
+// a kidney or pregnancy set-up (round 6, audit m1): the phone refers first, before the typed referral, the medicine hold and the body hold, with the reply plan() gives (the line to
+// get help now when an urgent sign is typed); 2 profiles x 2 bodies x 3 texts x 3 kinds, the phone's answer deep-equal to the engine's, nothing sent
+for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole body', WHOLE, {}], ['a partial body', PART, { age: 45, cm: 0, kg: 0 }]]) for (const t of ['I take insulin', 'something light with dal', 'I take insulin and I have chest pain']) for (const kind of ['meals', 'rescue', 'log']) {
+  const p = PROF(Object.assign({ health: h }, extra)), r = call(pv, p, PATHS[kind], t), pl = ask(kind, p, t);
+  add('order, phone: a kidney or pregnancy set-up is referred first, with the reply plan() gives, and nothing is sent (audit m1)', r.sent === 0 && !!r.got && r.got[0] === 200 && !!pl.reply && JSON.stringify(r.got[1]) === JSON.stringify(pl.reply) && (/chest pain/.test(t) ? r.got[1].urgent === A.URGENTLINE : !r.got[1].urgent), `${h}, ${bl}, ${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 90)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'I take insulin and had dal and roti for lunch'); add('order, phone: a partial body with typed insulin in the log: the log still goes, without the three figures, and the engine reads it', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && !A.plan('log', J(r.ph.sent[0].body)).error, JSON.stringify(r.got)); }
 
 // ---------- report ----------

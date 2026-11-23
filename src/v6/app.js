@@ -184,6 +184,10 @@ function api(path,body,cb){
      anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
      gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
   var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  /* a kidney condition or pregnancy in the set-up is referred first, on every path, with the same reply plan() gives: the line to get help now when an urgent sign is typed
+     (fix-r21 round 6; safety audit of d7702c4, m1: the phone answered meds_typed or body_partial where the engine refers) */
+  var rp=typeof readProfile==="function"?readProfile(body&&body.profile):null;
+  if(rp&&(rp.health==="kidney"||rp.health==="preg")){cb(200,tr&&tr.urgent?tr:{status:"refer",read:SAFETY,meals:[]});return;}
   if(tr){cb(200,tr);return;}
   if(medsTypedBody(path,body)){cb(0,{code:"meds_typed"});return;}   /* typed insulin or sugar tablets with a set-up that does not say so: plates and Rescue are held and the client is asked to add it in My food (fix-r21; owner 22 Nov); after the referral above, before the body hold */
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */

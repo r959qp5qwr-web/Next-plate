@@ -46,7 +46,10 @@ function askAll(label, store, hours, tabs, expect) {
     // every request goes through the phone's own api(): what it sends (its fetch is a stub that keeps the body) is what plan() is asked about
     const nd = ph.fn.bodyNeed(), PATH = { meals: '/api/meals', rescue: '/api/rescue', log: '/api/log', tune: '/api/tune' };
     for (const [kind, b] of [['meals', body], ['rescue', resc], ['log', logb], ['tune', tune]]) { if (!b) continue; requests++;
-      const n0 = ph.sent.length; let code = null; safe(() => ph.fn.api(PATH[kind], J(b), (st, j) => { code = (j && j.code) || st; }), null);
+      const n0 = ph.sent.length; let code = null, ans = null; safe(() => ph.fn.api(PATH[kind], J(b), (st, j) => { code = (j && j.code) || st; ans = [st, j]; }), null);
+      // a kidney or pregnancy set-up is referred on the phone with no request, with the reply plan() gives (fix-r21 round 6, audit m1): an answer, not a refusal
+      const rp = safe(() => A.readProfile(b.profile), null);
+      if (rp && (rp.health === 'kidney' || rp.health === 'preg')) { const pl = safe(() => A.plan(kind, J(b)), {}); add('a kidney or pregnancy set-up is referred on the phone with no request, as plan() refers it', ph.sent.length === n0 && !!ans && ans[0] === 200 && JSON.stringify(ans[1]) === JSON.stringify(pl.reply), `${label}, ${kind}, ${meal} tab at ${h}: sent ${ph.sent.length - n0}, phone ${JSON.stringify(ans)}, engine ${JSON.stringify(pl).slice(0, 90)}`); continue; }
       const went = ph.sent.length > n0, sentBody = went ? ph.sent[ph.sent.length - 1].body : null;
       if (went) { const pl = safe(() => A.plan(kind, J(Object.assign({}, sentBody, { key: undefined }))), { error: 'threw' }), pr = sentBody.profile || {}, n3 = (pr.age > 0) + (pr.cm > 0) + (pr.kg > 0);
         const refused = !!pl.error && !pl.reply; add('a request the phone sends is not refused by the engine', !refused, `${label}, ${kind}, ${meal} tab at ${h}: ${JSON.stringify(pl).slice(0, 90)} (profile ${JSON.stringify(pr).slice(0, 120)})`);
