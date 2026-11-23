@@ -3864,6 +3864,7 @@ function medsOneAsk(body,typed){var t=body&&body.ctx&&typeof body.ctx.text==="st
 function boxAsk(t){UI.askDraft=t;UI.askTypedV=null;}
 function boxDish(t){UI.rkeep=t;UI.rinTypedV=null;}
 function medsNamed(t){if(typeof MEDRX==="undefined"||typeof norm!=="function")return true;return MEDRX.test(norm(String(t)).toLowerCase());}   /* any medicine name the net reads; unreadable counts as named */
+function medsReferProfile(pr){return Object.assign({},pr||{},{health:"diabetes",meds:"yes"});}   /* the set-up the low-sugar referral reads while the hold is stored ("Warn them") */
 function medsHoldOn(){MEDSFACT=true;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){}UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
 function medsHoldOff(){MEDSFACT=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
 function medsCard(withLog){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(c);
@@ -3890,7 +3891,10 @@ function api(path,body,cb,typed){
   /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
      anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
      gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
-  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,body.profile):null;
+  /* while the medicine hold is stored, the low-sugar referral reads the set-up as medicines yes (owner, 23 Nov, "Warn them (Recommended)"): a low-sugar sign typed by a client
+     who said they take insulin or sugar tablets gets the line to get help now. Only np-core's low-sugar rule reads the set-up's medicines, so this can only add referrals */
+  var trp=medsHeld(body&&body.profile)?medsReferProfile(body.profile):body&&body.profile;
+  var tr=body&&body.ctx&&typeof body.ctx.text==="string"&&typeof typedReferral==="function"?typedReferral(body.ctx.text,trp):null;
   /* a kidney condition or pregnancy in the set-up is referred first, on every path, with the same reply plan() gives: the line to get help now when an urgent sign is typed
      (fix-r21 round 6; safety audit of d7702c4, m1: the phone answered meds_typed or body_partial where the engine refers) */
   var rp=typeof readProfile==="function"?readProfile(body&&body.profile):null;

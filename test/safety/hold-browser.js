@@ -5,6 +5,7 @@
 //   B2 (S6): words the page put in a box (a failed example ask, a failed chip) are not typed: sending the box under the hold sends nothing and the hold stays.
 //   B3 (S1, S6): a second tab opened earlier does not write its old answers over a My food change made in the first; the next plan reads the change.
 //   O2 (owner, 23 Nov, "One ask only (Recommended)"): a typed ask with no medicine name is answered once and the hold stays stored.
+//   "Warn them (Recommended)" (owner, 23 Nov): under the stored hold a low-sugar sign is referred with the line to get help now.
 // usage: node test/safety/hold-browser.js [hosted/v6/index.min.html]   (exit 1 on any counter-example)
 const { chromium } = require('playwright');
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -48,6 +49,14 @@ const vis = async (p, sel) => { const l = p.locator(sel); let n = 0; for (let i 
         add('B1: a referral typed under the stored hold is drawn ahead of the hold card, with the line to get help now on an urgent sign, and the hold stays', !!tr && iR >= 0 && iH > iR && (!tr.urgent || (iU >= 0 && iU < iH)) && st === true && H.LOG.length === 0,
           `${pn}, ${surf}, "${text}": referral at ${iR}, urgent at ${iU} (want ${!!(tr && tr.urgent)}), hold at ${iH}, stored ${st}, requests ${H.LOG.length}: ${t.slice(0, 160)}`);
         await H.ctx.close(); }
+    // "Warn them" (owner, 23 Nov): under the stored hold a low-sugar sign is referred with the line to get help now, above the hold card; nothing is sent; the hold stays
+    for (const [pn, pp] of [['diabetes, medicines No', {}], ['no condition', { health: 'none', conds: [], meds: '' }], ['high BP', { health: 'bp', conds: ['bp'], meds: '' }]])
+      for (const surf of ['Plate', 'Rescue']) { const text = 'feeling shaky, what should I eat';
+        const H = await open(b, { profile: pp, meds: '{"at":1}' }), p = H.p;
+        if (surf === 'Rescue') { await p.click('#tab-rescue'); await w(300); await p.fill('#rin', text); await p.press('#rin', 'Enter'); } else { await p.fill('#askin', text); await p.press('#askin', 'Enter'); }
+        await w(600); const t = await view(p, surf === 'Plate' ? '#v-plate' : '#v-rescue'), iR = t.indexOf(REF), iU = t.indexOf(URG), iH = t.indexOf(HOLD), st = await stored(p);
+        add('Warn them: a low-sugar sign typed under the stored hold is referred with the line to get help now, above the hold card; nothing is sent and the hold stays', iU >= 0 && iR > iU && iH > iR && st === true && H.LOG.length === 0,
+          `${pn}, ${surf}: urgent at ${iU}, referral at ${iR}, hold at ${iH}, stored ${st}, requests ${JSON.stringify(H.LOG)}`); await H.ctx.close(); }
     // O2 (owner, 23 Nov, "One ask only (Recommended)"): under the stored hold a typed ask with no medicine name is sent once and its plate is drawn under the hold card; the
     // hold stays stored; after a reload the card shows alone and nothing is sent
     { const H = await open(b, { meds: '{"at":1}' }), p = H.p; await p.fill('#askin', 'something light with dal'); await p.press('#askin', 'Enter'); await w(900);

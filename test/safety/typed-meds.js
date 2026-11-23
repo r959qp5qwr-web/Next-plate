@@ -240,7 +240,7 @@ for (const h of ['kidney', 'preg']) for (const kind of ['meals', 'rescue', 'log'
   for (const t of URG) for (const kind of ['meals', 'rescue', 'log']) add('order, engine: an urgent sign typed from a partial body is referred, not refused', !!(ask(kind, partial, t).reply || {}).urgent, `${kind}: "${t}"`); }
 
 // ---------- the phone: the app's own api() with the live bodyHold and the live medicine hold ----------
-const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsOneAsk'];
+const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsOneAsk', 'medsReferProfile'];
 const MEDSVAR = (/^var MEDSKEY=[^\n]*;$/m.exec(appSrc) || [''])[0];   // the stored hold's key (round 7)
 const missing = FNS.filter(n => !grab(n)); add('the phone\'s api, bodyHold and bodyNeed are in src/v6/app.js', missing.length === 0, 'not found: ' + missing.join(', '));
 const P0 = (/^var P=\{[^\n]*\};$/m.exec(appSrc) || [''])[0];
@@ -285,7 +285,7 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
 { const PFNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'save', 'appetite', 'refresh', 'clockMeal', 'rules', 'answers', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'slotOf', 'curKey',
     'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
     'askBlock', 'lockLine', 'errText', 'RETRY', 'curRes', 'lastForMeal', 'closeSheet', 'unAsk', 'onMeds',
-    'composer', 'referCard', 'referCardR', 'referHead', 'medsOneAsk', 'boxAsk', 'boxDish', 'memNow', 'storeRaw', 'storeInit', 'storeSync', 'storeGone', 'storeOut'];   // round 8 (safety audit of 3ee7b41)
+    'composer', 'referCard', 'referCardR', 'referHead', 'medsOneAsk', 'boxAsk', 'boxDish', 'memNow', 'storeRaw', 'storeInit', 'storeSync', 'storeGone', 'storeOut', 'medsReferProfile'];   // round 8 (safety audit of 3ee7b41)
   const pmiss = PFNS.filter(n => !grab(n)); add('hold page: the app\'s functions are in src/v6/app.js', pmiss.length === 0, 'not found: ' + pmiss.join(', '));
   const line = (re) => (re.exec(appSrc) || [''])[0];
   const GLOB = [/^var now=new Date\(\)[^\n]*$/m, /^var CLOCK=[^\n]*$/m, /^var DAY=[^\n]*$/m, /^var P=\{[^\n]*\};$/m, /^var C=\{[^\n]*\};$/m, /^var APP=\{\};[^\n]*$/m, /^var CONDS=[^\n]*$/m, /^var EV=\[\],STORE=[^\n]*$/m,
@@ -395,6 +395,21 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
           const t = surf === 'Plate' ? a.plate() : a.resc(), iR = t.indexOf(REF), iU = t.indexOf(URG), iH = t.indexOf(MEDSTYPEDTXT);
           add('hold (round 8, B1): a referral typed under the hold is drawn ahead of the hold card, and the hold stays', !!tr && iR >= 0 && (!tr.urgent || (iU >= 0 && iU < iH)) && iH > iR && stored(ls) && a.SENT.length === 0,
             `${pn}, ${surf}, "${text}": referral ${iR}, urgent ${iU} (want ${!!(tr && tr.urgent)}), hold ${iH}, stored ${stored(ls)}, sent ${a.SENT.length}: ${ex(t)}`); } }
+    // owner, 23 Nov, "Warn them (Recommended)": while the hold is stored a low-sugar sign typed on Plate or Rescue is referred with the line to get help now, drawn above the hold
+    // card, nothing is sent and the hold stays; for set-ups that do not say insulin (diabetes with No, no condition, high BP). Read from the drawn page
+    { const REF = 'Your coach and doctor should plan this with you.', URG = A.URGENTLINE;
+      for (const [pn, pp] of [['diabetes, medicines No', {}], ['no condition', { health: 'none', conds: [], meds: '' }], ['high BP', { health: 'bp', conds: ['bp'], meds: '' }]])
+        for (const surf of ['Plate', 'Rescue']) for (const text of ['feeling shaky, what should I eat', 'I feel shaky', 'sweating a lot right now', 'feeling dizzy, what to eat', 'Veg thali, feeling giddy']) {
+          const ls = LSm({ np6: JSON.stringify({ p: PROF7(pp), c: {}, ev: [], k: 'K' }), np6meds: '{"at":1}' }), a = page(ls);
+          if (surf === 'Plate') { a.plate(); a.typeAsk(text); a.sendAsk(); } else { a.resc(); a.typeDish(text); a.sendDish(); } a.flush();
+          const t = surf === 'Plate' ? a.plate() : a.resc(), iR = t.indexOf(REF), iU = t.indexOf(URG), iH = t.indexOf(MEDSTYPEDTXT);
+          add('hold ("Warn them"): a low-sugar sign typed under the hold is referred with the line to get help now, above the hold card; nothing is sent and the hold stays', iU >= 0 && iR > iU && iH > iR && stored(ls) && a.SENT.length === 0,
+            `${pn}, ${surf}, "${text}": urgent ${iU}, referral ${iR}, hold ${iH}, stored ${stored(ls)}, sent ${a.SENT.length}: ${ex(t)}`); } }
+    // owner, 23 Nov, "Counts as typed (Recommended)": a page-kept draft the client edits by one key is their typed ask: sent once, answered, the hold stays stored
+    { const ls = seedLS(), a = page(ls); a.plate(); a.resc(); const dn = a.node('v-rescue', 'dish-0'), name = dn ? dn.text : ''; a.click(dn); const cr = a.SENT[a.SENT.length - 1];
+      if (cr && cr.done) cr.done({ s: 200, j: { status: 'fail' } }); a.plate(); a.typeAsk('I take insulin, what lunch?'); a.sendAsk(); const n0 = a.SENT.length; a.resc(); a.typeDish(name + ' x'); a.sendDish();
+      const one = a.SENT[n0]; if (one && one.done) one.done({ s: 200, j: JSON.parse(JSON.stringify(DISH)) }); const r = a.resc();
+      add('hold ("Counts as typed"): a kept chip name edited by one key is the client\'s typed dish: sent once, its dish drawn under the hold note, the hold stays stored', !!dn && a.SENT.length === n0 + 1 && one.body.ctx.text === name + ' x' && stored(ls) && /Kofta from before the hold/.test(r) && card(r), `sent ${a.SENT.length - n0}, text ${one && JSON.stringify(one.body.ctx.text)}, stored ${stored(ls)}: ${ex(r)}`); }
     { const lsk = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }); const pk = JSON.parse(lsk.getItem('np6')); pk.p.conds = ['kidney']; pk.p.health = 'kidney'; lsk.setItem('np6', JSON.stringify(pk)); const a6 = page(lsk); a6.ask('something light', true);
       add('hold: a kidney set-up under the hold is referred (no request)', a6.SENT.length === 0 && /refer/.test(JSON.stringify(a6.ST().res)), JSON.stringify(a6.ST().res).slice(0, 120)); }
     { const lsp = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }); const pp = JSON.parse(lsp.getItem('np6')); pp.p.cm = 0; pp.p.kg = 0; lsp.setItem('np6', JSON.stringify(pp)); const a7 = page(lsp); a7.ask('something light', true);
