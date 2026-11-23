@@ -3406,7 +3406,7 @@ function medsTypedHold(t,p){return !!p&&!medsOnSetup(p)&&typedMeds(t);}
 /* the phone's check on a request body (src/v6/app.js api()): plates and Rescue carry the typed text, the profile is read as plan() reads it */
 function medsTypedBody(path,body){if(!/\/(?:meals|rescue)$/.test(String(path||"")))return false;var p=readProfile(body&&body.profile);return !!p&&medsTypedHold(body&&body.ctx&&body.ctx.text,p);}
 var MEDTEXTMAX=20000;
-function textTooLong(b){var x=b&&b.ctx&&typeof b.ctx==="object"?b.ctx.text:null;return typeof x==="string"&&norm(x).length>MEDTEXTMAX;}
+function textTooLong(b){var x=b&&b.ctx&&typeof b.ctx==="object"?b.ctx.text:null;return typeof x==="string"&&norm(x).toLowerCase().length>MEDTEXTMAX;}   /* the string typedMeds reads */
 function carriesPhoto(b){if(!b||typeof b!=="object")return false;var x=b.ctx&&typeof b.ctx==="object"?b.ctx:{};
   return [b.image,x.image].some(function(v){return v!=null&&v!==""&&v!==false;})||!!b.photo||!!x.photo;}
 plan=function(kind,body){
