@@ -240,11 +240,12 @@ for (const h of ['kidney', 'preg']) for (const kind of ['meals', 'rescue', 'log'
   for (const t of URG) for (const kind of ['meals', 'rescue', 'log']) add('order, engine: an urgent sign typed from a partial body is referred, not refused', !!(ask(kind, partial, t).reply || {}).urgent, `${kind}: "${t}"`); }
 
 // ---------- the phone: the app's own api() with the live bodyHold and the live medicine hold ----------
-const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api'];
+const FNS = ['has', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff'];
+const MEDSVAR = (/^var MEDSKEY=[^\n]*;$/m.exec(appSrc) || [''])[0];   // the stored hold's key (round 7)
 const missing = FNS.filter(n => !grab(n)); add('the phone\'s api, bodyHold and bodyNeed are in src/v6/app.js', missing.length === 0, 'not found: ' + missing.join(', '));
 const P0 = (/^var P=\{[^\n]*\};$/m.exec(appSrc) || [''])[0];
-const mk = (pv) => { const make = safe(() => vm.runInContext('(function(PV){' + P0 + 'var UI={sheet:"",bodyOpened:false},opened=[],sent=[],window={},KEYCODE="",setTimeout=function(){return 0;},clearTimeout=function(){},fetch=function(path,o){sent.push({path:path,body:JSON.parse(o.body)});return {then:function(){return {then:function(){}};}};};function openSheet(k,at){opened.push(at);}\n' +
-  'for(var k in PV)P[k]=PV[k];' + FNS.map(grab).join('\n') + '\nreturn {api:api,sent:sent,opened:opened};})', A), null); return make && make(pv); };
+const mk = (pv, ls) => { const make = safe(() => vm.runInContext('(function(PV,LS){' + P0 + MEDSVAR + 'var localStorage=LS||{d:{},getItem:function(k){return k in this.d?this.d[k]:null;},setItem:function(k,v){this.d[k]=String(v);},removeItem:function(k){delete this.d[k];}},STORE={res:{},shown:{}},save=function(){},UI={sheet:"",bodyOpened:false},opened=[],sent=[],window={},KEYCODE="",setTimeout=function(){return 0;},clearTimeout=function(){},fetch=function(path,o){sent.push({path:path,body:JSON.parse(o.body)});return {then:function(){return {then:function(){}};}};};function openSheet(k,at){opened.push(at);}\n' +
+  'for(var k in PV)P[k]=PV[k];' + FNS.map(grab).join('\n') + '\nreturn {api:api,sent:sent,opened:opened,ls:localStorage,held:medsHeld};})', A), null); return make && make(pv, ls); };
 const call = (pv, p, path, text) => { const ph = mk(pv); let got = null; ph.api(path, J({ profile: p, ctx: { meal: 'lunch', time: '1:10 pm', text, photo: false, appetite: 5 }, file: {} }), (s, j) => { got = [s, j]; }); return { sent: ph.sent.length, got, opened: ph.opened.length, ph }; };
 const WHOLE = { age: 47, cm: 158, kg: 72, conds: [], health: 'none', meds: 'no', done: true }, PART = { age: 45, cm: 0, kg: 0, conds: [], health: 'none', meds: 'no', done: true };
 const PARTP = PROF({ age: 45, cm: 0, kg: 0 });
@@ -276,71 +277,115 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
   add('order, phone: a kidney or pregnancy set-up is referred first, with the reply plan() gives, and nothing is sent (audit m1)', r.sent === 0 && !!r.got && r.got[0] === 200 && !!pl.reply && JSON.stringify(r.got[1]) === JSON.stringify(pl.reply) && (/chest pain/.test(t) ? r.got[1].urgent === A.URGENTLINE : !r.got[1].urgent), `${h}, ${bl}, ${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 90)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'I take insulin and had dal and roti for lunch'); add('order, phone: a partial body with typed insulin in the log: the log still goes, without the three figures, and the engine reads it', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && !A.plan('log', J(r.ph.sent[0].body)).error, JSON.stringify(r.got)); }
 
-// ---------- the typed-medicine hold on screen (owner, 23 Nov: "Hide them (Recommended)", "Add a line (Recommended)", "Keep log (Recommended)", "All tabs (Recommended)") ----------
-// the app's own makePlates, rescue, renderPlate, renderBuild, renderRescue and logRow on a small fake page. While a hold is up, raised on Plate or on Rescue, every tab shows the
-// hold card on its own: the owner's hold sentence, the line for someone else, "Add it in My food"; no earlier plate, "Show my last plates", line about plates from before, Rescue
-// dish, move, "I had this" or "Another dish"; on Plate the log row stays. Controls: with no hold the same state draws the plate and the dish.
-{ const HFNS = ['medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue', 'errText', 'RETRY', 'curRes', 'lastForMeal'];
-  const hmiss = HFNS.filter(n => !grab(n)); add('hide: the hold, its card and the renders are in src/v6/app.js', hmiss.length === 0, 'not found: ' + hmiss.join(', '));
-  const VARS = ['MEDSTYPED', 'MEDSOTHER', 'NORETRY'].map(n => (new RegExp('^var ' + n + '=[^\\n]*;$', 'm').exec(appSrc) || [''])[0]).join('\n');
-  const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{},hidden:false,disabled:false,
-      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},addEventListener:function(){},remove:function(){},scrollTo:function(){},
+// ---------- the typed-medicine hold on screen and on the phone (owner, 23 Nov: "Hide them", "Add a line", "Keep log", "All tabs", "Until updated", "Hide all three") ----------
+// A page built from the app's own load, save, refresh, api, makePlates, rescue, renders, askBlock, logRow and closeSheet, on a small fake page with a recording localStorage,
+// queued timers and click handlers kept on its nodes. A reload is a second page on the same localStorage. Round 7 (safety audit of 41e8ac0, B1, m1, m2): the hold is a fact
+// stored outside the day's store; while it is stored, plates and Rescue send nothing unless the set-up says insulin, sugar tablets or not sure, or the client typed the ask or
+// dish (and it passed the net).
+{ const PFNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'save', 'appetite', 'refresh', 'clockMeal', 'rules', 'answers', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'slotOf', 'curKey',
+    'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
+    'askBlock', 'lockLine', 'errText', 'RETRY', 'curRes', 'lastForMeal', 'closeSheet', 'unAsk', 'onMeds'];
+  const pmiss = PFNS.filter(n => !grab(n)); add('hold page: the app\'s functions are in src/v6/app.js', pmiss.length === 0, 'not found: ' + pmiss.join(', '));
+  const line = (re) => (re.exec(appSrc) || [''])[0];
+  const GLOB = [/^var now=new Date\(\)[^\n]*$/m, /^var CLOCK=[^\n]*$/m, /^var DAY=[^\n]*$/m, /^var P=\{[^\n]*\};$/m, /^var C=\{[^\n]*\};$/m, /^var APP=\{\};[^\n]*$/m, /^var CONDS=[^\n]*$/m, /^var EV=\[\],STORE=[^\n]*$/m,
+    /^var FILE=null,PL=null,HOOKS=\[\];[^\n]*$/m, /^var MEDSKEY=[^\n]*;$/m, /^var MEDSTYPED=[^\n]*;$/m, /^var MEDSOTHER=[^\n]*;$/m, /^var NORETRY=[^\n]*;$/m, /^var PROMPTS=[^\n]*$/m, /^var DISHES=[^\n]*$/m,
+    /^var REFUSED=[^\n]*$/m, /^var LOSTIT=[^\n]*$/m].map(line).join('\n') + '\nvar ERRS={};';
+  const li = appSrc.indexOf('(function load(){try{'), le = appSrc.indexOf('})();', li) + 5, LOAD = li < 0 ? '' : appSrc.slice(li, le);
+  const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{setProperty:function(){}},on:{},hidden:false,disabled:false,
+      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},removeAttribute:function(){},addEventListener:function(t,f){this.on[t]=f;},remove:function(){},scrollTo:function(){},focus:function(){},blur:function(){},
       querySelector:function(q){var f=function(n){for(var i=0;i<n.kids.length;i++){var k=n.kids[i];if(q[0]==="."?(" "+k.cls+" ").indexOf(" "+q.slice(1)+" ")>=0:("#"+k.id)===q)return k;var r=f(k);if(r)return r;}return null;};return f(this);}};
     Object.defineProperty(o,"textContent",{get:function(){return o.text;},set:function(x){o.kids=[];o.text=x;}});return o;}
-    var document={createTextNode:function(t){return N("#text",null,t);}},VIEWS={},said=N("p");function $(id){if(id==="said")return said;return VIEWS[id]||(VIEWS[id]=N("main"));}
+    var document={createTextNode:function(t){return N("#text",null,t);},querySelector:function(){return null;},activeElement:null},VIEWS={},TQ=[],SENT=[],OPENED=[];
+    function $(id){return VIEWS[id]||(VIEWS[id]=N("main"));}
     function el(t,c,x){return N(t,c,x);}function btn(c,l,i,id){var b=N("button",c,l);b.id=id||"";return b;}function ic(){return N("svg");}function add(p){for(var i=1;i<arguments.length;i++)if(arguments[i])p.appendChild(arguments[i]);return p;}
-    var UI={},P={done:true,conds:[]},C={meal:"lunch"},STORE={res:{},shown:{}},ERRS={},LOSTIT="",REMADE={},REMADEWHY={},PL={target:{kcal:500,protein:20},left:{kcal:900,protein:30}},FILE={today:{kcal:0}},DISHES=[["Veg thali"]],RM=true,SLOT=null,API=null,PENDING=[],KEYCODE="",TUNING={};
-    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function bodyNeed(){return null;}function choices(){}function slotOf(){return SLOT;}function curKey(){return STORE.shown[C.meal]||"";}
-    function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}function mealName(m){return m;}function render(){}function referHead(){}function curMeal(){var r=curRes();return r.meals[UI.sel||0];}
-    function plateWhy(){return "";}function viewOf(){return {};}function bodyMissing(){return {text:"",at:""};}function openSheet(){}function medsAt(){return "health-diabetes";}
-    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function has(){return false;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){};}function logEv(){}
-    function directiveCard(){}function ctxBlock(){}function askBlock(){}function composer(){}function stamp(){return N("i");}function sprig(){return N("i");}function setTimeout(){return 0;}
-    function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function appFoodOK(){return true;}function profileOut(){return {};}function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}
-    function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function revealOut(){}function clockText(){return "1:10 pm";}function appetite(){return 5;}function fileOut(){return {};}function askedFor(){return "s";}function lockOn(){}
-    function save(){}function refresh(){}function ctxKey(){return "plates|lunch";}function ctxOut(t){return {text:t};}function tune(){}function rules(){return "r";}function resetAt(){return "";}
-    function api(path,body,cb){if(API==="defer"){PENDING.push(cb);return;}cb(API[0],API[1]);}
+    var UI={view:"plate",sel:0,alc:{},swp:0,swb:0,rmoves:{},err:"",busy:"",sheet:""},KEYCODE="K",REMADE={},REMADEWHY={},FROMLINK=false,ANS0="",SAFE0="",BODY0=[0,0,0],SHEETFROM=null,RM=true,window={},TUNING={};
+    function setTimeout(f){TQ.push(f);return TQ.length;}function clearTimeout(){}
+    function fetch(path,o){var rec={path:path,body:JSON.parse(o.body)};SENT.push(rec);return {then:function(f1){return {then:function(f2){rec.done=f2;return {};}};}};}
+    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function choices(){}function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}
+    function mealName(m){return m;}function render(){}function referHead(){}function curMeal(){var r=curRes();return r.meals[UI.sel||0];}function plateWhy(){return "";}function viewOf(){return {};}function bodyMissing(){return {text:"",at:""};}
+    function openSheet(k,at){OPENED.push(k);UI.sheet=k;ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}function medsAt(){return "health-diabetes";}function behind(){}function ctxKey(){return "plates|"+C.meal;}function askedFor(){return "s";}
+    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){if(b)b();};}function logEv(){}function tune(){}function lockOn(){}
+    function directiveCard(h){var d=N("p","tip directive","Today. Lunch: about 480 kcal");d.id="directive";h.appendChild(d);}function ctxBlock(){}function composer(){}function stamp(){return N("i");}function sprig(){return N("i");}
+    function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function fileOut(){return {};}function ctxOut(t){return {meal:C.meal,time:"1:10 pm",text:t,photo:false,appetite:5};}function clockText(){return "1:10 pm";}function revealOut(){}
+    function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function resetAt(){return "";}function pruneKept(){}
     function walk(n,out){out.push((n.id?"#"+n.id+" ":"")+(n.cls?"."+n.cls.split(" ").join(".")+" ":"")+n.text);n.kids.forEach(function(k){walk(k,out);});return out;}
-    function view(id,f){VIEWS[id]=N("main");try{f();}catch(e){return "threw: "+e.message;}return walk(VIEWS[id],[]).join("\\n");}`;
-  const page = (() => { try { return vm.runInContext('(function(){' + VARS + '\n' + STUB + '\n' + HFNS.map(grab).join('\n') + '\nreturn {UI:UI,STORE:STORE,' +
-    'set:function(k,v){if(k==="SLOT")SLOT=v;if(k==="API")API=v;},pending:function(){return PENDING.splice(0);},' +
-    'reset:function(res){Object.keys(UI).forEach(function(k){delete UI[k];});UI.view="x";UI.err="";UI.busy="";UI.alc={};UI.rmoves={};STORE.res={};STORE.shown={};if(res){STORE.res.k=res;STORE.shown.lunch="k";}C.meal="lunch";SLOT=null;API=null;PENDING.length=0;},' +
+    function view(id,f){VIEWS[id]=N("main");try{f();}catch(e){return "threw: "+e.message;}return walk(VIEWS[id],[]).join("\\n");}
+    function find(n,id){if(n.id===id)return n;for(var i=0;i<n.kids.length;i++){var r=find(n.kids[i],id);if(r)return r;}return null;}
+    function flush(){for(var i=0;i<20&&TQ.length;i++){var q=TQ.splice(0);q.forEach(function(f){try{f();}catch(e){}});}}`;
+  const make = (() => { try { return vm.runInContext('(function(LS,DAYSHIFT){var localStorage=LS;' + GLOB + '\n' + STUB + '\n' + PFNS.map(grab).join('\n') + '\n' + LOAD +
+    '\nif(DAYSHIFT){DAY=DAY+DAYSHIFT;}refresh();\nreturn {UI:UI,P:P,C:C,ST:function(){return STORE;},SENT:SENT,LS:LS,flush:flush,held:function(){return medsHeld();},' +
     'plate:function(){return view("v-plate",function(){renderPlate();});},build:function(){return view("v-build",function(){renderBuild();});},resc:function(){return view("v-rescue",function(){renderRescue();});},' +
-    'ask:function(t){try{makePlates(t);}catch(e){return e.message;}},rescue:function(t){try{rescue(t);}catch(e){return e.message;}},MEDSTYPED:MEDSTYPED,MEDSOTHER:typeof MEDSOTHER==="string"?MEDSOTHER:""};})', A)(); } catch (e) { return null; } })();
-  add('hide: the app\'s functions run on the fake page', !!page, 'the harness did not load');
-  if (page) {
-    const U = page.UI, LINE = 'If this is about someone else, ask again without the medicine name.';
-    const PLATE = { meal: 'lunch', status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '', at: 1, rules: 'r' };
-    const DISH = { status: 'ok', meal: 'lunch', dish: { name: 'Paneer butter masala', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
-    const card = (t) => t.includes(page.MEDSTYPED) && t.includes(LINE) && t.includes('#add-meds');
+    'node:function(v,id){return find(VIEWS[v]||N("x"),id);},click:function(n){if(n&&n.on.click)n.on.click({preventDefault:function(){}});},ask:function(t,typed){makePlates(t,false,typed);},rescue:function(t,typed){rescue(t,typed);},' +
+    'refresh:function(){refresh();},setDay:function(d){DAY=d;},day:function(){return DAY;},openFood:function(){openSheet("food");},closeFood:function(){closeSheet();},MEDSTYPED:MEDSTYPED,MEDSOTHER:MEDSOTHER};})', A); } catch (e) { if (process.env.TM_DEBUG) console.log('hold page:', e.stack); return null; } })();
+  add('hold page: the app\'s load and functions run on the fake page', !!make, 'the harness did not load');
+  if (make) {
+    const LSm = (o) => ({ d: Object.assign({}, o || {}), w: [], getItem(k) { return k in this.d ? this.d[k] : null; }, setItem(k, v) { this.d[k] = String(v); this.w.push(k); }, removeItem(k) { delete this.d[k]; this.w.push('-' + k); } });
+    const PROF7 = (o) => Object.assign({ goal: 'hold', focus: 'none', meds: 'no', diet: 'veg', health: 'diabetes', conds: ['diabetes'], region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low', done: true }, o || {});
+    const seedLS = (p) => LSm({ np6: JSON.stringify({ p: PROF7(p), c: {}, ev: [], k: 'K' }) });
+    const page = (ls, shift) => { try { return make(ls, shift || 0); } catch (e) { if (process.env.TM_DEBUG) console.log('page:', e.stack); return null; } };
+    const LINE = 'If this is about someone else, ask again without the medicine name.';
+    const card = (t) => t.includes(MEDSTYPEDTXT) && t.includes(LINE) && t.includes('#add-meds');
+    const MEDSTYPEDTXT = 'You mentioned insulin or sugar tablets. Add it in My food so your plates keep the safe size.';
     const noPlate = (t) => !/HERO PLATE|#plate-card|#lastplates|Showing the plates from before\.|Your plates from before are kept\.|Show my last plates/.test(t);
-    const noDish = (t) => !/Paneer butter masala|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(t);
-    const logRow = (t) => t.includes('#log-other') && t.includes('#log-skip');
-    add('hide: the line under the hold sentence is the owner\'s, word for word ("Add a line (Recommended)")', page.MEDSOTHER === LINE, JSON.stringify(page.MEDSOTHER));
-    // controls: with no hold the plate and the dish are drawn
-    page.reset(PLATE); const c1 = page.plate(); add('hide: control, with no hold the stored plate is drawn', c1.includes('HERO PLATE'), c1.replace(/\n/g, ' | ').slice(0, 200));
-    page.reset(PLATE); U.rres = DISH; U.rtext = 'Paneer butter masala'; const c2 = page.resc(); add('hide: control, with no hold Rescue draws the dish, its move and "I had this"', c2.includes('Paneer butter masala') && c2.includes('#rescue-had'), c2.replace(/\n/g, ' | ').slice(0, 200));
-    // a hold raised on Plate, then Plate, Builder and Rescue (an earlier dish in memory)
-    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.ask('I take insulin, a light lunch'); const p1 = page.plate();
-    add('hide: a Plate hold shows the card on Plate with the line, and the log row ("Keep log"), and no earlier plate', card(p1) && noPlate(p1) && logRow(p1) && p1.includes('You can still log this meal.'), p1.replace(/\n/g, ' | ').slice(0, 300));
-    add('hide: a hold puts away the plates and the dish made before it', Object.keys(page.STORE.res).length === 0 && U.rres === null, `res ${Object.keys(page.STORE.res).length}, rres ${JSON.stringify(U.rres).slice(0, 40)}`);
-    const r1 = page.resc(); add('hide: a Plate hold covers Rescue ("All tabs"): the card and the line, no earlier dish, move or "I had this"', card(r1) && noDish(r1), r1.replace(/\n/g, ' | ').slice(0, 300));
-    U.rres = DISH; const r1b = page.resc(); add('hide: under a hold a dish kept in memory is not drawn on Rescue', card(r1b) && noDish(r1b), r1b.replace(/\n/g, ' | ').slice(0, 300));
-    const b1 = page.build(); add('hide: a hold covers Builder ("All tabs"): the card and the line', card(b1) && b1.includes('#meds-hold'), b1.replace(/\n/g, ' | ').slice(0, 300));
-    page.set('SLOT', { kind: 'had' }); const p1s = page.plate(); add('hide: on Plate, a meal already logged shows the card without the log row', card(p1s) && noPlate(p1s) && !p1s.includes('LOGGED'), p1s.replace(/\n/g, ' | ').slice(0, 200)); page.set('SLOT', null);
-    // a hold raised on Rescue, then Plate (plates stored before) and Builder
-    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.rescue('Paneer butter masala, I take insulin'); const p2 = page.plate();
-    add('hide: a Rescue hold covers Plate ("All tabs"): the card, the line and the log row, no earlier plate', card(p2) && noPlate(p2) && logRow(p2) && Object.keys(page.STORE.res).length === 0, p2.replace(/\n/g, ' | ').slice(0, 300));
-    page.STORE.res.k = PLATE; page.STORE.shown.lunch = 'k'; const p2b = page.plate(); add('hide: under a hold a plate kept in memory is not drawn on Plate', card(p2b) && noPlate(p2b), p2b.replace(/\n/g, ' | ').slice(0, 200));
-    const r2 = page.resc(); add('hide: a Rescue hold shows the card and the line on Rescue, no dish', card(r2) && noDish(r2), r2.replace(/\n/g, ' | ').slice(0, 300));
-    // a plates reply sent before a hold came up on Rescue is not shown
-    page.reset(PLATE); page.set('API', 'defer'); page.ask(''); const late = page.pending(); page.set('API', [0, { code: 'meds_typed' }]); U.rbusy = false; page.rescue('Veg thali, I take insulin');
-    if (late[0]) late[0](200, { status: 'ok', meals: PLATE.meals }); const p3 = page.plate();
-    add('hide: a plates reply sent before a hold came up is not shown', late.length === 1 && card(p3) && noPlate(p3) && Object.keys(page.STORE.res).length === 0, p3.replace(/\n/g, ' | ').slice(0, 200));
-    // a new ask without the medicine name runs the net again and its plates show
-    page.set('API', [200, { status: 'ok', meals: PLATE.meals }]); page.ask('something light'); const p4 = page.plate();
-    add('hide: a new ask without the medicine name clears the hold and its plates show', !U.mhold && p4.includes('HERO PLATE') && !p4.includes('#meds-hold'), p4.replace(/\n/g, ' | ').slice(0, 200)); }
-  // what clears the hold, read from the source: updating My food (closeSheet, answers changed) does; a meal tab or a Your day choice does not
-  add('hide: updating My food clears the hold and the plates are made again (closeSheet)', /if\(fd\)medsHoldOff\(\);[^\n]*if\(fd\)\{if\(rules\(\)!==SAFE0\)STORE\.res=\{\};STORE\.shown=\{\};UI\.rres=null;/.test(grab('closeSheet')), 'not found in closeSheet()');
+    const noDish = (t) => !/Kofta from before the hold|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(t);
+    const hidden3 = (pt, rt) => !/#directive|about 480 kcal/.test(pt) && !/\.prompts|#prompt-/.test(pt) && !/\.sitbox|#dish-cap|#dish-0/.test(rt);
+    const logRowOn = (t) => t.includes('#log-other') && t.includes('#log-skip');
+    const stored = (ls) => ls.getItem('np6meds') !== null;
+    const savedPlates = (ls) => { try { const s = JSON.parse(ls.getItem('np6')).store; return Object.keys(s.res || {}).length + Object.keys(s.shown || {}).filter(k => s.shown[k]).length; } catch (e) { return -1; } };
+    const PLATE = (pg) => ({ meal: pg.C.meal, status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '', at: 1, rules: '' });
+    const DISH = { status: 'ok', meal: 'lunch', dish: { name: 'Kofta from before the hold', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
+    const withPlate = (pg) => { const r = PLATE(pg); r.rules = JSON.stringify([pg.P.diet, pg.P.leave.slice().sort(), pg.P.conds.slice().sort(), pg.P.meds, pg.P.age, pg.P.cm, pg.P.kg, pg.P.sex, pg.P.act]); pg.ST().res.k = r; pg.ST().shown[pg.C.meal] = 'k'; };
+    const ex = (t) => t.replace(/\n/g, ' | ').slice(0, 260);
+    // controls: no fact stored, the stored plate is drawn; a reload with no fact plans by itself (sends /api/meals)
+    { const ls = seedLS(), a = page(ls); withPlate(a); const t = a.plate(); add('hold page: control, with no hold the stored plate is drawn', t.includes('HERO PLATE'), ex(t));
+      const b = page(seedLS()); b.plate(); b.flush(); add('hold page: control, a page with no stored hold plans by itself (it sends /api/meals)', b.SENT.some(s => /\/api\/meals$/.test(s.path)), `sent ${JSON.stringify(b.SENT.map(s => s.path))}`); }
+    // a typed ask with insulin raises the hold: the fact is stored, the saved day store keeps no plate made before it (audit m1: a mutant without save() fails here)
+    const ls1 = seedLS(); const a1 = page(ls1); withPlate(a1); a1.UI.rres = DISH; a1.plate(); a1.resc(); const promptNode = a1.node('v-plate', 'prompt-0'), dishNode = a1.node('v-rescue', 'dish-0');
+    a1.ask('I take insulin, a light lunch', true); const t1 = a1.plate(), r1 = a1.resc(), b1 = a1.build();
+    add('hold: a typed ask with insulin stores the hold outside the day\'s store and sends nothing', stored(ls1) && a1.SENT.length === 0 && a1.held(), `stored ${stored(ls1)}, sent ${a1.SENT.length}`);
+    add('hold: the saved day store keeps no plate made before the hold (safety audit of 41e8ac0, m1)', savedPlates(ls1) === 0, `saved plates ${savedPlates(ls1)}`);
+    add('hold: Plate shows the card with the line and the log row ("Keep log"), and no earlier plate', card(t1) && noPlate(t1) && logRowOn(t1), ex(t1));
+    add('hold: Rescue and Builder show the card ("All tabs"), no earlier dish, move or "I had this"', card(r1) && noDish(r1) && card(b1), ex(r1) + ' || ' + ex(b1));
+    add('hold: the meal figure, the example asks and the dish chips are not shown ("Hide all three")', hidden3(t1, r1), ex(t1) + ' || ' + ex(r1));
+    // chip and example-ask taps under the hold (a screen drawn before it): nothing is sent, still held
+    a1.click(promptNode); a1.flush(); a1.click(dishNode); a1.flush();
+    add('hold: an example ask or a common dish tapped under the hold sends nothing and keeps the hold (only a typed ask counts)', !!promptNode && !!dishNode && a1.SENT.length === 0 && stored(ls1) && a1.held(), `prompt ${!!promptNode}, dish ${!!dishNode}, sent ${JSON.stringify(a1.SENT.map(s => s.path))}, stored ${stored(ls1)}`);
+    // a page the app makes by itself (auto plan, Try again, Builder) is not typed: an untyped ask with no medicine name sends nothing
+    a1.ask('', false); a1.ask('something light', false); a1.rescue('Veg thali', false); a1.flush();
+    add('hold: an ask or dish not typed by the client sends nothing while the hold is stored (fails closed)', a1.SENT.length === 0 && stored(ls1), `sent ${a1.SENT.length}`);
+    // a reload: the hold is read back, the card shows on every tab and nothing is planned by itself
+    { const a2 = page(ls1); const t = a2.plate(); a2.flush(); const r = a2.resc(), b = a2.build();
+      add('hold: after a reload the card shows on every tab and the page plans nothing by itself (safety audit of 41e8ac0, B1)', card(t) && noPlate(t) && card(r) && card(b) && a2.SENT.length === 0 && hidden3(t, r), `sent ${a2.SENT.length}: ${ex(t)}`); }
+    // the 4 am day change: a load with yesterday's day store, and a page left open across 4 am
+    { const a3 = page(ls1, -1); const t = a3.plate(); a3.flush(); add('hold: a load after the 4 am day change keeps the hold (the day store is dropped, the hold is not)', card(t) && a3.SENT.length === 0, `sent ${a3.SENT.length}: ${ex(t)}`);
+      const a4 = page(ls1); a4.setDay(a4.day() - 1); a4.refresh(); const t4 = a4.plate(); a4.flush(); add('hold: a page open across 4 am keeps the hold', card(t4) && a4.SENT.length === 0 && stored(ls1), `sent ${a4.SENT.length}: ${ex(t4)}`); }
+    // the order with the hold stored: a referral first, the log is sent, a partial body with typed food is body_partial and keeps the hold
+    { const a5 = page(ls1); let got = null; a5.rescue('chest pain since lunch', true); add('hold: an urgent sign typed under the hold is referred with the line to get help now, and the hold stays', a5.SENT.length === 0 && stored(ls1) && a5.UI.rres && a5.UI.rres.status === 'refer' && a5.UI.rres.urgent, JSON.stringify(a5.UI.rres).slice(0, 120)); }
+    { const lsk = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }); const pk = JSON.parse(lsk.getItem('np6')); pk.p.conds = ['kidney']; pk.p.health = 'kidney'; lsk.setItem('np6', JSON.stringify(pk)); const a6 = page(lsk); a6.ask('something light', true);
+      add('hold: a kidney set-up under the hold is referred (no request)', a6.SENT.length === 0 && /refer/.test(JSON.stringify(a6.ST().res)), JSON.stringify(a6.ST().res).slice(0, 120)); }
+    { const lsp = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }); const pp = JSON.parse(lsp.getItem('np6')); pp.p.cm = 0; pp.p.kg = 0; lsp.setItem('np6', JSON.stringify(pp)); const a7 = page(lsp); a7.ask('something light', true);
+      add('hold: a partial body with typed food under the hold gets body_partial and keeps the hold', a7.SENT.length === 0 && a7.UI.ecode === 'body_partial' && stored(lsp), `ecode ${a7.UI.ecode}, stored ${stored(lsp)}, sent ${a7.SENT.length}`); }
+    // My food: a goal change and unticking diabetes keep the hold; medicines yes or not sure clear it and the plates are made with the floor
+    for (const [what, set, clears] of [['a goal change only', (P) => { P.goal = 'lose'; }, false], ['unticking diabetes', (P) => { P.conds = []; P.health = 'none'; }, false],
+      ['diabetes with medicines yes', (P) => { P.meds = 'yes'; }, true], ['diabetes with medicines not sure', (P) => { P.meds = 'unsure'; }, true]]) {
+      const ls = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), a = page(ls); a.openFood(); set(a.P); a.closeFood(); const t = a.plate(); a.flush();
+      const m = a.SENT.filter(s => /\/api\/meals$/.test(s.path)), floor = m.length ? /at least \d+ kcal, never below/.test((A.plan('meals', J(m[0].body)) || {}).prompt || '') : false;
+      if (clears) add('hold: My food saying insulin or not sure clears the hold and the plates are made with the usual size as a minimum (D14)', !stored(ls) && !a.held() && m.length === 1 && floor, `${what}: stored ${stored(ls)}, sent ${m.length}, floor ${floor}`);
+      else add('hold: a My food change that does not say insulin or not sure keeps the hold (a goal change, unticking diabetes)', stored(ls) && a.held() && card(t) && a.SENT.length === 0, `${what}: stored ${stored(ls)}, sent ${a.SENT.length}: ${ex(t)}`); }
+    // a typed ask without the medicine name ends the hold and is sent
+    { const ls = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), a = page(ls); a.ask('something light with dal', true);
+      add('hold: a typed ask without the medicine name is sent and ends the hold ("ask again without the medicine name")', a.SENT.length === 1 && !stored(ls) && !a.held(), `sent ${a.SENT.length}, stored ${stored(ls)}`);
+      const ls2 = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), b = page(ls2); b.rescue('Veg thali', true);
+      add('hold: a typed dish without the medicine name is sent and ends the hold', b.SENT.length === 1 && !stored(ls2), `sent ${b.SENT.length}, stored ${stored(ls2)}`); }
+    // late replies (safety audit of 41e8ac0, m2): a Rescue reply and a plates reply sent before a hold came up are not kept or shown, also after the hold ends
+    { const ls = seedLS(), a = page(ls); a.rescue('Veg thali', true); const rr = a.SENT[0]; a.ask('I take insulin', true); if (rr && rr.done) rr.done({ s: 200, j: JSON.parse(JSON.stringify(DISH)) });
+      const kept = a.UI.rres; a.ask('something light', true); const r = a.resc();
+      add('hold: a Rescue reply sent before a hold came up is not kept, and is not shown after the hold ends (safety audit of 41e8ac0, m2)', !!rr && kept === null && noDish(r), `kept ${JSON.stringify(kept).slice(0, 60)}: ${ex(r)}`); }
+    { const ls = seedLS(), a = page(ls); a.ask('', false); const pr = a.SENT[0]; a.UI.busy = ''; a.rescue('Veg thali, I take insulin', true); if (pr && pr.done) pr.done({ s: 200, j: { status: 'ok', meals: [{ title: 'Late plate', kcal: 300 }] } }); const t = a.plate();
+      add('hold: a plates reply sent before a hold came up is not shown', !!pr && card(t) && !/Late plate|HERO PLATE/.test(t) && savedPlates(ls) === 0, ex(t)); }
+    add('hold: the line under the hold sentence is the owner\'s, word for word ("Add a line (Recommended)")', a1.MEDSOTHER === LINE, JSON.stringify(a1.MEDSOTHER)); }
+  // what ends the hold, read from the source: two places only (a typed ask or dish that is sent, in api(); My food saying insulin or not sure, in closeSheet())
+  { const offs = (appSrc.match(/medsHoldOff\(\)(?!\{)/g) || []).length; add('hold: the hold ends in two places only (api() for a typed ask or dish, closeSheet() when My food says insulin or not sure)', offs === 2 && /if\(exitB\)medsHoldOff\(\);/.test(grab('api')) && /if\(medsFact\(\)&&medsSetupOK\(\)\)medsHoldOff\(\);/.test(grab('closeSheet')), `${offs} calls`); }
   add('hide: a meal tab does not clear the hold (the tab handler keeps UI.err while medsHeld())', /C\.meal=m\[0\];[^\n]*if\(!medsHeld\(\)\)UI\.err="";/.test(grab('choices')), 'not found in choices()');
   add('hide: a Your day choice does not clear the hold (changed() keeps UI.err while medsHeld())', /function changed\(what\)\{STORE\.shown\[C\.meal\]=null;if\(!medsHeld\(\)\)UI\.err="";/.test(appSrc), 'not found in changed()'); }
 

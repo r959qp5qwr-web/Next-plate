@@ -885,9 +885,9 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     else add('S10 kept plates: one stamped with other rules is dropped while the app is open', false, 'pruneKept or rules not found in app.js'); }
   // My food closed after a food rule changed empties the kept plates at once (final audit m4: removing this passed every check, the review
   // included, because pruneKept drops them on the next render; this keeps both nets)
-  { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n' + grab('medsHoldOff') + '\n return closeSheet; }'), null);   // closeSheet clears a typed-medicine hold first (round 6b)
+  { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n' + grab('medsHoldOff') + '\n' + grab('medsFact') + '\n' + grab('medsSetupOK') + '\n return closeSheet; }'), null);   // closeSheet clears a typed-medicine hold first (round 6b)
     if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, bodyNeed: () => null, BODY0: [0, 0, 0], P: {}, $: () => ({ hidden: false }), behind: () => {},
-        answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {} };
+        answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {}, localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, MEDSKEY: 'np6meds', MEDSFACT: false, profileOut: () => ({}) };
       safe(() => cs(ctx)(), null);
       add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
     else add('S10 kept plates: closing My food after a rule change empties them at once', false, 'closeSheet not found in app.js'); }
@@ -993,9 +993,13 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
     // m4: the phone runs the nets plan() runs, before anything is sent. api() is taken from app.js with a fetch that counts: typed referral,
     // pregnancy, kidney and urgent text, and one low-sugar sign on an insulin profile, are answered on the phone with no request, as plan()
     // answers them; food text is sent
-    { let fetched = 0; const mk = () => run(['api', 'bodyHold', 'bodyNeed', 'bodyLive'], { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON }, 'api');
+    { let fetched = 0; const LS = { d: {}, getItem(k) { return k in this.d ? this.d[k] : null; }, setItem(k, v) { this.d[k] = String(v); }, removeItem(k) { delete this.d[k]; } };   // the phone's storage; the stored medicine hold lives here (round 7)
+      const hctx = { KEYCODE: 'K', window: {}, fetch: () => { fetched++; return new Promise(() => {}); }, setTimeout: () => 0, clearTimeout: () => {}, P: { age: 0, cm: 0, kg: 0, done: false, conds: [] }, UI: {}, openSheet: () => {}, typedReferral: typeof typedReferral === 'function' ? typedReferral : undefined, JSON,
+        localStorage: LS, MEDSKEY: 'np6meds', MEDSFACT: false, STORE: { res: {}, shown: {} }, save: () => {}, profileOut: () => ({}) };
+      const mk = () => run(['api', 'bodyHold', 'bodyNeed', 'bodyLive', 'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff'], hctx, 'api');
+      const fresh = (fact) => { LS.d = fact ? { np6meds: '{"at":1}' } : {}; hctx.MEDSFACT = false; hctx.UI = {}; };   // each call on its own phone storage: with or without a stored hold
       const f = mk(), ins = { goal: 'hold', focus: 'none', meds: 'yes', diet: 'veg', health: 'diabetes', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, plain = Object.assign({}, ins, { health: 'none', meds: 'no' });
-      const phone = (t, prof) => { let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
+      const phone = (t, prof) => { fresh(false); let got = null; const n0 = fetched; if (f) f('/api/meals', { profile: prof, ctx: { text: t } }, (s, j) => { got = [s, j]; }); return { sent: fetched > n0, got }; };
       const want = [['chest pain since morning, what can I eat', plain, true], ['I am pregnant, what can I order', plain, false], ['kidney problem, had dal and rice', plain, false], ['feeling shaky, what should I eat', ins, true], ['sugar low, what now', plain, true]];
       for (const [t, prof, urgent] of want) { const r = phone(t, prof);
         add('m4 app S7: typed referral text is answered on the phone, with no request', !!f && !r.sent && !!r.got && r.got[0] === 200 && r.got[1].status === 'refer' && r.got[1].read === SAFETY && (urgent ? r.got[1].urgent === URGENTLINE : !r.got[1].urgent), `"${t}": ${JSON.stringify(r)}`); }
@@ -1008,8 +1012,17 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
         for (const kind of ['meals', 'rescue', 'log']) { const pl = safe(() => plan(kind, { profile: prof, ctx: { meal: 'lunch', text: t } }), {}), sv = pl.reply || null; pairs++;
           add('m4 S7: the phone and the server give one answer to typed text', ph !== undefined && JSON.stringify(ph) === JSON.stringify(sv) && (!!sv || !!pl.prompt || pl.error === 'meds_typed'),   /* a typed medicine name on a plate or Rescue is held (fix-r21): not a referral, so the phone's referral is null and the engine answers meds_typed */ `${kind} (${prof.health}, meds ${prof.meds}) "${t}": phone ${JSON.stringify(ph)}, server ${JSON.stringify(sv)}`); 
           // the medicine hold, on the phone's own api(): it holds a typed medicine name on a plate or Rescue if and only if plan() answers meds_typed (round 4: the widening above only let the answer through)
-          if (kind !== 'log') { let got = null; if (f) f('/api/' + kind, { profile: prof, ctx: { text: t } }, (st, j) => { got = [st, j]; });
-            add('m4 S7: the phone holds a typed medicine name if and only if the server answers meds_typed', !!f && (!!got && !!got[1] && got[1].code === 'meds_typed') === (pl.error === 'meds_typed'), `${kind} (${prof.health}, meds ${prof.meds}) "${t}": phone ${JSON.stringify(got)}, server ${JSON.stringify(pl).slice(0, 60)}`); } } }
+          if (kind !== 'log') { const ask = (fact, typed) => { fresh(fact); let got = null; const n0 = fetched; if (f) f('/api/' + kind, { profile: prof, ctx: { text: t } }, (st, j) => { got = [st, j]; }, typed); return { got, sent: fetched > n0, held: !!got && !!got[1] && got[1].code === 'meds_typed', kept: 'np6meds' in LS.d }; };
+            const srvHold = pl.error === 'meds_typed', srvPlans = !!pl.prompt, a = ask(false, true);
+            // with no hold stored: the phone holds a typed medicine name if and only if plan() answers meds_typed; and the server holding implies the phone holds
+            add('m4 S7: with no hold stored, the phone holds a typed medicine name if and only if the server answers meds_typed', !!f && a.held === srvHold, `${kind} (${prof.health}, meds ${prof.meds}) "${t}": phone ${JSON.stringify(a.got)}, server ${JSON.stringify(pl).slice(0, 60)}`);
+            add('m4 S7: the server holding implies the phone holds (any stored state)', !!f && (!srvHold || (a.held && ask(true, true).held && ask(true, false).held)), `${kind} (${prof.health}, meds ${prof.meds}) "${t}"`);
+            // with a hold stored (round 7, owner "Until updated"): a set-up that does not say insulin or not sure holds every ask the client did not type, also where the server would plan;
+            // a typed one is sent where the server plans, and then the hold ends; a set-up that says insulin or not sure is not held by the stored fact
+            const u = ask(true, false), ty = ask(true, true), on = medsOnSetup(readProfile(prof));
+            if (!on) { add('round 7: with a hold stored, an ask or dish the client did not type is held on the phone, also where the server would plan', !!f && !u.sent && (u.held || (!!u.got && u.got[0] === 200)) && u.kept, `${kind} (${prof.health}, meds ${prof.meds}) "${t}": ${JSON.stringify(u.got)}, sent ${u.sent}`);
+              add('round 7: with a hold stored, a typed ask is sent if and only if the server would plan it, and the hold ends only then', !!f && ty.sent === srvPlans && ty.kept === !srvPlans, `${kind} (${prof.health}, meds ${prof.meds}) "${t}": sent ${ty.sent}, kept ${ty.kept}, server ${JSON.stringify(pl).slice(0, 50)}`); }
+            else add('round 7: a set-up that says insulin or not sure is not held by a stored hold (the phone sends where the server plans)', !!f && u.sent === srvPlans, `${kind} (${prof.health}, meds ${prof.meds}) "${t}": sent ${u.sent}`); } } }
       console.log(`m4 phone and server: ${S7T.length} typed strings, ${pairs} kind and profile pairs`); }
     // S7, the insulin-profile default (coordinator, fix-r15; the owner or a clinician may change it; not clinically reviewed): diabetes with
     // insulin or sugar tablets, or not sure, and one low-sugar sign typed, is referred with the line to get help now on every typed kind; the
