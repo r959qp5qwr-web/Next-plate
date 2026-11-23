@@ -44,11 +44,12 @@ try{if(sessionStorage.getItem("np-removed")){REMOVED=true;sessionStorage.removeI
 /* Two tabs of the page share one store (safety audit of 3ee7b41, B3: a tab opened earlier wrote its old answers back over a My food change made in the other).
    save() reads the store again, takes in what another tab changed that this page did not, and only then writes; refresh() does the same before any request is
    built, and a storage event from another tab redraws at once. RAW0 is the store as this page last read or wrote it; MEM0 is this page's own state at that moment. */
-var RAW0,MEM0;   /* set by storeInit() right after load(), which runs above this line: no initial value here */
+var RAW0,MEM0,STOREGONE=false;   /* set by storeInit() right after load(), which runs above this line: no initial value here */
 function memNow(){return JSON.parse(JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:APP,store:STORE,k:KEYCODE}));}
 function storeRaw(){try{return JSON.parse(localStorage.getItem("np6")||"null")||{};}catch(e){return null;}}
 function storeInit(){RAW0=storeRaw()||{};MEM0=memNow();}
-function storeSync(){var cur=storeRaw();if(!cur||!RAW0||!MEM0)return;var J=JSON.stringify,mem=memNow(),cp=cur.p||{},rp=RAW0.p||{},cc=cur.c||{},rc=RAW0.c||{},took=false;
+function storeGone(){if(!RAW0||!RAW0.p)return false;try{var c=JSON.parse(localStorage.getItem("np6")||"null");return !c||!c.p;}catch(e){return false;}}   /* the answers this page read were removed in another tab ("Remove my data" leaves only the link's code) */
+function storeSync(){if(storeGone()){STOREGONE=true;try{location.reload();}catch(e){}return;}var cur=storeRaw();if(!cur||!RAW0||!MEM0)return;var J=JSON.stringify,mem=memNow(),cp=cur.p||{},rp=RAW0.p||{},cc=cur.c||{},rc=RAW0.c||{},took=false;
   var other=function(a,b){return J(a)!==J(b);};
   Object.keys(cp).forEach(function(k){if(!other(cp[k],rp[k])||other(mem.p[k],MEM0.p[k]))return;took=true;var v=cp[k];   /* another tab changed it and this page did not: read as load() reads it */
     if(["goal","focus","meds","diet","health","region","sex","act"].indexOf(k)>=0){if(lab(k,v))P[k]=v;}
@@ -66,7 +67,7 @@ function storeSync(){var cur=storeRaw();if(!cur||!RAW0||!MEM0)return;var J=JSON.
   if(other(cur.k,RAW0.k)&&mem.k===MEM0.k&&typeof cur.k==="string")KEYCODE=cur.k;
   RAW0=cur;MEM0=memNow();}
 function save(){try{
-  storeSync();
+  storeSync();if(STOREGONE)return;   /* the client's data was removed in another tab: nothing is written back; this page reloads */
   var cut=Date.now()-90*864e5;EV=EV.filter(function(e){return e.t>=cut;}).slice(-3000);
   var keys=Object.keys(STORE.res);if(keys.length>12)keys.sort(function(a,b){return STORE.res[a].at-STORE.res[b].at;}).slice(0,keys.length-12).forEach(function(k){delete STORE.res[k];});
   var out=JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:STORE,k:KEYCODE});
@@ -211,14 +212,15 @@ var MEDSKEY="np6meds",MEDSFACT=false;
 function medsFact(){try{MEDSFACT=MEDSFACT||localStorage.getItem(MEDSKEY)!==null;}catch(e){}return MEDSFACT;}
 function medsSetupOK(pr){return typeof medsOnSetup==="function"&&typeof readProfile==="function"&&medsOnSetup(readProfile(pr||profileOut()));}
 function medsHeld(pr){return medsFact()&&!medsSetupOK(pr);}
-/* What the page writes to the ask box or the dish box is not typed (safety audit of 3ee7b41, B2): a failed example ask or chip keeps its words in the box, and sending
-   them must not count as a typed ask. The mark is set only by an input event in the box and cleared at every write the page makes (these two functions are the only
-   writers of the two drafts; the render puts the same draft back into a new box and leaves its mark as it is). */
 /* exit (b), in one place (owner question O2 may change it): text the client typed in the ask box or the dish box, with no medicine name in it at all (np-core's MEDRX,
    the generic phrases included); a release shape that carries a name ("my mother takes insulin") passed the net but does not end the stored hold (round 7b) */
 function medsExitB(body,typed){var t=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";return typed===true&&!!t.trim()&&!medsNamed(t);}
-function boxAsk(t){UI.askDraft=t;UI.askTyped=false;}
-function boxDish(t){UI.rkeep=t;UI.rinTyped=false;}
+/* What the page writes to the ask box or the dish box is not typed (safety audit of 3ee7b41, B2): a failed example ask or chip keeps its words in the box, and sending
+   them must not count as a typed ask. The mark is the value the client's last input event left in the box: a send is typed only when the box still holds that value.
+   Every write the page makes clears it (these two functions are the only writers of the two drafts), and a value the render puts back that the client did not leave
+   there does not match it. */
+function boxAsk(t){UI.askDraft=t;UI.askTypedV=null;}
+function boxDish(t){UI.rkeep=t;UI.rinTypedV=null;}
 function medsNamed(t){if(typeof MEDRX==="undefined"||typeof norm!=="function")return true;return MEDRX.test(norm(String(t)).toLowerCase());}   /* any medicine name the net reads; unreadable counts as named */
 function medsHoldOn(){MEDSFACT=true;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){}UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
 function medsHoldOff(){MEDSFACT=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
@@ -659,9 +661,9 @@ function composer(host){
   var c=el("div","composer"),f=el("form");f.id="askform";f.autocomplete="off";
   var i=el("input");i.type="text";i.id="askin";i.maxLength=240;i.placeholder="Type a craving or a dish";i.setAttribute("aria-label","Ask for a meal");
   var go=el("button","send");go.type="submit";go.id="askgo";go.setAttribute("aria-label","Ask");go.appendChild(ic("send"));go.disabled=!!UI.busy||!!UI.lock;
-  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;UI.askTyped=true;});   /* the client's own keystrokes mark the box typed; boxAsk() clears the mark when the page writes to it */
+  i.value=UI.askDraft||"";i.addEventListener("input",function(){UI.askDraft=i.value;UI.askTypedV=i.value;});   /* the client's own keystrokes mark the box: the value they leave; boxAsk() clears the mark when the page writes to it */
   if(UI.lock){i.readOnly=true;i.placeholder=/^limit_/.test(UI.lock)?"Asks open at "+resetAt():"Asks are off for now";}   /* the box says why it is off and keeps what was typed (second screen review, R2-B4 060-1) */   /* what is typed stays across re-renders; a failed ask stays too */
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();var ty=UI.askTyped===true;boxAsk("");makePlates(t,false,ty);});
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(!t||UI.busy)return;i.blur();var ty=typeof UI.askTypedV==="string"&&i.value===UI.askTypedV;boxAsk("");makePlates(t,false,ty);});
   add(f,i,go);c.appendChild(f);host.appendChild(c);
 }
 function renderPlate(){
@@ -846,8 +848,8 @@ function renderRescue0(){
   if(!(UI.rres||UI.rerr||busy||held)){var ld=el("p","lede",(PL&&FILE.today.kcal>0?PL.left.kcal+"\u00A0kcal and "+PL.left.protein+"\u00A0g protein are left today. ":"")+"Name the dish you will have for "+mn+" to see how to fit it in.");ld.id="rescue-lede";v.appendChild(ld);}
   var f=el("form","rin");f.autocomplete="off";var rl=el("label","cap","Name the dish you chose");rl.htmlFor="rin";var i=el("input");i.type="text";i.id="rin";i.maxLength=160;i.placeholder="the dish, as on the menu";
   var go=el("button","send"+(UI.rerr&&UI.rretry?" send-off":""));go.type="submit";go.setAttribute("aria-label","Rescue this dish");go.appendChild(ic("send"));go.disabled=wait;i.readOnly=busy;   /* Try again is the one strong control (R2-B6 082-1); no typing into a wait (090-1) */
-  i.addEventListener("input",function(){UI.rinTyped=true;});   /* the client's own keystrokes mark the dish box typed; boxDish() clears the mark when the page writes to it */
-  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,UI.rinTyped===true);});
+  i.addEventListener("input",function(){UI.rinTypedV=i.value;});   /* the client's own keystrokes mark the dish box: the value they leave; boxDish() clears the mark when the page writes to it */
+  f.addEventListener("submit",function(e){e.preventDefault();var t=i.value.trim();if(t&&!UI.lock)rescue(t,typeof UI.rinTypedV==="string"&&i.value===UI.rinTypedV);});
   var rrow=el("div","rin-row");add(rrow,i,go);add(f,rl,rrow,el("p","fine","What you type goes to Google Gemini."));if(UI.rerr&&UI.rkeep)i.value=UI.rkeep;v.appendChild(ent);
   var sb=el("div","sitbox"),ch=el("div","sits"),chc=el("p","cap","Or tap a common dish");chc.id="dish-cap";add(sb,chc,ch);DISHES.filter(function(e){return appFoodOK(e,profileOut());}).map(function(e){return e[0];}).forEach(function(d,k){var b=btn("sit",d,null,"dish-"+k);b.disabled=wait;b.setAttribute("aria-pressed",UI.rtext===d?"true":"false");b.addEventListener("click",function(){rescue(d);});ch.appendChild(b);});
   if(!held)v.appendChild(sb);   /* no common-dish chips under the hold: only a typed dish counts as asking again (owner, 23 Nov: "Hide all three (Recommended)") */

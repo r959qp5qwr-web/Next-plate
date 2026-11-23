@@ -285,12 +285,12 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
 { const PFNS = ['has', 'healthOf', 'bodyStored', 'appKept', 'profileOut', 'save', 'appetite', 'refresh', 'clockMeal', 'rules', 'answers', 'bodyLive', 'bodyNeed', 'bodyHold', 'api', 'slotOf', 'curKey',
     'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
     'askBlock', 'lockLine', 'errText', 'RETRY', 'curRes', 'lastForMeal', 'closeSheet', 'unAsk', 'onMeds',
-    'composer', 'referCard', 'referCardR', 'referHead', 'medsExitB', 'boxAsk', 'boxDish', 'memNow', 'storeRaw', 'storeInit', 'storeSync'];   // round 8 (safety audit of 3ee7b41)
+    'composer', 'referCard', 'referCardR', 'referHead', 'medsExitB', 'boxAsk', 'boxDish', 'memNow', 'storeRaw', 'storeInit', 'storeSync', 'storeGone'];   // round 8 (safety audit of 3ee7b41)
   const pmiss = PFNS.filter(n => !grab(n)); add('hold page: the app\'s functions are in src/v6/app.js', pmiss.length === 0, 'not found: ' + pmiss.join(', '));
   const line = (re) => (re.exec(appSrc) || [''])[0];
   const GLOB = [/^var now=new Date\(\)[^\n]*$/m, /^var CLOCK=[^\n]*$/m, /^var DAY=[^\n]*$/m, /^var P=\{[^\n]*\};$/m, /^var C=\{[^\n]*\};$/m, /^var APP=\{\};[^\n]*$/m, /^var CONDS=[^\n]*$/m, /^var EV=\[\],STORE=[^\n]*$/m,
     /^var FILE=null,PL=null,HOOKS=\[\];[^\n]*$/m, /^var MEDSKEY=[^\n]*;$/m, /^var MEDSTYPED=[^\n]*;$/m, /^var MEDSOTHER=[^\n]*;$/m, /^var NORETRY=[^\n]*;$/m, /^var PROMPTS=[^\n]*$/m, /^var DISHES=[^\n]*$/m,
-    /^var REFUSED=[^\n]*$/m, /^var LOSTIT=[^\n]*$/m, /^var RAW0,MEM0;[^\n]*$/m].map(line).join('\n') + '\nvar ERRS={};';
+    /^var REFUSED=[^\n]*$/m, /^var LOSTIT=[^\n]*$/m, /^var RAW0,MEM0[^\n]*$/m].map(line).join('\n') + '\nvar ERRS={};';
   const li = appSrc.indexOf('(function load(){try{'), le = appSrc.indexOf('})();', li) + 5, LOAD = li < 0 ? '' : appSrc.slice(li, le);
   const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{setProperty:function(){}},on:{},hidden:false,disabled:false,value:"",parent:null,
       appendChild:function(c){if(c&&typeof c==="object")c.parent=this;this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},removeAttribute:function(){},addEventListener:function(t,f){this.on[t]=f;},remove:function(){},scrollTo:function(){},focus:function(){},blur:function(){},
@@ -366,6 +366,13 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
       if (cr && cr.done) cr.done({ s: 200, j: { status: 'fail' } }); a.plate(); a.typeAsk('I take insulin, what lunch?'); a.sendAsk(); const n0 = a.SENT.length; a.resc(); const kept = a.boxValue('rin');
       a.sendDish(); a.flush(); const r = a.resc(), t = a.plate();
       add('hold (round 8, B2, p3a): a chip\'s name kept in the dish box is not typed: sending the box under the hold sends nothing and the hold stays', !!dn && kept === name && !!name && a.SENT.length === n0 && stored(ls) && card(r) && noDish(r) && card(t), `chip "${name}", box "${kept}", sent ${a.SENT.length - n0}, stored ${stored(ls)}: ${ex(r)}`); }
+    // the mark is the value the client's input left: a chip's kept name, edited by one key and then put back by a redraw, is not typed; a client's own ask, redrawn, is
+    { const ls = seedLS(), a = page(ls); a.plate(); a.resc(); const dn = a.node('v-rescue', 'dish-0'), name = dn ? dn.text : ''; a.click(dn); const cr = a.SENT[a.SENT.length - 1];
+      if (cr && cr.done) cr.done({ s: 200, j: { status: 'fail' } }); a.plate(); a.typeAsk('I take insulin, what lunch?'); a.sendAsk(); const n0 = a.SENT.length; a.resc(); a.typeDish(name + 'x'); a.plate(); a.resc(); const kept = a.boxValue('rin');
+      a.sendDish(); a.flush(); const r = a.resc();
+      add('hold (round 8, B2): a kept chip name edited by one key, then put back by a redraw, is not typed: sending it under the hold sends nothing', !!dn && kept === name && a.SENT.length === n0 && stored(ls) && card(r), `box "${kept}", sent ${a.SENT.length - n0}, stored ${stored(ls)}`); }
+    { const ls = LSm({ np6: ls1.getItem('np6'), np6meds: ls1.getItem('np6meds') }), a = page(ls); a.plate(); a.typeAsk('something light with dal'); a.resc(); a.plate(); a.sendAsk();
+      add('hold (round 8, B2, control): the client\'s own ask, redrawn before it is sent, is still typed (it is sent and the hold ends)', a.SENT.length === 1 && !stored(ls), `sent ${a.SENT.length}, stored ${stored(ls)}`); }
     // the page's own plans, Try again and the Builder are not typed: under the hold they send nothing (read through the app's own makePlates and rescue)
     a1.ask('', false); a1.ask('something light', false); a1.rescue('Veg thali', false); a1.flush();
     add('hold: an ask or dish not typed by the client sends nothing while the hold is stored (fails closed)', a1.SENT.length === 0 && stored(ls1), `sent ${a1.SENT.length}`);
@@ -429,6 +436,10 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
       B1.refresh(); const bp = JSON.parse(JSON.stringify(B1.P));
       add('hold (round 8, B3): a page opened earlier does not write its old answers over a My food change made in another page; the next plan reads the change', ok(st.p, m.length ? m[0].body : { profile: st.p }) && m.length === 1 && ok(m[0].body.profile, m[0].body) && (what === 'medicines Yes' ? bp.meds === 'yes' : bp.leave.indexOf('dairy') >= 0),
         `${what}: stored ${JSON.stringify({ meds: st.p.meds, leave: st.p.leave, mood: st.c && st.c.mood })}, sent ${m.length} ${m.length ? JSON.stringify({ meds: m[0].body.profile.meds, leave: m[0].body.profile.leave }) : ''}, page B now ${JSON.stringify({ meds: bp.meds, leave: bp.leave })}`); }
+    // "Remove my data" in page A (the store keeps only the link's code, the hold's key goes): page B, opened before, makes one Your day choice and writes nothing back
+    { const ls = LSm({ np6: JSON.stringify({ p: PROF7(), c: {}, ev: [], k: 'K' }), np6meds: '{"at":1}' }), A1 = page(ls), B1 = page(ls); ls.removeItem('np6'); ls.removeItem('np6meds'); ls.setItem('np6', JSON.stringify({ k: 'K' }));
+      B1.C.mood = 'quick'; B1.save(); const st = JSON.parse(ls.getItem('np6'));
+      add('hold (round 8, B3): after "Remove my data" in another page, a page opened before writes no answers back', !st.p && ls.getItem('np6meds') === null, JSON.stringify(st).slice(0, 120)); }
     // B's own Your day choice is kept too (its change is the one written)
     { const ls = seedLS(), A1 = page(ls), B1 = page(ls); A1.openFood(); A1.P.goal = 'lose'; A1.closeFood(); B1.C.mood = 'quick'; B1.save(); const st = JSON.parse(ls.getItem('np6'));
       add('hold (round 8, B3): both pages\' changes are kept (A\'s goal and B\'s mood)', st.p.goal === 'lose' && st.c.mood === 'quick', JSON.stringify({ goal: st.p.goal, mood: st.c.mood })); } }

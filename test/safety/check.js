@@ -922,8 +922,8 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m3 app S12: act() does not run a tap made after the day changed', !!a3 && ranAfter === 0, a3 ? `ran ${ranAfter}` : 'act not found'); }
     // m3, A11: a tab open past 4 am drops yesterday's Rescue and log answers
     { const UI = { rres: { status: 'ok' }, rmoves: { 0: true }, rtext: 'x', lres: { status: 'ok' }, ltext: 'x', lerr: 'x' };
-      const ctx = { now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
-      const f = run(['refresh', 'storeSync', 'storeRaw', 'memNow'], ctx, 'refresh'); if (f) safe(() => f(), null);
+      const ctx = { RAW0: undefined, MEM0: undefined, STOREGONE: false, now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
+      const f = run(['refresh', 'storeSync', 'storeRaw', 'memNow', 'storeGone'], ctx, 'refresh'); if (f) safe(() => f(), null);
       add('m3 app S12: a new day drops yesterday\'s Rescue and log answers', !!f && UI.rres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
     // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
     { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };

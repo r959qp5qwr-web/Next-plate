@@ -20,7 +20,7 @@ const w = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function open(b, o) { o = o || {}; const ctx = await b.newContext(); const H = { ctx, LOG: [], mode: {} };
   const seed = JSON.stringify({ p: Object.assign({}, PROFILE, o.profile || {}), c: {}, ev: [], k: 'x' });
-  await ctx.addInitScript(([s, m]) => { if (!localStorage.getItem('np6')) localStorage.setItem('np6', s); if (m != null && !sessionStorage.getItem('seeded')) { localStorage.setItem('np6meds', m); sessionStorage.setItem('seeded', '1'); } }, [seed, o.meds == null ? null : o.meds]);
+  // the store is seeded once, after the first load, and never again (a removal must stay removed)
   await ctx.route('http://np.test/**', async r => { const u = new URL(r.request().url()); if (u.pathname === '/') return r.fulfill({ status: 200, contentType: 'text/html', body: HTML });
     const kind = u.pathname.slice(5), body = JSON.parse(r.request().postData() || '{}'), pl = A.plan(kind, body);
     let out = pl.error ? { code: pl.error } : pl.reply ? pl.reply : kind === 'meals' ? pl.check(J(MEALS)) : kind === 'rescue' ? pl.check(J(RESC)) : { status: 'fail' };
@@ -29,7 +29,8 @@ async function open(b, o) { o = o || {}; const ctx = await b.newContext(); const
     if (H.mode[kind] === 'paneer' && kind === 'meals') { const m = J(MEALS); m.meals[0].title = 'Paneer bhurji and bajra rotla'; m.meals[0].items[0] = { food: 'Paneer bhurji', grams: 150, group: 'protein', contains: ['dairy'] }; m.meals[0].contains = ['grain', 'dairy']; out = pl.check(m); }
     H.LOG.push({ kind, text: body.ctx && body.ctx.text, meds: body.profile && body.profile.meds, leave: body.profile && body.profile.leave, floor: pl.prompt ? /at least \d+ kcal, never below/.test(pl.prompt) : null });
     return r.fulfill({ status: pl.error ? 400 : 200, contentType: 'application/json', body: JSON.stringify(out) }); });
-  H.p = await ctx.newPage(); await H.p.clock.install({ time: new Date('2026-11-23T13:10:00') }); await H.p.goto('http://np.test/'); await w(900); return H; }
+  H.p = await ctx.newPage(); await H.p.clock.install({ time: new Date('2026-11-23T13:10:00') }); await H.p.goto('http://np.test/');
+  await H.p.evaluate(([s, m]) => { localStorage.setItem('np6', s); if (m != null) localStorage.setItem('np6meds', m); }, [seed, o.meds == null ? null : o.meds]); await H.p.reload(); await w(900); H.LOG = []; return H; }
 const view = async (p, sel) => (await p.locator(sel).innerText().catch(() => '')).replace(/\s+/g, ' ');
 const stored = async (p) => p.evaluate(() => { try { return localStorage.getItem('np6meds') !== null; } catch (e) { return null; } });
 const vis = async (p, sel) => { const l = p.locator(sel); let n = 0; for (let i = 0; i < await l.count(); i++) if (await l.nth(i).isVisible()) n++; return n; };
@@ -59,6 +60,20 @@ const vis = async (p, sel) => { const l = p.locator(sel); let n = 0; for (let i 
       const plates = await vis(p, '#plate-card');
       add('B2 (p3a): a chip\'s name kept in the dish box is not typed: sending the box under the hold sends nothing, no dish or plate is drawn and the hold stays', kept === name && H.LOG.length === 0 && st === true && dish === 0 && plates === 0,
         `box "${kept}" (chip "${name}"), requests ${JSON.stringify(H.LOG)}, stored ${st}, dish ${dish}, plates ${plates}`); await H.ctx.close(); }
+    // B2: a chip's kept name, edited by one key and then put back by a redraw (Plate and back), is not typed
+    { const H = await open(b), p = H.p; await p.click('#tab-rescue'); await w(400); H.mode.rescue = 'fail'; const chip = p.locator('button[id^="dish-"]').first(); const name = (await chip.innerText()).trim(); await chip.click(); await w(600); H.mode.rescue = null;
+      await p.click('#tab-plate'); await w(300); await p.fill('#askin', 'I take insulin, what lunch?'); await p.press('#askin', 'Enter'); await w(500); await p.click('#tab-rescue'); await w(400);
+      await p.locator('#rin').press('End'); await p.keyboard.type('x'); await p.click('#tab-plate'); await w(300); await p.click('#tab-rescue'); await w(400);
+      const kept = await p.locator('#rin').inputValue(); H.LOG = []; await p.click('#v-rescue button.send'); await w(900); const st = await stored(p);
+      add('B2: a kept chip name edited by one key, then put back by a redraw, is not typed: sending it under the hold sends nothing and the hold stays', kept === name && H.LOG.length === 0 && st === true, `box "${kept}" (chip "${name}"), requests ${JSON.stringify(H.LOG)}, stored ${st}`); await H.ctx.close(); }
+    // B3: "Remove my data" in tab A; tab B, opened before, makes one Your day choice; no answer and no hold is written back, and tab A opens on set-up
+    { const H = await open(b, { meds: '{"at":1}' }), A1 = H.p; const B1 = await H.ctx.newPage(); await B1.clock.install({ time: new Date('2026-11-23T13:10:00') }); await B1.goto('http://np.test/'); await w(1200);
+      await A1.click('#myfood'); await w(300); await A1.click('#wipe'); await w(200); await A1.click('#wipe-yes'); await w(1500);
+      await B1.evaluate(() => { const x = [...document.querySelectorAll('#v-plate button')].find(e => /Mood/.test(e.textContent)); if (x) x.click(); }).catch(() => {}); await w(300);
+      await B1.evaluate(() => { const x = [...document.querySelectorAll('[id^="mood-"]')].find(e => e.getAttribute('aria-checked') !== 'true'); if (x) x.click(); }).catch(() => {}); await w(800);
+      const st = await A1.evaluate(() => ({ np6: localStorage.getItem('np6'), meds: localStorage.getItem('np6meds') })); await A1.reload(); await w(1200); const setup = await vis(A1, '#v-setup');
+      const p6 = JSON.parse(st.np6 || '{}');
+      add('B3: after "Remove my data" in one tab, a tab opened before writes no answers and no hold back; the first tab opens on set-up', !p6.p && st.meds === null && setup === 1, `np6 ${String(st.np6).slice(0, 80)}, np6meds ${st.meds}, set-up shown ${setup}`); await H.ctx.close(); }
     // B3, p6b and p6c: tab A changes My food (medicines Yes; leave out dairy); tab B, opened before, makes one Your day choice; tab A reloads and plans
     for (const kind of ['meds', 'dairy']) {
       const H = await open(b, kind === 'meds' ? { meds: '{"at":1}' } : {}), A1 = H.p; if (kind === 'dairy') H.mode.meals = 'paneer'; const B1 = await H.ctx.newPage(); await B1.clock.install({ time: new Date('2026-11-23T13:10:00') }); await B1.goto('http://np.test/'); await w(1200);
