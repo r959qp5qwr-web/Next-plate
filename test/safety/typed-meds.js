@@ -136,6 +136,11 @@ for (const t of ['Is Januvia safe? asking for my mother', 'My aunt started Ozemp
   rd(path.join(ROOT, 'eval')); const extra = Object.keys(found).filter(k => !known.has(k));
   add('the name rule finds only medicine words in the recorded strings under eval/ (names, notes, typed asks, prompts)', extra.length === 0, 'new hits: ' + extra.join(', ')); }
 for (const t of OVER) HELD.push([t, 'known over-hold']);
+// round 7 (safety audit of 41e8ac0, backlog and c1): generic phrases, Devanagari spellings and misspellings it found, held; a line break is no shape (the d7702c4 net read each line
+// apart); a name phrase with "my" in it is never first of two names in a negation ("I don't take tablets for my sugar or tablets for my sugar please")
+for (const t of ['sugar ka injection leti hoon', 'sugar ki injection lagti hai', 'diabetes injection at night', 'injection for sugar', 'sugar ki sui lagti hai', 'meds for sugar', 'medication for diabetes', 'medicine for diabetes',
+  'I take insolin', 'insulim at night', 'metformn 500', '\u0907\u0928\u0938\u0941\u0932\u093f\u0928', 'इन्सुलीन लेती हूँ', 'इंसूलिन', 'शुगर की गोलियां', 'शुगर की गोलियाँ', 'डायबिटीज़ की दवा', 'मधुमेह की दवा', 'ग्लाइकोमेट', 'मेटफार्मिन', 'मेटफ़ॉर्मिन', 'ग्लाइक्लाजाइड',
+  'no\ninsulin', 'not on\nmetformin', 'I don\'t take\ninsulin', 'my mother takes\ninsulin', 'no insulin\u2028', 'I don\'t take tablets for my sugar or tablets for my sugar please', 'Hi, I don\'t take tablets for my sugar or insulin!']) HELD.push([t, 'round 7: a name the net reads now, or a text that is no shape']);
 for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
 
 // profiles: a set-up that does not say insulin or sugar tablets (held) and one that does (no hold)

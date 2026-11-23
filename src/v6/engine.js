@@ -834,7 +834,7 @@ function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.
    purpose. The medicine words are the set-up question's own ("insulin, or sugar tablets such as glimepiride or gliclazide") plus the generic and brand names of the insulins
    and the diabetes tablets and injections (S6 names the sources); the names are the builder's, not clinically reviewed. The log is not held: it counts what was eaten and S6
    does not read it. Typed "I am diabetic" with no medicine word is not part of this net (an open owner question). No look-behind. */
-var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|novomix|mixtard|actrapid|insugen|tresiba|levemir|toujeo|apidra|basalog|glargine|degludec|detemir|aspart|lispro|"+
+var MEDNAME="insulins?|insuline|insulen|inslin|insolin|insulim|metformn|lantus|humulin|humalog|novorapid|novomix|mixtard|actrapid|insugen|tresiba|levemir|toujeo|apidra|basalog|glargine|degludec|detemir|aspart|lispro|"+
   "glimepiride|glimepride|glimiperide|glimpiride|gliclazide|gliclazid|glipizide|glibenclamide|glyburide|tolbutamide|amaryl|glimy|glimestar|diamicron|daonil|euglucon|zoryl|repaglinide|nateglinide|"+
   "metformin|glucophage|glycomet|gluconorm|obimet|pioglitazone|sitagliptin|januvia|janumet|vildagliptin|galvus|teneligliptin|linagliptin|trajenta|tradjenta|dapagliflozin|forxiga|empagliflozin|jardiance|"+
   "voglibose|acarbose|semaglutide|ozempic|rybelsus|liraglutide|victoza|dulaglutide|trulicity|tirzepatide|mounjaro|"+
@@ -845,12 +845,13 @@ var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|
   "chromet|asoformin|avimet|baymet|bemet|bigesens|istamet|zita[\\s-]?met|zita[\\s-]?piomet|zita[\\s-]?plus|gemer|ziten|volix|"+
   "diamig|migset|migtor|miglit|misobit|mignar|natelide|natiz|natstar|glinate|piomed|piolem|diaglit|pglit|pizorad|pioz|eurepa|repide|rapilin|repamon|glitenly|tenliptin|rastinone?|jalra|zolmelis|"+
   "glucovance|invokamet|xigduo|synjardy|segluromet|jentadueto|actoplus|kazano|glyxambi|duetact|"+
-  "(?:sugar|shugar|suger|diabetes|diabetic|madhumeh)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?|meds?)|"+
-  "(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|medicines?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes|madhumeh)";
+  "(?:sugar|shugar|suger|diabetes|diabetic|madhumeh)\\s+(?:ki\\s+|ka\\s+|ke\\s+)?(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|dawaiyan|dawaiyaan|medicines?|medications?|meds?|injections?|sui)|"+
+  "(?:tablets?|tabs?|pills?|golis?|goliyan|dawa|dawai|medicines?|medications?|meds|injections?)\\s+(?:for|ke\\s+liye|ki)\\s+(?:my\\s+)?(?:sugar|shugar|suger|diabetes|madhumeh)";   /* round 7: "sugar ka injection", "sugar ki sui", "diabetes injection", "medication for diabetes", "meds for sugar" (safety audits of d7702c4 and 41e8ac0, backlog) */
 /* name families with a distinctive stem match inside a word (a brand the list does not know, a misspelling): insulins (-sulin and the spellings of insulin), the -gliptins, -gliflozins, -glutides, -glinides, -glitazones,
    the spellings of metformin, the sulfonylureas (glimepiride, gliclazide, glipizide, glibenclamide) and the voglibose family. Each stem was checked against the recorded names, the corpus and a word list (S6). */
 var MEDSTEM="[a-z]*[nio]sulin[a-z]*|ins[ua]?[iu]?l{1,2}[iuey]n[a-z]{0,2}|[a-z]{2,}gl[ie]+p[ie]?tin[a-z]{0,2}|[a-z]{2,}gli(?:f|ph)l?ozin|[a-z]{2,}glutide|[a-z]{2,}glinide|[a-z]{2,}glitazone?|met[ah]?[fp]h?[or]{1,3}[mn]{1,2}[iu][nm]e?|gli[mcpb][a-z]{0,10}(?:ride|zide|mide|zid|mid)|glyclazide|glyburid|vogli[a-z]{2,}";
-var MEDDEVA="इंसुलिन|इन्सुलिन|इंसुलीन|मेटफॉर्मिन|मेटफोर्मिन|ग्लिमेपिराइड|ग्लाइक्लाज़ाइड|शुगर की गोली|शुगर की दवा|शुगर की दवाई|डायबिटीज की दवा|डायबिटीज की दवाई";   /* the medicine words in Devanagari (no \b: it is not a word character) */
+var MEDDEVA="इंसुलिन|इन्सुलिन|इंसुलीन|मेटफॉर्मिन|मेटफोर्मिन|ग्लिमेपिराइड|ग्लाइक्लाज़ाइड|शुगर की गोली|शुगर की दवा|शुगर की दवाई|डायबिटीज की दवा|डायबिटीज की दवाई|इनसुलिन|इन्सुलीन|इंसूलिन|शुगर की गोलियां|शुगर की गोलियाँ|डायबिटीज़ की दवा|डायबिटीज़ की दवाई|मधुमेह की दवा|मधुमेह की दवाई|ग्लाइकोमेट|मेटफार्मिन|मेटफ़ॉर्मिन|ग्लाइक्लाजाइड";   /* the medicine words in Devanagari (no \b: it is not a word character); round 7 adds the spellings the safety audit of 41e8ac0 found */
+try{MEDDEVA=MEDDEVA.normalize("NFKC");}catch(e){}   /* read as typed text is read: norm() folds to NFKC, which splits a nukta letter (ज़, फ़) into two code points */
 var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|\\b(?:"+MEDSTEM+")(?![a-z])|(?:"+MEDDEVA+")","i");
 /* A medicine name in the client's typed text holds the request, unless the whole text, after an optional "hi", "hello" or "hey" and before a closing "." or "!", is one of
    the release shapes listed here. Nothing outside a shape is read as a reason to release: a second negation, "without", "off", "stop", a meal, time or dose word, "today", "yet",
@@ -875,7 +876,8 @@ var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|\\b(?:"+MEDSTEM+")(?![a-z])|(?
 var MEDSHAPEMAX=200;
 var MEDINS=/^(?:insulins?|insuline|insulen)$/;
 var MEDSHAPES=(function(){
-  var N="[\\u0001\\u0002]",Q="\\u0002",G="(?:"+N+"|tablets|pills|medicines?|medication)",L="(?:any "+G+"|"+G+"(?: (?:or|nor) "+G+")?)",
+  /* N: a name; Q: an insulin spelling; \u0003: a name phrase with "my" in it ("tablets for my sugar"), which is never first of two (the d7702c4 net read "my" before the next name as the client's own) */
+  var N="[\\u0001\\u0002\\u0003]",Q="\\u0002",G1="(?:[\\u0001\\u0002]|tablets|pills|medicines?|medication)",G="(?:"+N+"|tablets|pills|medicines?|medication)",L="(?:any "+G+"|"+G+"|"+G1+" (?:or|nor) "+G+")",
     NU="(?:no "+L+"|(?:(?:i'm|im|i am) )?not on "+L+"|(?:i )?(?:don't|dont|do not) (?:take|use) "+L+"|(?:i )?never (?:take|use) "+L+"|(?:i )?(?:have )?never (?:taken|been on) "+L+")",
     HS="(?:(?:main|mai|mein) )?",HN="(?:nahi|nahin|nhi)",HV="(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati)(?: (?:hoon|hu|hun|hai|hain|he))?",
     REL="mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grandmother|grandfather|grandma|grandpa|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|colleague|neighbour|neighbor|saas|sasur|mother-in-law|father-in-law",
@@ -899,8 +901,8 @@ var MEDSHAPES=(function(){
        W(DOC+" wants me to start "+N),W("(?:i (?:may|might|could|will)|i'll|may|might|could) need "+N+FTA),
        W("(?:i (?:might|may|will|plan to|am going to)|i'll|i'm going to|im going to) start "+N+" (?:next (?:month|year)|one day|in (?:the )?future)"),W("i (?:may|might) be put on "+N+"(?:"+FTA+")?")]};})();
 /* the text as the shapes read it: each medicine name one slot, spaces folded, an opening greeting and a closing "." or "!" left out; null when the text cannot be a shape */
-function medsShapeText(t){if(t.length>MEDSHAPEMAX||/[\u0001\u0002]/.test(t))return null;
-  return t.replace(new RegExp(MEDRX.source,"gi"),function(m){return MEDINS.test(m)?"\u0002":"\u0001";}).replace(/\s+/g," ").trim().replace(/[ .!]+$/,"").replace(/^(?:hi|hello|hey)[,!.]? /,"");}
+function medsShapeText(t){if(t.length>MEDSHAPEMAX||/[\u0001\u0002\u0003\n\r\v\f\u0085\u2028\u2029]/.test(t))return null;   /* a line break is no shape: the d7702c4 net read each line apart (round 7, safety audit of 41e8ac0, c1) */
+  return t.replace(new RegExp(MEDRX.source,"gi"),function(m){return MEDINS.test(m)?"\u0002":/\bmy\b/.test(m)?"\u0003":"\u0001";}).replace(/\s+/g," ").trim().replace(/[ .!]+$/,"").replace(/^(?:hi|hello|hey)[,!.]? /,"");}
 /* which shape releases the text ("a" to "d"), or "" when none does and the text holds */
 function medsRelease(t){var s=medsShapeText(t),k,i;if(s==null)return "";
   for(k in MEDSHAPES)for(i=0;i<MEDSHAPES[k].length;i++)if(MEDSHAPES[k][i].test(s))return k;
