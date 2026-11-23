@@ -1,8 +1,9 @@
 // Typed medicine words (fix-r21; owner, 22 Nov, option survey "Ask to update (Recommended)"): "Typed insulin or sugar-tablet words hold the plate. One line asks the client to add it
 // in My food, and a tap opens that step." S5 and S6 read the set-up's answers, so a client whose set-up says no medicine who types that they take insulin got plates with no grain
 // rule and no usual size. The net (typedMeds, medsTypedHold, medsTypedBody in src/v6/engine.js; api() in src/v6/app.js) is tested both ways here:
-//   - a generated phrasing set: first-person present use, English and Hinglish, with food words around, is held; a negation, another person, "stopped", "insulin resistance" and a
-//     bare "I am diabetic" are not;
+//   - a generated phrasing set: first-person present use, English and Hinglish, with food words around, is held; a text that is one release shape (MEDSHAPES: a negation,
+//     a qualifier, someone else, a future onset; S6) and a bare "I am diabetic" are not; round 6 (safety audit of d7702c4, B1): the auditor's grid, every shape exemplar with
+//     fragments before and after it (all held), a mutant per exclusion (TM_MUTANT), the known over-holds by frame, the m2 timing and length cells;
 //   - the engine's plan() on every kind (meals and Rescue answer meds_typed; the log, which counts what was eaten and which S6 does not read, and tune are not held), for a profile
 //     that does not say insulin or sugar tablets and for one that does (no hold: the usual size already applies);
 //   - the order: a typed referral (urgent, kidney, pregnancy) comes first, then this hold, then the body hold; in the engine and on the phone with the app's own api(), with the
@@ -14,6 +15,8 @@ const ROOT = path.join(__dirname, '../..');
 const pageFile = process.argv.filter(x => /\.html$/.test(x))[0] || path.join(ROOT, 'hosted/v6/index.html');
 const page = fs.readFileSync(pageFile, 'utf8'), A = {}; vm.createContext(A); vm.runInContext(page.split('<script id="np-core">')[1].split('</script>')[0], A);
 const appSrc = fs.readFileSync(process.env.NP_APP || path.join(ROOT, 'src/v6/app.js'), 'utf8');
+// TM_MUTANT=<a|b|c|d>-<after|before> runs every cell with that exclusion widened back (its shapes read with any text after, or before, them): the run must fail
+if (process.env.TM_MUTANT) { const [k, how] = process.env.TM_MUTANT.split('-'); A.MEDSHAPES[k] = A.MEDSHAPES[k].map(rx => new RegExp(how === 'before' ? rx.source.replace(/^\^/, '') : rx.source.replace(/\$$/, ''))); console.log('mutant: ' + process.env.TM_MUTANT); }
 const grab = (name) => { const i = appSrc.indexOf('function ' + name + '('); if (i < 0) return ''; let d = 0, j = appSrc.indexOf('{', i); for (; j < appSrc.length; j++) { if (appSrc[j] === '{') d++; else if (appSrc[j] === '}') { d--; if (!d) break; } } return appSrc.slice(i, j + 1); };
 const J = (x) => JSON.parse(JSON.stringify(x)), safe = (f, d) => { try { return f(); } catch (e) { return d; } };
 const res = {}; const add = (id, ok, ex) => { const r = res[id] = res[id] || { n: 0, bad: [] }; r.n++; if (!ok) r.bad.push(ex); };
@@ -134,24 +137,80 @@ for (const t of ['Is Januvia safe? asking for my mother', 'My aunt started Ozemp
   add('the name rule finds only medicine words in the recorded strings under eval/ (names, notes, typed asks, prompts)', extra.length === 0, 'new hits: ' + extra.join(', ')); }
 for (const t of OVER) HELD.push([t, 'known over-hold']);
 for (const t of LIT_HELD) HELD.push([t, 'round 3 literal']); for (const t of LIT_NOT) NOT.push([t, 'round 3 literal']);
-const HELD_BEFORE = 1183, NOT_BEFORE = 1138;
 
 // profiles: a set-up that does not say insulin or sugar tablets (held) and one that does (no hold)
 const PROF = (o) => Object.assign({ goal: 'hold', focus: 'none', diet: 'veg', health: 'none', meds: 'no', bp: false, region: 'n', leave: [], sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, o);
 const OPEN = [['no condition', PROF({})], ['diabetes, no medicine', PROF({ health: 'diabetes', meds: 'no' })], ['high BP', PROF({ health: 'bp' })], ['diabetes with BP, no medicine', PROF({ health: 'diabetes', meds: 'no', bp: true })], ['no body figures', PROF({ age: 0, cm: 0, kg: 0 })]];
 const ON = [['diabetes, insulin', PROF({ health: 'diabetes', meds: 'yes' })], ['diabetes, not sure', PROF({ health: 'diabetes', meds: 'unsure' })]];
 
+// ---------- round 6 (safety audit of d7702c4, B1): a release needs the whole text to be one listed shape (MEDSHAPES in src/v6/engine.js, S6) ----------
+// the controls above that no shape covers now hold: known over-holds, named in S6 by frame (the client retypes without the word, or answers "not sure" in My food)
+const OVER6_FRAMES = new Set(['no M, just dal rice', 'I stopped M last year', 'I\'m off M', 'without M', 'I no longer take M', 'avoid M? what dinner', 'uski M band ho gayi', 'maine M chhod di', 'M leta hai', 'M leti hai',
+  'I\'ll start M next week', 'I am going to start M', 'maybe I need M', 'I plan to start M', 'I want to avoid M', 'I don\'t take M and glimepiride', 'I stopped M and gliclazide', 'I never took M or glimepiride', 'I\'m not on M or any tablets',
+  'I can\'t take M', 'I won\'t take M', 'I\'m allergic to M', 'I refuse M', 'instead of M, what can I eat', 'alternatives to M for dinner', 'a substitute for M', 'I take supplements for M resistance', 'I need to bring my M levels down',
+  'my M spikes after rice', 'low M index foods for me', 'I want an M free diet', 'I am worried about M production', 'I read about the M hormone', 'I stopped taking M', 'off M', 'afraid of taking M', 'I might need M soon', 'may need M later',
+  'I will start M tomorrow', 'might need to start M', 'M band ho gayi hai', 'no need for M', 'M free dinner please']);
+const OVER6_LIT = new Set(['insulin spikes after rice', 'I\'m scared of insulin', 'my kids dad takes insulin', 'My husband takes metformin, I don\'t', 'may need insulin later', 'might need insulin', 'I want to avoid insulin', 'I avoid insulin',
+  'I\'m worried I might need insulin', 'insulin levels were high in my test', 'I stopped insulin', 'insulin leta hai', 'I\'m going to start insulin soon', 'I plan to start glimepiride', 'I stopped insulin and gliclazide', 'insulin free diet', 'unki insulin band ho gayi']);
+const FOODWRAP = /, a light dinner please$|^Hi, .*\. Something with paneer and a roti$| - what should I eat after$|^dinner tonight\? /;
+{ const keep = []; for (const [t, why] of NOT) { const f = why.replace(/^(?:new|mixed not held): /, ''); if (OVER6_FRAMES.has(f) || OVER6_LIT.has(t) || (FOODWRAP.test(t) && !(f === 'I have M resistance' && /, a light dinner please$/.test(t)))) HELD.push([t, 'round 6 known over-hold: ' + (FOODWRAP.test(t) ? 'a food line around a negation or a relative' : f)]); else keep.push([t, why]); }
+  NOT.length = 0; NOT.push(...keep); }
+// the auditor's grid (test/safety/AUDIT.md, B1), as written in the audit's frames.js: its frames times 12 names, every cell held; its 36 controls held
+const AUD_NAMES = ['insulin', 'Lantus', 'Humalog', 'metformin', 'Glycomet', 'glimepiride', 'Amaryl', 'gliclazide', 'sugar tablets', 'Januvia', 'Jardiance', 'Ozempic'];
+const AUD_G = {
+  'double negation': ["I can't live without M", "can't manage without M", "I don't go anywhere without M", "never without M", "not a day without M", "Without M my sugar goes 400", "not off M", "I'm not off M yet", "never been off M", "not been off M since 2015", "I haven't stopped M", "never quit M", "I haven't quit M"],
+  'negation scoped to a meal or time': ["I don't take M at lunch, only at night", "I don't take M in the morning", "No M at lunch, only at night", "not on M during the day", "I do not take M before breakfast, only dinner", "Don't take M on Sundays", "no M for breakfast", "dont need M for snacks"],
+  'missed or not-yet dose': ["I didn't take M today, what lunch", "didn't take M this morning", "not taken M yet", "No M this morning", "did not take M yet, lunch?", "not yet taken M", "aaj M nahi liya", "abhi tak M nahi liya", "M abhi nahi liya, lunch kya"],
+  'share cue not on the list': ["mother on M, same as me", "my mother takes M, me as well", "my father is on M. Even I am", "mom on M. mine too", "dad takes M, including me", "My mother takes M. I'm the same.", "mom takes M, same with me", "papa M lete hain, mere ko bhi", "papa M lete hain, mera bhi", "papa M lete hain, humko bhi"],
+  'qualifier "free of charge"': ["I get M free of charge", "M free of charge from the clinic"] };
+const AUD_CTRL = ["I take M", "I'm on M", "M before dinner"];
+const GRID = []; for (const fr of Object.values(AUD_G)) for (const f of fr) for (const m of AUD_NAMES) { const t = f.replace(/M/g, m); if (A.MEDRX.test(t)) GRID.push(t); }
+add('round 6: the auditor\'s grid has its 504 cells and 36 controls', GRID.length === 504 && AUD_CTRL.length * AUD_NAMES.length === 36, `${GRID.length} cells`);
+for (const t of GRID) HELD.push([t, 'round 6, the auditor\'s grid']);
+for (const f of AUD_CTRL) for (const m of AUD_NAMES) HELD.push([f.replace(/M/g, m), 'round 6, the auditor\'s controls']);
+// the round-6 brief's examples, literal
+const B1LIT = ["I can't live without insulin", 'never been off insulin since 2015', "I haven't stopped insulin", "I don't take insulin at lunch, only at night", 'no insulin for breakfast', "didn't take insulin today", 'aaj insulin nahi liya', 'My father is on metformin, same as me', 'Got insulin free of charge'];
+for (const t of B1LIT) HELD.push([t, 'round 6, the brief\'s literal']);
+// one or more exemplars of every shape, with the shape that releases it (a: negation, b: qualifier, c: someone else, d: future onset)
+const SHAPE_EX = [['a', 'no insulin'], ['a', 'not on insulin'], ['a', "I don't take insulin"], ['a', 'I do not use metformin'], ['a', "I'm not on Lantus"], ['a', 'I never take glimepiride'], ['a', 'I have never taken insulin'], ['a', 'never been on insulin'],
+  ['a', 'no sugar tablets, no insulin'], ['a', 'no insulin and no sugar tablets'], ['a', "I don't take insulin or sugar tablets"], ['a', "I don't use insulin or tablets"], ['a', 'insulin nahi leta hoon'], ['a', 'main insulin nahi leti'], ['a', 'Hi, no insulin.'], ['a', 'no sugar tablets please'],
+  ['b', 'insulin resistance'], ['b', 'I have insulin resistance, a low gi dinner'], ['b', 'what raises insulin levels?'], ['b', 'low insulin index foods'], ['b', 'insulin sensitivity foods'], ['b', 'my insulin levels are high'], ['b', 'PCOS and insulin resistance, dinner'], ['b', 'insulin-free diet'], ['b', 'Insulin resistance diet please'],
+  ['c', 'my mother takes insulin'], ['c', 'my father is on metformin'], ['c', 'she takes insulin'], ['c', 'his insulin'], ['c', "my mother's insulin"], ['c', 'my sister is insulin dependent'], ['c', 'My mother takes insulin, what should I cook for her?'], ['c', 'For my father who takes insulin, what should he eat?'],
+  ['c', 'Papa ko insulin lagta hai, main kya banau'], ['c', 'Meri saas insulin leti hai'], ['c', 'My mother takes insulin and I help her'], ['c', 'insulin for my father'], ['c', 'mera bhai insulin leta hai'], ['c', 'My mother is on Lantus, I make her lunch'], ['c', 'father uses insulin pen'], ['c', 'my mother takes insulin and wants a light dinner'],
+  ['d', 'doctor said I may need insulin later'], ['d', 'doctor will start insulin if sugar stays high'], ['d', 'doctor wants me to start insulin'], ['d', "I'll need insulin one day"], ['d', 'I might start insulin next year'], ['d', 'I may be put on insulin'], ['d', 'doctor will put me on insulin']];
+const shapeOf = (t) => A.medsRelease(A.norm(t).toLowerCase());
+for (const [k, t] of SHAPE_EX) add('round 6: each listed shape releases its exemplar, and only that shape', A.typedMeds(t) === false && shapeOf(t) === k, `"${t}": held ${A.typedMeds(t)}, shape "${shapeOf(t)}", want "${k}"`);
+for (const t of ["I don't take insulin", 'my mother takes insulin']) add('round 6: the two phrasings the owner\'s decision names as not held stay not held', A.typedMeds(t) === false, t);
+// anything else in the text holds: every exemplar, with a fragment from outside the shapes before or after it (time, meal, dose, a share, a negation, a first-person use, "free of charge")
+const FRAG = ['today', 'at lunch', 'this morning', 'tonight', 'yet', 'abhi', 'aaj', 'only at night', 'before dinner', 'for breakfast', '10 units', '500 mg', 'twice daily', 'same as me', 'me too', 'mine too', 'including me', 'so am I', 'even I am', 'as well as me',
+  'mera bhi', 'humko bhi', 'mujhe bhi', 'main bhi', 'I take it too', "I'm on it", 'I take insulin', 'but I take metformin', 'free of charge', "I can't live without it", 'never off it', 'not', 'never', 'I stopped', 'only', 'but', 'since 2015', 'what lunch', 'same', 'both of us', 'us too', 'hum dono'];
+const PROPS = []; for (const [, ex] of SHAPE_EX) for (const fr of FRAG) PROPS.push(ex + ', ' + fr, ex + ' ' + fr, fr + ' ' + ex, fr + ', ' + ex);
+for (const t of PROPS) add('round 6: a shape with anything outside it holds (a fragment before or after each exemplar)', A.typedMeds(t) === true, `"${t}" (shape "${shapeOf(t)}")`);
+// mutants: each exclusion widened back (its shapes read with any text after them, or before them) must let a held cell through
+{ const keep = {}; for (const k of Object.keys(A.MEDSHAPES)) keep[k] = A.MEDSHAPES[k];
+  const heldCells = GRID.concat(B1LIT, PROPS);
+  for (const k of Object.keys(keep)) for (const [how, f] of [['any text after the shape', (s) => s.replace(/\$$/, '')], ['any text before the shape', (s) => s.replace(/^\^/, '')]]) {
+    A.MEDSHAPES[k] = keep[k].map(rx => new RegExp(f(rx.source))); const leak = heldCells.filter(t => !A.typedMeds(t)); A.MEDSHAPES[k] = keep[k];
+    add('round 6 mutants: each exclusion widened back lets a held cell through (so these cells would fail)', leak.length > 0, `(${k}) with ${how}: no held cell is released`); } }
+
 // ---------- the engine: the net itself ----------
 for (const [t, why] of HELD) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (${why})`);
 for (const [t, why] of NOT) add('not held: a negation, someone else is the user, a future onset, a qualifier ("insulin resistance"), a neutral phrase', A.typedMeds(t) === false, `"${t}" (${why})`);
 // a phrase that also carries a typed referral word (pregnancy, a low-sugar sign) is read by the net alone: the referral answers first in plan() and on the phone
 for (const t of ['I was on insulin during pregnancy years ago', 'I take insulin, low sugar levels at night']) add('held: a medicine name in the typed text of the client (English, Hinglish, verbless, with food words around)', A.typedMeds(t) === true, `"${t}" (net alone)`);
-add('the phrasing set is large enough', HELD.length > 600 && NOT.length > 900, `${HELD.length} held, ${NOT.length} not held`);
+add('the phrasing set is large enough', HELD.length > 4000 && NOT.length > 500,   /* round 6: the controls that no shape covers moved to the held set as known over-holds */
+   `${HELD.length} held, ${NOT.length} not held`);
 
 // ---------- the engine: plan() on every kind ----------
 const ask = (kind, p, text) => { const b = { profile: p, ctx: { meal: 'lunch', time: '1:10 pm', appetite: 5, text }, file: {}, slot: 'lunch' };
   if (kind === 'tune') { b.meal = { title: 'Moong dal with jowar roti', subtitle: 'x', cuisine: 'x', prepMinutes: 20, minutes: 20, items: [{ food: 'Moong dal', grams: 200, group: 'protein', contains: ['plain'] }, { food: 'Jowar roti', grams: 90, group: 'carbs', contains: ['grain'] }, { food: 'Cucumber', grams: 100, group: 'greens', contains: ['plain'] }], grain: { food: 'Jowar roti', made_of: 'jowar', grams: 90 }, contains: ['grain'], kcal: 448, protein: 16, carbs: 78, fats: 8, fiber: 12, why: [] }; delete b.ctx.text; }
   return safe(() => A.plan(kind, J(b)), { error: 'threw' }); };
+// the scan is linear (audit m2): 20,000 characters of each kind under 200 ms, in the net and in plan(); a longer text is refused after the referrals, which still read it whole
+{ const P0f = PROF({}), LONG = ['no insulin ', 'my mother takes insulin ', 'insulin resistance ', 'x ', 'gl' + 'i'.repeat(25000), 'a'.repeat(19990) + 'sulin', 'glim' + 'a'.repeat(25000) + 'ride'];
+  for (const u of LONG) { const t = (u.length > 100 ? u : u.repeat(Math.ceil(20000 / u.length))).slice(0, 20000); let t0 = Date.now(); A.typedMeds(t); const a = Date.now() - t0; t0 = Date.now(); const pl = A.plan('meals', J({ profile: P0f, ctx: { meal: 'lunch', text: t }, file: {} })); const b = Date.now() - t0;
+    add('round 6 (audit m2): 20,000 characters take under 200 ms in the net and in plan()', a < 200 && b < 200 && (pl.error === 'meds_typed' || !!pl.prompt), `${JSON.stringify(u.slice(0, 14))}: net ${a} ms, plan ${b} ms, ${JSON.stringify(pl).slice(0, 40)}`); }
+  for (const kind of ['meals', 'rescue', 'log']) { const over = ask(kind, P0f, 'x '.repeat(10000) + 'a'), urg = ask(kind, P0f, 'x '.repeat(15000) + 'chest pain'), at = ask(kind, P0f, 'x'.repeat(20000));
+    add('round 6 (audit m2): typed text over 20,000 characters is refused, after the referrals', over.error === 'bad_request' && !!(urg.reply && urg.reply.urgent) && !at.error, `${kind}: over ${JSON.stringify(over)}, urgent ${JSON.stringify(urg).slice(0, 60)}, at ${JSON.stringify(at).slice(0, 40)}`); } }
 const SAMPLE = HELD.filter((_, i) => i % 9 === 0), SAMPN = NOT.filter((_, i) => i % 11 === 0);
 for (const [t] of SAMPLE) for (const [pn, p] of OPEN) { for (const kind of ['meals', 'rescue']) { const pl = ask(kind, p, t); add('engine: meals and Rescue answer meds_typed to typed insulin or sugar tablets when the set-up does not say so', pl.error === 'meds_typed' && Object.keys(pl).length === 1, `${kind}, ${pn}: "${t}": ${JSON.stringify(pl).slice(0, 70)}`); }
   const lg = ask('log', p, t); add('engine: the log is not held (it counts what was eaten; S6 does not read it)', !lg.error && !!lg.prompt, `${pn}: "${t}": ${JSON.stringify(lg).slice(0, 70)}`); }
@@ -188,6 +247,11 @@ for (const [t] of HELD.filter((_, i) => i % 9 === 0)) { const r = call(WHOLE, OP
 for (const [t] of NOT.filter((_, i) => i % 7 === 0)) for (const kind of ['meals', 'rescue', 'log']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t); add('phone: a phrasing that is not held is sent', r.sent === 1, `${kind}: "${t}": ${JSON.stringify(r.got)}`);
   add('phone and engine agree: not held by either', ask(kind, OPEN[0][1], t).error !== 'meds_typed', `${kind}: "${t}"`); }
 for (const [t] of HELD.filter((_, i) => i % 13 === 0)) for (const [pn, p] of ON) { const r = call(WHOLE, p, PATHS.meals, t); add('phone: no hold when the set-up already says insulin, sugar tablets or not sure', r.sent === 1, `${pn}: "${t}"`); }
+// round 6: the phone and the engine agree on every cell of the auditor's grid (held by both, nothing sent) and on every shape exemplar (released by both, sent)
+for (const t of GRID) for (const kind of ['meals', 'rescue']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t), pl = ask(kind, OPEN[0][1], t);
+  add('round 6: the phone and the engine both hold every cell of the auditor\'s grid', r.sent === 0 && !!r.got && r.got[1].code === 'meds_typed' && pl.error === 'meds_typed', `${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 50)}`); }
+for (const [, t] of SHAPE_EX) for (const kind of ['meals', 'rescue']) { const r = call(WHOLE, OPEN[0][1], PATHS[kind], t), pl = ask(kind, OPEN[0][1], t);
+  add('round 6: the phone and the engine both release every shape exemplar', r.sent === 1 && !r.got && !!pl.prompt, `${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 50)}`); }
 // the order on the phone: a typed referral first, then the medicine hold, then the body hold
 for (const t of URG) for (const kind of ['meals', 'rescue', 'log']) for (const [label, pv, pp] of [['a whole body', WHOLE, OPEN[0][1]], ['a partial body held by bodyHold', PART, PARTP]]) { const r = call(pv, pp, PATHS[kind], t);
   add('order, phone: an urgent sign typed with insulin (or from a partial body) is answered as a referral with no request, ahead of both holds', r.sent === 0 && r.got && r.got[0] === 200 && r.got[1].status === 'refer' && !!r.got[1].urgent, `${kind}, ${label}: "${t}": sent ${r.sent}, ${JSON.stringify(r.got).slice(0, 90)}`); }

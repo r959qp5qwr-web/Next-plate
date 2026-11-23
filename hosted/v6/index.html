@@ -3323,17 +3323,11 @@ function medsUsual(p,meal,par){par=par||PARAM;if(!(p&&p.health==="diabetes"&&(p.
 /* ---------- typed medicine words (fix-r21; owner, 22 Nov, option survey "Ask to update (Recommended)") ----------
    The owner's decision, word for word: "Typed insulin or sugar-tablet words hold the plate." S5 and S6 read the set-up's answers. A client whose set-up says no condition, or no
    medicine, who types a medicine name in the ask box or a Rescue dish gets plates with no grain rule and no usual size. So a medicine name in the client's own typed text holds the
-   request unless one narrow exclusion applies; the phone says so in one line and a tap opens My food (the engine answers meds_typed even if a phone skips the hold). The default is
-   to hold, because a missed present user is the unsafe side and an over-hold costs a retype. The only exclusions, each unable to release a present user:
-   (a) a negation that governs the medicine (up to three words before it, or the Hinglish nahi/band/chhod after it; "no", "stopped", "never", "without", "off", "avoid", "scared of");
-   not when the client writes "my <medicine>"; (b) a word right after the medicine name that makes it something else ("insulin resistance", "insulin levels", "insulin free");
-   (c) someone else is the user: a third-person word within four words of the medicine ("my mother takes insulin", "papa insulin leta hai", "his insulin") and no first-person
-   word ("I", "me", "we", "main") and no "my <medicine>" in the clause; (d) a future onset: a modal or plan word with an onset verb before the medicine ("may need insulin later",
-   "doctor will start insulin"); a modal alone ("I'll take my insulin", "should I take my insulin") holds. Past use ("I was on insulin last year") holds on purpose: a past-tense
-   exclusion would also swallow "on insulin since last year"; the client retypes without the word or changes My food. The medicine words are the set-up question's own ("insulin, or
-   sugar tablets such as glimepiride or gliclazide") plus the generic and brand names of the insulins and the diabetes tablets and injections the app or the owner's probes named;
-   the names are the builder's, not clinically reviewed. The log is not held: it counts what was eaten and S6 does not read it. Typed "I am diabetic" with no medicine word is not
-   part of this net (an open owner question). No look-behind. */
+   request unless the whole text is one of the release shapes below; the phone says so in one line and a tap opens My food (the engine answers meds_typed even if a phone
+   skips the hold). The default is to hold, because a missed present user is the unsafe side and an over-hold costs a retype. Past use ("I was on insulin last year") holds on
+   purpose. The medicine words are the set-up question's own ("insulin, or sugar tablets such as glimepiride or gliclazide") plus the generic and brand names of the insulins
+   and the diabetes tablets and injections (S6 names the sources); the names are the builder's, not clinically reviewed. The log is not held: it counts what was eaten and S6
+   does not read it. Typed "I am diabetic" with no medicine word is not part of this net (an open owner question). No look-behind. */
 var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|novomix|mixtard|actrapid|insugen|tresiba|levemir|toujeo|apidra|basalog|glargine|degludec|detemir|aspart|lispro|"+
   "glimepiride|glimepride|glimiperide|glimpiride|gliclazide|gliclazid|glipizide|glibenclamide|glyburide|tolbutamide|amaryl|glimy|glimestar|diamicron|daonil|euglucon|zoryl|repaglinide|nateglinide|"+
   "metformin|glucophage|glycomet|gluconorm|obimet|pioglitazone|sitagliptin|januvia|janumet|vildagliptin|galvus|teneligliptin|linagliptin|trajenta|tradjenta|dapagliflozin|forxiga|empagliflozin|jardiance|"+
@@ -3352,59 +3346,67 @@ var MEDNAME="insulins?|insuline|insulen|inslin|lantus|humulin|humalog|novorapid|
 var MEDSTEM="[a-z]*[nio]sulin[a-z]*|ins[ua]?[iu]?l{1,2}[iuey]n[a-z]{0,2}|[a-z]{2,}gl[ie]+p[ie]?tin[a-z]{0,2}|[a-z]{2,}gli(?:f|ph)l?ozin|[a-z]{2,}glutide|[a-z]{2,}glinide|[a-z]{2,}glitazone?|met[ah]?[fp]h?[or]{1,3}[mn]{1,2}[iu][nm]e?|gli[mcpb][a-z]{0,10}(?:ride|zide|mide|zid|mid)|glyclazide|glyburid|vogli[a-z]{2,}";
 var MEDDEVA="इंसुलिन|इन्सुलिन|इंसुलीन|मेटफॉर्मिन|मेटफोर्मिन|ग्लिमेपिराइड|ग्लाइक्लाज़ाइड|शुगर की गोली|शुगर की दवा|शुगर की दवाई|डायबिटीज की दवा|डायबिटीज की दवाई";   /* the medicine words in Devanagari (no \b: it is not a word character) */
 var MEDRX=new RegExp("\\b(?:"+MEDNAME+")(?![a-z])|\\b(?:"+MEDSTEM+")(?![a-z])|(?:"+MEDDEVA+")","i");
-var MEDALLOW=/^(?:do|does|did|am|are|is|was|were|be|been|ever|really|actually|any|the|a|an|of|to|for|from|more|longer|anymore|again|yet|since|usually|normally|regular|regularly|current|currently|take|taking|took|taken|use|using|used|on|have|having|had|get|getting|got|inject|injecting|need|needs|needed|medicine|medicines|medication|tablets?|pills?|oral|such|kind|type)$/;
-var MEDHINDIOK=/^(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|lena|padta|padti|lagta|lagti|le|li|liya|lia|karta|karti|kabhi|bilkul|ab|abhi|main|mai|maine|hoon|hu|hun|hai|hain|tha|thi|raha|rahi|rha|rhi|gayi|gaya|ho|di|diya|dia)$/;
-var MEDNEGW=/\b(?:no\s+longer|instead\s+of|(?:alternatives?|replacements?|substitutes?)\s+(?:to|for|of)|no|not|dont|don'?t|doesn'?t|didn'?t|never|cant|can'?t|cannot|won'?t|wont|stopped|quit|off|without|nahi|nahin|nhi|band|chhod\w*|chod\w*|avoid\w*|afraid|scared|refus\w*|allergic)\b/;
-var MEDPOSTX=/^[\s-]*(?:resistan\w*|sensitiv\w*|spikes?|spiking|levels?|response|production|secretion|hormone|index|free(?!\s+(?:of\s+cost|from|at|by|supply))|alternatives?|replacements?|substitutes?)\b/;
-var MEDTHIRD=/\b(?:he|she|they|his|her|their|him|them|mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grand\w+|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|relative|colleague|neighbou?r|someone|somebody|guest|guests|kid|kids|child|children|baby|in-?laws?|saas|sasur|unhe|unko|unke|unka|uski|uska|iski|iska)\b/;
-var MEDFIRST=/\b(?:i|i'm|im|i've|ive|i'll|i'd|we|we're|us|our|ours|ourselves|me|myself|mine|main|mai|mujhe|maine|hum|humne|hamara|hamari|hamare)\b/;
-var MEDTHIRDVERB=/^(?:\s+\S+){0,2}?\s+(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati|khata|khati)\s+(?:hai|hain|tha|thi|the)\b/;
-var MEDTHIRDAFTER=new RegExp("^(?:\\s+\\S+){0,2}?\\s+(?:for|of|ke\\s+liye|ke\\s+lie|ka|ki|ke)\\s+(?:(?:my|mere|meri|mera)\\s+)?"+MEDTHIRD.source);
-/* a future onset: a modal or plan word, then an onset verb, then the medicine (no "and"/"or" between); a modal alone is not enough, and a present-use cue after the name ("units", "before dinner") keeps the hold */
-var MEDFUTURE=/\b(?:may|might|will|would|could|should|shall|i'll|we'll|i'd|we'd|gonna|wanna|maybe|perhaps|going\s+to|about\s+to|planning|plans?\s+to|wants?\s+(?:me\s+)?to|hope\s+to)\b(?:\s+(?!(?:and|but|or|aur|ya)\b)\S+){0,3}\s+(?:need|needs|start|starting|begin|go\s+on|going\s+on|put\s+on|put\s+me\s+on|get\s+on|switch\s+to|shift\s+to|move\s+to|try|prescribe\w*)\b(?:\s+(?:to|on|a|some|the|any|me|him|her))?\s*$/;
-var MEDCUE=/\b(?:units?|u|mg|doses?|shots?|injections?|pen|before|after|with|tonight|today|now|daily|every|morning|night|evening|lunch|dinner|breakfast|snack|twice)\b|\d/;
-/* a negation governs the medicine when only light words (take, use, any, of, to, ...) lie between them, at most three, and when nothing after an "and"/"or" says the client takes something */
-function medsNeg(before){var re=new RegExp(MEDNEGW.source,"g"),m;
-  while((m=re.exec(before))){var rest=before.slice(m.index+m[0].length),cj=-1,toks=rest.split(/\s+/).filter(Boolean),i;
-    for(i=0;i<toks.length;i++)if(/^(?:and|but|or|aur|ya|nor)$/.test(toks[i]))cj=i;
-    if(cj>=0&&/\b(?:i|we|main|mai|take|taking|use|using|have|on|get|start|need|inject\w*)\b/.test(toks.slice(cj+1).join(" ")))continue;
-    var light=rest.replace(new RegExp(MEDRX.source,"gi")," ").split(/\s+/).filter(function(w){return w&&!/^(?:and|or|nor|aur|ya)$/.test(w);});
-    if(light.length<=3&&light.every(function(w){return MEDALLOW.test(w);}))return true;}
-  return false;}
-/* a Hinglish negation after the medicine governs it when only verbs and auxiliaries lie between ("insulin nahi leta", "insulin band ho gayi") */
-function medsNegAfter(after){var m=/^((?:\s+\S+){0,3}?)\s+(?:nahi|nahin|nhi|band|chhod\w*|chod\w*|नहीं|नही|बंद)(?![a-z])/.exec(after);
-  return !!m&&m[1].split(/\s+/).filter(Boolean).every(function(w){return MEDHINDIOK.test(w);});}
-/* (c) a third-person word is the user when only light words lie between it and the medicine ("my mother takes insulin", "she is on", "his insulin"), within four words, after the last "and"/"when" */
-var MEDTHIRDOK=/^(?:takes|uses|gets|injects|has|must|also|too|always|both|sometimes|now|who|that|which|ko|ka|ki|ke|bhi|roz|lagta|lagti|lagata|lagati|leta|leti|lete|hai|hain|ne|\S*'s)$/;
-function medsThirdBefore(before){var seg=before.split(/\s+(?:and|or|but|so|because|while|when|aur|ya|jab)\s+/).pop().split(/\s+/).filter(Boolean).slice(-5),i,k=0;
-  for(i=seg.length-1;i>=0&&k<=4;i--,k++){if(MEDTHIRD.test(seg[i]))return true;if(!MEDALLOW.test(seg[i])&&!MEDTHIRDOK.test(seg[i]))return false;}
-  return false;}
-function medsClause(c,all,near){
-  /* "never skip", "don't forget" and "don't stop" say the person takes it; "no problem" is not a negation */
-  c=c.replace(/\b(?:never|dont|don'?t|do\s+not|didn'?t|doesn'?t|not)\s+(?:ever\s+)?(?:skip|miss|forget|forgot|stop)\w*/g," take ").replace(/\bno\s+(?:problems?|issues?|trouble|worr(?:y|ies)|doubt)\b/g," ");
-  var first=MEDFIRST.test(c)||!!near,re=new RegExp(MEDRX.source,"gi"),m;
-  while((m=re.exec(c))){var before=c.slice(0,m.index),after=c.slice(m.index+m[0].length);
-    if((MEDPOSTX.test(after)&&!/\b(?:units?|mg|doses?|shots?|injections?|pen)\b/.test(all))||medsNegAfter(after))continue;                                       /* (b) "insulin resistance", "insulin free"; Hinglish "insulin nahi leta" */
-    var mp=/\b(?:my|mera|meri|mere|our|hamara|hamari|hamare)((?:\s+[\w'-]+){0,2})\s*$/.exec(before),mine=!!mp&&!MEDTHIRD.test(mp[1]);   /* "my <medicine>": the client's own */
-    if(!mine&&medsNeg(before))continue;                                                          /* (a) a negation that governs it */
-    if(!mine&&MEDFUTURE.test(before)&&!MEDCUE.test(after))continue;                              /* (d) a future onset */
-    if(!mine&&!first&&(medsThirdBefore(before)||MEDTHIRDVERB.test(after)||MEDTHIRDAFTER.test(after)))continue;   /* (c) someone else is the user, nobody here says "I" */
-    return true;}
-  return false;}
-/* a first person who shares the medicine with someone else, in the clause before or after: "me too", "so am I", "same here", "mujhe bhi", "I take it too"; a cook, an asker or a helper ("what should I cook for her?", "I don't") does not count */
-var MEDSHARE=/\b(?:i|me|we|main|mai|hum|mujhe)\b/;
-var MEDSHAREUSE=/\b(?:take|takes|taking|took|on|use|using|inject\w*|have|having|need|too|also|bhi|dono|both|lete|leta|leti|lagta|lagti|lagata|lagati)\b|\bso\s+(?:am|do|did|have|can)\s+i\b|\bsame\s+here\b/;
-function medsShares(n){n=n||"";return !MEDNEGW.test(n)&&(/\bsame\s+here\b/.test(n)||(MEDSHARE.test(n)&&MEDSHAREUSE.test(n)));}
-function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t)return false;t=t.slice(0,20000);   /* a long paste is read as far as 20,000 characters, not skipped */
-  /* "me and my mother", "I and my father", "main aur meri mummy" are one first-person subject: the "and" does not split the clause (fix-r21 round 4) */
-  t=t.replace(/\b(i|me|we|main|mai|hum)\s+(?:and|aur)\s+(?=(?:my|mera|meri|mere|our)\b)/g,"$1 ~ ");
-  var cl=t.split(/[.;!?\n,\u0964]|\s+(?:but|lekin|par|magar)\s+|\s+(?:and|aur)\s+(?=(?:i|i'm|im|we|he|she|they|my|main|mai|mera|meri|mere|mujhe|his|her|their)\b)/),i;
-  for(i=0;i<cl.length;i++)if(medsClause(cl[i],t,medsShares(cl[i-1])||medsShares(cl[i+1])))return true;
-  return false;}
+/* A medicine name in the client's typed text holds the request, unless the whole text, after an optional "hi", "hello" or "hey" and before a closing "." or "!", is one of
+   the release shapes listed here. Nothing outside a shape is read as a reason to release: a second negation, "without", "off", "stop", a meal, time or dose word, "today", "yet",
+   "only", "but", a share word ("same as me", "mine too") or a further first-person use all hold, because they are not part of any shape (fix-r21 round 6; safety audit of d7702c4,
+   B1: an open word list on the release path released "I can't live without insulin", "didn't take insulin today" and "my father is on metformin, same as me"). Each medicine
+   name is read as one slot (N below; an insulin spelling is also a slot Q). The shapes, all listed in docs/SAFETY-INVARIANTS.md S6:
+   (a) a negation: "no N", "not on N" ("I'm not on N"), "I don't take N", "I don't use N", "I never take N", "I have never taken N", "never been on N"; two names joined
+       by "or" or "nor" ("I don't take insulin or tablets"), or one with "any"; several negations joined by ",", "and" or "or" when each repeats its negation ("no sugar
+       tablets, no insulin"); Hinglish "N nahi leta (hoon)", "main N nahi leti";
+   (b) a qualifier, insulin only: "insulin resistance", "insulin sensitivity", "insulin level(s)", "insulin spike(s)", "insulin index", with a closed set of words before
+       ("I have", "my", "low", "PCOS and", "what raises", "foods for" ...) and after ("diet", "foods", "test", "is high", ", a low gi dinner" ...); "insulin-free" with the
+       hyphen only ("free of charge" is not a qualifier);
+   (c) someone else is the user, in a frame where the client cooks, asks or helps: "my mother takes N" (a closed list of relatives, "he", "she"), "my mother is on N",
+       "his N", "my mother's N", "for my father who takes N, what should he eat", "N for my father", "papa ko N lagta hai, main kya banau", "meri saas N leti hai", with a
+       closed set of tails ("what should I cook for her", "and I help her", "dinner ideas");
+   (d) a future onset with a doctor as the subject or a far-future word: "doctor said I may need N later", "doctor will start N if sugar stays high", "doctor wants me to
+       start N", "I might need N one day", "I might start N next year", "I may be put on N".
+   Every shape is one the d7702c4 net also released (the change is monotone: a text may only move from not held to held), so some phrasings the round-6 brief named
+   ("nahi leta insulin", "fasting insulin") hold.
+   The two phrasings the owner's decision names as not held, "I don't take insulin" and "my mother takes insulin", are shapes (a) and (c). A text longer than MEDSHAPEMAX is
+   no shape and holds; the scan is one pass of the name pattern and one match per shape, linear in the length of the text (audit m2). No look-behind. */
+var MEDSHAPEMAX=200;
+var MEDINS=/^(?:insulins?|insuline|insulen)$/;
+var MEDSHAPES=(function(){
+  var N="[\\u0001\\u0002]",Q="\\u0002",G="(?:"+N+"|tablets|pills|medicines?|medication)",L="(?:any "+G+"|"+G+"(?: (?:or|nor) "+G+")?)",
+    NU="(?:no "+L+"|(?:(?:i'm|im|i am) )?not on "+L+"|(?:i )?(?:don't|dont|do not) (?:take|use) "+L+"|(?:i )?never (?:take|use) "+L+"|(?:i )?(?:have )?never (?:taken|been on) "+L+")",
+    HS="(?:(?:main|mai|mein) )?",HN="(?:nahi|nahin|nhi)",HV="(?:leta|leti|lete|lagata|lagati|lagate|lagwata|lagwati)(?: (?:hoon|hu|hun|hai|hain|he))?",
+    REL="mother|mom|mum|mummy|father|dad|papa|husband|wife|son|daughter|brother|sister|friend|grandmother|grandfather|grandma|grandpa|dadi|dada|nani|nana|bhai|behen|bhabhi|pati|patni|beta|beti|uncle|aunt|aunty|colleague|neighbour|neighbor|saas|sasur|mother-in-law|father-in-law",
+    SUBJ="(?:(?:my )?(?:"+REL+")|he|she)",
+    CI="(?:i cook for (?:her|him)|i make (?:her|his) (?:breakfast|lunch|dinner|food)|i help (?:her|him))",
+    CT="(?:(?:, |\\. |\\? )(?:what (?:should|can|do) i (?:cook|make) for (?:her|him)|what (?:should|can) (?:he|she) eat|"+CI+"|wants (?:dinner ideas|a light dinner)|dinner ideas(?: for (?:her|him))?)|,? and (?:"+CI+"|wants (?:dinner ideas|a light dinner)))\\??",
+    CTH="(?:(?:main|mai) kya (?:banau|banaun|banaoon)|kya (?:banau|banaun)|(?:unke|uske) liye kya (?:banau|banaun))\\??",
+    VH3="(?:leta|leti|lete|lagata|lagati|lagate|lagta|lagti|lagte) (?:hai|hain|he)",
+    C=Q+"[ -](?:resistance|sensitivity|levels?|spikes?|index)",
+    QH="(?:i have (?:high |low )?|my (?:high |low )?|high |low |low gi (?:food|foods|diet) for |pcos and |what raises |foods that (?:lower|reduce|raise) |foods for |diet for |how to (?:lower|reduce|improve) )",
+    QT="(?: (?:diet|foods|food|test|report|recipes)| (?:is|are|was|were) (?:high|low|normal|fine|ok|okay)|,? (?:a )?(?:low gi |light |low carb )?(?:dinner|lunch|breakfast|snack|meal)(?: please| ideas)?)",
+    DOC="(?:my )?(?:doctor|dr)",FTA=" (?:one day|someday|eventually|in (?:the )?future|next year)",
+    W=function(s){return new RegExp("^(?:"+s+")$");};
+  return {
+    a:[W(NU+"(?:(?:,|,? and|,? or) "+NU+")*(?: please)?"),W(HS+N+" "+HN+" "+HV)],
+    b:[W(QH+"?"+C+QT+"?(?: please)?\\??"),W("(?:an? )?"+Q+"-free(?: (?:diet|dinner|lunch|meal|food|foods))?(?: please)?")],
+    c:[W(SUBJ+" (?:(?:takes|uses|injects|needs|has to take|is on|is taking|is using) "+N+"(?: pens?)?(?: (?:daily|every day|twice a day|at night|in the morning))?|is "+N+"[ -]dependent)(?:"+CT+")?"),
+       W("(?:my (?:"+REL+")'s|his|her) "+N),W("for my (?:"+REL+") who (?:takes|uses|is on) "+N+"(?:,? what (?:should|can) (?:he|she) eat\\??)?"),W(N+" for (?:my )?(?:"+REL+")(?:, dinner ideas)?"),
+       W("(?:(?:mere|meri|mera) )?(?:"+REL+")(?: ko)? "+N+" "+VH3+"(?:, "+CTH+")?")],
+    d:[W(DOC+" (?:said|says|told me|thinks) (?:that )?i (?:may|might|could|will) need "+N+"(?: later|"+FTA+")?"),W(DOC+" (?:will|may|might|wants to|plans to) (?:start|put me on) "+N+"(?: if (?:my )?sugar stays high)?"),
+       W(DOC+" wants me to start "+N),W("(?:i (?:may|might|could|will)|i'll|may|might|could) need "+N+FTA),
+       W("(?:i (?:might|may|will|plan to|am going to)|i'll|i'm going to|im going to) start "+N+" (?:next (?:month|year)|one day|in (?:the )?future)"),W("i (?:may|might) be put on "+N+"(?:"+FTA+")?")]};})();
+/* the text as the shapes read it: each medicine name one slot, spaces folded, an opening greeting and a closing "." or "!" left out; null when the text cannot be a shape */
+function medsShapeText(t){if(t.length>MEDSHAPEMAX||/[\u0001\u0002]/.test(t))return null;
+  return t.replace(new RegExp(MEDRX.source,"gi"),function(m){return MEDINS.test(m)?"\u0002":"\u0001";}).replace(/\s+/g," ").trim().replace(/[ .!]+$/,"").replace(/^(?:hi|hello|hey)[,!.]? /,"");}
+/* which shape releases the text ("a" to "d"), or "" when none does and the text holds */
+function medsRelease(t){var s=medsShapeText(t),k,i;if(s==null)return "";
+  for(k in MEDSHAPES)for(i=0;i<MEDSHAPES[k].length;i++)if(MEDSHAPES[k][i].test(s))return k;
+  return "";}
+function typedMeds(t){t=norm(typeof t==="string"?t:"").toLowerCase();if(!t)return false;t=t.slice(0,MEDTEXTMAX);   /* a long paste is read as far as 20,000 characters, not skipped; plan() refuses a longer one */
+  return MEDRX.test(t)&&!medsRelease(t);}
 function medsOnSetup(p){return !!p&&p.health==="diabetes"&&(p.meds==="yes"||p.meds==="unsure");}
 function medsTypedHold(t,p){return !!p&&!medsOnSetup(p)&&typedMeds(t);}
 /* the phone's check on a request body (src/v6/app.js api()): plates and Rescue carry the typed text, the profile is read as plan() reads it */
 function medsTypedBody(path,body){if(!/\/(?:meals|rescue)$/.test(String(path||"")))return false;var p=readProfile(body&&body.profile);return !!p&&medsTypedHold(body&&body.ctx&&body.ctx.text,p);}
+var MEDTEXTMAX=20000;
+function textTooLong(b){var x=b&&b.ctx&&typeof b.ctx==="object"?b.ctx.text:null;return typeof x==="string"&&norm(x).length>MEDTEXTMAX;}
 function carriesPhoto(b){if(!b||typeof b!=="object")return false;var x=b.ctx&&typeof b.ctx==="object"?b.ctx:{};
   return [b.image,x.image].some(function(v){return v!=null&&v!==""&&v!==false;})||!!b.photo||!!x.photo;}
 plan=function(kind,body){
@@ -3418,6 +3420,9 @@ plan=function(kind,body){
      picture scan, should not become the source of so much hassle for the app."). A request that carries an image, or says it does, is
      refused before any prompt is built. It comes after the referrals above, so a typed kidney, pregnancy or urgent text still refers (S7). */
   if(carriesPhoto(body))return {error:"bad_request"};
+  /* typed text longer than the medicine net reads (20,000 characters once folded) is refused, so no text is planned that the net did not read whole; the phone sends at most
+     240 (fix-r21 round 6; safety audit of d7702c4, m2: plan() read the raw text, which src/v5/server.ts does not limit). After the referrals above, which read the whole text (S7) */
+  if(textTooLong(body))return {error:"bad_request"};
   /* a body figure the set-up cannot store is refused (fix-r18); after the referrals above, so a typed urgent sign or a kidney condition still refers (S7) */
   if(profileRefused(body&&body.profile))return {error:"bad_request"};
   if(profilePartial(body&&body.profile))return {error:"body_partial"};   /* one or two of age, height and weight: the phone asks for the rest and sends nothing (fix-r20, owner 22 Nov); after the referrals, like the line above */
