@@ -271,52 +271,73 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
   add('order, phone: a kidney or pregnancy set-up is referred first, with the reply plan() gives, and nothing is sent (audit m1)', r.sent === 0 && !!r.got && r.got[0] === 200 && !!pl.reply && JSON.stringify(r.got[1]) === JSON.stringify(pl.reply) && (/chest pain/.test(t) ? r.got[1].urgent === A.URGENTLINE : !r.got[1].urgent), `${h}, ${bl}, ${kind}: "${t}": sent ${r.sent}, phone ${JSON.stringify(r.got)}, engine ${JSON.stringify(pl).slice(0, 90)}`); }
 { const r = call(PART, PARTP, PATHS.log, 'I take insulin and had dal and roti for lunch'); add('order, phone: a partial body with typed insulin in the log: the log still goes, without the three figures, and the engine reads it', r.sent === 1 && r.ph.sent[0].body.profile.age === 0 && !A.plan('log', J(r.ph.sent[0].body)).error, JSON.stringify(r.got)); }
 
-// ---------- "Hide them (Recommended)" (owner, 23 Nov): while a meds_typed hold is up the hold card shows on its own ----------
-// the app's own renderPlate, renderRescue0, renderRescue and rescue() on a small fake page: no earlier plate, no "Show my last plates", no line about plates from before, no
-// earlier Rescue dish, move or "I had this"; the hold line and "Add it in My food" are there. Controls: with no hold the same state draws the plate and the dish.
-{ const HFNS = ['medsHeld', 'medsCard', 'medsBtn', 'renderPlate', 'renderRescue0', 'renderRescue', 'rescue', 'errText', 'RETRY'];
-  const hmiss = HFNS.filter(n => !grab(n)); add('hide: the hold card and the renders are in src/v6/app.js', hmiss.length === 0, 'not found: ' + hmiss.join(', '));
-  const VARS = ['MEDSTYPED', 'NORETRY'].map(n => (new RegExp('^var ' + n + '=[^\\n]*;$', 'm').exec(appSrc) || [''])[0]).join('\n');
+// ---------- the typed-medicine hold on screen (owner, 23 Nov: "Hide them (Recommended)", "Add a line (Recommended)", "Keep log (Recommended)", "All tabs (Recommended)") ----------
+// the app's own makePlates, rescue, renderPlate, renderBuild, renderRescue and logRow on a small fake page. While a hold is up, raised on Plate or on Rescue, every tab shows the
+// hold card on its own: the owner's hold sentence, the line for someone else, "Add it in My food"; no earlier plate, "Show my last plates", line about plates from before, Rescue
+// dish, move, "I had this" or "Another dish"; on Plate the log row stays. Controls: with no hold the same state draws the plate and the dish.
+{ const HFNS = ['medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue', 'errText', 'RETRY', 'curRes', 'lastForMeal'];
+  const hmiss = HFNS.filter(n => !grab(n)); add('hide: the hold, its card and the renders are in src/v6/app.js', hmiss.length === 0, 'not found: ' + hmiss.join(', '));
+  const VARS = ['MEDSTYPED', 'MEDSOTHER', 'NORETRY'].map(n => (new RegExp('^var ' + n + '=[^\\n]*;$', 'm').exec(appSrc) || [''])[0]).join('\n');
   const STUB = `function N(tag,cls,text){var o={tag:tag,cls:cls||"",text:text==null?"":String(text),id:"",kids:[],attrs:{},style:{},hidden:false,disabled:false,
-      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},addEventListener:function(){},remove:function(){},
+      appendChild:function(c){this.kids.push(c);return c;},setAttribute:function(k,v){this.attrs[k]=v;},addEventListener:function(){},remove:function(){},scrollTo:function(){},
       querySelector:function(q){var f=function(n){for(var i=0;i<n.kids.length;i++){var k=n.kids[i];if(q[0]==="."?(" "+k.cls+" ").indexOf(" "+q.slice(1)+" ")>=0:("#"+k.id)===q)return k;var r=f(k);if(r)return r;}return null;};return f(this);}};
     Object.defineProperty(o,"textContent",{get:function(){return o.text;},set:function(x){o.kids=[];o.text=x;}});return o;}
-    var document={createTextNode:function(t){return N("#text",null,t);}},VIEWS={"v-plate":N("main"),"v-rescue":N("main")},said=N("p");function $(id){return id==="said"?said:VIEWS[id]||null;}
+    var document={createTextNode:function(t){return N("#text",null,t);}},VIEWS={},said=N("p");function $(id){if(id==="said")return said;return VIEWS[id]||(VIEWS[id]=N("main"));}
     function el(t,c,x){return N(t,c,x);}function btn(c,l,i,id){var b=N("button",c,l);b.id=id||"";return b;}function ic(){return N("svg");}function add(p){for(var i=1;i<arguments.length;i++)if(arguments[i])p.appendChild(arguments[i]);return p;}
-    var UI={},P={done:true,conds:[]},C={meal:"lunch"},STORE={res:{},shown:{}},ERRS={},LOSTIT="",REMADE={},REMADEWHY={},PL={target:{kcal:500,protein:20},left:{kcal:900,protein:30}},FILE={today:{kcal:0}},DISHES=[["Veg thali"]],RM=true,SLOT=null,RES=null,LAST=null,API=null,KEYCODE="";
-    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function bodyNeed(){return null;}function choices(){}function slotOf(){return SLOT;}function curRes(){return RES;}function lastForMeal(){return LAST;}
-    function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}function mealName(m){return m;}function makePlates(){}function render(){}function referHead(){}function curMeal(){return RES.meals[0];}
-    function plateWhy(){return "";}function viewOf(){return {};}function curKey(){return "k";}function bodyMissing(){return {text:"",at:""};}function openSheet(){}function medsAt(){return "health-diabetes";}
+    var UI={},P={done:true,conds:[]},C={meal:"lunch"},STORE={res:{},shown:{}},ERRS={},LOSTIT="",REMADE={},REMADEWHY={},PL={target:{kcal:500,protein:20},left:{kcal:900,protein:30}},FILE={today:{kcal:0}},DISHES=[["Veg thali"]],RM=true,SLOT=null,API=null,PENDING=[],KEYCODE="",TUNING={};
+    function blocked(){return false;}function blockedCard(){return N("div","blocked");}function bodyNeed(){return null;}function choices(){}function slotOf(){return SLOT;}function curKey(){return STORE.shown[C.meal]||"";}
+    function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}function mealName(m){return m;}function render(){}function referHead(){}function curMeal(){var r=curRes();return r.meals[UI.sel||0];}
+    function plateWhy(){return "";}function viewOf(){return {};}function bodyMissing(){return {text:"",at:""};}function openSheet(){}function medsAt(){return "health-diabetes";}
     function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function has(){return false;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){};}function logEv(){}
     function directiveCard(){}function ctxBlock(){}function askBlock(){}function composer(){}function stamp(){return N("i");}function sprig(){return N("i");}function setTimeout(){return 0;}
     function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function appFoodOK(){return true;}function profileOut(){return {};}function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}
     function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function revealOut(){}function clockText(){return "1:10 pm";}function appetite(){return 5;}function fileOut(){return {};}function askedFor(){return "s";}function lockOn(){}
-    function api(path,body,cb){cb(API[0],API[1]);}
-    function walk(n,out){out.push((n.id?"#"+n.id+" ":"")+n.text);n.kids.forEach(function(k){walk(k,out);});return out;}`;
-  // a meal tab or a Your day choice does not clear the hold (only My food or a new ask does): the two handlers that clear an error keep it while the hold is up
-  add('hide: a meal tab does not clear the hold (the tab handler keeps UI.err while medsHeld())', /C\.meal=m\[0\];[^\n]*if\(!medsHeld\(\)\)UI\.err="";/.test(grab('choices')), 'not found in choices()');
-  add('hide: a Your day choice does not clear the hold (changed() keeps UI.err while medsHeld())', /function changed\(what\)\{STORE\.shown\[C\.meal\]=null;if\(!medsHeld\(\)\)UI\.err="";/.test(appSrc), 'not found in changed()');
-  add('hide: updating My food clears the hold and the plates are made again (closeSheet)', /if\(fd\)\{if\(UI\.ecode==="meds_typed"\)\{UI\.err="";UI\.ecode="";\}[^\n]*if\(fd\)\{if\(rules\(\)!==SAFE0\)STORE\.res=\{\};STORE\.shown=\{\};UI\.rres=null;/.test(grab('closeSheet')), 'not found in closeSheet()');
-  const page = (() => { try { return vm.runInContext('(function(){' + VARS + '\n' + STUB + '\n' + HFNS.map(grab).join('\n') + '\nreturn {UI:UI,set:function(k,v){if(k==="SLOT")SLOT=v;if(k==="RES")RES=v;if(k==="LAST")LAST=v;if(k==="API")API=v;},' +
-    'plate:function(){VIEWS["v-plate"]=N("main");try{renderPlate();}catch(e){return "threw: "+e.message;}return walk(VIEWS["v-plate"],[]).join("\\n");},resc:function(){VIEWS["v-rescue"]=N("main");try{renderRescue();}catch(e){return "threw: "+e.message;}return walk(VIEWS["v-rescue"],[]).join("\\n");},rescue:function(t){try{rescue(t);}catch(e){}},MEDSTYPED:MEDSTYPED};})', A)(); } catch (e) { return null; } })();
-  add('hide: the app\'s renders run on the fake page', !!page, 'the harness did not load');
+    function save(){}function refresh(){}function ctxKey(){return "plates|lunch";}function ctxOut(t){return {text:t};}function tune(){}function rules(){return "r";}function resetAt(){return "";}
+    function api(path,body,cb){if(API==="defer"){PENDING.push(cb);return;}cb(API[0],API[1]);}
+    function walk(n,out){out.push((n.id?"#"+n.id+" ":"")+(n.cls?"."+n.cls.split(" ").join(".")+" ":"")+n.text);n.kids.forEach(function(k){walk(k,out);});return out;}
+    function view(id,f){VIEWS[id]=N("main");try{f();}catch(e){return "threw: "+e.message;}return walk(VIEWS[id],[]).join("\\n");}`;
+  const page = (() => { try { return vm.runInContext('(function(){' + VARS + '\n' + STUB + '\n' + HFNS.map(grab).join('\n') + '\nreturn {UI:UI,STORE:STORE,' +
+    'set:function(k,v){if(k==="SLOT")SLOT=v;if(k==="API")API=v;},pending:function(){return PENDING.splice(0);},' +
+    'reset:function(res){Object.keys(UI).forEach(function(k){delete UI[k];});UI.view="x";UI.err="";UI.busy="";UI.alc={};UI.rmoves={};STORE.res={};STORE.shown={};if(res){STORE.res.k=res;STORE.shown.lunch="k";}C.meal="lunch";SLOT=null;API=null;PENDING.length=0;},' +
+    'plate:function(){return view("v-plate",function(){renderPlate();});},build:function(){return view("v-build",function(){renderBuild();});},resc:function(){return view("v-rescue",function(){renderRescue();});},' +
+    'ask:function(t){try{makePlates(t);}catch(e){return e.message;}},rescue:function(t){try{rescue(t);}catch(e){return e.message;}},MEDSTYPED:MEDSTYPED,MEDSOTHER:typeof MEDSOTHER==="string"?MEDSOTHER:""};})', A)(); } catch (e) { return null; } })();
+  add('hide: the app\'s functions run on the fake page', !!page, 'the harness did not load');
   if (page) {
-    const plate = { status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '' }, U = page.UI;
-    const hold = (t) => t.includes(page.MEDSTYPED) && t.includes('#add-meds') && t.includes('#meds-hold');
-    const noPlate = (t) => !t.includes('HERO PLATE') && !t.includes('#plate-card') && !t.includes('#lastplates') && !/Showing the plates from before\.|Your plates from before are kept\.|Show my last plates/.test(t);
-    for (const [label, res, last, slot] of [['a plate on screen', plate, plate, null], ['no plate on screen, an earlier one kept', null, plate, null], ['the meal logged', plate, plate, { kind: 'had' }]]) {
-      page.set('RES', res); page.set('LAST', last); page.set('SLOT', slot);
-      Object.assign(U, { err: '', ecode: '', busy: '', eretry: true }); const ctl = page.plate();
-      Object.assign(U, { err: page.MEDSTYPED, ecode: 'meds_typed', eretry: false }); const t = page.plate();
-      add('hide: on Plate the hold card shows on its own (no earlier plate, no "Show my last plates", no line about plates from before)', hold(t) && noPlate(t) && !t.includes('LOGGED'), `${label}: ${t.replace(/\n/g, ' | ').slice(0, 300)}`);
-      if (label === 'a plate on screen') add('hide: control, with no hold the same state draws the plate', ctl.includes('HERO PLATE') && !ctl.includes('#meds-hold'), ctl.replace(/\n/g, ' | ').slice(0, 200)); }
-    const dish = { status: 'ok', meal: 'lunch', dish: { name: 'Paneer butter masala', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
-    Object.assign(U, { rres: dish, rmoves: {}, rerr: '', rcode: '', rbusy: false, lock: '', rtext: 'Paneer butter masala' }); const rc = page.resc();
-    add('hide: control, with no hold Rescue draws the dish, its move and "I had this"', rc.includes('Paneer butter masala') && rc.includes('#rescue-had') && rc.includes('Eat about half'), rc.replace(/\n/g, ' | ').slice(0, 200));
-    page.set('API', [0, { code: 'meds_typed' }]); page.rescue('Veg thali, I take insulin'); const rt = page.resc();
-    add('hide: on Rescue the hold shows on its own after a dish was shown (no dish, move, "I had this" or "Another dish")', rt.includes(page.MEDSTYPED) && rt.includes('#add-meds') && !/Paneer butter masala|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(rt) && U.rres === null, rt.replace(/\n/g, ' | ').slice(0, 300));
-    Object.assign(U, { rres: dish, rerr: page.MEDSTYPED, rcode: 'meds_typed' }); const rk = page.resc();
-    add('hide: on Rescue a dish kept in memory is not drawn under the hold', !/Paneer butter masala|#rescue-had|Another dish/.test(rk), rk.replace(/\n/g, ' | ').slice(0, 300)); } }
+    const U = page.UI, LINE = 'If this is about someone else, ask again without the medicine name.';
+    const PLATE = { meal: 'lunch', status: 'ok', meals: [{ title: 'Paneer tikka with jowar roti', kcal: 560 }], ask: '', at: 1, rules: 'r' };
+    const DISH = { status: 'ok', meal: 'lunch', dish: { name: 'Paneer butter masala', portion: '1 bowl', warning: '', kcal: 600, protein: 20, carbs: 30, fats: 40, fiber: 4, breakdown: '' }, hacks: [{ title: 'Eat about half and leave the rest', deltaKcal: -300, deltaProtein: -10, deltaCarbs: -15, deltaFats: -20, deltaFiber: -2, kind: 'portion' }] };
+    const card = (t) => t.includes(page.MEDSTYPED) && t.includes(LINE) && t.includes('#add-meds');
+    const noPlate = (t) => !/HERO PLATE|#plate-card|#lastplates|Showing the plates from before\.|Your plates from before are kept\.|Show my last plates/.test(t);
+    const noDish = (t) => !/Paneer butter masala|Eat about half|#rescue-had|I had this|Another dish|#move-/.test(t);
+    const logRow = (t) => t.includes('#log-other') && t.includes('#log-skip');
+    add('hide: the line under the hold sentence is the owner\'s, word for word ("Add a line (Recommended)")', page.MEDSOTHER === LINE, JSON.stringify(page.MEDSOTHER));
+    // controls: with no hold the plate and the dish are drawn
+    page.reset(PLATE); const c1 = page.plate(); add('hide: control, with no hold the stored plate is drawn', c1.includes('HERO PLATE'), c1.replace(/\n/g, ' | ').slice(0, 200));
+    page.reset(PLATE); U.rres = DISH; U.rtext = 'Paneer butter masala'; const c2 = page.resc(); add('hide: control, with no hold Rescue draws the dish, its move and "I had this"', c2.includes('Paneer butter masala') && c2.includes('#rescue-had'), c2.replace(/\n/g, ' | ').slice(0, 200));
+    // a hold raised on Plate, then Plate, Builder and Rescue (an earlier dish in memory)
+    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.ask('I take insulin, a light lunch'); const p1 = page.plate();
+    add('hide: a Plate hold shows the card on Plate with the line, and the log row ("Keep log"), and no earlier plate', card(p1) && noPlate(p1) && logRow(p1) && p1.includes('You can still log this meal.'), p1.replace(/\n/g, ' | ').slice(0, 300));
+    add('hide: a hold puts away the plates and the dish made before it', Object.keys(page.STORE.res).length === 0 && U.rres === null, `res ${Object.keys(page.STORE.res).length}, rres ${JSON.stringify(U.rres).slice(0, 40)}`);
+    const r1 = page.resc(); add('hide: a Plate hold covers Rescue ("All tabs"): the card and the line, no earlier dish, move or "I had this"', card(r1) && noDish(r1), r1.replace(/\n/g, ' | ').slice(0, 300));
+    U.rres = DISH; const r1b = page.resc(); add('hide: under a hold a dish kept in memory is not drawn on Rescue', card(r1b) && noDish(r1b), r1b.replace(/\n/g, ' | ').slice(0, 300));
+    const b1 = page.build(); add('hide: a hold covers Builder ("All tabs"): the card and the line', card(b1) && b1.includes('#meds-hold'), b1.replace(/\n/g, ' | ').slice(0, 300));
+    page.set('SLOT', { kind: 'had' }); const p1s = page.plate(); add('hide: on Plate, a meal already logged shows the card without the log row', card(p1s) && noPlate(p1s) && !p1s.includes('LOGGED'), p1s.replace(/\n/g, ' | ').slice(0, 200)); page.set('SLOT', null);
+    // a hold raised on Rescue, then Plate (plates stored before) and Builder
+    page.reset(PLATE); U.rres = DISH; page.set('API', [0, { code: 'meds_typed' }]); page.rescue('Paneer butter masala, I take insulin'); const p2 = page.plate();
+    add('hide: a Rescue hold covers Plate ("All tabs"): the card, the line and the log row, no earlier plate', card(p2) && noPlate(p2) && logRow(p2) && Object.keys(page.STORE.res).length === 0, p2.replace(/\n/g, ' | ').slice(0, 300));
+    page.STORE.res.k = PLATE; page.STORE.shown.lunch = 'k'; const p2b = page.plate(); add('hide: under a hold a plate kept in memory is not drawn on Plate', card(p2b) && noPlate(p2b), p2b.replace(/\n/g, ' | ').slice(0, 200));
+    const r2 = page.resc(); add('hide: a Rescue hold shows the card and the line on Rescue, no dish', card(r2) && noDish(r2), r2.replace(/\n/g, ' | ').slice(0, 300));
+    // a plates reply sent before a hold came up on Rescue is not shown
+    page.reset(PLATE); page.set('API', 'defer'); page.ask(''); const late = page.pending(); page.set('API', [0, { code: 'meds_typed' }]); U.rbusy = false; page.rescue('Veg thali, I take insulin');
+    if (late[0]) late[0](200, { status: 'ok', meals: PLATE.meals }); const p3 = page.plate();
+    add('hide: a plates reply sent before a hold came up is not shown', late.length === 1 && card(p3) && noPlate(p3) && Object.keys(page.STORE.res).length === 0, p3.replace(/\n/g, ' | ').slice(0, 200));
+    // a new ask without the medicine name runs the net again and its plates show
+    page.set('API', [200, { status: 'ok', meals: PLATE.meals }]); page.ask('something light'); const p4 = page.plate();
+    add('hide: a new ask without the medicine name clears the hold and its plates show', !U.mhold && p4.includes('HERO PLATE') && !p4.includes('#meds-hold'), p4.replace(/\n/g, ' | ').slice(0, 200)); }
+  // what clears the hold, read from the source: updating My food (closeSheet, answers changed) does; a meal tab or a Your day choice does not
+  add('hide: updating My food clears the hold and the plates are made again (closeSheet)', /if\(fd\)medsHoldOff\(\);[^\n]*if\(fd\)\{if\(rules\(\)!==SAFE0\)STORE\.res=\{\};STORE\.shown=\{\};UI\.rres=null;/.test(grab('closeSheet')), 'not found in closeSheet()');
+  add('hide: a meal tab does not clear the hold (the tab handler keeps UI.err while medsHeld())', /C\.meal=m\[0\];[^\n]*if\(!medsHeld\(\)\)UI\.err="";/.test(grab('choices')), 'not found in choices()');
+  add('hide: a Your day choice does not clear the hold (changed() keeps UI.err while medsHeld())', /function changed\(what\)\{STORE\.shown\[C\.meal\]=null;if\(!medsHeld\(\)\)UI\.err="";/.test(appSrc), 'not found in changed()'); }
 
 // ---------- report ----------
 let fail = 0;
