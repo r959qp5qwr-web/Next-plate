@@ -4,6 +4,7 @@
 //   B1 (S7): a referral typed under the stored hold is drawn ahead of the hold card on Plate and Rescue, with the line to get help now on an urgent sign; the hold stays.
 //   B2 (S6): words the page put in a box (a failed example ask, a failed chip) are not typed: sending the box under the hold sends nothing and the hold stays.
 //   B3 (S1, S6): a second tab opened earlier does not write its old answers over a My food change made in the first; the next plan reads the change.
+//   O2 (owner, 23 Nov, "One ask only (Recommended)"): a typed ask with no medicine name is answered once and the hold stays stored.
 // usage: node test/safety/hold-browser.js [hosted/v6/index.min.html]   (exit 1 on any counter-example)
 const { chromium } = require('playwright');
 const fs = require('fs'), vm = require('vm'), path = require('path');
@@ -47,6 +48,13 @@ const vis = async (p, sel) => { const l = p.locator(sel); let n = 0; for (let i 
         add('B1: a referral typed under the stored hold is drawn ahead of the hold card, with the line to get help now on an urgent sign, and the hold stays', !!tr && iR >= 0 && iH > iR && (!tr.urgent || (iU >= 0 && iU < iH)) && st === true && H.LOG.length === 0,
           `${pn}, ${surf}, "${text}": referral at ${iR}, urgent at ${iU} (want ${!!(tr && tr.urgent)}), hold at ${iH}, stored ${st}, requests ${H.LOG.length}: ${t.slice(0, 160)}`);
         await H.ctx.close(); }
+    // O2 (owner, 23 Nov, "One ask only (Recommended)"): under the stored hold a typed ask with no medicine name is sent once and its plate is drawn under the hold card; the
+    // hold stays stored; after a reload the card shows alone and nothing is sent
+    { const H = await open(b, { meds: '{"at":1}' }), p = H.p; await p.fill('#askin', 'something light with dal'); await p.press('#askin', 'Enter'); await w(900);
+      const sent = H.LOG.filter(x => x.kind === 'meals').length, plate = await vis(p, '#plate-card'), card = await vis(p, '#meds-hold'), st = await stored(p);
+      H.LOG = []; await p.reload(); await w(1500); const plate2 = await vis(p, '#plate-card'), card2 = await vis(p, '#meds-hold'), st2 = await stored(p), sent2 = H.LOG.filter(x => /meals|rescue/.test(x.kind)).length;
+      add('O2 ("One ask only"): a typed ask with no medicine name is answered once under the hold card and the hold stays stored; after a reload the card shows alone and nothing is sent', sent === 1 && plate === 1 && card === 1 && st === true && plate2 === 0 && card2 === 1 && st2 === true && sent2 === 0,
+        `sent ${sent}, plate ${plate}, card ${card}, stored ${st}; after reload: plate ${plate2}, card ${card2}, stored ${st2}, sent ${sent2}`); await H.ctx.close(); }
     // B2, p3b: an example ask whose plates are all dropped keeps its words in the ask box; the hold comes up from Rescue; send the ask box
     { const H = await open(b), p = H.p; H.mode.meals = 'nograin'; const pr = p.locator('[id^="prompt-"]').first(); const words = (await pr.innerText()).replace(/[“”]/g, '').trim(); await pr.click(); await w(700); H.mode.meals = null;
       await p.click('#tab-rescue'); await w(300); await p.fill('#rin', 'Rajma chawal, I take insulin'); await p.press('#rin', 'Enter'); await w(500); await p.click('#tab-plate'); await w(500);

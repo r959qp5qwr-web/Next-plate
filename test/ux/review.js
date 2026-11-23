@@ -408,6 +408,13 @@ const STATES = [
     await p.evaluate(() => document.getElementById('scroll').scrollTo({ top: 0 })); await h.settle(200); await p.click('#tab-rescue'); await h.settle(); await p.fill('#rin', 'Gurda fry'); await p.press('#rin', 'Enter'); await p.waitForSelector('#v-rescue #refer-card-r', { timeout: 20000 }); await h.settle(300);
     r = await order('v-rescue', '#refer-card-r', '#meds-hold-note'); if (!r.above || !r.stored) throw new Error('Rescue: the referral is not drawn above the hold note, or the hold ended: ' + JSON.stringify(r));
     await p.click('#tab-plate'); await h.settle(300); }],
+  // owner, 23 Nov, O2 "One ask only (Recommended)": under the stored hold a typed ask with no medicine name is answered once, its plate drawn under the hold card; the hold stays
+  ['meds-hold-one-ask', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, what lunch?'); await p.press('#askin', 'Enter');
+    await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await p.fill('#askin', 'something light with dal'); await p.press('#askin', 'Enter'); await p.waitForSelector('#v-plate #plate-card:not(.wait)', { timeout: 20000 }); await h.settle(500);
+    const r = await p.evaluate(() => { const c = document.querySelector('#v-plate #meds-hold'), pl = document.querySelector('#v-plate #plate-card'), t = document.getElementById('v-plate').innerText;
+      return { card: !!c, plate: !!pl, above: !!c && !!pl && c.getBoundingClientRect().top < pl.getBoundingClientRect().top, stored: localStorage.getItem('np6meds') !== null, three: !!document.querySelector('#v-plate #directive, #v-plate .prompts') || /:\s*about \d+\s*kcal/.test(t) }; });
+    if (!r.card || !r.plate || !r.above || !r.stored || r.three) throw new Error('the one ask is not drawn under the hold card with the hold stored and the three hidden: ' + JSON.stringify(r));
+    await p.evaluate(() => document.getElementById('scroll').scrollTo({ top: 0 })); await h.settle(200); }],
   // owner, 23 Nov, "Hide all three (Recommended)": under the hold card no meal figure (the day note, the appetite slider), no example asks, no common-dish chips
   ['meds-hold-hidden', seed({ p: Object.assign({}, P, { health: 'none', meds: '', conds: [] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take metformin, a light lunch'); await p.press('#askin', 'Enter');
     await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300); await holdOnly(p, 'v-plate', true); await p.click('#dial-appetite'); await h.settle(300);

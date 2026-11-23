@@ -3702,11 +3702,14 @@ function storeSync(){if(storeGone()){STOREGONE=true;try{location.reload();}catch
   if(other(cur.store,RAW0.store)&&!other(mem.store,MEM0.store)&&cur.store&&cur.store.day===DAY&&cur.store.res)STORE=cur.store;
   if(other(cur.k,RAW0.k)&&mem.k===MEM0.k&&typeof cur.k==="string")KEYCODE=cur.k;
   RAW0=cur;MEM0=memNow();}
+/* the day's store as written: the answers to a one ask under the hold stay in this page only, so a reload or another tab shows the hold card alone ("One ask only") */
+function storeOut(){var o={day:STORE.day,res:{},shown:{}};Object.keys(STORE.res).forEach(function(k){if(STORE.res[k]&&!STORE.res[k].once)o.res[k]=STORE.res[k];});
+  Object.keys(STORE.shown).forEach(function(m){var k=STORE.shown[m];o.shown[m]=k&&!o.res[k]?null:k;});return o;}
 function save(){try{
   storeSync();if(STOREGONE)return;   /* the client's data was removed in another tab: nothing is written back; this page reloads */
   var cut=Date.now()-90*864e5;EV=EV.filter(function(e){return e.t>=cut;}).slice(-3000);
   var keys=Object.keys(STORE.res);if(keys.length>12)keys.sort(function(a,b){return STORE.res[a].at-STORE.res[b].at;}).slice(0,keys.length-12).forEach(function(k){delete STORE.res[k];});
-  var out=JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:STORE,k:KEYCODE});
+  var out=JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:storeOut(),k:KEYCODE});
   localStorage.setItem("np6",out);RAW0=JSON.parse(out);MEM0=memNow();}catch(e){}}
 function logEv(type,o,meal){var e={t:Date.now(),type:type,meal:meal||C.meal};if(o)for(var k in o)e[k]=o[k];EV.push(e);save();}
 var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",step:0,fresh:true,hab:{veg:false,walk:false,lemon:false},ratio:null,preset:"mode",
@@ -3836,21 +3839,24 @@ function medsBtn(host){var b=btn("btn primary","Add it in My food",null,"add-med
    "I had this" (owner, 23 Nov, option survey: "Hide them (Recommended)"). One hold covers Plate, Builder and Rescue, whichever raised it (owner, 23 Nov: "All tabs
    (Recommended)"): the plates and the dish made before it were made for a set-up with no medicine, so they are put away when it comes up. Under the owner's hold sentence the
    card says MEDSOTHER (owner, 23 Nov: "Add a line (Recommended)"), and on Plate the log stays one tap away ("Keep log (Recommended)": the log is not held). Updating My food
-   clears the hold and the plates are made again at the safe size (closeSheet); a new ask or dish runs the net again; a meal tab or a Your day choice does not clear it. */
+   clears the hold and the plates are made again at the safe size (closeSheet); a typed ask or dish with no medicine name is answered for that ask and the hold stays
+   (owner, 23 Nov, "One ask only (Recommended)"); a meal tab or a Your day choice does not clear it. */
 var MEDSOTHER="If this is about someone else, ask again without the medicine name.";
 /* The hold is a stored fact, not a screen flag (round 7; safety audit of 41e8ac0, B1; owner, 23 Nov: "Until updated (Recommended)"): the typed disclosure is kept on the phone
    under its own key, outside the day's store, so a reload and the 4 am day change keep it. One reader, medsHeld(): the fact is stored and the saved set-up does not say
    insulin, sugar tablets or not sure (np-core's medsOnSetup, the reading under which plan() states the usual size as a minimum). It is set in api() only, when api() or the
-   engine answers meds_typed. It ends in two places only: api() when the client types a new ask or dish without the medicine name and it is sent, and closeSheet() when
-   My food then says insulin, sugar tablets or not sure; "Remove my data" also removes the key (a third end, an owner question, O1). A storage error keeps the hold
-   for this page's life only (the copy in memory is read with what is stored); a fact that could not be stored is gone after a reload (safety audit of 3ee7b41, m1). */
+   engine answers meds_typed. It ends in two places only (owner, 23 Nov: "One ask only (Recommended)", "Ends it (Recommended)"): closeSheet() when My food then says
+   insulin, sugar tablets or not sure, and "Remove my data", which removes the key with the rest of the data. A typed ask or dish with no medicine name is sent and
+   answered for that ask, and the hold stays (medsOneAsk). A storage error keeps the hold for this page's life only (the copy in memory is read with what is stored); a
+   fact that could not be stored is gone after a reload (safety audit of 3ee7b41, m1). */
 var MEDSKEY="np6meds",MEDSFACT=false;
 function medsFact(){try{MEDSFACT=MEDSFACT||localStorage.getItem(MEDSKEY)!==null;}catch(e){}return MEDSFACT;}
 function medsSetupOK(pr){return typeof medsOnSetup==="function"&&typeof readProfile==="function"&&medsOnSetup(readProfile(pr||profileOut()));}
 function medsHeld(pr){return medsFact()&&!medsSetupOK(pr);}
-/* exit (b), in one place (owner question O2 may change it): text the client typed in the ask box or the dish box, with no medicine name in it at all (np-core's MEDRX,
-   the generic phrases included); a release shape that carries a name ("my mother takes insulin") passed the net but does not end the stored hold (round 7b) */
-function medsExitB(body,typed){var t=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";return typed===true&&!!t.trim()&&!medsNamed(t);}
+/* the one ask a stored hold lets through, in one place (owner, 23 Nov, O2: "One ask only (Recommended)"): text the client typed in the ask box or the dish box, with no
+   medicine name in it at all (np-core's MEDRX, the generic phrases included). It is sent and its answer is drawn for that ask; the hold stays stored. A release shape
+   that carries a name ("my mother takes insulin") passed the net but is held and sends nothing (round 7b). */
+function medsOneAsk(body,typed){var t=body&&body.ctx&&typeof body.ctx.text==="string"?body.ctx.text:"";return typed===true&&!!t.trim()&&!medsNamed(t);}
 /* What the page writes to the ask box or the dish box is not typed (safety audit of 3ee7b41, B2): a failed example ask or chip keeps its words in the box, and sending
    them must not count as a typed ask. The mark is the value the client's last input event left in the box: a send is typed only when the box still holds that value.
    Every write the page makes clears it (these two functions are the only writers of the two drafts), and a value the render puts back that the client did not leave
@@ -3893,18 +3899,18 @@ function api(path,body,cb,typed){
   if(medsTypedBody(path,body)){medsHoldOn();cb(0,{code:"meds_typed"});return;}   /* typed insulin or sugar tablets with a set-up that does not say so: plates and Rescue are held and the client is asked to add it in My food (fix-r21; owner 22 Nov); after the referral above, before the body hold */
   /* the stored hold (round 7, owner 23 Nov "Until updated (Recommended)"): while it is up, plates and Rescue send nothing and answer meds_typed, unless the set-up now says
      insulin, sugar tablets or not sure, or the client typed this ask or dish (typed comes from the ask box or the dish box only; a chip, an example ask, a Try again or a plan
-     the page makes itself is not typed) and it passed the net above. Any other path fails closed. */
-  var exitB=false;
+     the page makes itself is not typed), it names no medicine and it passed the net above. That one ask is sent and answered; the hold stays (owner, 23 Nov, "One ask only
+     (Recommended)"). Any other path fails closed. */
+  var once=false;
   if(/\/(?:meals|rescue)$/.test(String(path||""))&&medsHeld(body&&body.profile)){
-    if(!medsExitB(body,typed)){cb(0,{code:"meds_typed"});return;}
-    exitB=true;}
+    if(!medsOneAsk(body,typed)){cb(0,{code:"meds_typed"});return;}
+    once=true;}
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
-  if(exitB)medsHoldOff();   /* a typed ask or dish without the medicine name is sent: the hold ends ("If this is about someone else, ask again without the medicine name.") */
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:{}};});})
-    .then(function(x){clearTimeout(t);if(!done){done=true;if(x.j&&x.j.code==="meds_typed"&&/\/(?:meals|rescue)$/.test(String(path||"")))medsHoldOn();cb(x.s,x.j||{});}},function(){clearTimeout(t);if(!done){done=true;cb(0,{code:late?"timeout":"network"});}});   /* a slow answer is not a lost signal (R2-B6 086-1) */
+    .then(function(x){clearTimeout(t);if(!done){done=true;if(x.j&&x.j.code==="meds_typed"&&/\/(?:meals|rescue)$/.test(String(path||"")))medsHoldOn();if(once&&x.j&&typeof x.j==="object")x.j.once=true;cb(x.s,x.j||{});}}   /* once: the answer to the one ask under the hold, drawn for that ask only */,function(){clearTimeout(t);if(!done){done=true;cb(0,{code:late?"timeout":"network"});}});   /* a slow answer is not a lost signal (R2-B6 086-1) */
 }
 /* what a plate request was made for: the answers in My food and the settings on the Plate. A reply made for answers or settings that have
    changed since it was sent is not shown; the plates are asked for again (second screen review, R2-B1 011) */
@@ -3918,7 +3924,7 @@ function makePlates(text,again,typed){
     if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: what it brings is not shown */
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
-      STORE.res[key]={meal:meal,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
+      STORE.res[key]={meal:meal,once:!!j.once,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)boxAsk(text);}
     else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)boxAsk(text);lockOn(j.code);}
@@ -4308,7 +4314,9 @@ function renderPlate(){
   if(P.done&&bodyNeed()){choices(v);var bs=slotOf(C.meal);if(bs)v.appendChild(loggedCard(bs));v.appendChild(bodyCard(true));return;}
   choices(v);
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
-  if(medsHeld()&&!UI.busy){if(r&&r.status==="refer")v.appendChild(referCard(r));v.appendChild(medsCard(true));}   /* a referral this meal's ask brought is drawn ahead of the hold card (S7; safety audit of 3ee7b41, B1): the hold stays stored */   /* "Hide them (Recommended)", owner 23 Nov */
+  var oneAsk=medsHeld()&&!UI.busy&&!!r&&r.once===true&&r.status==="ok";   /* the answer to the one ask the hold lets through ("One ask only"): drawn under the hold card */
+  if(oneAsk)v.appendChild(medsCard(false));
+  if(medsHeld()&&!UI.busy&&!oneAsk){if(r&&r.status==="refer")v.appendChild(referCard(r));v.appendChild(medsCard(true));}   /* a referral this meal's ask brought is drawn ahead of the hold card (S7; safety audit of 3ee7b41, B1): the hold stays stored */   /* "Hide them (Recommended)", owner 23 Nov */
   else if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for \u201C"+UI.lastAsk+"\u201D":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){
@@ -4472,7 +4480,7 @@ function rescue(text,typed){
 /* once there is an answer, a wait or an error, it leads and the entry tools follow it (screen review B4-B6) */
 function renderRescue(){renderRescue0();var v=$("v-rescue");if(blocked()||!(UI.rres||UI.rerr||UI.rbusy||medsHeld()))return;
   var ent=v.querySelector(".entries"),ch=v.querySelector(".sitbox");
-  if(ent){if(UI.rres&&!medsHeld()){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
+  if(ent){if(UI.rres&&(!medsHeld()||UI.rres.once===true)){var hd=el("h3","again-h","Another dish");hd.id="rescue-again";v.appendChild(hd);}v.appendChild(ent);}if(ch)v.appendChild(ch);}
 function renderRescue0(){
   var v=$("v-rescue");v.textContent="";
   panelHead(v,"03 · Rescue","Eating out");   /* title wording (owner, 14 Nov, option survey) */
@@ -4496,7 +4504,7 @@ function renderRescue0(){
   else if(UI.rerr){var n=el("div","note err");n.appendChild(ic("info"));var tx=el("div");tx.appendChild(el("p",null,UI.rerr));
     if(UI.rretry&&UI.rkeep){var tb=btn("btn primary","Try again","refresh","rescue-retry");tb.addEventListener("click",function(){var x=UI.rkeep;UI.rerr="";rescue(x);});tx.appendChild(tb);}
     n.appendChild(tx);v.appendChild(n);}
-  var r=held?null:UI.rres;   /* under a typed-medicine hold no dish, move or "I had this" is drawn ("Hide them (Recommended)") */
+  var r=held&&!(UI.rres&&UI.rres.once===true&&UI.rres.status==="ok")?null:UI.rres;   /* under the hold only the one ask's dish is drawn ("One ask only") */   /* under a typed-medicine hold no dish, move or "I had this" is drawn ("Hide them (Recommended)") */
   if(!r)return;
   if(r.status==="refer"){v.appendChild(referCardR(r));return;}   /* the card quotes what it answers (R2-B6 088-1) */
   if(rescueWhy(r,UI.rmoves))UI.rmoves={};   /* ticks that no longer hold are cleared at render */
