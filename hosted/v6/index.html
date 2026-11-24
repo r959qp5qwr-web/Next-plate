@@ -4339,7 +4339,7 @@ function renderPlate(){
   var s=slotOf(C.meal),r=curRes(),asked=STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0;
   var oneAsk=medsHeld()&&!UI.busy&&!!r&&r.once===true&&r.status==="ok";   /* the answer to the one ask the hold lets through ("One ask only"): drawn under the hold card */
   if(oneAsk)v.appendChild(medsCard(false));
-  if(medsHeld()&&!UI.busy&&!oneAsk){if(r&&r.status==="refer")v.appendChild(referCard(r));v.appendChild(medsCard(true));}   /* a referral this meal's ask brought is drawn ahead of the hold card (S7; safety audit of 3ee7b41, B1): the hold stays stored */   /* "Hide them (Recommended)", owner 23 Nov */
+  if(medsHeld()&&!UI.busy&&!oneAsk){if(r&&r.status==="refer")v.appendChild(referCard(r));v.appendChild(medsCard(true));if(s&&s.kind==="skipped")v.appendChild(loggedCard(s));}   /* a skipped meal's card, with the low-sugar warning, stays under the hold card (safety audit of a109dd1, O2) */   /* a referral this meal's ask brought is drawn ahead of the hold card (S7; safety audit of 3ee7b41, B1): the hold stays stored */   /* "Hide them (Recommended)", owner 23 Nov */
   else if(s&&!asked){v.appendChild(loggedCard(s));}
   else if(UI.busy){v.appendChild(waitCard(UI.busy==="ask"?"Planning plates for \u201C"+UI.lastAsk+"\u201D":"Planning your "+mealName(C.meal).toLowerCase()+" plates"));}
   else if(!r){

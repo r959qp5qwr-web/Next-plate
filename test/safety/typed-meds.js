@@ -286,7 +286,7 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
     'medsFact', 'medsSetupOK', 'medsHeld', 'medsHoldOn', 'medsHoldOff', 'medsNamed', 'medsCard', 'medsNote', 'medsBtn', 'logRow', 'makePlates', 'rescue', 'renderPlate', 'renderBuild', 'renderRescue0', 'renderRescue',
     'askBlock', 'lockLine', 'errText', 'RETRY', 'curRes', 'lastForMeal', 'closeSheet', 'unAsk', 'onMeds',
     'composer', 'referCard', 'referCardR', 'referHead', 'medsOneAsk', 'boxAsk', 'boxDish', 'storeOut', 'medsReferProfile',   // round 8 (safety audit of 3ee7b41)
-    'stampOf', 'storeRead', 'pruneStale', 'adopt', 'keepNow', 'storeLost', 'storeTake', 'storeCheck', 'commit', 'lowGuard'];   // round 9 (safety audit of a109dd1): the stamped store
+    'stampOf', 'storeRead', 'pruneStale', 'adopt', 'keepNow', 'storeLost', 'storeTake', 'storeCheck', 'commit', 'lowGuard', 'tune', 'ansSig'];   // the app's own tune(), so a count of what is sent counts the swaps too (owner, 24 Nov, "Hide them")   // round 9 (safety audit of a109dd1): the stamped store
   const pmiss = PFNS.filter(n => !grab(n)); add('hold page: the app\'s functions are in src/v6/app.js', pmiss.length === 0, 'not found: ' + pmiss.join(', '));
   const line = (re) => (re.exec(appSrc) || [''])[0];
   const GLOB = [/^var now=new Date\(\)[^\n]*$/m, /^var CLOCK=[^\n]*$/m, /^var DAY=[^\n]*$/m, /^var P=\{[^\n]*\};$/m, /^var C=\{[^\n]*\};$/m, /^var APP=\{\};[^\n]*$/m, /^var CONDS=[^\n]*$/m, /^var EV=\[\],STORE=[^\n]*$/m,
@@ -306,7 +306,7 @@ for (const h of ['kidney', 'preg']) for (const [bl, pv, extra] of [['a whole bod
     function blocked(){return false;}function blockedCard(){return N("div","blocked");}function choices(){}function loggedCard(){return N("div","logged","LOGGED");}function waitCard(t){return N("div","wait",t);}
     function mealName(m){return m;}function render(){}function referHead(){}function curMeal(){var r=curRes();return r.meals[UI.sel||0];}function plateWhy(){return "";}function viewOf(){return {};}function bodyMissing(){return {text:"",at:""};}
     function openSheet(k,at){OPENED.push(k);UI.sheet=k;ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}function medsAt(){return "health-diabetes";}function behind(){}function ctxKey(){return "plates|"+C.meal;}function askedFor(){return "s";}
-    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){if(b)b();};}function logEv(){}function tune(){}function lockOn(){}
+    function heroCard(){var h=N("article","plate","HERO PLATE");h.id="plate-card";return h;}function whyLine(){return "";}function thali(){return N("svg");}function act(a,b){return function(){if(b)b();};}function logEv(){}function lockOn(){}
     function directiveCard(h){var d=N("p","tip directive","Today. Lunch: about 480 kcal");d.id="directive";h.appendChild(d);}function ctxBlock(){}function stamp(){return N("i");}function sprig(){return N("i");}
     function panelHead(v,a,b){v.appendChild(N("div","panel-h",a));}function fileOut(){return {};}function ctxOut(t){return {meal:C.meal,time:"1:10 pm",text:t,photo:false,appetite:5};}function clockText(){return "1:10 pm";}function revealOut(){}
     function rescueWhy(){return "";}function riseOf(){return {band:"low"};}function fitOf(){return 50;}function bandCls(){return "";}function setPressed(){}function clearSlot(){}function pickMeal(){}function show(){}function toast(){}function resetAt(){return "";}function pruneKept(){}
