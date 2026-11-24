@@ -3804,7 +3804,8 @@ function referCardR(r){var e=el("div","empty-card"),s=el("span","safe-ic");e.id=
 function referHead(e,r){if(r.urgent){e.appendChild(el("h2","urgent",URGENTLINE));e.appendChild(el("p",null,r.read||SAFETY));}else e.appendChild(el("h2",null,r.read||SAFETY));}
 /* Every tap that shows a composed state or writes the log goes through act() (safety round 5): the day is checked first (S12), then the
    composed result the tap would make (S5, S6). test/safety/check.js reads app.js and fails if a click handler that logs or clears does not. */
-function act(check,fn,onDay){return function(){if(storeCheck()===false)return;if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
+function act(check,fn,onDay){return function(){var sc=storeCheck();if(sc===false)return;if(sc==="moved"){refuse(ERRS.moved);render();return;}   /* another tab wrote since this screen was drawn: the tap is not made on what it showed; the screen is drawn again from the store */
+  if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
 /* moving to another meal starts its plate fresh: no plate choice, swap or change carries over (correctness review, minor) */
 /* a refusal shows the info mark, not the tick that a done action shows */
 var toast0=toast;toast=function(t,warn){var u=$("toast").querySelector("use"),h=warn?"#i-info":"#i-check";if(u&&u.getAttribute("href")!==h)u.setAttribute("href",h);toast0(t,warn);};
@@ -3942,7 +3943,7 @@ function makePlates(text,again,typed){
   UI.busy=text?"ask":"plates";UI.err="";UI.ecode="";UI.eretry=true;UI.lastAsk=text||"";render();if(text&&!again)logEv("asked",{text:text.slice(0,120)});
   api("/api/meals",{profile:profileOut(),ctx:ctxOut(text),file:fileOut()},function(s,j){
     UI.busy="";
-    if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: what it brings is not shown */
+    if((UI.mholdN!==hn||medsHeld()&&!j.once&&j.status==="ok")&&j.code!=="meds_typed"){render();return;}   /* and a hold stored by another tab while this was out (read at the reply, not this page's count) */   /* a hold came up on another tab while this was out: what it brings is not shown */
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
       STORE.res[key]={meal:meal,once:!!j.once,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rs};   /* stamped with the rules it was asked under (second audit B4) */STORE.shown[meal]=key;
@@ -4491,7 +4492,7 @@ function rescue(text,typed){
   var rmeal=C.meal,body={profile:profileOut(),ctx:{meal:rmeal,time:clockText(),text:text||"",photo:false,appetite:appetite()},file:fileOut()};
   var sent=askedFor();   /* a reply made for answers changed during the wait is not shown; it is asked for again (Critic round 36) */
   api("/api/rescue",body,function(s,j){UI.rbusy=false;setTimeout(revealOut,0);
-    if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: the dish is not shown */
+    if((UI.mholdN!==hn||medsHeld()&&!j.once&&j.status==="ok")&&j.code!=="meds_typed"){render();return;}   /* and a hold stored by another tab while this was out (read at the reply, not this page's count) */   /* a hold came up on another tab while this was out: the dish is not shown */
     if(askedFor()!==sent){if(!blocked())rescue(text);else render();return;}
     if(s===200&&j.status==="ok"){UI.rres=j;j.meal=rmeal;UI.rmoves={};   /* every move starts off: the client ticks what they will do (owner decision, 14 Nov) */}
     else if(s===200&&j.status==="refer"){UI.rres={status:"refer",read:j.read,ask:text||"",urgent:!!j.urgent};}
@@ -4570,7 +4571,7 @@ var ANS0="",SAFE0="";function answers(){return JSON.stringify([profileOut(),P.co
 /* what the food rules are made of: a change here makes every kept plate unsafe to show; any other answer keeps them for "Show my last plates" (R2-B4 053-1) */
 function rules(){return JSON.stringify([P.diet,P.leave.slice().sort(),P.conds.slice().sort(),P.meds,P.age,P.cm,P.kg,P.sex,P.act]);}   /* the body figures set the usual size (audit B9) */
 /* "at": the question the sheet opens on, when a card sends the person to one answer (screen review B2, B6) */
-function openSheet(kind,at){if(storeCheck()===false)return;SHEETFROM=document.activeElement;   /* the sheet opens on the store as it is now */UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
+function openSheet(kind,at){if(storeCheck()===false)return;UI.sheetR=STAMP?STAMP.r:0;SHEETFROM=document.activeElement;   /* the sheet opens on the store as it is now */UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
 /* My food closes any way but Done (Escape, a tap outside) without saving a partial body: the three body figures go back as they were stored when the sheet opened (no clamp, no zero),
    every other answer the person changed is kept (Critic r21 F3). A phone that held a partial body before the sheet opened keeps it and reaches the body card.
    Done saves that screen (owner, 24 Nov, "Done saves that screen (Recommended)"): Done, or a close after an answer changed, reads the store again and writes every My food
@@ -4583,7 +4584,7 @@ function closeSheet(done){var food=UI.sheet==="food";if(food&&bodyNeed()){P.age=
   if(fd){var sf=rules()!==SAFE0;if(commit(function(){if(sf)STORE.res={};STORE.shown={};pruneStale();UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;},{whole:true})===false)return;   /* an answer made under the old rules is not shown again (M9) */
     if(medsFact()&&medsSetupOK())medsHoldOff();}
   else if(food){var cur=storeRead();if(cur&&storeTake(cur,false,true)===false)return;}
-  render();}
+  if(fd||!STAMP||STAMP.r!==UI.sheetR)render();}   /* drawn again when My food was saved or another tab wrote while the sheet was open; otherwise focus goes back to what opened it */
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
 /* another tab changed the store or the medicine hold: read it now and redraw. This only makes it sooner: every write, every request and every redraw reads the store first */
 function onStore(e){if(e&&(e.key===null||e.key==="np6"||e.key===MEDSKEY)){if(storeCheck()===false)return;if(!UI.sheet)render();}}

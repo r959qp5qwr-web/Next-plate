@@ -172,6 +172,17 @@ async function enumerate(deliver, depth) {
     add('q2 (revision): with the event withheld, tab B\'s next plate request leaves out dairy', m.length === 1 && JSON.stringify(m[0].body.profile.leave) === '["dairy"]', JSON.stringify(m.map(x => x.body.profile.leave)));
     W.tabs.A.type('askin', 'I take insulin, what lunch?'); W.tabs.A.submit('askin'); await W.settle(); W.tabs.B.click('tab-plate'); await W.settle();
     add('q2: with the event withheld, a hold raised in tab A is drawn by tab B at its next redraw', W.tabs.B.has('v-plate', 'meds-hold') && !W.tabs.B.has('v-plate', 'plate-card'), W.tabs.B.text('v-plate').slice(0, 160)); }
+  // q2's log tap (audit m2): with the event withheld, "I'll have this" on tab B's stale paneer plate logs nothing for a dairy-free client
+  { const W = await world({ deliver: false, mode: { meals: 'paneer' } }).start();
+    W.tabs.A.click('myfood'); await W.settle(); W.tabs.A.click('leave-dairy'); await W.settle(); W.tabs.A.click('sheet-done'); await W.settle();
+    const stale = /Paneer/.test(W.tabs.B.text('v-plate')); W.tabs.B.click('have'); await W.settle(); const s = W.np6() || {};
+    add('q2 (log tap): with the event withheld, "I\'ll have this" on a stale paneer plate in tab B logs nothing after dairy was left out in tab A', stale && !(s.ev || []).some(e => e.type === 'had' && /Paneer/i.test(e.title || '')), `stale plate drawn ${stale}; events ${JSON.stringify((s.ev || []).map(e => e.type + ':' + (e.title || '')))}`); }
+  // a plates reply out in tab B when tab A raises the hold is neither drawn nor stored by B (round 9)
+  for (const deliver of [true, false]) { const W = await world({ deliver }).start(), B = () => W.tabs.B;
+    B().run('STORE.shown={};UI.busy="";makePlates("")'); const held = B().TQ.splice(0);   // B's request is out; its reply waits
+    W.tabs.A.type('askin', 'I take insulin, what lunch?'); W.tabs.A.submit('askin'); await W.settle();
+    B().TQ.push(...held); await W.settle(); B().click('tab-plate'); await W.settle(); const st = (W.np6() || {}).store || {};
+    add('a plates reply that lands after the other tab raised the hold is not drawn or stored', B().has('v-plate', 'meds-hold') && !B().has('v-plate', 'plate-card') && Object.keys(st.res || {}).length === 0, `${deliver ? 'event delivered' : 'event withheld'}: hold ${B().has('v-plate', 'meds-hold')}, plate ${B().has('v-plate', 'plate-card')}, stored plates ${Object.keys(st.res || {}).length}`); }
   // ---------- q3 (audit m3): "Remove my data", then a new set-up, while tab B is away; B comes back with Back ----------
   for (const [deliver, sheet] of [[false, false], [true, false], [false, true]]) { const OLD = { t: T0 - 3 * 864e5, type: 'had', meal: 'lunch', title: 'OLD MEAL FROM BEFORE REMOVAL', kcal: 330, protein: 16, carbs: 45, fats: 9, fiber: 8 };
     const W = await world({ deliver: false, ev: [OLD] }).start(); W.deliver = deliver;

@@ -396,10 +396,10 @@ const STATES = [
     await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); }],
   // owner, 23 Nov, "Until updated (Recommended)": the hold is stored on the phone; after a reload every tab shows the card and the page plans nothing by itself
   ['meds-hold-reload', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, what lunch?'); await p.press('#askin', 'Enter');
-    await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300); let asked = 0; p.on('request', r => { if (/\/api\/(meals|rescue)$/.test(new URL(r.url()).pathname)) asked++; });
+    await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await h.settle(300); let asked = 0; p.on('request', r => { if (/\/api\/(meals|rescue|tune|log)$/.test(new URL(r.url()).pathname)) asked++; });   // every endpoint (round 9)
     await p.reload({ waitUntil: 'domcontentloaded' }); await h.settle(1500); await p.waitForSelector('#v-plate #meds-hold', { timeout: 10000 }); await holdOnly(p, 'v-plate', true);
     await p.click('#tab-build'); await h.settle(); await holdOnly(p, 'v-build', false); await p.click('#tab-rescue'); await h.settle(); await holdOnly(p, 'v-rescue', false); await p.click('#tab-plate'); await h.settle(800);
-    if (asked) throw new Error('after a reload under the hold the page sent ' + asked + ' plate or Rescue request(s) by itself'); }],
+    if (asked) throw new Error('after a reload under the hold the page sent ' + asked + ' request(s) by itself (plates, Rescue, swaps or log)'); }],
   // safety audit of 3ee7b41, B1 (S7): under the stored hold a typed referral is drawn above the hold card, on Plate and on Rescue, with the line to get help now; the hold stays
   ['meds-hold-referral', seed({ p: Object.assign({}, P, { health: 'diabetes', meds: 'no', conds: ['diabetes'] }) }), async (p, h) => { await h.plate(p); await p.fill('#askin', 'I take insulin, what lunch?'); await p.press('#askin', 'Enter');
     await p.waitForSelector('#v-plate #meds-hold', { timeout: 20000 }); await p.fill('#askin', 'chest pain since lunch, dal rice'); await p.press('#askin', 'Enter'); await p.waitForSelector('#v-plate #refer-card', { timeout: 20000 }); await h.settle(300);
