@@ -142,6 +142,7 @@ async function enumerate(deliver, depth) {
   for (const deliver of [true, false]) for (const [what, bTick, aTick, between, prof, meds] of [
     ['Kidney', 'health-kidney', 'health-bp', true], ['Pregnant or breastfeeding', 'health-preg', 'health-bp', true], ['Leave out nuts', 'leave-nut', 'leave-dairy', true],
     ['Kidney, no tap between', 'health-kidney', 'health-bp', false], ['Leave out nuts, no tap between', 'leave-nut', 'leave-dairy', false],
+    ['Leave out nuts in B against the medicine answer Yes in A (two different answers)', 'leave-nut', 'meds-yes', false],
     ['the set-up under the hold (no condition; A answers diabetes and Yes)', 'health-bp', null, false, { health: 'none', conds: [], meds: '' }, '{"at":1}']]) {
     const W = await world({ deliver, profile: prof, meds }).start(), Aa = () => W.tabs.A, Bb = () => W.tabs.B;
     Bb().click('myfood'); await W.settle(); Bb().click(bTick); await W.settle();
@@ -172,13 +173,14 @@ async function enumerate(deliver, depth) {
     W.tabs.A.type('askin', 'I take insulin, what lunch?'); W.tabs.A.submit('askin'); await W.settle(); W.tabs.B.click('tab-plate'); await W.settle();
     add('q2: with the event withheld, a hold raised in tab A is drawn by tab B at its next redraw', W.tabs.B.has('v-plate', 'meds-hold') && !W.tabs.B.has('v-plate', 'plate-card'), W.tabs.B.text('v-plate').slice(0, 160)); }
   // ---------- q3 (audit m3): "Remove my data", then a new set-up, while tab B is away; B comes back with Back ----------
-  for (const deliver of [false, true]) { const OLD = { t: T0 - 3 * 864e5, type: 'had', meal: 'lunch', title: 'OLD MEAL FROM BEFORE REMOVAL', kcal: 330, protein: 16, carbs: 45, fats: 9, fiber: 8 };
+  for (const [deliver, sheet] of [[false, false], [true, false], [false, true]]) { const OLD = { t: T0 - 3 * 864e5, type: 'had', meal: 'lunch', title: 'OLD MEAL FROM BEFORE REMOVAL', kcal: 330, protein: 16, carbs: 45, fats: 9, fiber: 8 };
     const W = await world({ deliver: false, ev: [OLD] }).start(); W.deliver = deliver;
+    if (sheet) { W.tabs.B.click('myfood'); await W.settle(); W.tabs.B.click('leave-nut'); await W.settle(); }   // B left My food open, with a tick, before going away
     await ACTS.remove(W, 'A');
     // a new set-up in tab A, written as set-up's last step writes it
     W.tabs.A.run('Object.assign(P,{goal:"hold",focus:"none",meds:"",diet:"vegan",health:"bp",conds:["bp"],region:"n",leave:[],sex:"m",age:50,cm:170,kg:80,act:"low",done:true});typeof commit==="function"?commit(null,{whole:true}):save();'); await W.settle();
-    W.deliver = true; W.tabs.B.back(); await W.settle(); await ACTS.day(W, 'B'); const s = W.np6() || {};
-    add('q3 (epoch): after "Remove my data" and a new set-up, a tab coming back writes nothing of the removed data back', !(s.ev || []).some(e => e.title === OLD.title) && s.p && s.p.diet === 'vegan', `${deliver ? 'event delivered during the removal' : 'event withheld'}: ${JSON.stringify(s).slice(0, 220)}`); }
+    W.deliver = true; if (sheet) { W.tabs.B.click('sheet-done'); await W.settle(); } else { W.tabs.B.back(); await W.settle(); await ACTS.day(W, 'B'); } const s = W.np6() || {};
+    add('q3 (epoch): after "Remove my data" and a new set-up, a tab coming back writes nothing of the removed data back', !(s.ev || []).some(e => e.title === OLD.title) && s.p && s.p.diet === 'vegan' && JSON.stringify(s.p.leave) === '[]', `${sheet ? 'B taps Done in the My food sheet it left open' : deliver ? 'event delivered during the removal' : 'event withheld'}: ${JSON.stringify(s).slice(0, 220)}`); }
   // ---------- q4 (audit m4): a meal reopened in tab A is not logged again by tab B ----------
   { const W = await world({ deliver: false }).start(); W.tabs.A.click('have'); await W.settle(); const had = (W.np6().ev || []).filter(e => e.type === 'had').length;
     W.tabs.A.click('slot-change'); await W.settle(); await ACTS.day(W, 'B'); const s = W.np6();
