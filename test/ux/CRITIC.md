@@ -1,111 +1,119 @@
-VERDICT: PASS
-BUILD: 98ae28418025419214b46e93f6a1d2b313e4db50431e2fa94d0895b628c99c88
+VERDICT: FAIL
+BUILD: 8d266cbd8cae6744a728efe776351eba15eeab15d48db0e48bdd9a7919b59c94
 
-Critic round 43 on cad3fb0 (branch claude/nice-hawking-307ljy). UX verdict only. The safety audit of the same fingerprint (test/safety/AUDIT.md,
-PASS) is the auditor's; I did not re-judge it.
-- Fingerprint 98ae2841...9c88 at the start and again after all measuring and after writing this file (manifest.sh does not read CRITIC.md).
-  git status at the end: only test/ux/CRITIC.md modified. Diff judged: 530a503..cad3fb0.
-- Findings: none blocking, no owner-rule breach found. Five watch items (cosmetic), two owner questions (below).
+Critic round 44 on f6a1c0c (HEAD f029c85, branch claude/nice-hawking-307ljy). UX verdict only. The safety audit of the same fingerprint
+(test/safety/AUDIT.md, PASS) is the auditor's; I did not re-judge safety logic. I judged what a client sees.
+- Fingerprint 8d266cbd...9c94 before measuring, after all measuring, and after writing this file (manifest.sh does not read CRITIC.md).
+  git status at the end: only test/ux/CRITIC.md modified. Nothing committed.
+- Diff judged: 50090ef (round 43 PASS, on cad3fb0)..f6a1c0c for src/v6/app.js, src/v6/legible.css, docs/ux/UX-CRITERIA.md (D11 to D14,
+  "Keep log"), package.json and test/ux/manifest.sh. test/ux/allow.json, test/words/allow.json and test/ux/criteria.js are unchanged.
+- Everything measured is clean. The verdict is FAIL on one MINOR finding (F1): under the stored medicine hold, "Back to my plates" is drawn on
+  the one-ask plate and on the referral card, and a tap on it shows no plates. Six cosmetic findings and two owner questions follow.
 
 ## Measured (run by me on this tree)
-- Screen review, one width per part, each as its own background command with its own --out in my scratchpad (node test/ux/review.js
-  --widths <w> --out <path>), default page hosted/v6/index.html. Parts and exits: 320 exit 0; 360 exit 0; 375 exit 0; 390 exit 0; 393 exit 0;
-  412 exit 0; 430 exit 0. Every part: 3 runs (light, dark, 360 px at 130 %), 138 states, 414 checks, "No violations." report.json in every part:
-  414 entries, none with err (every state reached), none with viol. No page error, so no part needed a re-run. (The state count rose from 134 to
-  138 with the new offline and refused-code states and plate-logged-meds.) For 320 I read report.json before deleting its folder: the same counts.
-- The served page: the review's default page is index.html, so I also ran the changed states on hosted/v6/index.min.html (--page, --only
-  plate-ask-offline-urgent, rescue-offline-pregnancy, sheet-log-refused-kidney, plate-logged, plate-logged-meds, plate-skipped-meds,
-  rescue-entry, rescue-result, builder-still, plate-hero; 320): 10 states, 30 checks, no violations. I grepped index.min.html for the changes
-  (onMeds reading "not sure", typedReferral in api(), "Little is left", the 22 px chip radius): all present. My probes below also serve the
-  min page.
-- Builder again, because the full parts' screens were not enough for the strip: review.js --only builder,builder-adjusted,builder-still at 412
-  and at 360 (own --out): both "No violations", 3 states, 9 checks.
-- Drill: node test/ux/review.js --drill --out <scratchpad>: exit 0, "every planted fault was caught".
-- npm run rules: exit 0 on all three built pages, "every rule check holds". npm run words: exit 0, "no banned words outside the 42 listed
-  exceptions" (re-run after this file was written). npm run films: four films, picture from 0 s, no decode errors, no 7 s freeze, -16.7 to
-  -16.8 dB; exit 0.
-- test/ux/allow.json is []. test/words/allow.json is not in the diff; the entries I read are the rule itself, quoted records or web addresses.
-- Probes (my scratchpad, read only; index.min.html served with the mock engine as review.js starts it), because the review's scroll frames skip
-  the lower part of some cards:
-  - logged card for a normal client and a medicines client, skipped-meal card for a medicines client, the typed chest-pain ask and the typed
-    "feeling shaky" ask for a medicines client with the network cut, "feeling shaky" for a non-medicines client (goes to the model, the engine's
-    rule), at 320 light, 320 dark and 360 at 130 %;
-  - the same skipped-meal, logged and shaky cases with the medicines answer left unanswered (diabetes, no meds field), 320 light: the warning
-    shows after a skipped meal, "Little is left for a snack today." and "Plan dinner" after lunch, and the shaky ask gets the get-help card;
-  - the Builder refused note for the top row (Protein +) and the bottom row (Fats and seeds -) at 320, 360, 390 light and dark and 360 at 130 %
-    (notes at 17 px, 22.1 px at 130 %; note and slot above the button, rows clear), and the Rescue box with a long dish typed (no sideways scroll);
-  - the Builder card height before and after one step at 320, 360, 375 and 390 (433 to 485 px; see watch item 1).
-  No page errors in any probe.
+- Screen review, one width per run, each with its own --out in my scratchpad, page hosted/v6/index.html:
+  `node test/ux/review.js --widths <w> --pool 6 --out <scratch>/w<w>`. Exits: 320 exit 0; 390 exit 0; 360 exit 0; 375 exit 0; 393 exit 0;
+  412 exit 0; 430 exit 0. Every run: 3 runs (light, dark, 360 px at 130 %), 166 states, 498 checks, "No violations." report.json of every run:
+  498 entries, 0 with err (every state reached, no page error), 0 with violations. Each --out folder deleted after reading, by its literal path.
+- The served page: hosted/v6/index.min.html, 320, --only the nine hold states (plate-meds-hold, rescue-meds-hold, plate-hold-then-rescue,
+  rescue-hold-then-plate, meds-hold-referral, meds-hold-one-ask, meds-hold-skipped, meds-hold-reload, meds-hold-hidden): exit 0, 9 states,
+  27 checks, no violations. The hold strings, "Your answers changed in another tab. Try again." and the np6meds key are present in the min page.
+- The hold states again at 390 (--only the eight hold states, index.html), to open them in light and dark: exit 0, no violations; folder deleted.
+- Drill: `node test/ux/review.js --drill`: exit 0, "every planted fault was caught".
+- npm run rules: exit 0, "every rule check holds" (all three built pages). npm run words: exit 0, "no banned words outside the 42 listed
+  exceptions" (re-run after this file was written: same). npm run films: exit 0; four films, picture from 0 s, no decode errors, no 7 s
+  freeze, -16.7 / -16.7 / -16.7 / -16.8 dB. `git diff --name-only 50090ef..f6a1c0c` lists no path under demo/, docs/film/ or .claude/, so no
+  film, poster, WhatsApp post or gate file changed. New note docs/DIRECTION-shared-kitchen.md (48 lines) is covered by the word check; not
+  judged further (not client-facing).
+- My own probes (scratch scripts, Playwright on the page served locally, /api answered from test/v5/fixture.js, no source touched):
+  (a) Builder under a stored hold at 320 and 390, light and dark (no review state ends on the Builder): the hold card, the owner's two lines and
+  "Add it in My food" under the "Build the plate" heading; no page error. (b) The one ask under the hold, then "Back to my plates", at 320 and
+  390: before the tap, plate card and hold card both present; after it, plate card gone, hold card alone, no "Show my last plates".
+  (b2) The referral under the hold ("chest pain since lunch, dal rice" typed under a stored hold), then the referral card's "Back to my plates",
+  at 320 and 390: before, referral card with the urgent line and hold card; after, referral card gone, hold card alone, no plate; nothing sent.
+  (d) The toast for a tap on a screen another tab changed (store revision raised from the same window, then "I'll have this"), 320 light and
+  390 dark: "Not changed. Your answers changed in another tab. Try again." in the usual toast, two lines at 320, legible; the plate stays.
+  (c) One typed
+  dish with no medicine name on Rescue under the hold: the dish, its bars and "Moves you can make" drawn under the hold note; layout holds at 320.
 
-## Rendered (opened by me)
-Opened at 320 light and dark, 360 light and 130 %, 375 light and dark, 390 light and dark, 393 light and dark, 412 light, 430 light and dark.
-The review writes about 480 images per width; I opened the changed states at every width and sampled the rest.
-- Offline typed chest pain on the Plate ask (plate-ask-offline-urgent; 320 light, 375 dark, 412 light, 360 at 130 %, probe 320 light and dark): the
-  card quotes the ask, then the get-help line "If you feel unwell now, contact your doctor or emergency care." at heading weight, then "Your coach
-  and doctor should plan this with you.", then "Back to my plates" (full-width outlined button). No Try again, no error note. Plain words; it fits
-  at 320 and at 130 %; dark keeps the paper.
-- Offline typed pregnancy on Rescue (rescue-offline-pregnancy; 320 light, 360 at 130 %, 390 dark, 430 dark): the same card shape, "Your coach and
-  doctor should plan this with you." as its heading (no get-help line, right for pregnancy), the dish box and common dishes below, still usable.
-- Code refused, typed kidney text in the log sheet (sheet-log-refused-kidney; 320 light, 360 at 130 %, 375 dark): the slip reads "Your coach and
-  doctor should plan this with you. Next Plate does not count meals for this." with the shield mark, not "code was not accepted". The box, the
-  words and "Count it" (an outline button, as round 39 decided) stay.
-- Typed low-sugar sign on a medicines client (probe): the same card with the get-help line first.
-- Snack passed over (plate-logged, plate-logged-meds; 320 light and dark, 360 at 130 %, 390 dark, 430 light): the dish, "≈ 560 kcal · 38 g protein",
-  "Little is left for a snack today." in italic, "Reopen lunch" and "Plan dinner" (primary). Identical for the normal client and the medicines client
-  with no skipped meal, as D10 says. Medicines client who skipped lunch (plate-skipped-meds; 360 light, probe 320): the warning slip, "The rest of
-  the day adjusts. No meal is asked to make up for it in one sitting.", then "Reopen lunch" and "Plan snack" (the review's text check; the
-  button itself I read from the probe's card text, the image cuts it at the ask bar). The medicines client's Plate shows three example asks, not
-  "A light dinner after a heavy lunch".
-- Rescue (320 light and dark, 360 at 130 %, 390 dark, 412 light, 430 light and dark): entry (lede with kcal and protein left, "Name the dish you
-  chose", "What you type goes to Google Gemini.", four common dishes), wait, answered (dish, "≈ 650 g", kcal left, four nutrient bars with their
-  names and colours, "Sugar rise: Sharp", moves with tick boxes, "I had this, for lunch"), busy and error (Try again, typed dish kept), limit
-  (names 5:30 am, no Try again, send dimmed), no code (send and chips dimmed), blocked, refer, urgent, offline, empty ("couldn't work out that
-  dish", Try again), had-its-meal (the logged card), health-changed, two-moves-grain (the refusal toast "With diabetes the grain stays, at least
-  half of it."), after-midnight. A portion line with no whole weight was not seen on any screen (every Rescue sample dish shows "≈ N g"). The
-  chips with the 22 px radius: at 130 % "Paneer butter masala with butter naan" wraps to two lines at 360 and "naan" sits clear of the curve; at
-  100 % every chip is a one-line pill at 320, 360, 390, 412 and 430 (I did not open a 130 % chip at 320). No menu or photo wording on any
-  screen. Dark mode keeps the paper in all of them.
-- Builder held strip (320 light and dark, 360 dark and at 130 %, 375 light, 390 light, 393 light and dark, 412 light, 430 dark, plus the probe's
-  refused-note images at 320 dark, 360 at 130 %, 390 light): the slip, or the refused note "Protein can't go higher: this part stays between 5% and
-  70% of the plate.", sits in the strip directly above "Plan lunch with this plate" on the page's paper in both schemes; the strip covers the lower
-  rows until scrolled (D8 accepts it); at the end of the page it sits in its own place. The review's builder-still state passed at every width.
-- Your data in My food (360 at 130 %): "Google Gemini plans for you. It gets your answers, your meals from the last few days and what you type." and
-  the remove-my-data control and its confirmation read plainly and fit. Not opened at 320.
-- Code read: src/v6/app.js diff in full; src/v6/engine.js diff in full (the directive no longer says "light" or "late" to medicines clients through
-  hookSaid; appAskOK drops asks for lighter, smaller or skipped meals for medicines clients; typedReferral shared by the phone and the server;
-  the referral nets widened, none narrowed; the log reads figures as written); src/v5/core.js diff scanned: the removed lines are refactors of
-  the checks (the supplement list, katori and measure guards, grain checks are replaced by stricter forms, not dropped), and the added lines hold
-  no user-facing text. No safety line was removed, units stay grams and kcal, no banned word added (the word check agrees), no new hard-coded
-  width. NORETRY dropped bad_image with its reason given. UX-CRITERIA.md D8 to D10 and the watch list read; lines 484 to 571 (rounds 28 to 32, menu
-  grain questions, now dormant under D9) skimmed. The film hold lines are on docs/film/WHATSAPP-post.md and BRIEF-features.md; the films are
-  unchanged and still pass the film gate.
+## Findings, most serious first
 
-## Findings
-No blocking findings.
+F1 MINOR. Plate, stored medicine hold: the one-ask plate (meds-hold-one-ask) and the referral drawn above the hold card (meds-hold-referral);
+every width, both schemes, 130 % text.
+- What is wrong: "Back to my plates" is drawn in both places. Under the hold there are no plates to go back to: medsHoldOn (src/v6/app.js:245-247)
+  removed every earlier plate, and "Show my last plates" is hidden under the hold (D14). The tap (app.js:733 for the one-ask link, app.js:165
+  for the referral button) sets the meal's shown plate to none, and renderPlate (app.js:708-710) then draws the hold card alone. On the one-ask
+  plate the tap throws away the one plate the hold let through, with no way back except typing a new ask. On the referral card it takes the
+  "If you feel unwell now, contact your doctor or emergency care." card off the screen and shows the hold card. Probe (b): before
+  {plate: true, hold: true}, after {plate: false, hold: true, last plates: false} at 320 and at 390. Probe (b2): before {refer: true,
+  urgent: true, hold: true}, after {refer: false, hold: true, plate: false} at 320 and at 390.
+- Why it matters here: a middle-aged client, one-handed, reads "my plates" as a promise. They get the medicine card again and lose the plate
+  they were given. At 390 the link sits right under "Add it in My food" (one-ask screen 1), so the screen offers two opposite next steps.
+- Criteria: B6 (the next step says what it does, in plain words), B7, B5 (the control's effect must match its label); D14 ("no earlier plates ...
+  anywhere"; a button that promises them contradicts that).
+- Evidence: meds-hold-one-ask-2.png (320 light: the quote "something light with dal", then "Back to my plates" above the plate card);
+  meds-hold-one-ask-1.png (390 light: the link directly under the hold card's button); meds-hold-referral-1.png (320 light and 390 dark: the
+  urgent card's "Back to my plates" button above the hold card). The safety audit did not raise this (AUDIT.md m1-m4, O1-O3, c1-c4 read).
+- Smallest correction: while medsHeld() is true, do not draw the "Back to my plates" link on the one-ask plate (app.js:733) or the button on
+  the referral card (app.js:165); the hold card already carries the next step. Any new wording in its place needs the owner.
 
-Watch items (cosmetic, each listed):
-1. Builder, any width, light and dark: once a share is changed or refused, the white plate card grows about 52 px of empty paper under the last
-   stepper row (card 433 to 485 px at 320 to 390 by probe; the card's bottom padding goes from 12 to 64 px, src/v6/legible.css:324, "the held button
-   never sits on the last stepper row", R2-B5 074-2). The note now sits in the held strip, so the room is not needed for it, and the card looks
-   unfinished (390 light builder-adjusted, 375 light builder-still, probe build-bottom-390-light). B2. Smallest correction: reduce the padding to
-   what the strip needs, or keep it as the owner's 14 Nov held-button decision. Not a tap or legibility problem.
-2. Builder held strip, finish (carried from round 42): the strip keeps the height of the longest note, so a one-line note leaves empty paper under
-   the slip (430 dark); "it." or "use it." stands alone on a line at 320 to 412. D8 accepts the strip.
-3. "Your data" in My food, src/v6/app.js (third paragraph): "... counts a meal you typed or rescues a dish." "Rescues" is the tab's internal
-   name; its heading reads "Eating out". B7. Smallest correction: "or works out a dish you are eating out".
-4. Review tooling, not the app: some review frames do not overlap (plate-ask-offline-urgent and plate-skipped-meds frame 1 and frame 2 skip the
-   bottom of the card and its button). I saw those parts by probe. The checks read the DOM, so A13 and B6 are not weakened, but a reader of the
-   screens alone does not see the button. Smallest correction: overlap the scroll frames by one ask-bar height.
-5. Rescue typing at 130 % with a long dish name scrolls inside the one-line box (carried from round 42; the owner's open watch item).
+c1 COSMETIC. One-ask plate under the hold, "Change the mix" (app.js:668) opens the Builder, which shows the hold card (owner's "All tabs").
+Nothing is lost (back on Plate the plate is still shown), but the button leads to a card that cannot change the mix. B5. Evidence:
+meds-hold-one-ask-5.png at 320; probe (a). Correction: hide it while medsHeld(), as the one-tap changes are.
 
-Owner questions (not findings):
-- A. A client on medicines who types a low-sugar sign now gets the get-help line and the referral card. The skipped-meal card tells the same client
-  to "have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water". The typed-sign card does not say that. This is a
-  clinical wording decision for the owner and the safety audit, not a UX defect.
-- B. The two films still show the menu scan and carry hold lines (re-cut open). Size words with no number; Hindi counts before nuts and fruit;
-  postpartum phrasing; the Builder strip finish; Rescue long-text scroll: as listed in the brief.
+c2 COSMETIC. Plate after "Skipped it" under the hold (meds-hold-skipped, 320 light, 390 dark): two filled primary buttons on one screen,
+"Add it in My food" on the hold card and "Plan snack" on the skipped card; "Plan snack" leads to the Snack tab's hold card. The owner ruled that
+the snack stays offered after a skipped meal ("Warn them"), so the button is right; its weight is the point. B5 (one primary action per state).
+Evidence: meds-hold-skipped-3.png (320). Correction: draw "Plan snack" as a plain button while the hold is up.
 
-Not inspected: the owner's own phone; Android text scaling on a handset beyond the 130 % simulation; live Gemini text variety; clients'
-comprehension of the referral and get-help wording; every image of every state at every width (I opened the changed states at each width and
-sampled the rest, so "Your data" at 320, a 130 % chip at 320, and a Rescue portion with no weight were not seen); dark mode on a phone's own
-dark setting beyond the browser's colour-scheme; audio by ear (measured with the film gate only); the live site (not called).
+c3 COSMETIC. The log row inside the hold card ("I had something else", "Skipped it") starts 16 px to the right of the card's own text and
+button, wraps onto two lines at 320 and leaves about 50 px of empty card under "Skipped it". Cause: .logrow keeps padding 2px 16px 12px
+(src/v6/extra.css:6) inside the already padded empty card; the body card uses the same row, so it is likely the same there (inferred from the
+CSS, not seen). B2. Evidence: plate-meds-hold-2.png, rescue-hold-then-plate-2
+(320 dark), meds-hold-referral-2.png (360 at 130 %), plate-meds-hold-1.png at 390 (one line, still indented). Correction: #app .empty-card .logrow{padding-left:0;padding-right:0}.
+
+c4 COSMETIC. The hold card heading is set short of the card's measure at 320 ("You mentioned insulin / or sugar tablets. Add / it in My food so
+your / plates keep the safe size."), leaving about a quarter of each line empty, while the line under it uses the full width. B2. Evidence:
+plate-meds-hold-1.png, Builder probe at 320. Correction: let the empty-card h2 use the full width at narrow screens.
+
+c5 COSMETIC (docs; the auditor's c2). docs/ux/UX-CRITERIA.md:715 says "updating My food clears it and the plates are made again at the safe
+size" and :718 says "until My food is updated, which clears the hold". What the screen does: a My food save with insulin, sugar tablets or not
+sure switches the hold card off and the plates are made again (plate-ask-meds-typed-close-1.png, 320: a plate, no hold card); the stored fact
+stays and the card comes back on a later save without that answer (medsFact and medsHeld, app.js:229-231; medsHoldOff, app.js:250). The same D14 entry says
+so further down ("Until updated", "Hold returns (Recommended)", :721), so D14 contradicts itself; the switch-off on screen matches the later paragraph.
+handoff-next-plate.md:141 carries the same clause in a dated 23 Nov row (a record of that day's decision, so it may stay). The "comes back"
+half I judged from code and the S6/D14 text only; no review state renders it. Correction: in :715 and :718 write "a My food save with
+insulin, sugar tablets or not sure switches it off; a later save without that answer brings it back ("Hold returns (Recommended)")".
+
+c6 COSMETIC. Builder under the hold keeps the "Build the plate" heading above the hold card (blocked removes it). It reads as a heading with
+nothing to build. Probe (a), 320 light and 390 dark. Optional: remove it as the blocked state does.
+
+## Owner questions (not graded)
+- Q1. The one-ask plate's "Why this plate, today" line states the meal figure ("Your lunch should carry about 480 kcal and 31 g protein",
+  meds-hold-one-ask-6.png, 320). "Hide all three (Recommended)" names the Your day note and the appetite slider only, so this is outside the
+  ruling's letter; it is the same kind of figure, on the one plate made without the medicine floor. Hide it there too, or keep it?
+- Q2. On Rescue, the one typed dish under the hold shows its moves (probe (c)); the auditor's O1 asks the same. No UX defect in the layout.
+
+## What holds (judged on the screens)
+- Owner's wording word for word on Plate, Builder and Rescue: "You mentioned insulin or sugar tablets. Add it in My food so your plates keep
+  the safe size.", "If this is about someone else, ask again without the medicine name.", "Add it in My food"; on Plate "You can still log this
+  meal." with "I had something else" and "Skipped it" when the meal is not logged. The referral (with the urgent line first) is drawn above the
+  hold card. The one-ask plate has no "One-tap changes" row, no "Not offered" line and no Try again. The skipped card under the hold carries the
+  low-sugar warning. Under the hold on the screens: no example asks, no Rescue dish chips, no Your day meal note; the day tiles stay. No kcal
+  on the appetite slider is asserted by the meds-hold-hidden review state (it passed at every width); I did not see that screen. Grams and kcal only; Sugar rise as a band (Gentle); no banned word on any hold screen; no supplement.
+- Raw Linen holds in dark mode on every hold screen I opened (the paper look, the clay rule on the hold card; A8 measured clean in every run).
+  Nothing crowded at 320; text at 130 % holds (360-light-big hold screens).
+- D11 screens opened at 320 (setup-3-body-partial, plate-body-stored-partial on Rescue): the missing-figure line and "Add my age" read plainly.
+
+## Not inspected
+- The toast "Not changed. Your answers changed in another tab. Try again." with a second tab: seen only through probe (d), one window with
+  the store revision raised by hand (refuse(), app.js:160; act(), app.js:171; ERRS.moved, app.js:193); no review state renders it.
+- The hold coming back on a second tab after a stale My food save ("Hold returns"): code and the S6/D14 text only.
+- The one-ask Rescue dish with a checked model reply: rendered only with the raw layout fixture.
+- The owner's own phone model, Android system font scaling on a device (130 % is simulated), live Gemini text variety, audio and films by ear
+  or eye (only the automated film check ran; no film changed).
+- What I opened: at 320 light screens of every hold state (plate-meds-hold, meds-hold-referral, meds-hold-one-ask, meds-hold-skipped,
+  rescue-meds-hold, plate-hold-then-rescue, rescue-hold-then-plate, meds-hold-reload, meds-hold-hidden), at 320 dark two (meds-hold-referral,
+  rescue-hold-then-plate), at 390 light and dark eight screens, one each of eight hold states, at 360 dark one (meds-hold-one-ask), at 360 with 130 % text
+  two (meds-hold-referral, meds-hold-skipped), plus my probe shots. Screens at 375, 393, 412 and 430 were measured, not opened. The review
+  folders were deleted as instructed; any cited screen comes back with `node test/ux/review.js --widths <w> --only <state> --out <dir>`.
