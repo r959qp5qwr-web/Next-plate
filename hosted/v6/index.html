@@ -3652,66 +3652,71 @@ function healthOf(c){for(var i=0;i<CONDS.length;i++)if(c.indexOf(CONDS[i])>=0)re
 function bodyStored(v,k){return bodyIn(Math.round(+v)||0,k)||0;}
 function appKept(av){var o={};av=av&&typeof av==="object"?av:{};Object.keys(av).forEach(function(m){if(lab("meal",m)&&intakeNum(av[m],[],1,10).v!=null)o[m]=av[m];});return o;}
 var EV=[],STORE={day:DAY,res:{},shown:{}},KEYCODE="",FROMLINK=false,REMOVED=false,REMADE={},REMADEWHY={};
-(function load(){try{
-  var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;
-  if(!raw){old=JSON.parse(localStorage.getItem("np5")||"null");if(old)raw={p:old.p,c:old.c,k:old.k};}
-  if(!raw)return;var rp=raw.p||{};
-  ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
-  if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
-  ["age","cm","kg"].forEach(function(k){P[k]=bodyStored(rp[k],k);});
-  /* health is tick-all-that-apply (owner decision, 14 Nov): conds holds the ticks; health is derived, a kidney condition or pregnancy first */
-  P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
-  P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;
-  var rc=raw.c||{};["mode","mood","cuisine","prep","oil"].forEach(function(k){var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
+var P0=JSON.stringify(P),C0=JSON.stringify(C);   /* the answers and choices before anything is read: adopt() starts from these */
+/* One store, two tabs (owner, 24 Nov: "Done saves that screen (Recommended)"; safety audit of a109dd1, B1). np6 carries a stamp s:{e,r}. The epoch e changes only when
+   "Remove my data" runs; the revision r goes up with every write. STAMP is the stamp this page last read or wrote. Every write is a commit(): the store is read again;
+   when the epoch differs nothing is written and the page reloads; when the revision differs the store is taken in first (adopt), and only then is the one change applied
+   and written. Done in My food writes every My food answer from what the sheet shows, whole; any other write passes the stored answers through and changes only its own
+   field. The same check runs before a request is built (refresh, tune, the log), when an answer comes back, on pageshow, focus and visibilitychange, and on a storage event,
+   which only makes it sooner. While My food (or the first-run set-up) is open, the answers it shows are left as they are. */
+var STAMP,STOREGONE=false,MIGRATED=false;   /* STAMP is set by load(), which runs below: no initial value here */
+function stampOf(raw){return !raw?{e:"",r:0}:raw.s&&typeof raw.s.e==="string"&&typeof raw.s.r==="number"?{e:raw.s.e,r:raw.s.r}:{e:"0",r:0};}   /* a store from before the stamp reads as one fixed epoch */
+function storeRead(){try{var raw=JSON.parse(localStorage.getItem("np6")||"null");raw=raw&&typeof raw==="object"?raw:null;return {raw:raw,s:stampOf(raw)};}catch(e){return null;}}
+/* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
+function pruneStale(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
+    var why=typeof r.rules==="string"&&r.rules!==rules()?"answers":"app";Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;REMADEWHY[s]=why;}});}});}   /* the note names the cause (Critic round 38, finding 6) */
+/* the one reader of the store, at load and whenever another tab wrote: keepP leaves the answers My food (or the set-up) shows as they are */
+function adopt(raw,keepP){raw=raw&&typeof raw==="object"?raw:{};var ui=typeof UI==="object"&&!!UI,r0=rules(),k0=STORE.shown?STORE.shown[C.meal]:null,mine=STORE;
+  if(!keepP){var rp=raw.p&&typeof raw.p==="object"?raw.p:{},d=JSON.parse(P0);Object.keys(P).forEach(function(k){delete P[k];});Object.keys(d).forEach(function(k){P[k]=d[k];});
+    ["goal","focus","meds","diet","health","region","sex","act"].forEach(function(k){if(lab(k,rp[k]))P[k]=rp[k];});
+    if(Array.isArray(rp.leave))P.leave=rp.leave.filter(function(k){return !!lab("leave",k);});
+    ["age","cm","kg"].forEach(function(k){P[k]=bodyStored(rp[k],k);});
+    /* health is tick-all-that-apply (owner decision, 14 Nov): conds holds the ticks; health is derived, a kidney condition or pregnancy first */
+    P.conds=Array.isArray(rp.conds)?rp.conds.filter(function(c){return CONDS.indexOf(c)>=0;}):(P.health&&P.health!=="none"?[P.health]:[]);if(P.conds.length)P.health=healthOf(P.conds);
+    P.done=!!rp.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;}
+  var rc=raw.c||{},c0=JSON.parse(C0);["mode","mood","cuisine","prep","oil"].forEach(function(k){C[k]=c0[k];var v=optNow(k,rc[k]);if(lab(k,v))C[k]=v;});   /* a choice kept from before the owner's 14 Nov decisions is read as today's */
   C.ratio=ratioOK(rc.ratio);   /* a saved share out of the engine's bounds (an older build could save one) is dropped at load (B2) */   /* the chosen share is kept on the phone (R2-B5 076-3) */
-  if(Array.isArray(raw.ev))EV=raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;});
-  if(raw.app&&raw.app.day===DAY)APP=appKept(raw.app.v);
-  if(raw.store&&raw.store.day===DAY&&raw.store.res)STORE=raw.store;
-  /* plates kept from before the declared grain field (Critic round 12) or the declared contents (D1) were checked under the old rules: drop them, so today's plates are made again */
-  Object.keys(STORE.res).forEach(function(k){var r=STORE.res[k];if(r&&Array.isArray(r.meals)&&(r.rules!==rules()||r.meals.some(function(m){return !m||!m.grain||!Array.isArray(m.contains);}))){delete STORE.res[k];
-    var why=typeof r.rules==="string"&&r.rules!==rules()?"answers":"app";Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k){delete STORE.shown[s];REMADE[s]=1;REMADEWHY[s]=why;}});}});   /* the note names the cause (Critic round 38, finding 6) */
+  EV=Array.isArray(raw.ev)?raw.ev.filter(function(e){return e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0;}):[];
+  APP=raw.app&&raw.app.day===DAY?appKept(raw.app.v):{};
+  STORE=raw.store&&raw.store.day===DAY&&raw.store.res&&typeof raw.store.res==="object"?raw.store:{day:DAY,res:{},shown:{}};if(!STORE.shown||typeof STORE.shown!=="object")STORE.shown={};
   if(typeof raw.k==="string")KEYCODE=raw.k;
-}catch(e){}})();
-storeInit();   /* what this page read, for save() to tell its own changes from another tab's (B3) */
-/* the code from the coach's link is kept on the phone at once, so a reload or a closed tab during set-up keeps it (Critic round 34) */
-try{var qk=new URLSearchParams(location.search).get("k");if(qk){KEYCODE=qk.slice(0,80);history.replaceState(null,"",location.pathname);save();FROMLINK=true;}}catch(e){}
-/* after "Remove my data" the page reloads on set-up; it says once that the data went (screen review B3) */
-try{if(sessionStorage.getItem("np-removed")){REMOVED=true;sessionStorage.removeItem("np-removed");}}catch(e){}
-/* Two tabs of the page share one store (safety audit of 3ee7b41, B3: a tab opened earlier wrote its old answers back over a My food change made in the other).
-   save() reads the store again, takes in what another tab changed that this page did not, and only then writes; refresh() does the same before any request is
-   built, and a storage event from another tab redraws at once. RAW0 is the store as this page last read or wrote it; MEM0 is this page's own state at that moment. */
-var RAW0,MEM0,STOREGONE=false;   /* set by storeInit() right after load(), which runs above this line: no initial value here */
-function memNow(){return JSON.parse(JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:APP,store:STORE,k:KEYCODE}));}
-function storeRaw(){try{return JSON.parse(localStorage.getItem("np6")||"null")||{};}catch(e){return null;}}
-function storeInit(){RAW0=storeRaw()||{};MEM0=memNow();}
-function storeGone(){if(!RAW0||!RAW0.p)return false;try{var c=JSON.parse(localStorage.getItem("np6")||"null");return !c||!c.p;}catch(e){return false;}}   /* the answers this page read were removed in another tab ("Remove my data" leaves only the link's code) */
-function storeSync(){if(storeGone()){STOREGONE=true;try{location.reload();}catch(e){}return;}var cur=storeRaw();if(!cur||!RAW0||!MEM0)return;var J=JSON.stringify,mem=memNow(),cp=cur.p||{},rp=RAW0.p||{},cc=cur.c||{},rc=RAW0.c||{},took=false;
-  var other=function(a,b){return J(a)!==J(b);};
-  Object.keys(cp).forEach(function(k){if(!other(cp[k],rp[k])||other(mem.p[k],MEM0.p[k]))return;took=true;var v=cp[k];   /* another tab changed it and this page did not: read as load() reads it */
-    if(["goal","focus","meds","diet","health","region","sex","act"].indexOf(k)>=0){if(lab(k,v))P[k]=v;}
-    else if(k==="leave"){if(Array.isArray(v))P.leave=v.filter(function(x){return !!lab("leave",x);});}
-    else if(k==="age"||k==="cm"||k==="kg")P[k]=bodyStored(v,k);
-    else if(k==="conds"){if(Array.isArray(v))P.conds=v.filter(function(c){return CONDS.indexOf(c)>=0;});}
-    else if(k==="done")P.done=!!v;});
-  if(took){if(P.conds.length)P.health=healthOf(P.conds);P.done=!!P.done&&!!P.diet&&!!P.health&&!!P.goal&&!!P.region;}
-  ["mode","mood","cuisine","prep","oil"].forEach(function(k){if(other(cc[k],rc[k])&&!other(mem.c[k],MEM0.c[k])){var v=optNow(k,cc[k]);if(lab(k,v))C[k]=v;}});
-  if(other(cc.ratio,rc.ratio)&&!other(mem.c.ratio,MEM0.c.ratio))C.ratio=ratioOK(cc.ratio);
-  if(other(cur.ev,RAW0.ev)&&Array.isArray(cur.ev)){var have={},base={};EV.forEach(function(e){have[J(e)]=1;});(RAW0.ev||[]).forEach(function(e){base[J(e)]=1;});   /* events another tab added */
-    cur.ev.forEach(function(e){if(e&&typeof e.t==="number"&&EVTYPES.indexOf(e.type)>=0&&!have[J(e)]&&!base[J(e)])EV.push(e);});EV.sort(function(a,b){return a.t-b.t;});}
-  if(other(cur.app,RAW0.app)&&!other(mem.app,MEM0.app)&&cur.app&&cur.app.day===DAY)APP=appKept(cur.app.v);
-  if(other(cur.store,RAW0.store)&&!other(mem.store,MEM0.store)&&cur.store&&cur.store.day===DAY&&cur.store.res)STORE=cur.store;
-  if(other(cur.k,RAW0.k)&&mem.k===MEM0.k&&typeof cur.k==="string")KEYCODE=cur.k;
-  RAW0=cur;MEM0=memNow();}
+  /* this page's answer to a one ask under the hold is never stored ("One ask only"): it stays with this page */
+  if(mine&&mine!==STORE)Object.keys(mine.res||{}).forEach(function(k){var r=mine.res[k];if(!r||!r.once||STORE.res[k])return;STORE.res[k]=r;Object.keys(mine.shown||{}).forEach(function(m){if(mine.shown[m]===k&&!STORE.shown[m])STORE.shown[m]=k;});});
+  if(!keepP)pruneStale();
+  if(ui){if(rules()!==r0){if(!(UI.rres&&UI.rres.status==="refer"))UI.rres=null;UI.rmoves={};}if(STORE.shown[C.meal]!==k0){UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;}}}
+(function load(){try{
+  var raw=JSON.parse(localStorage.getItem("np6")||"null"),old=null;raw=raw&&typeof raw==="object"?raw:null;STAMP=stampOf(raw);STAMP.p=!!(raw&&raw.p);
+  if(!raw){old=JSON.parse(localStorage.getItem("np5")||"null");if(old){raw={p:old.p,c:old.c,k:old.k};MIGRATED=true;}}
+  if(!raw)return;adopt(raw,false);
+}catch(e){if(!STAMP)STAMP={e:"",r:0,p:false};}})();
+function keepNow(){return typeof UI==="object"&&!!UI&&UI.sheet==="food"||!P.done;}   /* My food or the set-up is open: its answers stay as shown */
+function storeLost(){STOREGONE=true;try{location.reload();}catch(e){}}   /* the client's data was removed in another tab: nothing is written back; this page reloads */
+/* the store as read now against STAMP: false when it is gone (another epoch, or the answers this page read were removed), "moved" when another tab wrote and it was taken in */
+function storeTake(cur,keepP,force){if(cur.s.e!==STAMP.e||STAMP.p&&!(cur.raw&&cur.raw.p)){storeLost();return false;}
+  if(cur.s.r===STAMP.r&&!force)return true;adopt(cur.raw,keepP);STAMP={e:cur.s.e,r:cur.s.r,p:!!(cur.raw&&cur.raw.p)};return "moved";}
+function storeCheck(){if(STOREGONE)return false;var cur=storeRead();return cur?storeTake(cur,keepNow()):true;}
 /* the day's store as written: the answers to a one ask under the hold stay in this page only, so a reload or another tab shows the hold card alone ("One ask only") */
 function storeOut(){var o={day:STORE.day,res:{},shown:{}};Object.keys(STORE.res).forEach(function(k){if(STORE.res[k]&&!STORE.res[k].once)o.res[k]=STORE.res[k];});
   Object.keys(STORE.shown).forEach(function(m){var k=STORE.shown[m];o.shown[m]=k&&!o.res[k]?null:k;});return o;}
-function save(){try{
-  storeSync();if(STOREGONE)return;   /* the client's data was removed in another tab: nothing is written back; this page reloads */
-  var cut=Date.now()-90*864e5;EV=EV.filter(function(e){return e.t>=cut;}).slice(-3000);
-  var keys=Object.keys(STORE.res);if(keys.length>12)keys.sort(function(a,b){return STORE.res[a].at-STORE.res[b].at;}).slice(0,keys.length-12).forEach(function(k){delete STORE.res[k];});
-  var out=JSON.stringify({p:P,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:storeOut(),k:KEYCODE});
-  localStorage.setItem("np6",out);RAW0=JSON.parse(out);MEM0=memNow();}catch(e){}}
-function logEv(type,o,meal){var e={t:Date.now(),type:type,meal:meal||C.meal};if(o)for(var k in o)e[k]=o[k];EV.push(e);save();}
+/* one write: read the store, take in another tab's write, apply this change (fn), write. o.whole writes My food's answers as this page holds them (Done, a close with
+   changes, the end of set-up); o.pick names the answers a Your day tap changes (goal, focus); any other write passes the stored answers through */
+function commit(fn,o){o=o||{};if(STOREGONE)return false;var cur=storeRead();if(cur&&storeTake(cur,!!o.whole||keepNow())===false)return false;
+  if(fn)fn();
+  try{var cut=Date.now()-90*864e5;EV=EV.filter(function(e){return e.t>=cut;}).slice(-3000);
+    var keys=Object.keys(STORE.res);if(keys.length>12)keys.sort(function(a,b){return STORE.res[a].at-STORE.res[b].at;}).slice(0,keys.length-12).forEach(function(k){delete STORE.res[k];});
+    var sp=cur&&cur.raw&&cur.raw.p&&typeof cur.raw.p==="object"?cur.raw.p:null,p=o.whole||!cur?P:sp?JSON.parse(JSON.stringify(sp)):undefined;
+    if(p&&p!==P&&o.pick)o.pick.forEach(function(k){p[k]=P[k];});
+    var s={e:STAMP.e,r:STAMP.r+1};
+    localStorage.setItem("np6",JSON.stringify({p:p,c:{mode:C.mode,mood:C.mood,cuisine:C.cuisine,prep:C.prep,oil:C.oil,ratio:C.ratio},ev:EV,app:{day:DAY,v:APP},store:storeOut(),k:KEYCODE,s:s}));
+    STAMP={e:s.e,r:s.r,p:!!p};}catch(e){}
+  return true;}
+function save(){return commit(null);}   /* a write whose change this page made after its own check, in the same run */
+if(MIGRATED)commit(null,{whole:true});   /* answers read from the older np5 store are written to np6 at once */
+/* the code from the coach's link is kept on the phone at once, so a reload or a closed tab during set-up keeps it (Critic round 34) */
+try{var qk=new URLSearchParams(location.search).get("k");if(qk){history.replaceState(null,"",location.pathname);commit(function(){KEYCODE=qk.slice(0,80);});FROMLINK=true;}}catch(e){}
+/* after "Remove my data" the page reloads on set-up; it says once that the data went (screen review B3) */
+try{if(sessionStorage.getItem("np-removed")){REMOVED=true;sessionStorage.removeItem("np-removed");}}catch(e){}
+function logEv(type,o,meal){var e={t:Date.now(),type:type,meal:meal||C.meal};if(o)for(var k in o)e[k]=o[k];commit(function(){EV.push(e);});}
 var UI={open:"",view:"plate",sel:0,alc:{},swp:0,swb:0,adj:false,busy:"",err:"",step:0,fresh:true,hab:{veg:false,walk:false,lemon:false},ratio:null,preset:"mode",
   rtext:"",rres:null,rbusy:false,rerr:"",rmoves:{},sheet:"",ltext:"",lres:null,lbusy:false,lerr:""};
 var FILE=null,PL=null,HOOKS=[];
@@ -3719,6 +3724,9 @@ function has(c){return P.conds.indexOf(c)>=0;}
 /* the medicine answer: with diabetes an unanswered question (ticked from My food, which does not ask it) is read as "not sure", as the engine
    reads it, everywhere on the phone (fix-r15; safety audit of c666d34, m8: the skipped-meal warning and the snack rule read it as "no") */
 function onMeds(){return has("diabetes")&&P.meds!=="no";}
+/* the low-sugar safeguards read the stored medicine hold too (safety audit of a109dd1, O2, under the owner's "Warn them (Recommended)"): a client who typed insulin or sugar
+   tablets gets the skipped-meal warning and keeps the snack offered while the hold is stored. Each reader can only add a warning or keep food offered. */
+function lowGuard(){return onMeds()||typeof medsHeld==="function"&&medsHeld();}
 /* the step for now after the warning (owner, 14 Nov, option survey): the same words on the card and in the spoken line */
 var MEDSWARN="On insulin or sugar tablets such as glimepiride or gliclazide, a skipped meal can drop your sugar. Follow your doctor's advice. If you feel shaky, sweaty or dizzy, have something sweet now, such as a glass of juice or 3 teaspoons of sugar in water, and call your doctor.";
 /* what the targets still need, in words, and where to type it (screen review B2) */
@@ -3751,7 +3759,7 @@ function pruneKept(){Object.keys(STORE.res).forEach(function(k){var r=STORE.res[
     var keep=r.meals.filter(function(m){return m&&m.items&&!baseWhy(m,r.meal);});if(keep.length===r.meals.length)return;
     if(!keep.length){delete STORE.res[k];Object.keys(STORE.shown).forEach(function(s){if(STORE.shown[s]===k)STORE.shown[s]=null;});}else r.meals=keep;UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;});}
 function clockMeal(h){return h<4?"dinner":h<11?"breakfast":h<15.5?"lunch":h<18.5?"snack":"dinner";}
-function refresh(){storeSync();now=new Date();hr=now.getHours()+now.getMinutes()/60;CLOCK=clockMeal(hr);
+function refresh(){storeCheck();now=new Date();hr=now.getHours()+now.getMinutes()/60;CLOCK=clockMeal(hr);
   if(dayOf(now.getTime())!==DAY){DAY=dayOf(now.getTime());C.meal=CLOCK;STORE={day:DAY,res:{},shown:{}};APP={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.adj=false;UI.fresh=true;
     /* yesterday's Rescue and log answers go too (S12): the day starts at 4 am */
     UI.rres=null;UI.rmoves={};UI.rtext="";UI.rerr="";UI.lres=null;UI.ltext="";UI.lerr="";}   /* a tab open past the day's start starts the new day (S12) */FILE=buildFile(EV,now.getTime());PL=planDay(profileOut(),FILE,C.meal,appetite());pruneKept();
@@ -3759,7 +3767,9 @@ function refresh(){storeSync();now=new Date();hr=now.getHours()+now.getMinutes()
 /* a tap that logs or clears first checks the day: after the day changes, the screen is drawn for the new day instead (S12) */
 function dayMoved(){if(dayOf(Date.now())===DAY)return false;refresh();render();try{$("scroll").scrollTop=0;}catch(e){}return true;}
 function wake(){if(P.done&&dayOf(Date.now())!==DAY){refresh();render();}}
-["visibilitychange","focus","pageshow"].forEach(function(t){(t==="visibilitychange"?document:window).addEventListener(t,function(){if(!document.hidden)wake();});});
+/* a tab coming back (pageshow, a back/forward restore among them, focus, visibilitychange) reads the store again before anything else (owner, 24 Nov, "Done saves that screen") */
+function onReturn(){if(document.hidden)return;if(storeCheck()==="moved"&&!UI.sheet)render();wake();}
+["visibilitychange","focus","pageshow"].forEach(function(t){(t==="visibilitychange"?document:window).addEventListener(t,onReturn);});
 /* ---------- one check on the composed result (audit B7, B8, B9): the plate after any swap and change, a Rescue dish after any tick or
    untick, and kept plates against the current rules and body figures. It runs on every tap, at render and again just before anything is
    logged; a state that fails is not offered and not logged, and #said says why. ---------- */
@@ -3794,7 +3804,7 @@ function referCardR(r){var e=el("div","empty-card"),s=el("span","safe-ic");e.id=
 function referHead(e,r){if(r.urgent){e.appendChild(el("h2","urgent",URGENTLINE));e.appendChild(el("p",null,r.read||SAFETY));}else e.appendChild(el("h2",null,r.read||SAFETY));}
 /* Every tap that shows a composed state or writes the log goes through act() (safety round 5): the day is checked first (S12), then the
    composed result the tap would make (S5, S6). test/safety/check.js reads app.js and fails if a click handler that logs or clears does not. */
-function act(check,fn,onDay){return function(){if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
+function act(check,fn,onDay){return function(){if(storeCheck()===false)return;if(dayMoved()){if(onDay)onDay();return;}var w=check?check():"";if(w){refuse(w);render();return;}return fn.apply(this,arguments);};}
 /* moving to another meal starts its plate fresh: no plate choice, swap or change carries over (correctness review, minor) */
 /* a refusal shows the info mark, not the tick that a done action shows */
 var toast0=toast;toast=function(t,warn){var u=$("toast").querySelector("use"),h=warn?"#i-info":"#i-check";if(u&&u.getAttribute("href")!==h)u.setAttribute("href",h);toast0(t,warn);};
@@ -3815,7 +3825,7 @@ function ctxOut(text){var c={lite:true,dayNo:dayNo(),meal:C.meal,time:clockText(
 var ERRS={not_set_up:"Meal planning isn't switched on for this link. Send your coach a WhatsApp message to say so.",   /* owner, 14 Nov, option survey (R2-B5 068) */
   bad_request:"Next Plate couldn't read that. Close it and open your link from WhatsApp again.",
   bad_key:"Open the link your coach sent you on WhatsApp once. After that, this phone remembers it.",
-  busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",timeout:"Next Plate took too long to answer. Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
+  busy:"Next Plate is busy just now. Wait a minute, then tap Try again.",moved:"Your answers changed in another tab. Try again.",timeout:"Next Plate took too long to answer. Try again.",upstream_error:"Next Plate couldn't get an answer just now.",unparsed:"Next Plate's answer came back incomplete."};
 /* Try again is offered unless trying again cannot help: a limit, the link, the set-up, photos off, a bad request. "photos_off" stays: the
    server still answers it to a request whose image is an empty string, which plan() lets through. "bad_image" went (fix-r12; Critic round
    42, watch item 4): the server reads it only for a non-empty image, and plan() refuses every such request first (owner, 17 Nov) */
@@ -3849,8 +3859,8 @@ var MEDSOTHER="If this is about someone else, ask again without the medicine nam
    insulin, sugar tablets or not sure, and "Remove my data", which removes the key with the rest of the data. A typed ask or dish with no medicine name is sent and
    answered for that ask, and the hold stays (medsOneAsk). A storage error keeps the hold for this page's life only (the copy in memory is read with what is stored); a
    fact that could not be stored is gone after a reload (safety audit of 3ee7b41, m1). */
-var MEDSKEY="np6meds",MEDSFACT=false;
-function medsFact(){try{MEDSFACT=MEDSFACT||localStorage.getItem(MEDSKEY)!==null;}catch(e){}return MEDSFACT;}
+var MEDSKEY="np6meds",MEDSFACT=false,MEDSERR=false;
+function medsFact(){try{return localStorage.getItem(MEDSKEY)!==null||MEDSERR&&MEDSFACT;}catch(e){return MEDSFACT;}}   /* what is stored, read live (so two tabs read one hold); the copy in memory only when the store failed */
 function medsSetupOK(pr){return typeof medsOnSetup==="function"&&typeof readProfile==="function"&&medsOnSetup(readProfile(pr||profileOut()));}
 function medsHeld(pr){return medsFact()&&!medsSetupOK(pr);}
 /* the one ask a stored hold lets through, in one place (owner, 23 Nov, O2: "One ask only (Recommended)"): text the client typed in the ask box or the dish box, with no
@@ -3865,8 +3875,11 @@ function boxAsk(t){UI.askDraft=t;UI.askTypedV=null;}
 function boxDish(t){UI.rkeep=t;UI.rinTypedV=null;}
 function medsNamed(t){if(typeof MEDRX==="undefined"||typeof norm!=="function")return true;return MEDRX.test(norm(String(t)).toLowerCase());}   /* any medicine name the net reads; unreadable counts as named */
 function medsReferProfile(pr){return Object.assign({},pr||{},{health:"diabetes",meds:"yes"});}   /* the set-up the low-sugar referral reads while the hold is stored ("Warn them") */
-function medsHoldOn(){MEDSFACT=true;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){}UI.mholdN=(UI.mholdN||0)+1;STORE.res={};STORE.shown={};UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;save();}
-function medsHoldOff(){MEDSFACT=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
+/* a referral already drawn stays when the hold comes up (safety audit of a109dd1, m5): it is drawn ahead of the hold card and the hold note */
+function medsHoldOn(){MEDSFACT=true;MEDSERR=false;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){MEDSERR=true;}UI.mholdN=(UI.mholdN||0)+1;
+  var ref=function(r){return !!r&&r.status==="refer";};if(!ref(UI.rres))UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;
+  commit(function(){Object.keys(STORE.res).forEach(function(k){if(!ref(STORE.res[k]))delete STORE.res[k];});Object.keys(STORE.shown).forEach(function(m){if(!ref(STORE.res[STORE.shown[m]]))delete STORE.shown[m];});});}
+function medsHoldOff(){MEDSFACT=false;MEDSERR=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
 function medsCard(withLog){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(c);
   if(withLog&&!slotOf(C.meal)){c.appendChild(el("p","fine","You can still log this meal."));c.appendChild(logRow());}   /* "Keep log (Recommended)", owner 23 Nov */
   return c;}
@@ -3888,6 +3901,9 @@ function bodyHold(path,body){var p=body&&body.profile;if(!p)return false;var n=(
   if(P.done&&!UI.sheet&&!UI.bodyOpened){UI.bodyOpened=true;var nd=bodyNeed();openSheet("food",nd?nd.at:"body-age");}
   return true;}
 function api(path,body,cb,typed){
+  /* the store is read before anything is sent (owner, 24 Nov, "Done saves that screen"): the caller built the body after its own check, in the same run; if another tab
+     wrote in between, nothing is sent with the old answers (the caller asks again when its answers changed), and after a removal in another tab nothing is sent at all */
+  var sc=storeCheck();if(sc===false)return;if(sc==="moved"){cb(0,{code:"moved"});return;}
   /* S7 on the phone (fix-r15; safety audit of c666d34, m4): typed text goes through the nets plan() runs (np-core's typedReferral), before
      anything is sent; a referral is answered here with no network call, so offline, on a timeout or with a refused code the client still
      gets it, with the line to get help now on an urgent sign. A phone that holds a lock sends nothing and reads nothing typed. */
@@ -3909,18 +3925,19 @@ function api(path,body,cb,typed){
   if(/\/(?:meals|rescue)$/.test(String(path||""))&&medsHeld(body&&body.profile)){
     if(!medsOneAsk(body,typed)){cb(0,{code:"meds_typed"});return;}
     once=true;}
+  if(/\/tune$/.test(String(path||""))&&medsHeld(body&&body.profile)){cb(0,{code:"meds_typed"});return;}   /* no swaps or one-tap changes under the hold, the one-ask plate's included (owner, 24 Nov, "Hide them (Recommended)") */
   if(bodyHold(path,body)){cb(0,{code:"body_partial"});return;}   /* no request with a partial body leaves the phone (fix-r20), and a referral above still comes first (S7) */
   body.key=KEYCODE;
   var done=false,late=false,ctl=window.AbortController?new AbortController():null,t=setTimeout(function(){late=true;if(ctl)ctl.abort();},95000);
   fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body),signal:ctl?ctl.signal:undefined})
     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};},function(){return {s:r.status,j:{}};});})
-    .then(function(x){clearTimeout(t);if(!done){done=true;if(x.j&&x.j.code==="meds_typed"&&/\/(?:meals|rescue)$/.test(String(path||"")))medsHoldOn();if(once&&x.j&&typeof x.j==="object")x.j.once=true;cb(x.s,x.j||{});}}   /* once: the answer to the one ask under the hold, drawn for that ask only */,function(){clearTimeout(t);if(!done){done=true;cb(0,{code:late?"timeout":"network"});}});   /* a slow answer is not a lost signal (R2-B6 086-1) */
+    .then(function(x){clearTimeout(t);if(!done){done=true;if(storeCheck()===false)return;if(x.j&&x.j.code==="meds_typed"&&/\/(?:meals|rescue)$/.test(String(path||"")))medsHoldOn();if(once&&x.j&&typeof x.j==="object")x.j.once=true;cb(x.s,x.j||{});}}   /* once: the answer to the one ask under the hold, drawn for that ask only */,function(){clearTimeout(t);if(!done){done=true;if(storeCheck()===false)return;cb(0,{code:late?"timeout":"network"});}});   /* a slow answer is not a lost signal (R2-B6 086-1) */
 }
 /* what a plate request was made for: the answers in My food and the settings on the Plate. A reply made for answers or settings that have
    changed since it was sent is not shown; the plates are asked for again (second screen review, R2-B1 011) */
 function askedFor(){return JSON.stringify([profileOut(),C.mode,C.mood,C.cuisine,C.prep,C.oil,C.ratio,APP,dayOf(Date.now()),EV.filter(function(e){return isMealEv(e)||e.type==="skipped";}).length]);}   /* and the day and the food log: a reply made before a meal was logged, or before the day changed, is not shown (S11, S12) */
 function makePlates(text,again,typed){
-  if(UI.busy)return;refresh();UI.empty=false;var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey(),sent=askedFor();
+  if(UI.busy)return;refresh();UI.empty=false;var meal=C.meal,key=text?"ask|"+meal+"|"+text.toLowerCase():ctxKey(),sent=askedFor(),rs=rules();
   var hn=UI.mholdN;
   UI.busy=text?"ask":"plates";UI.err="";UI.ecode="";UI.eretry=true;UI.lastAsk=text||"";render();if(text&&!again)logEv("asked",{text:text.slice(0,120)});
   api("/api/meals",{profile:profileOut(),ctx:ctxOut(text),file:fileOut()},function(s,j){
@@ -3928,7 +3945,7 @@ function makePlates(text,again,typed){
     if(UI.mholdN!==hn&&j.code!=="meds_typed"){render();return;}   /* a hold came up on another tab while this was out: what it brings is not shown */
     if(askedFor()!==sent){refresh();if(C.meal===meal&&!blocked()&&!slotOf(meal))makePlates(text||"",true);else render();return;}
     if(s===200&&(j.status==="ok"||j.status==="refer")){
-      STORE.res[key]={meal:meal,once:!!j.once,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rules()};   /* stamped with the rules it was made under (second audit B4) */STORE.shown[meal]=key;
+      STORE.res[key]={meal:meal,once:!!j.once,status:j.status,read:j.read||"",urgent:j.urgent?URGENTLINE:"",meals:j.meals||[],hooks:j.hooks||{},ask:text||"",at:Date.now(),rules:rs};   /* stamped with the rules it was asked under (second audit B4) */STORE.shown[meal]=key;
       UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;UI.fresh=true;UI.lastAsk="";UI.lock="";UI.moved="";if(j.meals&&j.meals.length)logEv("shown",{titles:j.meals.map(function(m){return m.title;})},meal);save();tune(key,0);
     }else if(s===200&&j.status==="empty"){UI.err="None of the plates made for you fit your food rules (what you eat and leave out). Try again, or change a choice below.";UI.empty=true;if(text)boxAsk(text);}
     else{UI.err=errText(j.code,"plate");UI.ecode=j.code;UI.eretry=RETRY(j.code);if(text)boxAsk(text);lockOn(j.code);}
@@ -3940,12 +3957,14 @@ function makePlates(text,again,typed){
 /* The swaps and one-tap changes for one plate arrive a few seconds after the plates themselves, so the plates never wait for them. */
 var TUNING={};
 function tune(key,i){
+  if(medsHeld()||storeCheck()===false)return;   /* under the hold nothing is sent for the swaps (owner, 24 Nov, "Hide them (Recommended)") */
   var r=STORE.res[key],m=r&&r.meals&&r.meals[i];if(!m||m.tuned||TUNING[key+"#"+i])return;TUNING[key+"#"+i]=1;
   var sent=ansSig()+"|"+DAY;
   api("/api/tune",{profile:profileOut(),slot:r.meal,meal:{title:m.title,subtitle:m.subtitle,cuisine:m.cuisine,prepMinutes:m.minutes,minutes:m.minutes,items:m.items,grain:m.grain,contains:m.contains,kcal:m.kcal,protein:m.protein,carbs:m.carbs,fats:m.fats,fiber:m.fiber,why:[]}},function(s,j){
     delete TUNING[key+"#"+i];
     if(ansSig()+"|"+dayOf(Date.now())!==sent){if(UI.view==="plate"&&!UI.busy)render();return;}   /* swaps and changes made for other answers are not shown (S11) */
-    if(s===200&&j.status==="ok"){m.swaps=j.swaps;m.alchemy=j.alchemy;m.tuned=true;save();}else m.tuneFailed=true;
+    var r2=STORE.res[key],m2=r2&&r2.meals&&r2.meals[i];if(!m2||m2.title!==m.title)return;   /* the plate as the store holds it now */
+    if(s===200&&j.status==="ok"){m2.swaps=j.swaps;m2.alchemy=j.alchemy;m2.tuned=true;save();}else m2.tuneFailed=true;
     if(UI.view==="plate"&&curKey()===key&&UI.sel===i&&!UI.busy)render();});
 }
 /* a swap's biggest change, in words: protein for the main protein, carbs (then fibre, then energy) for the grain (screen review B2) */
@@ -3976,7 +3995,7 @@ function swapAt(m,kind){var g=m.grain&&m.grain.food,at=-1;for(var i=0;i<m.items.
      log a plate that is not the one shown (S10; final audit M1) */
   return kind==="protein"&&at>=0&&at===swapAt(m,"base")?-1:at;}
 function curMeal(){var r=curRes();if(!r||!r.meals||!r.meals.length)return null;if(UI.sel>=r.meals.length)UI.sel=0;return r.meals[UI.sel];}
-function clearSlot(meal){var d=DAY;EV=EV.filter(function(e){return !(dayOf(e.t)===d&&e.meal===meal&&(isMealEv(e)||e.type==="skipped"));});save();}
+function clearSlot(meal){var d=DAY;commit(function(){EV=EV.filter(function(e){return !(dayOf(e.t)===d&&e.meal===meal&&(isMealEv(e)||e.type==="skipped"));});});}
 /* an asked plate, once the meal is logged, gives way so the logged card shows (screen review B2) */
 function unAsk(){if(STORE.shown[C.meal]&&STORE.shown[C.meal].indexOf("ask|")===0)STORE.shown[C.meal]=null;}
 /* the next meal still open: a later one first, then an earlier main meal, then an earlier snack; none only when all four are logged or
@@ -3992,7 +4011,7 @@ function snackRoom(){var sp=planFor("snack");if(!sp)return null;var r=sp.left.kc
 function nextOffer(){var nx=nextOpen();if(nx!=="snack"||!PL)return {meal:nx,low:false};
   /* "My rule" (owner, 17 Nov, option survey; docs/ux/UX-CRITERIA.md D10): the 14 Nov rule restored for everyone. Under 120 kcal left, the snack is
      passed over, with a client on medicines too, except one who skipped a meal today: the snack stays offered then (the low-sugar safeguard) */
-  var room=snackRoom();if(room==null||room>=120||(onMeds()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
+  var room=snackRoom();if(room==null||room>=120||(lowGuard()&&FILE.today.meals.some(function(m){return m.kind==="skipped";})))return {meal:nx,low:false};
   var i=SLOTS.indexOf("snack");for(var j=i+1;j<4;j++)if(!slotOf(SLOTS[j]))return {meal:SLOTS[j],low:true};return {meal:nx,low:true};}
 
 /* ---------- chrome ---------- */
@@ -4107,7 +4126,7 @@ function renderSetup(){
     v.appendChild(el("p","fine","Choose "+(miss.length>1?miss.slice(0,-1).join(", ")+" and "+miss[miss.length-1]:miss[0])+" to go on."));}
   if(!ok&&UI.step===1&&has("diabetes")&&!P.meds)v.appendChild(el("p","fine","Answer the medicine question to go on."));
   var go=btn("btn primary",refer?"Done":UI.step<2?"Next":"Show my plate",null,"setup-next");if(!ok){go.disabled=true;go.style.opacity=".5";}
-  go.addEventListener("click",function(){if(!setupOK())return;   /* read live at the tap, never the value captured when the step was drawn (Critic r21 F1) */if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;save();show("plate");});
+  go.addEventListener("click",function(){if(!setupOK())return;   /* read live at the tap, never the value captured when the step was drawn (Critic r21 F1) */if(UI.step<2&&!refer){UI.step++;render();$("scroll").scrollTop=0;return;}P.done=true;commit(null,{whole:true});show("plate");});
   row.appendChild(go);v.appendChild(row);if(UI.step===2)bodyGate();
   v.appendChild(el("p","fine disc","Meals are planned by AI (Google Gemini) from your choices and your day. Numbers are estimates. General food guidance, not medical advice."));
 }
@@ -4156,10 +4175,10 @@ function ctxBlock(host){
   /* the open setting's panel goes right under its pill, with the question it answers (second screen review, R2-B2 027-1) */
   var pan=el("div","panel"),HOST=host;host=pan;
   function title(t,sub){var c=el("p","cap",t);pan.appendChild(c);if(sub)pan.appendChild(el("p","fine",sub));pan.setAttribute("role","group");pan.setAttribute("aria-label",t);}
-  function changed(what){STORE.shown[C.meal]=null;if(!medsHeld())UI.err="";UI.open="";UI.moved=what||"setting";save();render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
+  function changed(what){STORE.shown[C.meal]=null;if(!medsHeld())UI.err="";UI.open="";UI.moved=what||"setting";commit(null,{pick:["goal","focus"]});render();var rk=$("remake");if(rk)rk.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});}   /* the next step, Plan my plates, comes into view */
   function radios(list,isOn,set,iconOf,cls){var g=el("div",cls||"grid2");g.setAttribute("role","radiogroup");
     list.forEach(function(o){var b=el("button",cls==="choice-row"||cls==="lows"?"choice":"tile");b.type="button";b.id=o.id;b.setAttribute("role","radio");b.setAttribute("aria-checked",isOn(o.v)?"true":"false");if(iconOf)b.appendChild(ic(iconOf(o.v)));var tx=el("span",null,o.t);if(o.s)tx.appendChild(el("small",null,o.s));b.appendChild(tx);
-      b.addEventListener("click",function(){set(o.v);});g.appendChild(b);});host.appendChild(g);}
+      b.addEventListener("click",function(){if(storeCheck()===false)return;set(o.v);});g.appendChild(b);});host.appendChild(g);}   /* the store is read before the one change is made (owner, 24 Nov) */
   var TT={goal:["Your goal","Changes your targets for the whole day."],mode:["What kind of day is it?"],cuisine:["What food today?"],mood:["What do you feel like?"],cook:["Cook or order"],focus:["Which nutrient do you want more of?","This changes My food too."]};
   if(TT[UI.open])title(TT[UI.open][0],TT[UI.open][1]);
   if(UI.open==="goal")radios(OPT.goal.map(function(o){return {id:"goal-"+o[0],v:o[0],t:o[1]};}),function(v){return P.goal===v;},function(v){P.goal=v;changed();},function(v){return GOALICON[v];});
@@ -4174,7 +4193,7 @@ function ctxBlock(host){
     add(sh,el("span",null,"A little"),el("span",null,"Very hungry"));sl.appendChild(el("p","cap","How hungry are you for "+mealName(C.meal).toLowerCase()+"?"));sl.appendChild(sv);
     var r=el("input");r.type="range";r.min="1";r.max="10";r.value=String(ap);r.id="appetite";r.setAttribute("aria-label","Appetite, 1 to 10");r.style.setProperty("--fill",((ap-1)/9*100)+"%");
     r.addEventListener("input",function(){r.style.setProperty("--fill",((+r.value-1)/9*100)+"%");sv.firstChild.textContent=r.value;});
-    r.addEventListener("change",function(){APP[C.meal]=+r.value;changed("appetite");});
+    r.addEventListener("change",function(){if(storeCheck()===false)return;APP[C.meal]=+r.value;changed("appetite");});
     add(sl,r,sh,el("p","tsub",APP[C.meal]==null&&sg.why?"Set for you: "+sg.why+". Move it if that's not how you feel.":"Moves this meal's calorie target."));host.appendChild(sl);}
   host=HOST;if(pan.firstChild){var ob=$("dial-"+UI.open);if(ob&&ob.parentNode===rail)rail.insertBefore(pan,ob.nextSibling);else host.appendChild(pan);}
 }
@@ -4198,7 +4217,7 @@ function loggedCard(s){
   c.appendChild(el("p","cap",s.kind==="skipped"?nm:nm+" · "+kind));
   if(s.kind==="skipped"){c.appendChild(el("h3","dish","Skipped "+nm.toLowerCase()));
     /* the low-sugar warning reads from the answers, not the targets, so it shows without height and weight too (screen review B2); it leads, as a note */
-    if(onMeds()){var w=el("div","note");w.setAttribute("role","note");w.appendChild(ic("info"));w.appendChild(el("p",null,MEDSWARN));c.appendChild(w);}
+    if(lowGuard()){var w=el("div","note");w.setAttribute("role","note");w.appendChild(ic("info"));w.appendChild(el("p",null,MEDSWARN));c.appendChild(w);}
     c.appendChild(el("p","tsub",PL?"The rest of the day adjusts. No meal is asked to make up for it in one sitting.":"Add your age, height and weight so the rest of the day can adjust."));}   /* without targets nothing adjusts (R2-B3 038-1) */
   else{c.appendChild(el("h3","dish",s.title));var p=el("p","tsub");p.appendChild(document.createTextNode("≈\u00A0"+Math.round(s.kcal)+"\u00A0kcal · "+Math.round(s.protein)+"\u00A0g protein"));c.appendChild(p);}
   var row=el("div","pick-acts"),ch=btn("btn","Reopen "+nm.toLowerCase(),null,"slot-change");ch.addEventListener("click",act(null,function(){clearSlot(s.meal);STORE.shown[s.meal]=STORE.shown[s.meal]||null;render();toast(nm+" reopened.");}));row.appendChild(ch);
@@ -4237,7 +4256,7 @@ function heroCard(m,v,r){
   function cell(cap,node,unit,cls,nc){var d=el("div","tcard n-"+nc);d.appendChild(el("p","cap",cap));var x=el("span","v"+(cls?" "+cls:""));x.appendChild(node);if(unit)x.appendChild(el("small",null,unit));d.appendChild(x);return d;}
   add(rd,cell("Protein",tw("h-p",n.protein),"g",null,"pro"),cell("Carbs",tw("h-c",n.carbs),"g",null,"grain"),cell("Fats",tw("h-f",n.fats),"g",null,"side"),
     cell("Energy",tw("h-k",n.kcal),"kcal",null,"ink"),cell("Fibre",tw("h-fi",n.fiber),"g",null,"veg"),cell("Sugar rise",el("span","mono",rs.band),null,bandCls(rs.band),"ink"));
-  var waitT=!m.tuned&&!m.tuneFailed;if(waitT)tune(curKey(),UI.sel);
+  var heldT=medsHeld(),waitT=!heldT&&!m.tuned&&!m.tuneFailed;if(waitT)tune(curKey(),UI.sel);   /* under the hold no one-tap change, swap or Try again is drawn and nothing is sent for them (owner, 24 Nov, "Hide them (Recommended)") */
   var tn=el("div","tune alc");tn.appendChild(el("p","cap",waitT?"One-tap changes and swaps: ready in a few seconds":"One-tap changes"));
   var off=[];[["protein","dumbbell"],["glucose","lab"],["express","bolt"],["gut","leaf"]].forEach(function(x){
     var a=m.alchemy[x[0]];var b=btn("tbtn",ALCHLABEL[x[0]],UI.alc[x[0]]?"check":x[1],"alc-"+x[0]);   /* on shows a tick, off is outlined (screen review B1) */setPressed(b,!!UI.alc[x[0]]);if(!a)off.push(ALCHLABEL[x[0]]);
@@ -4252,11 +4271,11 @@ function heroCard(m,v,r){
   if(!waitT&&off.length){var tno=el("p","fine tnote");tno.id="alc-off";
     if(m.tuneFailed){tno.textContent="One-tap changes and swaps didn't load. ";var tr0=btn("linkbtn","Try again",null,"tune-retry");tr0.addEventListener("click",function(){m.tuneFailed=false;tune(curKey(),UI.sel);render();});tno.appendChild(tr0);}   /* a failed request is not "none for this plate" (R2-B2 024-1) */
     else if(off.length===4)tno.textContent="No one-tap changes for this plate.";else{tno.appendChild(document.createTextNode("Not offered for this plate: "));off.forEach(function(o,i){if(i)tno.appendChild(document.createTextNode(", "));tno.appendChild(el("span","nw",o));});tno.appendChild(document.createTextNode("."));}tn.appendChild(tno);}
-  var rw=el("div","rw");rw.appendChild(el("p","cap rcap","Nutrients in this plate"));rw.appendChild(rd);add(h,top,main,rw,tn);   /* not food weights: those are in the legend and What to serve (screen review B1) */
+  var rw=el("div","rw");rw.appendChild(el("p","cap rcap","Nutrients in this plate"));rw.appendChild(rd);add(h,top,main,rw,heldT?null:tn);   /* not food weights: those are in the legend and What to serve (screen review B1) */
   if(v.notes.length){var ml=el("ul","modlog");v.notes.forEach(function(x){ml.appendChild(el("li",null,x));});h.appendChild(ml);h.appendChild(el("p","fine undo","Tap a change again to undo it."));}
   card.appendChild(h);
   var sv=el("div","serve"),sh2=el("div","serve-h");sh2.appendChild(el("p","cap","What to serve"));
-  var hasSw=m.swaps.protein.length>1&&swapAt(m,"protein")>=0||m.swaps.base.length>1&&swapAt(m,"base")>=0;
+  var hasSw=!heldT&&(m.swaps.protein.length>1&&swapAt(m,"protein")>=0||m.swaps.base.length>1&&swapAt(m,"base")>=0);
   if(hasSw){var adj=el("button","linkbtn");adj.type="button";adj.id="adjust";adj.setAttribute("aria-expanded",UI.adj?"true":"false");adj.appendChild(ic(UI.adj?"check":"sliders"));adj.appendChild(el("span",null,UI.adj?"Done":"Swap"));
     adj.addEventListener("click",function(){UI.adj=!UI.adj;render();});sh2.appendChild(adj);}
   sv.appendChild(sh2);
@@ -4291,7 +4310,7 @@ function logRow(){
   var lg=el("div","logrow");var o=btn("linkbtn","I had something else","plus","log-other");o.addEventListener("click",function(){
     /* opened again for the same meal, the words, a wait or an estimate not yet counted stay (second screen review, R2-B4 055-2, 057-1) */
     if(UI.lmeal!==C.meal){UI.ltext="";UI.lres=null;UI.lbusy=false;}UI.lmeal=C.meal;UI.lerr=UI.lock?errText(UI.lock,"log"):"";UI.lretry=false;openSheet("log");});
-  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(onMeds())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */}));add(lg,o,sk);  return lg;
+  var sk=btn("linkbtn","Skipped it","x","log-skip");sk.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("skipped",{});unAsk();render();$("scroll").scrollTop=0;if(lowGuard())$("said").textContent=MEDSWARN;   /* the card leads with the warning; a toast on top of it said the same twice */}));add(lg,o,sk);  return lg;
 }
 function lockLine(){return /^limit_/.test(UI.lock)?"New asks open again at "+resetAt()+".":UI.lock==="not_set_up"?"Asks open once your coach switches meal planning on.":KEYCODE?"Asks open once you open the new link from your coach.":"Asks open once your coach's link is opened on this phone.";}
 /* the example asks (owner, 14 Nov, option survey); a diet or a food left out still removes an ask that crosses it */
@@ -4440,10 +4459,10 @@ function renderBuild(){
     if(UI.slotH)slot.style.minHeight=UI.slotH+"px";if(UI.slotB!=null)slot.style.bottom=UI.slotB+"px";v.appendChild(slot);}
   var mk=btn("btn primary","Plan "+mealName(C.meal).toLowerCase()+" with this plate","spark","make-ratio");
   if(held)mk.classList.add("stick");   /* once a share is changed, the button stays above the tab bar until its place comes (owner, 14 Nov, option survey) */
-  mk.addEventListener("click",function(){UI.rbound="";C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
+  mk.addEventListener("click",function(){if(storeCheck()===false)return;UI.rbound="";C.ratio={protein:UI.ratio.protein,greens:UI.ratio.greens,carbs:UI.ratio.carbs,fats:UI.ratio.fats};STORE.shown[C.meal]=null;save();show("plate");makePlates("");});
   v.appendChild(mk);if(held){holdSlot();requestAnimationFrame(holdSlot);}
   if(C.ratio){v.appendChild(el("p","fine","Your plates use this share. Change it, or go back to the usual plate."));
-    var cl=btn("linkbtn","Go back to the usual plate ("+lab("mode",C.mode)+")",null,"clear-ratio");cl.addEventListener("click",function(){C.ratio=null;UI.ratio=null;UI.preset="mode";UI.rbound="";STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}   /* plain words; the preset follows (R2-B5 076-1, 076-2) */
+    var cl=btn("linkbtn","Go back to the usual plate ("+lab("mode",C.mode)+")",null,"clear-ratio");cl.addEventListener("click",function(){if(storeCheck()===false)return;C.ratio=null;UI.ratio=null;UI.preset="mode";UI.rbound="";STORE.shown[C.meal]=null;save();render();});v.appendChild(cl);}   /* plain words; the preset follows (R2-B5 076-1, 076-2) */
   var m=curMeal(),inst=el("article","inst"),ih=el("div","inst-h"),hl=el("div");hl.appendChild(el("p","cap","After-meal curve, your current plate"));
   if(!m){hl.appendChild(el("p","tsub","Plan a plate first. Its curve shows here."));ih.appendChild(hl);inst.appendChild(ih);v.appendChild(inst);return;}
   var vw=viewOf(m),rs=riseOf(vw.n,UI.hab);hl.appendChild(el("p","tsub",vw.title));ih.appendChild(hl);ih.appendChild(el("span","risev "+bandCls(rs.band),rs.band));
@@ -4551,19 +4570,27 @@ var ANS0="",SAFE0="";function answers(){return JSON.stringify([profileOut(),P.co
 /* what the food rules are made of: a change here makes every kept plate unsafe to show; any other answer keeps them for "Show my last plates" (R2-B4 053-1) */
 function rules(){return JSON.stringify([P.diet,P.leave.slice().sort(),P.conds.slice().sort(),P.meds,P.age,P.cm,P.kg,P.sex,P.act]);}   /* the body figures set the usual size (audit B9) */
 /* "at": the question the sheet opens on, when a card sends the person to one answer (screen review B2, B6) */
-function openSheet(kind,at){SHEETFROM=document.activeElement;UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
+function openSheet(kind,at){if(storeCheck()===false)return;SHEETFROM=document.activeElement;   /* the sheet opens on the store as it is now */UI.sheet=kind;if(kind==="food"){ANS0=answers();SAFE0=rules();BODY0=[P.age,P.cm,P.kg];}$("sheet").hidden=false;behind(true);renderSheet();setTimeout(function(){var d=at&&$(at);if(d){var qs=d.closest(".qs")||d;qs.scrollIntoView({block:"start",behavior:"auto"});d.focus({preventScroll:true});return;}d=$("sheet-done");if(d)d.focus({preventScroll:true});},30);}
 /* My food closes any way but Done (Escape, a tap outside) without saving a partial body: the three body figures go back as they were stored when the sheet opened (no clamp, no zero),
-   every other answer the person changed is kept (Critic r21 F3). A phone that held a partial body before the sheet opened keeps it and reaches the body card. A typed-medicine hold clears
-   once an answer changed (the tap in "Add it in My food" came from it; fix-r21, D12). */
+   every other answer the person changed is kept (Critic r21 F3). A phone that held a partial body before the sheet opened keeps it and reaches the body card.
+   Done saves that screen (owner, 24 Nov, "Done saves that screen (Recommended)"): Done, or a close after an answer changed, reads the store again and writes every My food
+   answer from what the sheet shows, whole; another tab's write since the sheet opened is taken in for everything else. The hold check then reads that saved set-up: the
+   hold ends here only when My food was saved (Done, or a close after a change) and the saved set-up says insulin, sugar tablets or not sure. A close with nothing changed
+   writes nothing and takes the store in as it is now. */
 var BODY0=[0,0,0];
-function closeSheet(){if(UI.sheet==="food"&&bodyNeed()){P.age=BODY0[0];P.cm=BODY0[1];P.kg=BODY0[2];}
-  var fd=UI.sheet==="food"&&answers()!==ANS0;if(medsFact()&&medsSetupOK())medsHoldOff();UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;if(fd){if(rules()!==SAFE0)STORE.res={};STORE.shown={};UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;save();render();}}   /* an answer made under the old rules is not shown again (M9) */
+function closeSheet(done){var food=UI.sheet==="food";if(food&&bodyNeed()){P.age=BODY0[0];P.cm=BODY0[1];P.kg=BODY0[2];}
+  var fd=food&&(done===true||answers()!==ANS0);UI.sheet="";UI.wipe=false;$("sheet").hidden=true;behind(false);if(SHEETFROM&&SHEETFROM.focus)try{SHEETFROM.focus({preventScroll:true});}catch(e){}SHEETFROM=null;
+  if(fd){var sf=rules()!==SAFE0;if(commit(function(){if(sf)STORE.res={};STORE.shown={};pruneStale();UI.rres=null;UI.alc={};UI.swp=0;UI.swb=0;},{whole:true})===false)return;   /* an answer made under the old rules is not shown again (M9) */
+    if(medsFact()&&medsSetupOK())medsHoldOff();}
+  else if(food){var cur=storeRead();if(cur&&storeTake(cur,false,true)===false)return;}
+  render();}
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&UI.sheet)closeSheet();});
-/* another tab changed the store or the medicine hold: take its change in and redraw (B3); save() and refresh() read the store again in any case, so a late event loses nothing */
-if(window.addEventListener)window.addEventListener("storage",function(e){if(e.key===null||e.key==="np6"||e.key===MEDSKEY){storeSync();if(!UI.sheet)render();}});
+/* another tab changed the store or the medicine hold: read it now and redraw. This only makes it sooner: every write, every request and every redraw reads the store first */
+function onStore(e){if(e&&(e.key===null||e.key==="np6"||e.key===MEDSKEY)){if(storeCheck()===false)return;if(!UI.sheet)render();}}
+if(window.addEventListener)window.addEventListener("storage",onStore);
 function sheetHead(c,title,doneLabel,onDone){c.appendChild(el("div","grab"));var h=el("div","sheet-h"),t=el("h2",null,title);t.id="sheet-title";c.setAttribute("aria-labelledby","sheet-title");h.appendChild(t);var dn=btn(doneLabel==="Close"?"btn":"btn primary",doneLabel||"Done",null,"sheet-done");dn.style.minHeight="44px";dn.style.padding="0 20px";dn.addEventListener("click",onDone);h.appendChild(dn);c.appendChild(h);}
 function logOther(text){
-  if(UI.lbusy||UI.lock)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
+  if(UI.lbusy||UI.lock||storeCheck()===false)return;UI.lbusy=true;UI.lerr="";UI.ltext=text;UI.lmeal=C.meal;renderSheet();
   var body={profile:profileOut(),ctx:{meal:C.meal,time:clockText(),text:text||"",photo:false}};
   var sent=askedFor();
   api("/api/log",body,function(s,j){UI.lbusy=false;
@@ -4607,7 +4634,7 @@ function renderSheet(){
     var ok=btn("btn primary","Yes, count it","check","log-ok");ok.addEventListener("click",act(null,function(){clearSlot(C.meal);logEv("other",{title:r.title,text:UI.ltext,kcal:r.kcal,protein:r.protein,carbs:r.carbs,fats:r.fats,fiber:r.fiber});unAsk();UI.lres=null;UI.ltext="";closeSheet();render();$("scroll").scrollTop=0;toast("Counted for "+mealName(C.meal).toLowerCase()+". Your next meals adjust to it.");},closeSheet));
     add(row,fix,ok);c.appendChild(row);sh.appendChild(c);return;}
   c.setAttribute("aria-label","My food");
-  sheetHead(c,"My food","Done",function(){if(bodyNeed()){var nd=$("body-need"),t=nd&&!nd.hidden?nd:["age","cm","kg"].map(function(k){return $("body-"+k);}).filter(function(i){return i&&i.value&&bodyRead(i.id.slice(5),i.value).good===false;})[0]||nd;if(t){t.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});t.focus({preventScroll:true});}return;}save();closeSheet();render();});
+  sheetHead(c,"My food","Done",function(){if(bodyNeed()){var nd=$("body-need"),t=nd&&!nd.hidden?nd:["age","cm","kg"].map(function(k){return $("body-"+k);}).filter(function(i){return i&&i.value&&bodyRead(i.id.slice(5),i.value).good===false;})[0]||nd;if(t){t.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});t.focus({preventScroll:true});}return;}closeSheet(true);});
   function again(soft){if(!soft)renderSheet();}
   goalQs(c,again);foodQs(c,again);healthQs(c,again);bodyQs(c,again);
   var dq=el("div","qs data");dq.appendChild(el("h2",null,"Your data"));
@@ -4618,7 +4645,8 @@ function renderSheet(){
   else{var cf=el("div","confirm");cf.setAttribute("role","alertdialog");cf.setAttribute("aria-labelledby","wipe-q");var q=el("p",null,"Remove your answers, your food record and today's plates from this phone? This cannot be undone. The code from your coach's link stays, so the app still opens.");q.id="wipe-q";cf.appendChild(q);
     var kr=el("div","pick-acts"),kp=btn("btn","Keep my data",null,"wipe-keep"),rm=btn("btn danger","Remove my data",null,"wipe-yes");
     kp.addEventListener("click",function(){UI.wipe=false;renderSheet();});
-    rm.addEventListener("click",function(){try{localStorage.removeItem("np6");localStorage.removeItem("np5");localStorage.removeItem(MEDSKEY);sessionStorage.clear();sessionStorage.setItem("np-removed","1");if(KEYCODE)localStorage.setItem("np6",JSON.stringify({k:KEYCODE}));}catch(e){}location.replace(location.pathname);});
+    rm.addEventListener("click",function(){try{var es={e:Date.now().toString(36)+Math.random().toString(36).slice(2,8),r:0};   /* a new epoch: every other tab of the page reloads and writes nothing back */
+      localStorage.removeItem("np6");localStorage.removeItem("np5");localStorage.removeItem(MEDSKEY);sessionStorage.clear();sessionStorage.setItem("np-removed","1");localStorage.setItem("np6",JSON.stringify(KEYCODE?{k:KEYCODE,s:es}:{s:es}));}catch(e){}STOREGONE=true;location.replace(location.pathname);});
     add(kr,kp,rm);cf.appendChild(kr);dq.appendChild(cf);}
   c.appendChild(dq);sh.appendChild(c);bodyGate();if(UI.wipe)setTimeout(function(){var q=$("wipe-q");if(q)q.scrollIntoView({block:"center",behavior:RM?"auto":"smooth"});},40);
 }

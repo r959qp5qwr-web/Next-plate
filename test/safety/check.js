@@ -887,13 +887,17 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
   // included, because pruneKept drops them on the next render; this keeps both nets)
   { const cs = safe(() => new Function('ctx', 'with (ctx) { ' + grab('closeSheet') + '\n' + grab('medsHoldOff') + '\n' + grab('medsFact') + '\n' + grab('medsSetupOK') + '\n return closeSheet; }'), null);   // closeSheet clears a typed-medicine hold first (round 6b)
     if (cs) { const ctx = { UI: { sheet: 'food' }, ANS0: 'before', SAFE0: 'old rules', STORE: { res: { k: { meals: [] } }, shown: { lunch: 'k' } }, SHEETFROM: null, bodyNeed: () => null, BODY0: [0, 0, 0], P: {}, $: () => ({ hidden: false }), behind: () => {},
-        answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {}, localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, MEDSKEY: 'np6meds', MEDSFACT: false, profileOut: () => ({}) };
+        answers: () => 'after', rules: () => 'new rules', save: () => {}, render: () => {}, localStorage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }, MEDSKEY: 'np6meds', MEDSFACT: false, MEDSERR: false, profileOut: () => ({}),
+        commit: (f) => { if (f) f(); return true; }, pruneStale: () => {}, storeRead: () => null, storeTake: () => true };   // round 9: Done writes through commit()
       safe(() => cs(ctx)(), null);
       add('S10 kept plates: closing My food after a rule change empties them at once', Object.keys(ctx.STORE.res).length === 0, JSON.stringify(ctx.STORE)); }
     else add('S10 kept plates: closing My food after a rule change empties them at once', false, 'closeSheet not found in app.js'); }
   // app logic that rested on the review states alone (safety audit m1, m3, m4): each function is taken from app.js and run in Node with
   // stand-ins for the page around it. A missing function is a FAIL, not a skip.
-  { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null; return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
+  { const run = (names, ctx, ret) => { const code = names.map(grab); if (code.some(c => !c)) return null;
+      // round 9: the store is read before every write and send (storeCheck, commit); a cell that does not test the store gets a store that never moves
+      if (!('storeCheck' in ctx)) ctx.storeCheck = () => true; if (!('rules' in ctx) && names.indexOf('rules') < 0) ctx.rules = () => ''; if (!('commit' in ctx)) ctx.commit = (f) => { if (f) f(); if (typeof ctx.save === 'function') ctx.save(); return true; };
+      return safe(() => new Function('ctx', 'with (ctx) { ' + code.join('\n') + '\n return ' + ret + '; }')(ctx), null); };
     const appP = (o) => Object.assign({ conds: [], leave: [], region: 'n', focus: 'none', sex: 'f', age: 47, cm: 158, kg: 72, act: 'low' }, BASE, o);
     // the kept-plate rule at load and render (fix-r14, found by the mutation run): pruneKept takes off every kept plate whose base fails its
     // own check (baseWhy: figures agree, S5, S6), and the whole reply when none is left; a stored entry that is not a reply is left alone
@@ -922,14 +926,14 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m3 app S12: act() does not run a tap made after the day changed', !!a3 && ranAfter === 0, a3 ? `ran ${ranAfter}` : 'act not found'); }
     // m3, A11: a tab open past 4 am drops yesterday's Rescue and log answers
     { const UI = { rres: { status: 'ok' }, rmoves: { 0: true }, rtext: 'x', lres: { status: 'ok' }, ltext: 'x', lerr: 'x' };
-      const ctx = { RAW0: undefined, MEM0: undefined, STOREGONE: false, now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
-      const f = run(['refresh', 'storeSync', 'storeRaw', 'memNow', 'storeGone'], ctx, 'refresh'); if (f) safe(() => f(), null);
+      const ctx = { now: null, hr: 0, CLOCK: '', DAY: 'yesterday', dayOf: () => 'today', clockMeal: () => 'breakfast', C: { meal: 'dinner' }, STORE: {}, APP: {}, UI, FILE: null, buildFile: () => ({}), EV: [], PL: null, planDay: () => ({}), profileOut: () => ({}), appetite: () => 5, pruneKept: () => {}, HOOKS: null, hooksFor: () => ({}) };
+      const f = run(['refresh'], ctx, 'refresh'); if (f) safe(() => f(), null);
       add('m3 app S12: a new day drops yesterday\'s Rescue and log answers', !!f && UI.rres === null && UI.lres === null && UI.rtext === '' && UI.ltext === '', f ? JSON.stringify(UI) : 'refresh not found'); }
     // m3, A7 and A10: a Rescue or tune reply made for answers that changed during the wait is not shown
     { let sig = 'a', cb = null; const UI = { rres: null }; const ctx = { UI, C: { meal: 'lunch' }, profileOut: () => ({}), clockText: () => '', appetite: () => 5, fileOut: () => ({}), askedFor: () => sig, api: (u, b, f) => { cb = f; }, render: () => {}, revealOut: () => {}, setTimeout: () => {}, blocked: () => true, $: () => ({}), errText: () => '', RETRY: () => false, lockOn: () => {} };
       const f = run(['rescue', 'medsHeld', 'medsHoldOff', 'medsHoldOn', 'boxDish'], ctx, 'rescue'); if (f) { f('Veg thali'); sig = 'b'; if (cb) cb(200, { status: 'ok', dish: {}, hacks: [] }); }
       add('m3 app S11: a stale Rescue reply is not shown', !!f && !!cb && UI.rres === null, f ? JSON.stringify(UI.rres) : 'rescue not found');
-      let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k' };
+      let tsig = 'a', tcb = null; const m = { title: 't', items: [] }; const c2 = { STORE: { res: { k: { meal: 'lunch', meals: [m] } } }, TUNING: {}, ansSig: () => tsig, DAY: 'today', dayOf: () => 'today', api: (u, b, fn) => { tcb = fn; }, profileOut: () => ({}), UI: { view: 'other' }, render: () => {}, save: () => {}, curKey: () => 'k', medsHeld: () => false };
       const t = run(['tune'], c2, 'tune'); if (t) { t('k', 0); tsig = 'b'; if (tcb) tcb(200, { status: 'ok', swaps: { protein: [{ food: 'x' }], base: [] }, alchemy: {} }); }
       add('m3 app S11: a stale tune reply is not shown', !!t && !!tcb && !m.swaps && !m.tuned, t ? JSON.stringify(m) : 'tune not found'); }
     // m4, N12: the log referral starts with the line to get help now on an urgent symptom; N16: so does the referral heading
@@ -1097,7 +1101,7 @@ add('Rescue: a supplement is not helped (S9)', rescueOut({},'Protein shake with 
       add('m1 as a class: the four example asks with no medicine (control; the review state pins them)', askOn({ health: 'diabetes', meds: 'no' }).length === 4, JSON.stringify(askOn({ health: 'diabetes', meds: 'no' })));
       // "My rule" (owner, 17 Nov; UX-CRITERIA D10): with under 120 kcal left the snack is passed over for everyone ("Plan dinner" and "Little is left
       // for a snack today."), except a client on medicines who skipped a meal today (the low-sugar safeguard): nextOffer from app.js, little room left
-      const no = (meds, skipped) => run(['has', 'onMeds', 'slotOf', 'nextOpen', 'nextOffer'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds }), C: { meal: 'lunch' }, SLOTS, PL: {}, FILE: { today: { meals: [{ meal: 'breakfast', kind: skipped ? 'skipped' : 'had' }, { meal: 'lunch', kind: 'had' }] } }, snackRoom: () => 40 }, 'nextOffer()');
+      const no = (meds, skipped) => run(['has', 'onMeds', 'lowGuard', 'slotOf', 'nextOpen', 'nextOffer'], { P: appP({ conds: ['diabetes'], health: 'diabetes', meds }), C: { meal: 'lunch' }, SLOTS, PL: {}, FILE: { today: { meals: [{ meal: 'breakfast', kind: skipped ? 'skipped' : 'had' }, { meal: 'lunch', kind: 'had' }] } }, snackRoom: () => 40 }, 'nextOffer()');
       const passed = '{"meal":"dinner","low":true}', offered = '{"meal":"snack","low":false}';
       add('My rule (owner, 17 Nov): under 120 kcal left the snack is passed over for a normal client and for medicines with no meal skipped', [no('no', false), no('yes', false), no('unsure', false), no('', false)].every(x => JSON.stringify(x) === passed), JSON.stringify([no('no', false), no('yes', false), no('unsure', false), no('', false)]));
       add('My rule (owner, 17 Nov): a medicines client who skipped a meal today is still offered the snack (the low-sugar safeguard); a normal client who skipped is not', [no('yes', true), no('unsure', true), no('', true)].every(x => JSON.stringify(x) === offered) && JSON.stringify(no('no', true)) === passed, JSON.stringify([no('yes', true), no('unsure', true), no('', true), no('no', true)]));
