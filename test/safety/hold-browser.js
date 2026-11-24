@@ -121,15 +121,27 @@ const vis = async (p, sel) => { const l = p.locator(sel); let n = 0; for (let i 
       const drawn = bt === 'leave-nut' ? H.LOG.filter(x => x.kind === 'meals').length > 0 && H.LOG.filter(x => x.kind === 'meals').every(x => JSON.stringify(x.leave) === '["nut"]') : tA.indexOf('coach and doctor') >= 0 && tB.indexOf('coach and doctor') >= 0 && cards === 0 && H.LOG.filter(x => x.kind !== 'log').length === 0;
       add('B1 (q8, q8b): the tick tab B shows when Done is tapped is the tick saved, and both tabs draw and send it ("Done saves that screen")', shows && kept && drawn,
         `${what}: B showed its tick ${shows}; stored ${JSON.stringify({ conds: s.conds, leave: s.leave })}; requests after B's Done ${JSON.stringify(H.LOG.map(x => x.kind + ':' + JSON.stringify(x.leave)))}; A ${tA.slice(0, 80)}; B ${tB.slice(0, 80)}`); await H.ctx.close(); }
-    // the set-up under the hold (q8): no condition, the hold stored; B ticks High BP; A answers diabetes and Yes through "Add it in My food" and Done (the hold ends); B taps Done.
-    // B's Done saves what B showed (High BP, no diabetes). Neither tab holds a set-up it did not show, and no hold is left that no tab shows (a stated limit: S6, D14)
+    // the set-up under the hold (q8) and "Hold returns (Recommended)" (owner, 24 Nov): no condition, the hold stored; B ticks High BP; A answers diabetes and Yes through "Add it
+    // in My food" and Done (the hold is switched off); B taps Done, saving what B showed (High BP, no diabetes). The fact stays stored, so both tabs draw the hold card again
+    // and nothing is sent, every endpoint counted
     { const H = await open(b, { profile: { health: 'none', conds: [], meds: '' }, meds: '{"at":1}' }), A1 = H.p, B1 = await tab(H);
       await B1.click('#myfood'); await w(300); await B1.click('#health-bp'); await w(300);
       await A1.click('#add-meds'); await w(400); if (await A1.locator('#meds-yes').count() === 0) { await A1.click('#health-diabetes'); await w(200); } await A1.click('#meds-yes'); await A1.click('#sheet-done'); await w(1200);
-      H.LOG = []; await B1.click('#sheet-done'); await w(1800); const s = await A1.evaluate(() => ({ p: JSON.parse(localStorage.getItem('np6')).p, meds: localStorage.getItem('np6meds') })); await A1.click('#tab-plate'); await w(900);
-      const holds = (await vis(A1, '#meds-hold')) + (await vis(B1, '#meds-hold')), m = H.LOG.filter(x => x.kind === 'meals');
-      add('B1 (q8, under the hold): B\'s Done saves what B showed; the hold A ended stays ended and both tabs plan with the saved set-up', JSON.stringify(s.p.conds) === '["bp"]' && s.meds === null && holds === 0 && m.length > 0 && m.every(x => x.meds === 'no'),
-        `stored ${JSON.stringify({ conds: s.p.conds, meds: s.p.meds })}, np6meds ${s.meds}, hold cards ${holds}, requests ${JSON.stringify(m.map(x => x.meds))}`); await H.ctx.close(); }
+      H.LOG = []; await B1.click('#sheet-done'); await w(1800); const s = await A1.evaluate(() => ({ p: JSON.parse(localStorage.getItem('np6')).p, meds: localStorage.getItem('np6meds') })); await A1.click('#tab-plate'); await w(900); await B1.click('#tab-plate'); await w(900);
+      const holds = (await vis(A1, '#meds-hold')) + (await vis(B1, '#meds-hold')), plates = (await vis(A1, '#plate-card')) + (await vis(B1, '#plate-card'));
+      add('B1 (q8, under the hold; "Hold returns"): B\'s Done saves what B showed; the fact stays stored and both tabs draw the hold card and send nothing', JSON.stringify(s.p.conds) === '["bp"]' && s.meds !== null && holds === 2 && plates === 0 && H.LOG.length === 0,
+        `stored ${JSON.stringify({ conds: s.p.conds, meds: s.p.meds })}, np6meds ${s.meds}, hold cards ${holds}, plates ${plates}, requests ${JSON.stringify(H.LOG.map(x => x.kind))}`); await H.ctx.close(); }
+    // "Hold returns" in one tab: Yes switches the hold off and the plates carry the usual-size minimum; unticking diabetes and saving draws the hold card again and sends
+    // nothing; Yes again switches it off
+    { const H = await open(b, { meds: '{"at":1}' }), p = H.p; const save = async (ids) => { await p.click('#myfood'); await w(300); for (const id of ids) { await p.click('#' + id); await w(200); } await p.click('#sheet-done'); await w(1500); };
+      const look = async () => ({ hold: await vis(p, '#meds-hold'), plate: await vis(p, '#plate-card'), fact: await stored(p) });
+      H.LOG = []; await save(['meds-yes']); const l1 = await look(), s1 = H.LOG.slice();
+      H.LOG = []; await save(['health-diabetes']); await p.click('#tab-plate'); await w(900); if (await p.locator('#remake').count()) { await p.click('#remake'); await w(900); } const l2 = await look(), s2 = H.LOG.slice();
+      H.LOG = []; await save(['health-diabetes', 'meds-yes']); if (!H.LOG.length && await p.locator('#remake').count()) { await p.click('#remake'); await w(1200); }   // the canned plate is under the usual size, so the earlier plan left "Try again"
+      const l3 = await look(), s3 = H.LOG.slice();
+      const fl = (L) => L.filter(x => x.kind === 'meals').length > 0 && L.filter(x => x.kind === 'meals').every(x => x.floor === true);
+      add('Hold returns: Yes switches the hold off (usual size as a minimum); unticking diabetes and saving draws the hold card again and sends nothing; Yes again switches it off', l1.fact && !l1.hold && fl(s1) && l2.fact && l2.hold === 1 && l2.plate === 0 && s2.length === 0 && l3.fact && !l3.hold && fl(s3),
+        JSON.stringify({ yes: [l1, s1.map(x => x.kind + ':' + x.floor)], untick: [l2, s2.map(x => x.kind)], yesAgain: [l3, s3.map(x => x.kind + ':' + x.floor)] })); await H.ctx.close(); }
     // q7 (audit m2): two live tabs, no tap in tab B: a dairy left out in A takes B's paneer plate away at once; a hold raised in A shows B the hold card at once
     { const H = await open(b), A1 = H.p; H.mode.meals = 'paneer'; await A1.evaluate(() => { const s = JSON.parse(localStorage.getItem('np6')); delete s.store; localStorage.setItem('np6', JSON.stringify(s)); }); await A1.reload(); await w(1500); const B1 = await tab(H); const before = /Paneer/.test(await view(B1, '#v-plate'));
       await A1.click('#myfood'); await w(300); await A1.click('#leave-dairy'); await A1.click('#sheet-done'); await w(1500); const after = /Paneer/.test(await view(B1, '#v-plate'));

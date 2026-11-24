@@ -5,7 +5,8 @@
 //   "Remove my data", a reload, a back/forward restore), once with the storage event delivered to the other tab and once with it withheld. After each step:
 //     (a) the stored My food is what the sheet showed when Done (or a close after a change) was tapped, and no other write loses another tab's change;
 //     (b) each tab's next request and drawn plate agree with the store (with the event withheld, after one redraw-only tap);
-//     (c) the hold ends only at its two ends (a My food save whose saved set-up says insulin, sugar tablets or not sure, and "Remove my data");
+//     (c) the stored hold fact is deleted only by "Remove my data", and the hold is drawn on each tab while the fact is stored and the saved set-up does not say
+//         insulin, sugar tablets or not sure (owner, 24 Nov, "Hold returns (Recommended)");
 //     (d) a stored kidney condition or pregnancy is referred on both tabs.
 //   The auditor's flows as cells: q8/q8b (a tick in an open sheet against a change in the other tab: Kidney, pregnancy, Leave out nuts, the set-up under the hold),
 //   q7 (a live second tab redraws with no tap in it), q2 (the event withheld: the next redraw and request read the store), q3 (a removal and a new set-up while a tab
@@ -32,7 +33,7 @@ const MEDSWARN = /a skipped meal can drop your sugar/;
 // one store and its tabs. o: { deliver, profile, meds, ev, mode }
 function world(o) {
   o = o || {}; const W = { mode: Object.assign({}, o.mode || {}), deliver: o.deliver !== false, clock: { t: T0 }, log: [] };
-  const answer = (rec) => { const pl = A.plan(rec.kind, J(rec.body)); W.log.push({ tab: rec.tab, kind: rec.kind, profile: rec.body.profile });
+  const answer = (rec) => { const pl = A.plan(rec.kind, J(rec.body)); W.log.push({ tab: rec.tab, kind: rec.kind, profile: rec.body.profile, floor: !!pl.prompt && /at least \d+ kcal, never below/.test(pl.prompt) });
     if (pl.error) return { status: 400, body: { code: pl.error } }; if (pl.reply) return { status: 200, body: pl.reply };
     if (W.mode[rec.kind] === 'fail') return { status: 200, body: { status: 'fail' } };
     if (rec.kind === 'meals') return { status: 200, body: pl.check({ status: 'ok', refer_reason: 'none', meals: [J(W.mode.meals === 'paneer' ? PANEER : DAL)] }) };
@@ -105,9 +106,10 @@ async function check(W, step, out, before, M, seq) {
   const mood = (s.c && s.c.mood) || 'best'; add('(a) a write keeps the other tab\'s Your day choice', mood === M.mood, `${label}: stored mood ${mood}, last tapped ${M.mood}`);
   if (!out.remove) { const now = new Set((s.ev || []).map(e => JSON.stringify(e))), gone = (before.ev || []).filter(e => !now.has(JSON.stringify(e)));
     add('(a) a write keeps the other tab\'s logged events', gone.length === 0, `${label}: lost ${JSON.stringify(gone).slice(0, 160)}`); }
-  // (c) the hold ends only at its two ends, and comes up only from a typed ask
+  // (c) the stored fact goes only with "Remove my data" ("Hold returns"), and comes up only from a typed ask; (b) below draws the hold whenever the fact is stored and the
+  // saved set-up does not say insulin, sugar tablets or not sure
   const heldNow = W.held();
-  if (before.held && !heldNow) add('(c) the hold ends only by a My food save that says insulin, sugar tablets or not sure, or by "Remove my data"', !!out.remove || (out.shown != null && ref.done && ref.ok === true), `${label}: the hold went; saved set-up OK ${ref.ok}`);
+  if (before.held && !heldNow) add('(c) the stored hold fact is deleted only by "Remove my data" (a My food save switches the hold off, never deletes it)', !!out.remove, `${label}: the fact went; saved set-up OK ${ref.ok}`);
   if (!before.held && heldNow) add('(c) the hold comes up only from a typed medicine', !!out.ask, `${label}`);
   // (b) and (d): each tab draws and sends what the store says
   if (!ref.done) return;
@@ -154,9 +156,20 @@ async function enumerate(deliver, depth) {
     add('q8: the tick tab B shows when Done is tapped is the tick saved ("Done saves that screen")', tickShows && ref.shown === shownB, `${lbl}: B showed its tick ${tickShows}, [${shownB}]; stored [${ref.shown}]`);
     for (const n of ['A', 'B']) { let T = W.tabs[n]; T.click('tab-plate'); await W.settle(); T = W.tabs[n]; const t = T.text('v-plate');
       if (ref.blocked) add('q8: a kidney condition or pregnancy saved in tab B is referred on both tabs, and nothing is planned', t.indexOf(BLOCK) >= 0 && !T.has('v-plate', 'plate-card') && W.log.filter(x => x.tab === n && x.kind !== 'log').length === 0, `${lbl}: tab ${n}: ${t.slice(0, 120)}; sent ${JSON.stringify(W.log.filter(x => x.tab === n).map(x => x.kind))}`);
+      else if (ref.held) { const n0 = T.sent.length; T.run('UI.busy="";makePlates("")'); await W.settle(); const sent = W.tabs[n].sent.slice(n0).map(x => x.kind);
+        add('q8 ("Hold returns"): when tab B\'s save leaves the stored hold without insulin or not sure, both tabs draw the hold card and send nothing (every endpoint)', W.tabs[n].has('v-plate', 'meds-hold') && !W.tabs[n].has('v-plate', 'plate-card') && sent.length === 0, `${lbl}: tab ${n}: hold ${W.tabs[n].has('v-plate', 'meds-hold')}, plate ${W.tabs[n].has('v-plate', 'plate-card')}, sent ${JSON.stringify(sent)}`); }
       else { const n0 = T.sent.length; T.run('UI.busy="";makePlates("")'); await W.settle(); const m = W.tabs[n].sent.slice(n0).filter(x => x.kind === 'meals');
         add('q8: both tabs then plan with the answers tab B saved', m.length === 1 && sameProf(m[0].body.profile, ref.prof) && !W.tabs[n].has('v-plate', 'meds-hold') === !ref.held, `${lbl}: tab ${n}: ${m.length} requests ${m[0] ? JSON.stringify(m[0].body.profile).slice(0, 160) : ''}; stored ${ref.prof}`); } }
-    if (meds) add('q8, under the hold: A\'s Done (diabetes and Yes) ends the hold; B\'s Done then saves what B showed, and neither tab holds a set-up it did not show', !W.held() && ref.shown === shownB, `${lbl}: hold stored ${W.held()}, stored [${ref.shown}], B showed [${shownB}]`); }
+    if (meds) add('q8, under the hold: A\'s Done (diabetes and Yes) switches the hold off; B\'s Done saves what B showed, the fact stays stored and the hold is back ("Hold returns")', W.held() && ref.held === true && ref.shown === shownB, `${lbl}: fact stored ${W.held()}, held ${ref.held}, stored [${ref.shown}], B showed [${shownB}]`); }
+  // ---------- "Hold returns (Recommended)" (owner, 24 Nov) in one tab: Yes switches the hold off; unticking diabetes and saving brings it back; Yes again switches it off ----------
+  { const W = await world({ meds: '{"at":1}' }).start(['A']), T = () => W.tabs.A, probe = async () => { const n0 = T().sent.length; T().run('UI.busy="";makePlates("")'); await W.settle(); return T().sent.slice(n0); };
+    const save = async (ids) => { T().click('myfood'); await W.settle(); for (const id of ids) { T().click(id); await W.settle(); } T().click('sheet-done'); await W.settle(); };
+    const look = () => ({ hold: T().has('v-plate', 'meds-hold'), plate: T().has('v-plate', 'plate-card'), fact: W.held() });
+    await save(['meds-yes']); const s1 = await probe(), l1 = look(), f1 = W.log.filter(x => x.kind === 'meals').slice(-1)[0];
+    await save(['health-diabetes']); T().click('tab-plate'); await W.settle(); const l2 = look(), s2 = await probe();
+    await save(['health-diabetes', 'meds-yes']); const s3 = await probe(), l3 = look(), f3 = W.log.filter(x => x.kind === 'meals').slice(-1)[0];
+    add('Hold returns: in one tab Yes switches the hold off (plates with the usual size as a minimum), unticking diabetes and saving shows the hold card again and sends nothing, Yes again switches it off', l1.fact && !l1.hold && s1.some(x => x.kind === 'meals') && f1 && f1.floor && l2.fact && l2.hold && !l2.plate && s2.length === 0 && l3.fact && !l3.hold && s3.some(x => x.kind === 'meals') && f3 && f3.floor,
+      JSON.stringify({ yes: [l1, s1.map(x => x.kind), f1 && f1.floor], untick: [l2, s2.map(x => x.kind)], yesAgain: [l3, s3.map(x => x.kind), f3 && f3.floor] })); }
   // ---------- q7 (audit m2): a live second tab redraws with no tap in it ----------
   { const W = await world({ deliver: true, mode: { meals: 'paneer' } }).start(); const before = /Paneer/.test(W.tabs.B.text('v-plate'));
     W.tabs.A.click('myfood'); await W.settle(); W.tabs.A.click('leave-dairy'); await W.settle(); W.tabs.A.click('sheet-done'); await W.settle();

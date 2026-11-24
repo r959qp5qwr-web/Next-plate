@@ -213,15 +213,16 @@ function medsBtn(host){var b=btn("btn primary","Add it in My food",null,"add-med
 /* While a typed-medicine hold is up the hold card shows on its own: no earlier plate, no "Show my last plates", no line about plates from before, no earlier Rescue dish, move or
    "I had this" (owner, 23 Nov, option survey: "Hide them (Recommended)"). One hold covers Plate, Builder and Rescue, whichever raised it (owner, 23 Nov: "All tabs
    (Recommended)"): the plates and the dish made before it were made for a set-up with no medicine, so they are put away when it comes up. Under the owner's hold sentence the
-   card says MEDSOTHER (owner, 23 Nov: "Add a line (Recommended)"), and on Plate the log stays one tap away ("Keep log (Recommended)": the log is not held). Updating My food
-   clears the hold and the plates are made again at the safe size (closeSheet); a typed ask or dish with no medicine name is answered for that ask and the hold stays
+   card says MEDSOTHER (owner, 23 Nov: "Add a line (Recommended)"), and on Plate the log stays one tap away ("Keep log (Recommended)": the log is not held). Saving My food
+   with insulin, sugar tablets or not sure switches the hold off and the plates are made again at the safe size (closeSheet); a later save without that answer switches it on again; a typed ask or dish with no medicine name is answered for that ask and the hold stays
    (owner, 23 Nov, "One ask only (Recommended)"); a meal tab or a Your day choice does not clear it. */
 var MEDSOTHER="If this is about someone else, ask again without the medicine name.";
 /* The hold is a stored fact, not a screen flag (round 7; safety audit of 41e8ac0, B1; owner, 23 Nov: "Until updated (Recommended)"): the typed disclosure is kept on the phone
    under its own key, outside the day's store, so a reload and the 4 am day change keep it. One reader, medsHeld(): the fact is stored and the saved set-up does not say
    insulin, sugar tablets or not sure (np-core's medsOnSetup, the reading under which plan() states the usual size as a minimum). It is set in api() only, when api() or the
-   engine answers meds_typed. It ends in two places only (owner, 23 Nov: "One ask only (Recommended)", "Ends it (Recommended)"): closeSheet() when My food then says
-   insulin, sugar tablets or not sure, and "Remove my data", which removes the key with the rest of the data. A typed ask or dish with no medicine name is sent and
+   engine answers meds_typed. It is switched off while the saved set-up says insulin, sugar tablets or not sure, and on again as soon as a saved set-up no longer
+   says so, in this tab or another (owner, 24 Nov, "Hold returns (Recommended)"); the fact is deleted in one place only, "Remove my data", which removes the key with the
+   rest of the data. A typed ask or dish with no medicine name is sent and
    answered for that ask, and the hold stays (medsOneAsk). A storage error keeps the hold for this page's life only (the copy in memory is read with what is stored); a
    fact that could not be stored is gone after a reload (safety audit of 3ee7b41, m1). */
 var MEDSKEY="np6meds",MEDSFACT=false,MEDSERR=false;
@@ -244,7 +245,9 @@ function medsReferProfile(pr){return Object.assign({},pr||{},{health:"diabetes",
 function medsHoldOn(){MEDSFACT=true;MEDSERR=false;try{localStorage.setItem(MEDSKEY,JSON.stringify({at:Date.now()}));}catch(e){MEDSERR=true;}UI.mholdN=(UI.mholdN||0)+1;
   var ref=function(r){return !!r&&r.status==="refer";};if(!ref(UI.rres))UI.rres=null;UI.rmoves={};UI.sel=0;UI.alc={};UI.swp=0;UI.swb=0;
   commit(function(){Object.keys(STORE.res).forEach(function(k){if(!ref(STORE.res[k]))delete STORE.res[k];});Object.keys(STORE.shown).forEach(function(m){if(!ref(STORE.res[STORE.shown[m]]))delete STORE.shown[m];});});}
-function medsHoldOff(){MEDSFACT=false;MEDSERR=false;try{localStorage.removeItem(MEDSKEY);}catch(e){}if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
+/* the hold switched off by a My food save that says insulin, sugar tablets or not sure: its error lines go; the stored fact stays (owner, 24 Nov, "Hold returns (Recommended)"),
+   so a later save without that answer, in this tab or another, brings the hold back at once (medsHeld reads both live). Only "Remove my data" deletes the fact. */
+function medsHoldOff(){if(UI.ecode==="meds_typed"){UI.err="";UI.ecode="";}if(UI.rcode==="meds_typed"){UI.rerr="";UI.rcode="";}}
 function medsCard(withLog){var c=el("div","empty-card err"),i=el("span","safe-ic");c.id="meds-hold";i.appendChild(ic("info"));add(c,i,el("h2",null,MEDSTYPED),el("p","meds-other",MEDSOTHER));medsBtn(c);
   if(withLog&&!slotOf(C.meal)){c.appendChild(el("p","fine","You can still log this meal."));c.appendChild(logRow());}   /* "Keep log (Recommended)", owner 23 Nov */
   return c;}
